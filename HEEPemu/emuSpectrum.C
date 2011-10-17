@@ -5,10 +5,7 @@
 #include "TBranch.h"
 #include "TLorentzVector.h"
 #include "TPaveLabel.h"
-//#include "/beo5/charaf/CMSSW168/eleidnote/plotstyle.C"
-
 #include "TChain.h"
-
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
@@ -32,13 +29,13 @@ void emuSpectrum()
    bool bool_accessPUFile = true;
    //bool bool_accessPUFile=false;
 
-   float LumiFactor = 3190.; //Lumi in pb-1   -LUMI FROM GODLEN JSON
-   //float LumiFactor = 2179.; //Lumi in pb-1   -LUMI FROM GODLEN JSON
-   //float LumiFactor = 1932.; //Lumi in pb-1   -LUMI FROM GODLEN JSON
-   //float LumiFactor = 702.0; //Lumi in pb-1   -LUMI FROM GODLEN JSON
+   float LumiFactor = 3190.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   //float LumiFactor = 2179.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   //float LumiFactor = 1932.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   //float LumiFactor = 702.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
 
    // max number of primary vertices
-   int nPVtxMax = 20;
+   unsigned nPVtxMax = 20;
 
    //
    //float Elec_trigger = 0.97;
@@ -55,10 +52,12 @@ void emuSpectrum()
    // 2*(LS_data - LS_mc)/totMC
    float QCDScaleFactor = 1.10;
 
+   TH1::SetDefaultSumw2(kTRUE);
+
    //
    //ACCESSING PILE-UP FILE
-   vector <float> PVX_ScalingFactor_ttba;
-   vector <float> PVX_ScalingFactor_ztau;
+   vector<float> PVX_ScalingFactor_ttba;
+   vector<float> PVX_ScalingFactor_ztau;
    if (bool_accessPUFile == false) {
       for (unsigned int i = 0 ; i < nPVtxMax ; i++) {
          PVX_ScalingFactor_ttba.push_back(1.);
@@ -66,12 +65,10 @@ void emuSpectrum()
       }
    }
    if (bool_accessPUFile) {
-      //TFile *inputPV = new TFile("EMu_702pb_21June_QCD16pc_Trig97pc_Veto35GeV_NoZScaling_PVXinfo__muons.root","open");
-      //TFile *inputPV = new TFile("EMu_702pb_21June_QCD16pc_Trig97pc_Veto35GeV_NoZScaling_PVXinfo22Jun__muons.root","open");
-      //TFile *inputPV = new TFile("EMu_702pb_28June_QCD16pc_Trig94pc_Veto35GeV_PVXinfo_EE40_electrons.root","open");
-      //TFile *inputPV = new TFile("EMu_1932pb-1_veto35GeV_PVXinfo_V11.root", "open");
-      //TFile *inputPV = new TFile("EMu_2179pb-1_veto35GeV_PVXinfo_V11.root", "open");
-      TFile *inputPV = new TFile("EMu_3190pb-1_veto35GeV_PVXinfo_V11.root", "open");
+      TFile *inputPV = new TFile("EMu_3190pb-1_veto35GeV_PVXinfo.root", "open");
+      //TFile *inputPV = new TFile("EMu_2179pb-1_veto35GeV_PVXinfo.root", "open");
+      //TFile *inputPV = new TFile("EMu_1932pb-1_veto35GeV_PVXinfo.root", "open");
+      //TFile *inputPV = new TFile("EMu_702pb-1_veto35GeV_PVXinfo.root", "open");
       inputPV->cd();
 
       TH1F *copy_emuloose_dataoverttba_nvalidpv;
@@ -91,7 +88,7 @@ void emuSpectrum()
    //
    // INPUT FILES
    vector<TFile *> input;
-   vector <float> weight;
+   vector<float> weight;
 
    //DATA
    input.push_back(new TFile("/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-177515_7TeV_Collisions11_JSON_3190pb-1.root", "open"));
@@ -104,26 +101,24 @@ void emuSpectrum()
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN1/res/total_missing1And13.root", "open"));
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WW_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN2/res/total_tree.root", "open"));
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WZ_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSummer2010/CMSSW_3_5_8/src/UserCode/OCharaf/test/MC_v7_7Sept/tW_V7_OneEle.root", "open"));
-
+   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/T_plus_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_total_tree.root","open")); 
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WJetsToLNu_TuneZ2_7TeV-madgraph-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSummer2010/CMSSW_3_5_8/src/UserCode/OCharaf/test/MC_v7_7Sept/Zmumu_V7_OneEle.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSummer2010/CMSSW_3_8_6_patch2/src/UserCode/OCharaf/test/MCZee/ZeeV7_OneElev2_total_tree.root", "open"));
+   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToMuMu_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v1-AODSIM_TreeEMuSkim35_S3V11v1_RUN2/res/total_tree.root","open"));
+   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToEE_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN4/res/total_tree.root","open"));
 
    int nbFile = input.size();
 
    //WEIGHTS FOR 1pb-1
-   weight.push_back(1.);                                  //DATA            0 black
+   weight.push_back(1.);                                  //DATA        0 black
 
-   weight.push_back(0.000149593);                         //TTbar           1 red       (1089625 event - xsect NNLO 163pb) -- 21 JUIN 2011
-   weight.push_back(0.000936761);                         //Ztautau         2 green     (2032536 event * 14/16 - xsect 1666pb)
-   weight.push_back(0.000010175);                         //WW              3 dark blue (4225916 event - xsect NNLO 43.pb (note muons) ) -- 28 JUIL 2011
-   weight.push_back(0.000004220);                         //WZ              4 yellow    (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
-   weight.push_back(0.00001214);                          //tW              5 pink
-
-   weight.push_back(0.00063259);                          //W+jet           6 dark green(49501047 event - xsect NNLO 31314pb) -- 23 JUIN 2011
-   weight.push_back(0.00061574 * 1.35 * (1666. / 1755.)); //Zmumu           7 light blue  (2148325 event ds NEW...)
-   weight.push_back(0.00052811 * 1.35 * 2.90 * (1666. / 1755.) * 1.05); //Zee        8 cyan
+   weight.push_back(0.000149593);                         //TTbar       1 red         (1089625 event - xsect NNLO 163pb) -- 21 JUIN 2011
+   weight.push_back(0.000936761);                         //Ztautau     2 green       (2032536 event * 14/16 - xsect 1666pb)
+   weight.push_back(0.000010175);                         //WW          3 dark blue   (4225916 event - xsect NNLO 43.pb (note muons) ) -- 28 JUIL 2011
+   weight.push_back(0.000004220);                         //WZ          4 yellow      (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
+   weight.push_back(0.000009664);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 13 OCT 2011
+   weight.push_back(0.00063259);                          //W+jet       6 dark green  (49501047 event - xsect NNLO 31314pb) -- 23 JUIN 2011
+   weight.push_back(0.00078075);                          //Zmumu       7 light blue (2133856 event  - xsect NNLO 1666pb ) -- 14 OCT 2011) 
+   weight.push_back(0.00073630*(26./25.));                //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 13 OCT 2011 
    //ZZ = 2108608 events
 
    //MUONS
@@ -145,7 +140,6 @@ void emuSpectrum()
    float bar_isoTrack = 7.5;
 
    //ENDCAP
-   //float end_et = 35.;
    float end_et = 40.;
    float end_hoE = 0.05;
    float end_DEta = 0.007 ;
@@ -206,273 +200,278 @@ void emuSpectrum()
    vector<TH1F *> test22;
 
    //
-   TH1F * emu_data = new TH1F("emu_data", "emu_data", 100, 0., 1000.);
-   TH1F * emu_dilepton = new TH1F("emu_dilepton", "emu_dilepton", 100, 0., 1000.);
-   TH1F * emu_ewk = new TH1F("emu_ewk", "emu_ewk", 100, 0., 1000.);
-   TH1F * emu_jet = new TH1F("emu_jet", "emu_jet", 100, 0., 1000.);
+   TH1F *emu_data = new TH1F("emu_data", "emu_data", 100, 0., 1000.);
+   TH1F *emu_dilepton = new TH1F("emu_dilepton", "emu_dilepton", 100, 0., 1000.);
+   TH1F *emu_ewk = new TH1F("emu_ewk", "emu_ewk", 100, 0., 1000.);
+   TH1F *emu_jet = new TH1F("emu_jet", "emu_jet", 100, 0., 1000.);
 
-   TH1F * emu_ttbar = new TH1F("emu_ttbar", "emu_ttbar", 100, 0., 1000.);
-   TH1F * emu_ztautau = new TH1F("emu_ztautau", "emu_ztautau", 100, 0., 1000.);
-   TH1F * emu_ww = new TH1F("emu_ww", "emu_ww", 100, 0., 1000.);
-   TH1F * emu_tw = new TH1F("emu_tw", "emu_tw", 100, 0., 1000.);
-   TH1F * emu_wjet = new TH1F("emu_wjet", "emu_wjet", 100, 0., 1000.);
-   TH1F * emu_zee = new TH1F("emu_zee", "emu_zee", 100, 0., 1000.);
-   TH1F * emu_zmumu = new TH1F("emu_zmumu", "emu_zmumu", 100, 0., 1000.);
-   TH1F * emu_qcd = new TH1F("emu_qcd", "emu_qcd", 100, 0., 1000.);
+   TH1F *emu_ttbar = new TH1F("emu_ttbar", "emu_ttbar", 100, 0., 1000.);
+   TH1F *emu_ztautau = new TH1F("emu_ztautau", "emu_ztautau", 100, 0., 1000.);
+   TH1F *emu_ww = new TH1F("emu_ww", "emu_ww", 100, 0., 1000.);
+   TH1F *emu_wz = new TH1F("emu_wz", "emu_wz", 100, 0., 1000.);
+   TH1F *emu_tw = new TH1F("emu_tw", "emu_tw", 100, 0., 1000.);
+   TH1F *emu_wjet = new TH1F("emu_wjet", "emu_wjet", 100, 0., 1000.);
+   TH1F *emu_zmumu = new TH1F("emu_zmumu", "emu_zmumu", 100, 0., 1000.);
+   TH1F *emu_zee = new TH1F("emu_zee", "emu_zee", 100, 0., 1000.);
+   TH1F *emu_qcd = new TH1F("emu_qcd", "emu_qcd", 100, 0., 1000.);
 
    //LS
-   TH1F * OS_data = new TH1F("OS_data", "OS_data", 100, 0., 1000.);
-   TH1F * OS_ttbar = new TH1F("OS_ttbar", "OS_ttbar", 100, 0., 1000.);
-   TH1F * OS_ztautau = new TH1F("OS_ztautau", "OS_ztautau", 100, 0., 1000.);
-   TH1F * OS_ww = new TH1F("OS_ww", "OS_ww", 100, 0., 1000.);
-   TH1F * OS_wjet = new TH1F("OS_wjet", "OS_wjet", 100, 0., 1000.);
-   TH1F * OS_zmum = new TH1F("OS_zmum", "OS_zmum", 100, 0., 1000.);
-   TH1F * OS_zele = new TH1F("OS_zele", "OS_zele", 100, 0., 1000.);
+   TH1F *OS_data = new TH1F("OS_data", "OS_data", 100, 0., 1000.);
+   TH1F *OS_ttbar = new TH1F("OS_ttbar", "OS_ttbar", 100, 0., 1000.);
+   TH1F *OS_ztautau = new TH1F("OS_ztautau", "OS_ztautau", 100, 0., 1000.);
+   TH1F *OS_ww = new TH1F("OS_ww", "OS_ww", 100, 0., 1000.);
+   TH1F *OS_wz = new TH1F("OS_wz", "OS_wz", 100, 0., 1000.);
+   TH1F *OS_tw = new TH1F("OS_tw", "OS_tw", 100, 0., 1000.);
+   TH1F *OS_wjet = new TH1F("OS_wjet", "OS_wjet", 100, 0., 1000.);
+   TH1F *OS_zmum = new TH1F("OS_zmum", "OS_zmum", 100, 0., 1000.);
+   TH1F *OS_zele = new TH1F("OS_zele", "OS_zele", 100, 0., 1000.);
 
-   TH1F * LS_data = new TH1F("LS_data", "LS_data", 100, 0., 1000.);
-   TH1F * LS_ttbar = new TH1F("LS_ttbar", "LS_ttbar", 100, 0., 1000.);
-   TH1F * LS_ztautau = new TH1F("LS_ztautau", "LS_ztautau", 100, 0., 1000.);
-   TH1F * LS_ww = new TH1F("LS_ww", "LS_ww", 100, 0., 1000.);
-   TH1F * LS_wjet = new TH1F("LS_wjet", "LS_wjet", 100, 0., 1000.);
-   TH1F * LS_zmum = new TH1F("LS_zmum", "LS_zmum", 100, 0., 1000.);
-   TH1F * LS_zele = new TH1F("LS_zele", "LS_zele", 100, 0., 1000.);
+   TH1F *LS_data = new TH1F("LS_data", "LS_data", 100, 0., 1000.);
+   TH1F *LS_ttbar = new TH1F("LS_ttbar", "LS_ttbar", 100, 0., 1000.);
+   TH1F *LS_ztautau = new TH1F("LS_ztautau", "LS_ztautau", 100, 0., 1000.);
+   TH1F *LS_ww = new TH1F("LS_ww", "LS_ww", 100, 0., 1000.);
+   TH1F *LS_wz = new TH1F("LS_wz", "LS_wz", 100, 0., 1000.);
+   TH1F *LS_tw = new TH1F("LS_tw", "LS_tw", 100, 0., 1000.);
+   TH1F *LS_wjet = new TH1F("LS_wjet", "LS_wjet", 100, 0., 1000.);
+   TH1F *LS_zmum = new TH1F("LS_zmum", "LS_zmum", 100, 0., 1000.);
+   TH1F *LS_zele = new TH1F("LS_zele", "LS_zele", 100, 0., 1000.);
 
-   TH1F * emuloose_data_nvalidpv = new TH1F("emuloose_data_nvalidpv", "emuloose_data_nvalidpv", nPVtxMax, 0., nPVtxMax);
-   TH1F * emuloose_ttba_nvalidpv = new TH1F("emuloose_ttba_nvalidpv", "emuloose_ttba_nvalidpv", nPVtxMax, 0., nPVtxMax);
-   TH1F * emuloose_ztau_nvalidpv = new TH1F("emuloose_ztau_nvalidpv", "emuloose_ztau_nvalidpv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuloose_data_nvalidpv = new TH1F("emuloose_data_nvalidpv", "emuloose_data_nvalidpv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuloose_ttba_nvalidpv = new TH1F("emuloose_ttba_nvalidpv", "emuloose_ttba_nvalidpv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuloose_ztau_nvalidpv = new TH1F("emuloose_ztau_nvalidpv", "emuloose_ztau_nvalidpv", nPVtxMax, 0., nPVtxMax);
 
-   TH1F * emuloose_dataoverttba_nvalidpv = new TH1F("emuloose_dataoverttba_nvalidpv", "emuloose_dataoverttba_nvalidpv", nPVtxMax, 0., nPVtxMax);
-   TH1F * emuloose_dataoverztau_nvalidpv = new TH1F("emuloose_dataoverztau_nvalidpv", "emuloose_dataoverztau_nvalidpv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuloose_dataoverttba_nvalidpv = new TH1F("emuloose_dataoverttba_nvalidpv", "emuloose_dataoverttba_nvalidpv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuloose_dataoverztau_nvalidpv = new TH1F("emuloose_dataoverztau_nvalidpv", "emuloose_dataoverztau_nvalidpv", nPVtxMax, 0., nPVtxMax);
 
-   TH1F * test = new TH1F("test", "test", nPVtxMax, 0., nPVtxMax);
+   TH1F *test = new TH1F("test", "test", nPVtxMax, 0., nPVtxMax);
 
 
    //
    //ELES
 
-//   TH1F * test1_data = new TH1F("test1_data","test1_data",50,0.,400.);
-//   TH1F * test1_ttba = new TH1F("test1_ttba","test1_ttba",50,0.,400.);
-//   TH1F * test1_ztau = new TH1F("test1_ztau","test1_ztau",50,0.,400.);
-//   TH1F * test1_wwtw = new TH1F("test1_wwtw","test1_wwtw",50,0.,400.);
-//   TH1F * test1_wjet = new TH1F("test1_wjet","test1_wjet",50,0.,400.);
-//   TH1F * test1_zmum = new TH1F("test1_zmum","test1_zmum",50,0.,400.); //MET
-//   TH1F * test1_zele = new TH1F("test1_zele","test1_zele",50,0.,400.); //MET
+//   TH1F *test1_data = new TH1F("test1_data","test1_data",50,0.,400.);
+//   TH1F *test1_ttba = new TH1F("test1_ttba","test1_ttba",50,0.,400.);
+//   TH1F *test1_ztau = new TH1F("test1_ztau","test1_ztau",50,0.,400.);
+//   TH1F *test1_wwtw = new TH1F("test1_wwtw","test1_wwtw",50,0.,400.);
+//   TH1F *test1_wjet = new TH1F("test1_wjet","test1_wjet",50,0.,400.);
+//   TH1F *test1_zmum = new TH1F("test1_zmum","test1_zmum",50,0.,400.); //MET
+//   TH1F *test1_zele = new TH1F("test1_zele","test1_zele",50,0.,400.); //MET
 
-   TH1F * test1_data = new TH1F("test1_data", "test1_data", nPVtxMax, 0., nPVtxMax);
-   TH1F * test1_ttba = new TH1F("test1_ttba", "test1_ttba", nPVtxMax, 0., nPVtxMax);
-   TH1F * test1_ztau = new TH1F("test1_ztau", "test1_ztau", nPVtxMax, 0., nPVtxMax);
-   TH1F * test1_wwtw = new TH1F("test1_wwtw", "test1_wwtw", nPVtxMax, 0., nPVtxMax);
-   TH1F * test1_wjet = new TH1F("test1_wjet", "test1_wjet", nPVtxMax, 0., nPVtxMax);
-   TH1F * test1_zmum = new TH1F("test1_zmum", "test1_zmum", nPVtxMax, 0., nPVtxMax); //MET
-   TH1F * test1_zele = new TH1F("test1_zele", "test1_zele", nPVtxMax, 0., nPVtxMax); //MET
+   TH1F *test1_data = new TH1F("test1_data", "test1_data", nPVtxMax, 0., nPVtxMax);
+   TH1F *test1_ttba = new TH1F("test1_ttba", "test1_ttba", nPVtxMax, 0., nPVtxMax);
+   TH1F *test1_ztau = new TH1F("test1_ztau", "test1_ztau", nPVtxMax, 0., nPVtxMax);
+   TH1F *test1_wwtw = new TH1F("test1_wwtw", "test1_wwtw", nPVtxMax, 0., nPVtxMax);
+   TH1F *test1_wjet = new TH1F("test1_wjet", "test1_wjet", nPVtxMax, 0., nPVtxMax);
+   TH1F *test1_zmum = new TH1F("test1_zmum", "test1_zmum", nPVtxMax, 0., nPVtxMax); //MET
+   TH1F *test1_zele = new TH1F("test1_zele", "test1_zele", nPVtxMax, 0., nPVtxMax); //MET
 
-   TH1F * test2_data = new TH1F("test2_data", "test2_data", nPVtxMax, 0., nPVtxMax);
-   TH1F * test2_ttba = new TH1F("test2_ttba", "test2_ttba", nPVtxMax, 0., nPVtxMax);
-   TH1F * test2_ztau = new TH1F("test2_ztau", "test2_ztau", nPVtxMax, 0., nPVtxMax);
-   TH1F * test2_wwtw = new TH1F("test2_wwtw", "test2_wwtw", nPVtxMax, 0., nPVtxMax);
-   TH1F * test2_wjet = new TH1F("test2_wjet", "test2_wjet", nPVtxMax, 0., nPVtxMax);
-   TH1F * test2_zmum = new TH1F("test2_zmum", "test2_zmum", nPVtxMax, 0., nPVtxMax); //NVtx
-   TH1F * test2_zele = new TH1F("test2_zele", "test2_zele", nPVtxMax, 0., nPVtxMax); //NVtx
+   TH1F *test2_data = new TH1F("test2_data", "test2_data", nPVtxMax, 0., nPVtxMax);
+   TH1F *test2_ttba = new TH1F("test2_ttba", "test2_ttba", nPVtxMax, 0., nPVtxMax);
+   TH1F *test2_ztau = new TH1F("test2_ztau", "test2_ztau", nPVtxMax, 0., nPVtxMax);
+   TH1F *test2_wwtw = new TH1F("test2_wwtw", "test2_wwtw", nPVtxMax, 0., nPVtxMax);
+   TH1F *test2_wjet = new TH1F("test2_wjet", "test2_wjet", nPVtxMax, 0., nPVtxMax);
+   TH1F *test2_zmum = new TH1F("test2_zmum", "test2_zmum", nPVtxMax, 0., nPVtxMax); //NVtx
+   TH1F *test2_zele = new TH1F("test2_zele", "test2_zele", nPVtxMax, 0., nPVtxMax); //NVtx
 
-   TH1F * test3_data = new TH1F("test3_data", "test3_data", 50, 0., 3.14);
-   TH1F * test3_ttba = new TH1F("test3_ttba", "test3_ttba", 50, 0., 3.14);
-   TH1F * test3_ztau = new TH1F("test3_ztau", "test3_ztau", 50, 0., 3.14);
-   TH1F * test3_wwtw = new TH1F("test3_wwtw", "test3_wwtw", 50, 0., 3.14);
-   TH1F * test3_wjet = new TH1F("test3_wjet", "test3_wjet", 50, 0., 3.14);
-   TH1F * test3_zmum = new TH1F("test3_zmum", "test3_zmum", 50, 0., 3.14); // Dphi
-   TH1F * test3_zele = new TH1F("test3_zele", "test3_zele", 50, 0., 3.14); // Dphi
+   TH1F *test3_data = new TH1F("test3_data", "test3_data", 50, 0., 3.14);
+   TH1F *test3_ttba = new TH1F("test3_ttba", "test3_ttba", 50, 0., 3.14);
+   TH1F *test3_ztau = new TH1F("test3_ztau", "test3_ztau", 50, 0., 3.14);
+   TH1F *test3_wwtw = new TH1F("test3_wwtw", "test3_wwtw", 50, 0., 3.14);
+   TH1F *test3_wjet = new TH1F("test3_wjet", "test3_wjet", 50, 0., 3.14);
+   TH1F *test3_zmum = new TH1F("test3_zmum", "test3_zmum", 50, 0., 3.14); // Dphi
+   TH1F *test3_zele = new TH1F("test3_zele", "test3_zele", 50, 0., 3.14); // Dphi
 
-   TH1F * test4_data = new TH1F("test4_data", "test4_data", 50, 0., 500.);
-   TH1F * test4_ttba = new TH1F("test4_ttba", "test4_ttba", 50, 0., 500.);
-   TH1F * test4_ztau = new TH1F("test4_ztau", "test4_ztau", 50, 0., 500.);
-   TH1F * test4_wwtw = new TH1F("test4_wwtw", "test4_wwtw", 50, 0., 500.);
-   TH1F * test4_wjet = new TH1F("test4_wjet", "test4_wjet", 50, 0., 500.);
-   TH1F * test4_zmum = new TH1F("test4_zmum", "test4_zmum", 50, 0., 500.); //pt
-   TH1F * test4_zele = new TH1F("test4_zele", "test4_zele", 50, 0., 500.); //pt
+   TH1F *test4_data = new TH1F("test4_data", "test4_data", 50, 0., 500.);
+   TH1F *test4_ttba = new TH1F("test4_ttba", "test4_ttba", 50, 0., 500.);
+   TH1F *test4_ztau = new TH1F("test4_ztau", "test4_ztau", 50, 0., 500.);
+   TH1F *test4_wwtw = new TH1F("test4_wwtw", "test4_wwtw", 50, 0., 500.);
+   TH1F *test4_wjet = new TH1F("test4_wjet", "test4_wjet", 50, 0., 500.);
+   TH1F *test4_zmum = new TH1F("test4_zmum", "test4_zmum", 50, 0., 500.); //pt
+   TH1F *test4_zele = new TH1F("test4_zele", "test4_zele", 50, 0., 500.); //pt
 
-   TH1F * test5_data = new TH1F("test5_data", "test5_data", 25, -2.5, 2.5);
-   TH1F * test5_ttba = new TH1F("test5_ttba", "test5_ttba", 25, -2.5, 2.5);
-   TH1F * test5_ztau = new TH1F("test5_ztau", "test5_ztau", 25, -2.5, 2.5);
-   TH1F * test5_wwtw = new TH1F("test5_wwtw", "test5_wwtw", 25, -2.5, 2.5);
-   TH1F * test5_wjet = new TH1F("test5_wjet", "test5_wjet", 25, -2.5, 2.5);
-   TH1F * test5_zmum = new TH1F("test5_zmum", "test5_zmum", 25, -2.5, 2.5); //eta
-   TH1F * test5_zele = new TH1F("test5_zele", "test5_zele", 25, -2.5, 2.5); //eta
+   TH1F *test5_data = new TH1F("test5_data", "test5_data", 25, -2.5, 2.5);
+   TH1F *test5_ttba = new TH1F("test5_ttba", "test5_ttba", 25, -2.5, 2.5);
+   TH1F *test5_ztau = new TH1F("test5_ztau", "test5_ztau", 25, -2.5, 2.5);
+   TH1F *test5_wwtw = new TH1F("test5_wwtw", "test5_wwtw", 25, -2.5, 2.5);
+   TH1F *test5_wjet = new TH1F("test5_wjet", "test5_wjet", 25, -2.5, 2.5);
+   TH1F *test5_zmum = new TH1F("test5_zmum", "test5_zmum", 25, -2.5, 2.5); //eta
+   TH1F *test5_zele = new TH1F("test5_zele", "test5_zele", 25, -2.5, 2.5); //eta
 
-   TH1F * test6_data = new TH1F("test6_data", "test6_data", 25, -3.14, 3.14);
-   TH1F * test6_ttba = new TH1F("test6_ttba", "test6_ttba", 25, -3.14, 3.14);
-   TH1F * test6_ztau = new TH1F("test6_ztau", "test6_ztau", 25, -3.14, 3.14);
-   TH1F * test6_wwtw = new TH1F("test6_wwtw", "test6_wwtw", 25, -3.14, 3.14);
-   TH1F * test6_wjet = new TH1F("test6_wjet", "test6_wjet", 25, -3.14, 3.14);
-   TH1F * test6_zmum = new TH1F("test6_zmum", "test6_zmum", 25, -3.14, 3.14); //phi
-   TH1F * test6_zele = new TH1F("test6_zele", "test6_zele", 25, -3.14, 3.14); //phi
+   TH1F *test6_data = new TH1F("test6_data", "test6_data", 25, -3.14, 3.14);
+   TH1F *test6_ttba = new TH1F("test6_ttba", "test6_ttba", 25, -3.14, 3.14);
+   TH1F *test6_ztau = new TH1F("test6_ztau", "test6_ztau", 25, -3.14, 3.14);
+   TH1F *test6_wwtw = new TH1F("test6_wwtw", "test6_wwtw", 25, -3.14, 3.14);
+   TH1F *test6_wjet = new TH1F("test6_wjet", "test6_wjet", 25, -3.14, 3.14);
+   TH1F *test6_zmum = new TH1F("test6_zmum", "test6_zmum", 25, -3.14, 3.14); //phi
+   TH1F *test6_zele = new TH1F("test6_zele", "test6_zele", 25, -3.14, 3.14); //phi
 
-   TH1F * test7_data = new TH1F("test7_data", "test7_data", 50, -0.008, 0.008);
-   TH1F * test7_ttba = new TH1F("test7_ttba", "test7_ttba", 50, -0.008, 0.008);
-   TH1F * test7_ztau = new TH1F("test7_ztau", "test7_ztau", 50, -0.008, 0.008);
-   TH1F * test7_wwtw = new TH1F("test7_wwtw", "test7_wwtw", 50, -0.008, 0.008);
-   TH1F * test7_wjet = new TH1F("test7_wjet", "test7_wjet", 50, -0.008, 0.008);
-   TH1F * test7_zmum = new TH1F("test7_zmum", "test7_zmum", 50, -0.008, 0.008); //id1 ele
-   TH1F * test7_zele = new TH1F("test7_zele", "test7_zele", 50, -0.008, 0.008); //id1 ele
+   TH1F *test7_data = new TH1F("test7_data", "test7_data", 50, -0.008, 0.008);
+   TH1F *test7_ttba = new TH1F("test7_ttba", "test7_ttba", 50, -0.008, 0.008);
+   TH1F *test7_ztau = new TH1F("test7_ztau", "test7_ztau", 50, -0.008, 0.008);
+   TH1F *test7_wwtw = new TH1F("test7_wwtw", "test7_wwtw", 50, -0.008, 0.008);
+   TH1F *test7_wjet = new TH1F("test7_wjet", "test7_wjet", 50, -0.008, 0.008);
+   TH1F *test7_zmum = new TH1F("test7_zmum", "test7_zmum", 50, -0.008, 0.008); //id1 ele
+   TH1F *test7_zele = new TH1F("test7_zele", "test7_zele", 50, -0.008, 0.008); //id1 ele
 
-   TH1F * test8_data = new TH1F("test8_data", "test8_data", 50, -0.1, 0.1);
-   TH1F * test8_ttba = new TH1F("test8_ttba", "test8_ttba", 50, -0.1, 0.1);
-   TH1F * test8_ztau = new TH1F("test8_ztau", "test8_ztau", 50, -0.1, 0.1);
-   TH1F * test8_wwtw = new TH1F("test8_wwtw", "test8_wwtw", 50, -0.1, 0.1);
-   TH1F * test8_wjet = new TH1F("test8_wjet", "test8_wjet", 50, -0.1, 0.1);
-   TH1F * test8_zmum = new TH1F("test8_zmum", "test8_zmum", 50, -0.1, 0.1); //id2 ele
-   TH1F * test8_zele = new TH1F("test8_zele", "test8_zele", 50, -0.1, 0.1); //id2 ele
+   TH1F *test8_data = new TH1F("test8_data", "test8_data", 50, -0.1, 0.1);
+   TH1F *test8_ttba = new TH1F("test8_ttba", "test8_ttba", 50, -0.1, 0.1);
+   TH1F *test8_ztau = new TH1F("test8_ztau", "test8_ztau", 50, -0.1, 0.1);
+   TH1F *test8_wwtw = new TH1F("test8_wwtw", "test8_wwtw", 50, -0.1, 0.1);
+   TH1F *test8_wjet = new TH1F("test8_wjet", "test8_wjet", 50, -0.1, 0.1);
+   TH1F *test8_zmum = new TH1F("test8_zmum", "test8_zmum", 50, -0.1, 0.1); //id2 ele
+   TH1F *test8_zele = new TH1F("test8_zele", "test8_zele", 50, -0.1, 0.1); //id2 ele
 
-   TH1F * test9_data = new TH1F("test9_data", "test9_data", 50, 0., 0.04);
-   TH1F * test9_ttba = new TH1F("test9_ttba", "test9_ttba", 50, 0., 0.04);
-   TH1F * test9_ztau = new TH1F("test9_ztau", "test9_ztau", 50, 0., 0.04);
-   TH1F * test9_wwtw = new TH1F("test9_wwtw", "test9_wwtw", 50, 0., 0.04);
-   TH1F * test9_wjet = new TH1F("test9_wjet", "test9_wjet", 50, 0., 0.04);
-   TH1F * test9_zmum = new TH1F("test9_zmum", "test9_zmum", 50, 0., 0.04); //id3 ele
-   TH1F * test9_zele = new TH1F("test9_zele", "test9_zele", 50, 0., 0.04); //id3 ele
+   TH1F *test9_data = new TH1F("test9_data", "test9_data", 50, 0., 0.04);
+   TH1F *test9_ttba = new TH1F("test9_ttba", "test9_ttba", 50, 0., 0.04);
+   TH1F *test9_ztau = new TH1F("test9_ztau", "test9_ztau", 50, 0., 0.04);
+   TH1F *test9_wwtw = new TH1F("test9_wwtw", "test9_wwtw", 50, 0., 0.04);
+   TH1F *test9_wjet = new TH1F("test9_wjet", "test9_wjet", 50, 0., 0.04);
+   TH1F *test9_zmum = new TH1F("test9_zmum", "test9_zmum", 50, 0., 0.04); //id3 ele
+   TH1F *test9_zele = new TH1F("test9_zele", "test9_zele", 50, 0., 0.04); //id3 ele
 
-   TH1F * test10_data = new TH1F("test10_data", "test10_data", 50, 0., 10.);
-   TH1F * test10_ttba = new TH1F("test10_ttba", "test10_ttba", 50, 0., 10.);
-   TH1F * test10_ztau = new TH1F("test10_ztau", "test10_ztau", 50, 0., 10.);
-   TH1F * test10_wwtw = new TH1F("test10_wwtw", "test10_wwtw", 50, 0., 10.);
-   TH1F * test10_wjet = new TH1F("test10_wjet", "test10_wjet", 50, 0., 10.);
-   TH1F * test10_zmum = new TH1F("test10_zmum", "test10_zmum", 50, 0., 10.); //iso1 ele
-   TH1F * test10_zele = new TH1F("test10_zele", "test10_zele", 50, 0., 10.); //iso1 ele
+   TH1F *test10_data = new TH1F("test10_data", "test10_data", 50, 0., 10.);
+   TH1F *test10_ttba = new TH1F("test10_ttba", "test10_ttba", 50, 0., 10.);
+   TH1F *test10_ztau = new TH1F("test10_ztau", "test10_ztau", 50, 0., 10.);
+   TH1F *test10_wwtw = new TH1F("test10_wwtw", "test10_wwtw", 50, 0., 10.);
+   TH1F *test10_wjet = new TH1F("test10_wjet", "test10_wjet", 50, 0., 10.);
+   TH1F *test10_zmum = new TH1F("test10_zmum", "test10_zmum", 50, 0., 10.); //iso1 ele
+   TH1F *test10_zele = new TH1F("test10_zele", "test10_zele", 50, 0., 10.); //iso1 ele
 
-   TH1F * test11_data = new TH1F("test11_data", "test11_data", 50, 0., 10.);
-   TH1F * test11_ttba = new TH1F("test11_ttba", "test11_ttba", 50, 0., 10.);
-   TH1F * test11_ztau = new TH1F("test11_ztau", "test11_ztau", 50, 0., 10.);
-   TH1F * test11_wwtw = new TH1F("test11_wwtw", "test11_wwtw", 50, 0., 10.);
-   TH1F * test11_wjet = new TH1F("test11_wjet", "test11_wjet", 50, 0., 10.);
-   TH1F * test11_zmum = new TH1F("test11_zmum", "test11_zmum", 50, 0., 10.); //iso2 ele
-   TH1F * test11_zele = new TH1F("test11_zele", "test11_zele", 50, 0., 10.); //iso2 ele
+   TH1F *test11_data = new TH1F("test11_data", "test11_data", 50, 0., 10.);
+   TH1F *test11_ttba = new TH1F("test11_ttba", "test11_ttba", 50, 0., 10.);
+   TH1F *test11_ztau = new TH1F("test11_ztau", "test11_ztau", 50, 0., 10.);
+   TH1F *test11_wwtw = new TH1F("test11_wwtw", "test11_wwtw", 50, 0., 10.);
+   TH1F *test11_wjet = new TH1F("test11_wjet", "test11_wjet", 50, 0., 10.);
+   TH1F *test11_zmum = new TH1F("test11_zmum", "test11_zmum", 50, 0., 10.); //iso2 ele
+   TH1F *test11_zele = new TH1F("test11_zele", "test11_zele", 50, 0., 10.); //iso2 ele
 
-   TH1F * test12_data = new TH1F("test12_data", "test12_data", 50, 0., 20.);
-   TH1F * test12_ttba = new TH1F("test12_ttba", "test12_ttba", 50, 0., 20.);
-   TH1F * test12_ztau = new TH1F("test12_ztau", "test12_ztau", 50, 0., 20.);
-   TH1F * test12_wwtw = new TH1F("test12_wwtw", "test12_wwtw", 50, 0., 20.);
-   TH1F * test12_wjet = new TH1F("test12_wjet", "test12_wjet", 50, 0., 20.);
-   TH1F * test12_zmum = new TH1F("test12_zmum", "test12_zmum", 50, 0., 20.); //iso3 ele
-   TH1F * test12_zele = new TH1F("test12_zele", "test12_zele", 50, 0., 20.); //iso3 ele
+   TH1F *test12_data = new TH1F("test12_data", "test12_data", 50, 0., 20.);
+   TH1F *test12_ttba = new TH1F("test12_ttba", "test12_ttba", 50, 0., 20.);
+   TH1F *test12_ztau = new TH1F("test12_ztau", "test12_ztau", 50, 0., 20.);
+   TH1F *test12_wwtw = new TH1F("test12_wwtw", "test12_wwtw", 50, 0., 20.);
+   TH1F *test12_wjet = new TH1F("test12_wjet", "test12_wjet", 50, 0., 20.);
+   TH1F *test12_zmum = new TH1F("test12_zmum", "test12_zmum", 50, 0., 20.); //iso3 ele
+   TH1F *test12_zele = new TH1F("test12_zele", "test12_zele", 50, 0., 20.); //iso3 ele
 
    //
 
 //   //MUONS
 
-//  TH1F * test1_data = new TH1F("test1_data","test1_data",50,0.,0.2);
-//   TH1F * test1_ttba = new TH1F("test1_ttba","test1_ttba",50,0.,0.2);
-//   TH1F * test1_ztau = new TH1F("test1_ztau","test1_ztau",50,0.,0.2);
-//   TH1F * test1_wwtw = new TH1F("test1_wwtw","test1_wwtw",50,0.,0.2);
-//   TH1F * test1_wjet = new TH1F("test1_wjet","test1_wjet",50,0.,0.2);
-//   TH1F * test1_zmum = new TH1F("test1_zmum","test1_zmum",50,0.,0.2); // isol rel combinnée mu
-//   TH1F * test1_zele = new TH1F("test1_zele","test1_zele",50,0.,0.2); // isol rel combinnée mu
+//   TH1F *test1_data = new TH1F("test1_data", "test1_data", 50, 0., 0.2);
+//   TH1F *test1_ttba = new TH1F("test1_ttba", "test1_ttba", 50, 0., 0.2);
+//   TH1F *test1_ztau = new TH1F("test1_ztau", "test1_ztau", 50, 0., 0.2);
+//   TH1F *test1_wwtw = new TH1F("test1_wwtw", "test1_wwtw", 50, 0., 0.2);
+//   TH1F *test1_wjet = new TH1F("test1_wjet", "test1_wjet", 50, 0., 0.2);
+//   TH1F *test1_zmum = new TH1F("test1_zmum", "test1_zmum", 50, 0., 0.2); // isol rel combinnée mu
+//   TH1F *test1_zele = new TH1F("test1_zele", "test1_zele", 50, 0., 0.2); // isol rel combinnée mu
 
-//   TH1F * test2_data = new TH1F("test2_data","test2_data",50,0.,4.0);
-//   TH1F * test2_ttba = new TH1F("test2_ttba","test2_ttba",50,0.,4.0);
-//   TH1F * test2_ztau = new TH1F("test2_ztau","test2_ztau",50,0.,4.0);
-//   TH1F * test2_wwtw = new TH1F("test2_wwtw","test2_wwtw",50,0.,4.0);
-//   TH1F * test2_wjet = new TH1F("test2_wjet","test2_wjet",50,0.,4.0);
-//   TH1F * test2_zmum = new TH1F("test2_zmum","test2_zmum",50,0.,4.0); //
-//   TH1F * test2_zele = new TH1F("test2_zele","test2_zele",50,0.,4.0); // pt ele /pt mu
+//   TH1F *test2_data = new TH1F("test2_data", "test2_data", 50, 0., 4.0);
+//   TH1F *test2_ttba = new TH1F("test2_ttba", "test2_ttba", 50, 0., 4.0);
+//   TH1F *test2_ztau = new TH1F("test2_ztau", "test2_ztau", 50, 0., 4.0);
+//   TH1F *test2_wwtw = new TH1F("test2_wwtw", "test2_wwtw", 50, 0., 4.0);
+//   TH1F *test2_wjet = new TH1F("test2_wjet", "test2_wjet", 50, 0., 4.0);
+//   TH1F *test2_zmum = new TH1F("test2_zmum", "test2_zmum", 50, 0., 4.0); //
+//   TH1F *test2_zele = new TH1F("test2_zele", "test2_zele", 50, 0., 4.0); // pt ele /pt mu
 
-//   TH1F * test3_data = new TH1F("test3_data","test3_data",50,0.,4.0);
-//   TH1F * test3_ttba = new TH1F("test3_ttba","test3_ttba",50,0.,4.0);
-//   TH1F * test3_ztau = new TH1F("test3_ztau","test3_ztau",50,0.,4.0);
-//   TH1F * test3_wwtw = new TH1F("test3_wwtw","test3_wwtw",50,0.,4.0);
-//   TH1F * test3_wjet = new TH1F("test3_wjet","test3_wjet",50,0.,4.0);
-//   TH1F * test3_zmum = new TH1F("test3_zmum","test3_zmum",50,0.,4.0); //
-//   TH1F * test3_zele = new TH1F("test3_zele","test3_zele",50,0.,4.0); // pt + /pt -
+//   TH1F *test3_data = new TH1F("test3_data", "test3_data", 50, 0., 4.0);
+//   TH1F *test3_ttba = new TH1F("test3_ttba", "test3_ttba", 50, 0., 4.0);
+//   TH1F *test3_ztau = new TH1F("test3_ztau", "test3_ztau", 50, 0., 4.0);
+//   TH1F *test3_wwtw = new TH1F("test3_wwtw", "test3_wwtw", 50, 0., 4.0);
+//   TH1F *test3_wjet = new TH1F("test3_wjet", "test3_wjet", 50, 0., 4.0);
+//   TH1F *test3_zmum = new TH1F("test3_zmum", "test3_zmum", 50, 0., 4.0); //
+//   TH1F *test3_zele = new TH1F("test3_zele", "test3_zele", 50, 0., 4.0); // pt + /pt -
 
-//   TH1F * test4_data = new TH1F("test4_data","test4_data",50,0.,500.);
-//   TH1F * test4_ttba = new TH1F("test4_ttba","test4_ttba",50,0.,500.);
-//   TH1F * test4_ztau = new TH1F("test4_ztau","test4_ztau",50,0.,500.);
-//   TH1F * test4_wwtw = new TH1F("test4_wwtw","test4_wwtw",50,0.,500.);
-//   TH1F * test4_wjet = new TH1F("test4_wjet","test4_wjet",50,0.,500.);
-//   TH1F * test4_zmum = new TH1F("test4_zmum","test4_zmum",50,0.,500.); //pt
-//   TH1F * test4_zele = new TH1F("test4_zele","test4_zele",50,0.,500.); //pt
+//   TH1F *test4_data = new TH1F("test4_data", "test4_data", 50, 0., 500.);
+//   TH1F *test4_ttba = new TH1F("test4_ttba", "test4_ttba", 50, 0., 500.);
+//   TH1F *test4_ztau = new TH1F("test4_ztau", "test4_ztau", 50, 0., 500.);
+//   TH1F *test4_wwtw = new TH1F("test4_wwtw", "test4_wwtw", 50, 0., 500.);
+//   TH1F *test4_wjet = new TH1F("test4_wjet", "test4_wjet", 50, 0., 500.);
+//   TH1F *test4_zmum = new TH1F("test4_zmum", "test4_zmum", 50, 0., 500.); //pt
+//   TH1F *test4_zele = new TH1F("test4_zele", "test4_zele", 50, 0., 500.); //pt
 
-//   TH1F * test5_data = new TH1F("test5_data","test5_data",25,-2.5,2.5);
-//   TH1F * test5_ttba = new TH1F("test5_ttba","test5_ttba",25,-2.5,2.5);
-//   TH1F * test5_ztau = new TH1F("test5_ztau","test5_ztau",25,-2.5,2.5);
-//   TH1F * test5_wwtw = new TH1F("test5_wwtw","test5_wwtw",25,-2.5,2.5);
-//   TH1F * test5_wjet = new TH1F("test5_wjet","test5_wjet",25,-2.5,2.5);
-//   TH1F * test5_zmum = new TH1F("test5_zmum","test5_zmum",25,-2.5,2.5); //eta
-//   TH1F * test5_zele = new TH1F("test5_zele","test5_zele",25,-2.5,2.5); //eta
+//   TH1F *test5_data = new TH1F("test5_data", "test5_data", 25, -2.5, 2.5);
+//   TH1F *test5_ttba = new TH1F("test5_ttba", "test5_ttba", 25, -2.5, 2.5);
+//   TH1F *test5_ztau = new TH1F("test5_ztau", "test5_ztau", 25, -2.5, 2.5);
+//   TH1F *test5_wwtw = new TH1F("test5_wwtw", "test5_wwtw", 25, -2.5, 2.5);
+//   TH1F *test5_wjet = new TH1F("test5_wjet", "test5_wjet", 25, -2.5, 2.5);
+//   TH1F *test5_zmum = new TH1F("test5_zmum", "test5_zmum", 25, -2.5, 2.5); //eta
+//   TH1F *test5_zele = new TH1F("test5_zele", "test5_zele", 25, -2.5, 2.5); //eta
 
-//   TH1F * test6_data = new TH1F("test6_data","test6_data",25,-3.14,3.14);
-//   TH1F * test6_ttba = new TH1F("test6_ttba","test6_ttba",25,-3.14,3.14);
-//   TH1F * test6_ztau = new TH1F("test6_ztau","test6_ztau",25,-3.14,3.14);
-//   TH1F * test6_wwtw = new TH1F("test6_wwtw","test6_wwtw",25,-3.14,3.14);
-//   TH1F * test6_wjet = new TH1F("test6_wjet","test6_wjet",25,-3.14,3.14);
-//   TH1F * test6_zmum = new TH1F("test6_zmum","test6_zmum",25,-3.14,3.14); //phi
-//   TH1F * test6_zele = new TH1F("test6_zele","test6_zele",25,-3.14,3.14); //phi
+//   TH1F *test6_data = new TH1F("test6_data", "test6_data", 25, -3.14, 3.14);
+//   TH1F *test6_ttba = new TH1F("test6_ttba", "test6_ttba", 25, -3.14, 3.14);
+//   TH1F *test6_ztau = new TH1F("test6_ztau", "test6_ztau", 25, -3.14, 3.14);
+//   TH1F *test6_wwtw = new TH1F("test6_wwtw", "test6_wwtw", 25, -3.14, 3.14);
+//   TH1F *test6_wjet = new TH1F("test6_wjet", "test6_wjet", 25, -3.14, 3.14);
+//   TH1F *test6_zmum = new TH1F("test6_zmum", "test6_zmum", 25, -3.14, 3.14); //phi
+//   TH1F *test6_zele = new TH1F("test6_zele", "test6_zele", 25, -3.14, 3.14); //phi
 
-//   TH1F * test7_data = new TH1F("test7_data","test7_data",50,0.,10.);
-//   TH1F * test7_ttba = new TH1F("test7_ttba","test7_ttba",50,0.,10.);
-//   TH1F * test7_ztau = new TH1F("test7_ztau","test7_ztau",50,0.,10.);
-//   TH1F * test7_wwtw = new TH1F("test7_wwtw","test7_wwtw",50,0.,10.);
-//   TH1F * test7_wjet = new TH1F("test7_wjet","test7_wjet",50,0.,10.);
-//   TH1F * test7_zmum = new TH1F("test7_zmum","test7_zmum",50,0.,10.); //id1 mu
-//   TH1F * test7_zele = new TH1F("test7_zele","test7_zele",50,0.,10.); //id1 mu
+//   TH1F *test7_data = new TH1F("test7_data", "test7_data", 50, 0., 10.);
+//   TH1F *test7_ttba = new TH1F("test7_ttba", "test7_ttba", 50, 0., 10.);
+//   TH1F *test7_ztau = new TH1F("test7_ztau", "test7_ztau", 50, 0., 10.);
+//   TH1F *test7_wwtw = new TH1F("test7_wwtw", "test7_wwtw", 50, 0., 10.);
+//   TH1F *test7_wjet = new TH1F("test7_wjet", "test7_wjet", 50, 0., 10.);
+//   TH1F *test7_zmum = new TH1F("test7_zmum", "test7_zmum", 50, 0., 10.); //id1 mu
+//   TH1F *test7_zele = new TH1F("test7_zele", "test7_zele", 50, 0., 10.); //id1 mu
 
-//   TH1F * test8_data = new TH1F("test8_data","test8_data",32,0.,32);
-//   TH1F * test8_ttba = new TH1F("test8_ttba","test8_ttba",32,0.,32);
-//   TH1F * test8_ztau = new TH1F("test8_ztau","test8_ztau",32,0.,32);
-//   TH1F * test8_wwtw = new TH1F("test8_wwtw","test8_wwtw",32,0.,32);
-//   TH1F * test8_wjet = new TH1F("test8_wjet","test8_wjet",32,0.,32);
-//   TH1F * test8_zmum = new TH1F("test8_zmum","test8_zmum",32,0.,32); //id2 mu
-//   TH1F * test8_zele = new TH1F("test8_zele","test8_zele",32,0.,32); //id2 mu
+//   TH1F *test8_data = new TH1F("test8_data", "test8_data", 32, 0., 32);
+//   TH1F *test8_ttba = new TH1F("test8_ttba", "test8_ttba", 32, 0., 32);
+//   TH1F *test8_ztau = new TH1F("test8_ztau", "test8_ztau", 32, 0., 32);
+//   TH1F *test8_wwtw = new TH1F("test8_wwtw", "test8_wwtw", 32, 0., 32);
+//   TH1F *test8_wjet = new TH1F("test8_wjet", "test8_wjet", 32, 0., 32);
+//   TH1F *test8_zmum = new TH1F("test8_zmum", "test8_zmum", 32, 0., 32); //id2 mu
+//   TH1F *test8_zele = new TH1F("test8_zele", "test8_zele", 32, 0., 32); //id2 mu
 
-//   TH1F * test9_data = new TH1F("test9_data","test9_data",52,0.,52.);
-//   TH1F * test9_ttba = new TH1F("test9_ttba","test9_ttba",52,0.,52.);
-//   TH1F * test9_ztau = new TH1F("test9_ztau","test9_ztau",52,0.,52.);
-//   TH1F * test9_wwtw = new TH1F("test9_wwtw","test9_wwtw",52,0.,52.);
-//   TH1F * test9_wjet = new TH1F("test9_wjet","test9_wjet",52,0.,52.);
-//   TH1F * test9_zmum = new TH1F("test9_zmum","test9_zmum",52,0.,52.); //id3 mu
-//   TH1F * test9_zele = new TH1F("test9_zele","test9_zele",52,0.,52.); //id3 mu
+//   TH1F *test9_data = new TH1F("test9_data", "test9_data", 52, 0., 52.);
+//   TH1F *test9_ttba = new TH1F("test9_ttba", "test9_ttba", 52, 0., 52.);
+//   TH1F *test9_ztau = new TH1F("test9_ztau", "test9_ztau", 52, 0., 52.);
+//   TH1F *test9_wwtw = new TH1F("test9_wwtw", "test9_wwtw", 52, 0., 52.);
+//   TH1F *test9_wjet = new TH1F("test9_wjet", "test9_wjet", 52, 0., 52.);
+//   TH1F *test9_zmum = new TH1F("test9_zmum", "test9_zmum", 52, 0., 52.); //id3 mu
+//   TH1F *test9_zele = new TH1F("test9_zele", "test9_zele", 52, 0., 52.); //id3 mu
 
-//   TH1F * test10_data = new TH1F("test10_data","test10_data",50,0.,10.);
-//   TH1F * test10_ttba = new TH1F("test10_ttba","test10_ttba",50,0.,10.);
-//   TH1F * test10_ztau = new TH1F("test10_ztau","test10_ztau",50,0.,10.);
-//   TH1F * test10_wwtw = new TH1F("test10_wwtw","test10_wwtw",50,0.,10.);
-//   TH1F * test10_wjet = new TH1F("test10_wjet","test10_wjet",50,0.,10.);
-//   TH1F * test10_zmum = new TH1F("test10_zmum","test10_zmum",50,0.,10.); //iso1 mu
-//   TH1F * test10_zele = new TH1F("test10_zele","test10_zele",50,0.,10.); //iso1 mu
+//   TH1F *test10_data = new TH1F("test10_data", "test10_data", 50, 0., 10.);
+//   TH1F *test10_ttba = new TH1F("test10_ttba", "test10_ttba", 50, 0., 10.);
+//   TH1F *test10_ztau = new TH1F("test10_ztau", "test10_ztau", 50, 0., 10.);
+//   TH1F *test10_wwtw = new TH1F("test10_wwtw", "test10_wwtw", 50, 0., 10.);
+//   TH1F *test10_wjet = new TH1F("test10_wjet", "test10_wjet", 50, 0., 10.);
+//   TH1F *test10_zmum = new TH1F("test10_zmum", "test10_zmum", 50, 0., 10.); //iso1 mu
+//   TH1F *test10_zele = new TH1F("test10_zele", "test10_zele", 50, 0., 10.); //iso1 mu
 
-//   TH1F * test11_data = new TH1F("test11_data","test11_data",50,0.,10.);
-//   TH1F * test11_ttba = new TH1F("test11_ttba","test11_ttba",50,0.,10.);
-//   TH1F * test11_ztau = new TH1F("test11_ztau","test11_ztau",50,0.,10.);
-//   TH1F * test11_wwtw = new TH1F("test11_wwtw","test11_wwtw",50,0.,10.);
-//   TH1F * test11_wjet = new TH1F("test11_wjet","test11_wjet",50,0.,10.);
-//   TH1F * test11_zmum = new TH1F("test11_zmum","test11_zmum",50,0.,10.); //iso2 mu
-//   TH1F * test11_zele = new TH1F("test11_zele","test11_zele",50,0.,10.); //iso2 mu
+//   TH1F *test11_data = new TH1F("test11_data", "test11_data", 50, 0., 10.);
+//   TH1F *test11_ttba = new TH1F("test11_ttba", "test11_ttba", 50, 0., 10.);
+//   TH1F *test11_ztau = new TH1F("test11_ztau", "test11_ztau", 50, 0., 10.);
+//   TH1F *test11_wwtw = new TH1F("test11_wwtw", "test11_wwtw", 50, 0., 10.);
+//   TH1F *test11_wjet = new TH1F("test11_wjet", "test11_wjet", 50, 0., 10.);
+//   TH1F *test11_zmum = new TH1F("test11_zmum", "test11_zmum", 50, 0., 10.); //iso2 mu
+//   TH1F *test11_zele = new TH1F("test11_zele", "test11_zele", 50, 0., 10.); //iso2 mu
 
-//   TH1F * test12_data = new TH1F("test12_data","test12_data",50,0.,20.);
-//   TH1F * test12_ttba = new TH1F("test12_ttba","test12_ttba",50,0.,20.);
-//   TH1F * test12_ztau = new TH1F("test12_ztau","test12_ztau",50,0.,20.);
-//   TH1F * test12_wwtw = new TH1F("test12_wwtw","test12_wwtw",50,0.,20.);
-//   TH1F * test12_wjet = new TH1F("test12_wjet","test12_wjet",50,0.,20.);
-//   TH1F * test12_zmum = new TH1F("test12_zmum","test12_zmum",50,0.,20.); //iso3 mu
-//   TH1F * test12_zele = new TH1F("test12_zele","test12_zele",50,0.,20.); //iso3 mu
+//   TH1F *test12_data = new TH1F("test12_data", "test12_data", 50, 0., 20.);
+//   TH1F *test12_ttba = new TH1F("test12_ttba", "test12_ttba", 50, 0., 20.);
+//   TH1F *test12_ztau = new TH1F("test12_ztau", "test12_ztau", 50, 0., 20.);
+//   TH1F *test12_wwtw = new TH1F("test12_wwtw", "test12_wwtw", 50, 0., 20.);
+//   TH1F *test12_wjet = new TH1F("test12_wjet", "test12_wjet", 50, 0., 20.);
+//   TH1F *test12_zmum = new TH1F("test12_zmum", "test12_zmum", 50, 0., 20.); //iso3 mu
+//   TH1F *test12_zele = new TH1F("test12_zele", "test12_zele", 50, 0., 20.); //iso3 mu
 
    //
    //DECLARE HISTOS FOR THE SAMPLES
    for (int i = 0; i < nbFile; ++i) {
 
       //EE
-      //emu_mass.push_back(new TH1F("emu_mass","emu_mass",200,0.,1000.));
+      //emu_mass.push_back(new TH1F("emu_mass", "emu_mass", 200, 0., 1000.));
       emu_mass.push_back(new TH1F("emu_mass", "emu_mass", 100, 0., 1000.));
       emu_mass_passHEEP.push_back(new TH1F("emu_mass_passHEEP", "emu_mass_passHEEP", 100, 0., 1000.));
       emu_mass_accVSgood.push_back(new TH1F("emu_mass_accVSgood", "emu_mass_accVSgood", 100, 0., 1000.));
 
-//     emu_plus_plus.push_back(new TH1F("emu_plus_plus","emu_plus_plus",100,0.,1000.));
-//     emu_plus_minus.push_back(new TH1F("emu_plus_minus","emu_plus_minus",100,0.,1000.));
-//     emu_minus_plus.push_back(new TH1F("emu_minus_plus","emu_minus_plus",100,0.,1000.));
-//     emu_minus_minus.push_back(new TH1F("emu_minus_minus","emu_minus_minus",100,0.,1000.));
+//     emu_plus_plus.push_back(new TH1F("emu_plus_plus", "emu_plus_plus", 100, 0., 1000.));
+//     emu_plus_minus.push_back(new TH1F("emu_plus_minus", "emu_plus_minus", 100, 0., 1000.));
+//     emu_minus_plus.push_back(new TH1F("emu_minus_plus", "emu_minus_plus", 100, 0., 1000.));
+//     emu_minus_minus.push_back(new TH1F("emu_minus_minus", "emu_minus_minus", 100, 0., 1000.));
       emu_LS.push_back(new TH1F("emu_LS", "emu_LS", 100, 0., 1000.));
       emu_OS.push_back(new TH1F("emu_OS", "emu_OS", 100, 0., 1000.));
 
       //ele
-      //test1.push_back(new TH1F("test1","test1",50,0.,400.));
+      //test1.push_back(new TH1F("test1", "test1", 50, 0., 400.));
       test1.push_back(new TH1F("test1", "test1", nPVtxMax, 0., nPVtxMax));
       test2.push_back(new TH1F("test2", "test2", nPVtxMax, 0, nPVtxMax));
       test3.push_back(new TH1F("test3", "test3", 50, 0., 3.14));
@@ -489,67 +488,24 @@ void emuSpectrum()
       test12.push_back(new TH1F("test12", "test12", 50, 0., 20.));
 
       // //muons
-      // test1.push_back(new TH1F("test1","test1",50,0.,0.2));
-//     test2.push_back(new TH1F("test2","test2",50,0.,4.));
-//     test3.push_back(new TH1F("test3","test3",50,0.,4.));
+      // test1.push_back(new TH1F("test1", "test1", 50, 0., 0.2));
+//     test2.push_back(new TH1F("test2", "test2", 50, 0., 4.));
+//     test3.push_back(new TH1F("test3", "test3", 50, 0., 4.));
 
-//     test4.push_back(new TH1F("test4","test4",50,0.,500.));
-//     test5.push_back(new TH1F("test5","test5",25,-2.5,2.5 ));
-//     test6.push_back(new TH1F("test6","test6",25,-3.14,3.14 ));
+//     test4.push_back(new TH1F("test4", "test4", 50, 0., 500.));
+//     test5.push_back(new TH1F("test5", "test5", 25, -2.5, 2.5 ));
+//     test6.push_back(new TH1F("test6", "test6", 25, -3.14, 3.14 ));
 
-//     test7.push_back(new TH1F("test7","test7",50,0.,10. ));
-//     test8.push_back(new TH1F("test8","test8",32,0.,32. ));
-//     test9.push_back(new TH1F("test9","test9",52,0.,52. ));
-//     test10.push_back(new TH1F("test10","test10",50,0.,10. ));
-//     test11.push_back(new TH1F("test11","test11",50,0.,10. ));
-//     test12.push_back(new TH1F("test12","test12",50,0.,20. ));
+//     test7.push_back(new TH1F("test7", "test7", 50, 0., 10.));
+//     test8.push_back(new TH1F("test8", "test8", 32, 0., 32.));
+//     test9.push_back(new TH1F("test9", "test9", 52, 0., 52.));
+//     test10.push_back(new TH1F("test10", "test10", 50, 0., 10.));
+//     test11.push_back(new TH1F("test11", "test11", 50, 0., 10.));
+//     test12.push_back(new TH1F("test12", "test12", 50, 0., 20.));
 
    }
 
    TH1F* emu_total = new TH1F("emu_total", "emu_total", 100, 0., 1000.);
-
-   //ERRORS
-   for (int p = 0; p < nbFile; p++) {
-      (emu_mass[p])->Sumw2();
-      (emu_mass_passHEEP[p])->Sumw2();
-      (emu_mass_accVSgood[p])->Sumw2();
-
-//     (emu_plus_plus[p])->Sumw2();
-//     (emu_plus_minus[p])->Sumw2();
-//     (emu_minus_plus[p])->Sumw2();
-//     (emu_minus_minus[p])->Sumw2();
-      (emu_LS[p])->Sumw2();
-      (emu_OS[p])->Sumw2();
-
-      (test1[p])->Sumw2();
-      (test2[p])->Sumw2();
-      (test3[p])->Sumw2();
-      (test4[p])->Sumw2();
-      (test5[p])->Sumw2();
-      (test6[p])->Sumw2();
-      (test7[p])->Sumw2();
-      (test8[p])->Sumw2();
-      (test9[p])->Sumw2();
-      (test10[p])->Sumw2();
-      (test11[p])->Sumw2();
-      (test12[p])->Sumw2();
-
-   }
-   emu_total->Sumw2();
-
-   emu_data->Sumw2();
-   emu_dilepton->Sumw2();
-   emu_ewk->Sumw2();
-   emu_jet->Sumw2();
-
-   emu_ttbar->Sumw2();
-   emu_ztautau->Sumw2();
-   emu_ww->Sumw2();
-   emu_tw->Sumw2();
-   emu_wjet->Sumw2();
-   emu_zee->Sumw2();
-   emu_zmumu->Sumw2();
-   emu_qcd->Sumw2();
 
    //
    // GETTING FILES
@@ -956,7 +912,7 @@ void emuSpectrum()
       Long64_t nentries = (*thetree).GetEntries();
 
       //LOOP OVER EVENTS
-      for (unsigned int i = 0; i < nentries; i++) {
+      for (unsigned int i = 0; i < nentries; ++i) {
          thetree->GetEntry(i);
 
          if (p == 0 && c_HLT_Mu15_Photon20_CaloIdL == 0) continue; //ASK MuPhoton trigger bit
@@ -976,8 +932,8 @@ void emuSpectrum()
 
          //PRIMARY VTX COUNTING
          //int n_pvValid = 1;
-         int n_pvValid = 0;
-         for (int j = 0; j < c_pvsize; j++) {
+         unsigned int n_pvValid = 0;
+         for (int j = 0; j < c_pvsize; ++j) {
             if (c_pv_ndof[j] > 3 && c_pv_nTracks[j] > 3.)
                n_pvValid++;
          }
@@ -987,7 +943,7 @@ void emuSpectrum()
          //FILL THE VTX WEIGTH
          float npv_weight = 1.;
 
-         for (int v = 0; v < nPVtxMax; v++) {//LOOP OVER NPV
+         for (unsigned int v = 0; v < nPVtxMax; ++v) {//LOOP OVER NPV
             if (p == 1 && n_pvValid == v) npv_weight = PVX_ScalingFactor_ttba[v]; //ttbar
             //if (p==2 && n_pvValid == v) npv_weight = PVX_ScalingFactor_ztau[v]; //ztau
          }
@@ -1259,26 +1215,26 @@ void emuSpectrum()
 
             if (p == 0 && invMass > 500.) cout << "HEEP-TightMU event in DATA (M>500) : run number = " << c_runnumber << " , event number = " << c_eventnumber << " , mass = " << invMass <<
                " , muon_pt = " << c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_eta = " << c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_phi = " << c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_trackIso03 = " << c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_emIso03 = " << c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_hadIso03 = " << c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_VETOtrackIso03 = " << c_muon_trackIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_VETOemIso03 = " << c_muon_emIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_VETOhadIso03 = " << c_muon_hadIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_normChi2 = " << c_muon_normChi2[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_dxy_beamSpot = " << c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_nhitstrack = " << c_muon_nhitstrack[MU_passGOOD[MU_leadingPassGOOD]] <<
-               " , muon_nhitsmuons = " << c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]] <<
-               "                                                          " <<
+           //    " , muon_eta = " << c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_phi = " << c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_trackIso03 = " << c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_emIso03 = " << c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_hadIso03 = " << c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_VETOtrackIso03 = " << c_muon_trackIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_VETOemIso03 = " << c_muon_emIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_VETOhadIso03 = " << c_muon_hadIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_normChi2 = " << c_muon_normChi2[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_dxy_beamSpot = " << c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_nhitstrack = " << c_muon_nhitstrack[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    " , muon_nhitsmuons = " << c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]] <<
+           //    "                                                          " <<
                " , gsf_et = " << c_gsf_gsfet[GSF_passHEEP[0]] <<
-               " , gsf_eta = " << c_gsf_eta[GSF_passHEEP[0]] <<
-               " , gsf_phi = " << c_gsf_phi[GSF_passHEEP[0]] <<
-               " , gsf_trackIso = " << c_gsf_trackiso[GSF_passHEEP[0]] <<
-               " , gsf_ecalIso = " << c_gsf_ecaliso[GSF_passHEEP[0]] <<
-               " , gsf_hcalIso1 = " << c_gsf_hcaliso1[GSF_passHEEP[0]] <<
-               " , gsf_hcalIso2 = " << c_gsf_hcaliso2[GSF_passHEEP[0]] <<
+           //    " , gsf_eta = " << c_gsf_eta[GSF_passHEEP[0]] <<
+           //    " , gsf_phi = " << c_gsf_phi[GSF_passHEEP[0]] <<
+           //    " , gsf_trackIso = " << c_gsf_trackiso[GSF_passHEEP[0]] <<
+           //    " , gsf_ecalIso = " << c_gsf_ecaliso[GSF_passHEEP[0]] <<
+           //    " , gsf_hcalIso1 = " << c_gsf_hcaliso1[GSF_passHEEP[0]] <<
+           //    " , gsf_hcalIso2 = " << c_gsf_hcaliso2[GSF_passHEEP[0]] <<
                endl;
 
          }
@@ -1591,6 +1547,7 @@ void emuSpectrum()
    emu_ttbar->Add((emu_mass[1]));
    emu_ztautau->Add((emu_mass[2]));
    emu_ww->Add((emu_mass[3]));
+   emu_wz->Add((emu_mass[4]));
    emu_tw->Add((emu_mass[5]));
    emu_wjet->Add((emu_mass[6]));
    emu_zmumu->Add((emu_mass[7]));
@@ -1601,6 +1558,8 @@ void emuSpectrum()
    OS_ttbar->Add((emu_OS[1]));
    OS_ztautau->Add((emu_OS[2]));
    OS_ww->Add((emu_OS[3]));
+   OS_wz->Add((emu_OS[4]));
+   OS_tw->Add((emu_OS[5]));
    OS_wjet->Add((emu_OS[6]));
    OS_zmum->Add((emu_OS[7]));
    OS_zele->Add((emu_OS[8]));
@@ -1610,6 +1569,8 @@ void emuSpectrum()
    LS_ttbar->Add((emu_LS[1]));
    LS_ztautau->Add((emu_LS[2]));
    LS_ww->Add((emu_LS[3]));
+   LS_wz->Add((emu_LS[4]));
+   LS_tw->Add((emu_LS[5]));
    LS_wjet->Add((emu_LS[6]));
    LS_zmum->Add((emu_LS[7]));
    LS_zele->Add((emu_LS[8]));
@@ -1729,10 +1690,11 @@ void emuSpectrum()
    emu_ttbar->Write();
    emu_ztautau->Write();
    emu_ww->Write();
+   emu_wz->Write();
    emu_tw->Write();
    emu_wjet->Write();
-   emu_zee->Write();
    emu_zmumu->Write();
+   emu_zee->Write();
    emu_qcd->Write();
 
    emu_total->Write();
@@ -1741,6 +1703,8 @@ void emuSpectrum()
    OS_ttbar->Write();
    OS_ztautau->Write();
    OS_ww->Write();
+   OS_wz->Write();
+   OS_tw->Write();
    OS_wjet->Write();
    OS_zmum->Write();
    OS_zele->Write();
@@ -1749,6 +1713,8 @@ void emuSpectrum()
    LS_ttbar->Write();
    LS_ztautau->Write();
    LS_ww->Write();
+   LS_wz->Write();
+   LS_tw->Write();
    LS_wjet->Write();
    LS_zmum->Write();
    LS_zele->Write();
