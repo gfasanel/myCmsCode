@@ -97,32 +97,48 @@ void emuSpectrum()
    //input.push_back(new TFile("/user_mnt/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/total_MuEG-160404-163869-ReReco10May-GoldenJSON-27May-191pb_+_MuEG-165088-166861-PromptV4-GoldenJSON-17Jun-511pb__702pb.root","open"));
 
    //MC
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_TT_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim25_RUN2/res/total_tree.root", "open"));
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_TT_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim25_RUN2/res/total_tree.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN1/res/total_missing1And13.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WW_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN2/res/total_tree.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WZ_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WW_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN2/res/total_tree.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WZ_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/T_plus_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_total_tree.root","open")); 
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WJetsToLNu_TuneZ2_7TeV-madgraph-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WJetsToLNu_TuneZ2_7TeV-madgraph-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToMuMu_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v1-AODSIM_TreeEMuSkim35_S3V11v1_RUN2/res/total_tree.root","open"));
    input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToEE_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN4/res/total_tree.root","open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root","open"));
 
    int nbFile = input.size();
 
    //WEIGHTS FOR 1pb-1
    weight.push_back(1.);                                  //DATA        0 black
 
-   weight.push_back(0.000149593);                         //TTbar       1 red         (1089625 event - xsect NNLO 163pb) -- 21 JUIN 2011
+   //weight.push_back(0.000149593);                         //TTbar       1 red         (1089625 event - xsect NNLO 163pb) -- 21 JUIN 2011
+   weight.push_back(0.000044031);                         //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
    weight.push_back(0.000936761);                         //Ztautau     2 green       (2032536 event * 14/16 - xsect 1666pb)
-   weight.push_back(0.000010175);                         //WW          3 dark blue   (4225916 event - xsect NNLO 43.pb (note muons) ) -- 28 JUIL 2011
-   weight.push_back(0.000004220);                         //WZ          4 yellow      (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
+   //weight.push_back(0.000010175);                         //WW          3 dark blue   (4225916 event - xsect NNLO 43.pb (note muons) ) -- 28 JUIL 2011
+   weight.push_back(0.000020727);                         //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 17.10.2011
+   //weight.push_back(0.000004220);                         //WZ          4 yellow      (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
+   weight.push_back(0.000002901);                         //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
    weight.push_back(0.000009664);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 13 OCT 2011
-   weight.push_back(0.00063259);                          //W+jet       6 dark green  (49501047 event - xsect NNLO 31314pb) -- 23 JUIN 2011
-   weight.push_back(0.00078075);                          //Zmumu       7 light blue (2133856 event  - xsect NNLO 1666pb ) -- 14 OCT 2011) 
+   //weight.push_back(0.00063259);                          //W+jet       6 dark green  (49501047 event - xsect NNLO 31314pb) -- 23 JUIN 2011
+   weight.push_back(0.000384917);                         //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
+   weight.push_back(0.00078075);                          //Zmumu       7 light blue  (2133856 event  - xsect NNLO 1666pb ) -- 14 OCT 2011) 
    weight.push_back(0.00073630*(26./25.));                //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 13 OCT 2011 
-   //ZZ = 2108608 events
+   //weight.push_back(0.000000164);                         //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011 
 
-   //MUONS
+   //MUON SELECTION
    float muon_et = 35.;
+   float muon_etaMax = 2.4;
+   int muon_nHitsMinGlobal = 11;
+   int muon_nHitsMinPixel = 1;
+   int muon_nHitsMinMuon = 1;
+   float muon_impactParamMax = 0.2;   // in cm
+   int muon_nSegMatchMin = 2;
+   float muon_relIsoCutMax = 0.1;
 
    //HEEP CUTS
 
@@ -133,11 +149,10 @@ void emuSpectrum()
    float bar_DPhi = 0.09;
    float bar_e2x5e5x5 = 0.94;
    float bar_e1x5e5x5 = 0.83;
-   float bar_sigmaietaieta = 1000.;
    float bar_isoEcalHcal1_1 = 2.;
    float bar_isoEcalHcal1_2 = 0.03;
-   float bar_isoHcal2 = 1000.;
    float bar_isoTrack = 7.5;
+   int bar_missInnerHits = 0;
 
    //ENDCAP
    float end_et = 40.;
@@ -151,6 +166,7 @@ void emuSpectrum()
    float end_isoEcalHcal1_2 = 0.03;
    float end_isoHcal2 = 0.5;
    float end_isoTrack = 15.;
+   int end_missInnerHits = 0;
 
    int nb_plus_plus = 0;
    int nb_plus_minus = 0;
@@ -213,6 +229,7 @@ void emuSpectrum()
    TH1F *emu_wjet = new TH1F("emu_wjet", "emu_wjet", 100, 0., 1000.);
    TH1F *emu_zmumu = new TH1F("emu_zmumu", "emu_zmumu", 100, 0., 1000.);
    TH1F *emu_zee = new TH1F("emu_zee", "emu_zee", 100, 0., 1000.);
+   //TH1F *emu_zz = new TH1F("emu_zz", "emu_zz", 100, 0., 1000.);
    TH1F *emu_qcd = new TH1F("emu_qcd", "emu_qcd", 100, 0., 1000.);
 
    //LS
@@ -225,6 +242,7 @@ void emuSpectrum()
    TH1F *OS_wjet = new TH1F("OS_wjet", "OS_wjet", 100, 0., 1000.);
    TH1F *OS_zmum = new TH1F("OS_zmum", "OS_zmum", 100, 0., 1000.);
    TH1F *OS_zele = new TH1F("OS_zele", "OS_zele", 100, 0., 1000.);
+   //TH1F *OS_zz = new TH1F("OS_zz", "OS_zz", 100, 0., 1000.);
 
    TH1F *LS_data = new TH1F("LS_data", "LS_data", 100, 0., 1000.);
    TH1F *LS_ttbar = new TH1F("LS_ttbar", "LS_ttbar", 100, 0., 1000.);
@@ -235,6 +253,7 @@ void emuSpectrum()
    TH1F *LS_wjet = new TH1F("LS_wjet", "LS_wjet", 100, 0., 1000.);
    TH1F *LS_zmum = new TH1F("LS_zmum", "LS_zmum", 100, 0., 1000.);
    TH1F *LS_zele = new TH1F("LS_zele", "LS_zele", 100, 0., 1000.);
+   //TH1F *LS_zz = new TH1F("LS_zz", "LS_zz", 100, 0., 1000.);
 
    TH1F *emuloose_data_nvalidpv = new TH1F("emuloose_data_nvalidpv", "emuloose_data_nvalidpv", nPVtxMax, 0., nPVtxMax);
    TH1F *emuloose_ttba_nvalidpv = new TH1F("emuloose_ttba_nvalidpv", "emuloose_ttba_nvalidpv", nPVtxMax, 0., nPVtxMax);
@@ -244,7 +263,6 @@ void emuSpectrum()
    TH1F *emuloose_dataoverztau_nvalidpv = new TH1F("emuloose_dataoverztau_nvalidpv", "emuloose_dataoverztau_nvalidpv", nPVtxMax, 0., nPVtxMax);
 
    TH1F *test = new TH1F("test", "test", nPVtxMax, 0., nPVtxMax);
-
 
    //
    //ELES
@@ -509,7 +527,7 @@ void emuSpectrum()
 
    //
    // GETTING FILES
-   for (int p = 0; p < nbFile; p++) {
+   for (int p = 0; p < nbFile; ++p) {
 
       cout << "accessing file nr " << p + 1 << endl;
 
@@ -566,12 +584,11 @@ void emuSpectrum()
       float c_gsf_eta[20];
       float c_gsf_theta[20];
       float c_gsf_phi[20];
-      float c_gsf_isecaldriven[20]; //!!!
-      float c_gsf_istrackerdriven[20]; //!!!
+      float c_gsf_isecaldriven[20];
+      float c_gsf_istrackerdriven[20];
       int c_gsf_isEB[20];
       int c_gsf_isEE[20];
       int c_gsf_charge[20];
-      //float c_gsf_charge[20];
       float c_gsf_deltaeta[20];
       float c_gsf_deltaphi[20];
       float c_gsf_e1x5overe5x5[20];
@@ -582,6 +599,7 @@ void emuSpectrum()
       float c_gsf_eOVERp[20];
       float c_gsf_vz[20];
       int c_gsf_nHits[20];
+      int c_gsf_nLostInnerHits[20];
       float c_gsf_fBrem[20];
       float c_gsf_ecaliso[20];
       float c_gsf_hcaliso1[20];
@@ -710,6 +728,7 @@ void emuSpectrum()
       TBranch        *b_gsf_eOVERp;
       TBranch        *b_gsf_vz;
       TBranch        *b_gsf_nHits;
+      TBranch        *b_gsf_nLostInnerHits;
       TBranch        *b_gsf_fBrem;
       TBranch        *b_gsf_ecaliso;
       TBranch        *b_gsf_hcaliso1;
@@ -839,6 +858,7 @@ void emuSpectrum()
       thetree->SetBranchAddress("gsf_eOVERp", &c_gsf_eOVERp, &b_gsf_eOVERp);
       thetree->SetBranchAddress("gsf_vz", &c_gsf_vz, &b_gsf_vz);
       thetree->SetBranchAddress("gsf_nHits", &c_gsf_nHits, &b_gsf_nHits);
+      thetree->SetBranchAddress("gsf_nLostInnerHits", &c_gsf_nLostInnerHits, &b_gsf_nLostInnerHits);
       thetree->SetBranchAddress("gsf_fBrem", &c_gsf_fBrem, &b_gsf_fBrem);
       thetree->SetBranchAddress("gsf_ecaliso", &c_gsf_ecaliso, &b_gsf_ecaliso);
       thetree->SetBranchAddress("gsf_hcaliso1", &c_gsf_hcaliso1, &b_gsf_hcaliso1);
@@ -917,9 +937,7 @@ void emuSpectrum()
 
          if (p == 0 && c_HLT_Mu15_Photon20_CaloIdL == 0) continue; //ASK MuPhoton trigger bit
 
-         vector<int> GSF_passIsHEEP;
          vector<int> GSF_passHEEP;
-
          vector<int> GSF_passACC;
 
          vector<int> MU_passGOOD;
@@ -947,30 +965,6 @@ void emuSpectrum()
             if (p == 1 && n_pvValid == v) npv_weight = PVX_ScalingFactor_ttba[v]; //ttbar
             //if (p==2 && n_pvValid == v) npv_weight = PVX_ScalingFactor_ztau[v]; //ztau
          }
-
-         // //PRIM VTX AVERAGE
-//       if (p==0){
-//    if (140160 <= c_runnumber && c_runnumber <= 144114){
-//      sumNPV[0] = sumNPV[0] + n_pvValid;
-//      sumNEvt[0]++;
-//    }
-//    if (146426 <= c_runnumber && c_runnumber <= 147119){
-//      sumNPV[1] = sumNPV[1] + n_pvValid;
-//      sumNEvt[1]++;
-//    }
-//    if (147196 <= c_runnumber && c_runnumber <= 148058){
-//      sumNPV[2] = sumNPV[2] + n_pvValid;
-//      sumNEvt[2]++;
-//    }
-//    if (148822 <= c_runnumber && c_runnumber <= 149064){
-//      sumNPV[3] = sumNPV[3] + n_pvValid;
-//      sumNEvt[3]++;
-//    }
-//    if (149065 <= c_runnumber){
-//      sumNPV[4] = sumNPV[4] + n_pvValid;
-//      sumNEvt[4]++;
-//    }
-//       }
 
          //FOR VTX MC PONDERATION
 
@@ -1026,13 +1020,6 @@ void emuSpectrum()
             }
             if (fakeEle) continue;
 
-            //PASS HEEP ELES
-            if (c_gsfpass_HEEP[j]
-                && (fabs(c_gsfsc_eta[j]) < 1.442 || fabs(c_gsfsc_eta[j]) > 1.56)
-                && (fabs(c_gsfsc_eta[j]) > 1.56 || c_gsf_SwissCross[j] < 0.95)
-               ) GSF_passIsHEEP.push_back(j);
-
-
             //BARREL HEEP
             if (fabs(c_gsfsc_eta[j]) < 1.442
                 && c_gsf_gsfet[j] > bar_et
@@ -1041,16 +1028,12 @@ void emuSpectrum()
                 && fabs(c_gsf_deltaeta[j]) < bar_DEta
                 && fabs(c_gsf_deltaphi[j]) < bar_DPhi
                 && (c_gsf_e2x5overe5x5[j] > bar_e2x5e5x5 || c_gsf_e1x5overe5x5[j] > bar_e1x5e5x5)
-                && c_gsf_sigmaIetaIeta[j] < bar_sigmaietaieta
                 && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * c_gsf_gsfet[j])
-                && c_gsf_hcaliso2[j] < bar_isoHcal2
                 && c_gsf_trackiso[j] < bar_isoTrack
-                && (c_gsf_SwissCross[j] < 0.95) // REMOVE ECAL SPIKES WITH SWISS CROSS
                ) GSF_passHEEP.push_back(j);
 
             //ENDCAP HEEP
             if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)
-
                 && c_gsf_gsfet[j] > end_et
                 && fabs(c_gsf_isecaldriven[j] - 1.) < 0.01 //!!!
                 && c_gsf_hovere[j] < end_hoE
@@ -1060,7 +1043,7 @@ void emuSpectrum()
                 && c_gsf_sigmaIetaIeta[j] < end_sigmaietaieta
                 && ((c_gsf_gsfet[j] < 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < end_isoEcalHcal1_1)
                     ||
-                    (c_gsf_gsfet[j] > 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (c_gsf_gsfet[j] - 50.))))
+                    (c_gsf_gsfet[j] >= 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (c_gsf_gsfet[j] - 50.))))
                 && c_gsf_hcaliso2[j] < end_isoHcal2
                 && c_gsf_trackiso[j] < end_isoTrack
                ) GSF_passHEEP.push_back(j);
@@ -1074,28 +1057,18 @@ void emuSpectrum()
          }
 
          //LOOP OVER MUS
-         for (int j = 0; j < c_muon_size; j++) {
-
-            float DistXY_FirstHit_BeamSpot = sqrt((c_muon_innerPosx[j] - c_bsposx) * (c_muon_innerPosx[j] - c_bsposx)
-                                                  + (c_muon_innerPosy[j] - c_bsposy) * (c_muon_innerPosy[j] - c_bsposy));
-            float DistZ_FirstHit_BeamSpot = sqrt((c_muon_innerPosz[j] - c_bsposz) * (c_muon_innerPosz[j] - c_bsposz));
+         for (int j = 0; j < c_muon_size; ++j) {
 
             //MU PASS GOOD
             if (c_muon_pt[j] > muon_et
-                && fabs(c_muon_eta[j]) < 2.1
-                && c_muon_normChi2[j] < 10.
-                && c_muon_nhitstrack[j] > 10.
-                && (p != 0 || c_muon_nhitspixel[j] > 0.) //info missing in MC!!!
-                && c_muon_nhitsmuons[j] > 0.
-                && c_muon_dxy_beamSpot[j] < 0.2
-                && (p != 0 || c_muon_nSegmentMatch[j] > 1) //info missing in MC!!!
-                && (p != 0 || c_muon_isTrackerMuon[j]) //info missing in MC!!!
-                //ISOL
-                // && c_muon_trackIso03[j] < 2.
-                // && c_muon_emIso03[j] < 2.
-                // && c_muon_hadIso03[j] < 2.
-                && (c_muon_trackIso03[j] + c_muon_emIso03[j] + c_muon_hadIso03[j]) / c_muon_pt[j] < 0.15
-                //&& c_muon_trackIso03[j]/ c_muon_pt[j] < 0.10
+                && fabs(c_muon_eta[j]) < muon_etaMax
+                && c_muon_nhitstrack[j] >= muon_nHitsMinGlobal
+                && c_muon_nhitspixel[j] >= muon_nHitsMinPixel
+                && c_muon_nhitsmuons[j] >= muon_nHitsMinMuon
+                && c_muon_dxy_beamSpot[j] < muon_impactParamMax
+                && c_muon_nSegmentMatch[j] >= muon_nSegMatchMin
+                && c_muon_isTrackerMuon[j]
+                && c_muon_trackIso03[j]/ c_muon_pt[j] < muon_relIsoCutMax
                ) MU_passGOOD.push_back(j);
 
             //MU PASS ACC
@@ -1475,65 +1448,64 @@ void emuSpectrum()
 //     }
 //   }
 
-   //emu_total->Add(emu_mass[1]);
    emu_total->Add(emu_mass[0]);
 
-   //E-E SPECTRUM
-   TCanvas *c0 = new TCanvas("c0", "c0", 100, 100, 1200, 725);
-
-   gStyle->SetOptStat(1111);
-
-   c0->cd(1); //
-
-   for (int p = 0; p < nbFile; p++) {
-
-      (emu_mass[p])->SetFillColor(p + 1);
-
-      if (p == 1) emu_mass[p]->Draw("HIST");
-      if (p > 1) emu_mass[p]->Draw("HISTsames");
-
-   }
-
-   (emu_mass[0])->SetFillColor(0);
-   (emu_mass[0])->SetLineWidth(2);
-   (emu_mass[0])->Draw("sames");
-   //(emu_mass[0])->Draw();
-
-   //----
-
-   //E-E SPECTRUM PASS HEEP
-   TCanvas *c1 = new TCanvas("c1", "c1", 100, 100, 1200, 725);
-
-   gStyle->SetOptStat(0000000000);
-   //gStyle->SetOptStat(1111);
-
-   c1->cd(1); //
-
-   for (int p = 0; p < nbFile; p++) {
-
-      (emu_mass_accVSgood[p])->SetFillColor(p + 1);
-
-      if (p == 1) {
-         (emu_mass_accVSgood[p])->GetXaxis()->SetTitle("M_{e #mu}");
-         (emu_mass_accVSgood[p])->Draw("HIST");
-      }
-      if (p > 1)(emu_mass_accVSgood[p])->Draw("HISTsames");
-
-   }
-
-   (emu_mass_accVSgood[0])->SetFillColor(0);
-   (emu_mass_accVSgood[0])->SetLineWidth(2);
-   (emu_mass_accVSgood[0])->Draw("sames");
-   //(emu_mass_passHEEP[0])->Draw();
-
-   TPaveLabel label0(0.300, 0.89, 0.740, 0.99, "7 TeV, #int L dt = 6.965 pb^{-1}", "brNDC");
-   label0.SetFillColor(0);
-   label0.SetFillStyle(0);
-   label0.SetBorderSize(0);
-   label0.SetTextSize(0.40);
-   label0.Draw();
-
-   //-------------------------------------
+//   //E-E SPECTRUM
+//   TCanvas *c0 = new TCanvas("c0", "c0", 100, 100, 1200, 725);
+//
+//   gStyle->SetOptStat(1111);
+//
+//   c0->cd(1); //
+//
+//   for (int p = 0; p < nbFile; p++) {
+//
+//      (emu_mass[p])->SetFillColor(p + 1);
+//
+//      if (p == 1) emu_mass[p]->Draw("HIST");
+//      if (p > 1) emu_mass[p]->Draw("HISTsames");
+//
+//   }
+//
+//   (emu_mass[0])->SetFillColor(0);
+//   (emu_mass[0])->SetLineWidth(2);
+//   (emu_mass[0])->Draw("sames");
+//   //(emu_mass[0])->Draw();
+//
+//   //----
+//
+//   //E-E SPECTRUM PASS HEEP
+//   TCanvas *c1 = new TCanvas("c1", "c1", 100, 100, 1200, 725);
+//
+//   gStyle->SetOptStat(0000000000);
+//   //gStyle->SetOptStat(1111);
+//
+//   c1->cd(1); //
+//
+//   for (int p = 0; p < nbFile; p++) {
+//
+//      (emu_mass_accVSgood[p])->SetFillColor(p + 1);
+//
+//      if (p == 1) {
+//         (emu_mass_accVSgood[p])->GetXaxis()->SetTitle("M_{e #mu}");
+//         (emu_mass_accVSgood[p])->Draw("HIST");
+//      }
+//      if (p > 1)(emu_mass_accVSgood[p])->Draw("HISTsames");
+//
+//   }
+//
+//   (emu_mass_accVSgood[0])->SetFillColor(0);
+//   (emu_mass_accVSgood[0])->SetLineWidth(2);
+//   (emu_mass_accVSgood[0])->Draw("sames");
+//   //(emu_mass_passHEEP[0])->Draw();
+//
+//   TPaveLabel label0(0.300, 0.89, 0.740, 0.99, "7 TeV, #int L dt = 6.965 pb^{-1}", "brNDC");
+//   label0.SetFillColor(0);
+//   label0.SetFillStyle(0);
+//   label0.SetBorderSize(0);
+//   label0.SetTextSize(0.40);
+//   label0.Draw();
+//
+//   //-------------------------------------
 
    //c0->Print("emu_mass.eps");
 
@@ -1552,6 +1524,7 @@ void emuSpectrum()
    emu_wjet->Add((emu_mass[6]));
    emu_zmumu->Add((emu_mass[7]));
    emu_zee->Add((emu_mass[8]));
+   //emu_zz->Add((emu_mass[9]));
 
    //LS
    OS_data->Add((emu_OS[0]));
@@ -1563,6 +1536,7 @@ void emuSpectrum()
    OS_wjet->Add((emu_OS[6]));
    OS_zmum->Add((emu_OS[7]));
    OS_zele->Add((emu_OS[8]));
+   //OS_zz->Add((emu_OS[9]));
 
    //LS
    LS_data->Add((emu_LS[0]));
@@ -1574,6 +1548,7 @@ void emuSpectrum()
    LS_wjet->Add((emu_LS[6]));
    LS_zmum->Add((emu_LS[7]));
    LS_zele->Add((emu_LS[8]));
+   //LS_zz->Add((emu_LS[9]));
 
    //tests
 
@@ -1695,6 +1670,7 @@ void emuSpectrum()
    emu_wjet->Write();
    emu_zmumu->Write();
    emu_zee->Write();
+   //emu_zz->Write();
    emu_qcd->Write();
 
    emu_total->Write();
@@ -1708,6 +1684,7 @@ void emuSpectrum()
    OS_wjet->Write();
    OS_zmum->Write();
    OS_zele->Write();
+   //OS_zz->Write();
 
    LS_data->Write();
    LS_ttbar->Write();
@@ -1718,6 +1695,7 @@ void emuSpectrum()
    LS_wjet->Write();
    LS_zmum->Write();
    LS_zele->Write();
+   //LS_zz->Write();
 
    emuloose_data_nvalidpv->Write();
    emuloose_ttba_nvalidpv->Write();
@@ -1826,44 +1804,44 @@ void emuSpectrum()
 
    output.Close();
 
-   //LIKE SIGN
-   TCanvas *c2 = new TCanvas("c2", "c2", 100, 100, 1200, 725);
-
-   gStyle->SetOptStat(1111);
-
-   c2->cd(1);
-
-   for (int p = 0; p < nbFile; p++) {
-
-      (emu_LS[p])->SetFillColor(p + 1);
-
-      if (p == 1)(emu_LS[p])->Draw("HIST");
-      if (p > 1)(emu_LS[p])->Draw("HISTsames");
-
-   }
-
-   (emu_LS[0])->SetFillColor(0);
-   (emu_LS[0])->SetLineWidth(2);
-   (emu_LS[0])->Draw("sames");
-
-
-   TCanvas *c3 = new TCanvas("c3", "c3", 100, 100, 1200, 725);
-
-   gStyle->SetOptStat(1111);
-
-   c3->cd(1);
-
-   for (int p = 0; p < nbFile; p++) {
-
-      (emu_OS[p])->SetFillColor(p + 1);
-
-      if (p == 1)(emu_OS[p])->Draw("HIST");
-      if (p > 1)(emu_OS[p])->Draw("HISTsames");
-
-   }
-
-   (emu_OS[0])->SetFillColor(0);
-   (emu_OS[0])->SetLineWidth(2);
-   (emu_OS[0])->Draw("sames");
-
+//   //LIKE SIGN
+//   TCanvas *c2 = new TCanvas("c2", "c2", 100, 100, 1200, 725);
+//
+//   gStyle->SetOptStat(1111);
+//
+//   c2->cd(1);
+//
+//   for (int p = 0; p < nbFile; p++) {
+//
+//      (emu_LS[p])->SetFillColor(p + 1);
+//
+//      if (p == 1)(emu_LS[p])->Draw("HIST");
+//      if (p > 1)(emu_LS[p])->Draw("HISTsames");
+//
+//   }
+//
+//   (emu_LS[0])->SetFillColor(0);
+//   (emu_LS[0])->SetLineWidth(2);
+//   (emu_LS[0])->Draw("sames");
+//
+//
+//   TCanvas *c3 = new TCanvas("c3", "c3", 100, 100, 1200, 725);
+//
+//   gStyle->SetOptStat(1111);
+//
+//   c3->cd(1);
+//
+//   for (int p = 0; p < nbFile; p++) {
+//
+//      (emu_OS[p])->SetFillColor(p + 1);
+//
+//      if (p == 1)(emu_OS[p])->Draw("HIST");
+//      if (p > 1)(emu_OS[p])->Draw("HISTsames");
+//
+//   }
+//
+//   (emu_OS[0])->SetFillColor(0);
+//   (emu_OS[0])->SetLineWidth(2);
+//   (emu_OS[0])->Draw("sames");
+//
 }
