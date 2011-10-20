@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <algorithm>
 
@@ -56,19 +57,14 @@ void emuSpectrum()
    float Elec_ScaleFactor = 1.008 * 0.978;
    float Muon_ScaleFactor = 0.985;
    float Lumi_ScaleFactor = 1.0;
-   float QCD_ScaleFactor = 1.10;  // 2*(LS_data - LS_mc)/totMC
 
-   bool bool_accessPUFile = true;
-   //bool bool_accessPUFile=false;
+   bool calcQCDScaleFactor = false;
+   float QCD_ScaleFactor = 1.10; // overwritten if calcQCDScaleFactor == true
 
-   // input file with primary vertex information
-   TString pvFile = "EMu_3534pb-1_veto35GeV_PVXinfo.root";
-   //TString pvFile = "EMu_3190pb-1_veto35GeV_PVXinfo.root";
-   //TString pvFile = "EMu_2179pb-1_veto35GeV_PVXinfo.root";
-   //TString pvFile = "EMu_1932pb-1_veto35GeV_PVXinfo.root";
-   //TString pvFile = "EMu_702pb-1_veto35GeV_PVXinfo.root";
+   bool usePUInfo = false;
+   bool generatePUFile = false;
 
-   // selection cuts 2011 ////////////////////////////////////////////////////
+   // selection cuts /////////////////////////////////////////////////////////
    float minInvMass = 60.;
 
    //MUON selection
@@ -113,32 +109,6 @@ void emuSpectrum()
 
    float MCemuScaleFactor = Elec_trigger * Elec_ScaleFactor * Muon_ScaleFactor * Lumi_ScaleFactor; 
 
-   //
-   //ACCESSING PILE-UP FILE
-   vector<float> PVX_ScalingFactor_ttba;
-   vector<float> PVX_ScalingFactor_ztau;
-   if (bool_accessPUFile == false) {
-      for (unsigned int i = 0 ; i < nPVtxMax ; i++) {
-         PVX_ScalingFactor_ttba.push_back(1.);
-         PVX_ScalingFactor_ztau.push_back(1.);
-      }
-   }
-   if (bool_accessPUFile) {
-      TFile *inputPV = new TFile(pvFile, "open");
-      inputPV->cd();
-
-      TH1F *copy_emuloose_dataoverttba_nvalidpv;
-      TH1F *copy_emuloose_dataoverztau_nvalidpv;
-
-      copy_emuloose_dataoverttba_nvalidpv = (TH1F*)inputPV->Get("emuloose_dataoverttba_nvalidpv");
-      copy_emuloose_dataoverztau_nvalidpv = (TH1F*)inputPV->Get("emuloose_dataoverztau_nvalidpv");
-
-      for (unsigned int i = 0 ; i < nPVtxMax ; i++) {
-         PVX_ScalingFactor_ttba.push_back(copy_emuloose_dataoverttba_nvalidpv->GetBinContent(i + 1) * nPVtxMax);
-         PVX_ScalingFactor_ztau.push_back(copy_emuloose_dataoverztau_nvalidpv->GetBinContent(i + 1) * nPVtxMax);
-      }
-   }
-
    ///////////////////////////////////////////////////////////////////////////
    // INPUT FILES
    vector<TFile *> input;
@@ -150,7 +120,8 @@ void emuSpectrum()
    // MC
    //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_TT_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim25_RUN2/res/total_tree.root", "open"));
    input.push_back(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN1/res/total_missing1And13.root", "open"));
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN1/res/total_missing1And13.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
    //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WW_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN2/res/total_tree.root", "open"));
    input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
    //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WZ_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
@@ -169,7 +140,8 @@ void emuSpectrum()
 
    //weight.push_back(0.000149593);                         //TTbar       1 red         (1089625 event - xsect NNLO 163pb) -- 21 JUIN 2011
    weight.push_back(0.000044031);                         //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
-   weight.push_back(0.000936761);                         //Ztautau     2 green       (2032536 event * 14/16 - xsect 1666pb)
+   //weight.push_back(0.000936761);                         //Ztautau     2 green       (2032536 event * 14/16 - xsect 1666pb)
+   weight.push_back(0.000821491);                         //Ztautau     2 green       (2028020 event  - xsect 1666pb)
    //weight.push_back(0.000010175);                         //WW          3 dark blue   (4225916 event - xsect NNLO 43.pb (note muons) ) -- 28 JUIL 2011
    weight.push_back(0.000020727);                         //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 17.10.2011
    //weight.push_back(0.000004220);                         //WZ          4 yellow      (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
@@ -182,6 +154,7 @@ void emuSpectrum()
    //weight.push_back(0.000000164);                         //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011 
    ///////////////////////////////////////////////////////////////////////////
 
+   // strings for histogram names
    vector<TString> suffix;
    suffix.push_back("data");
    suffix.push_back("ttbar");
@@ -194,36 +167,22 @@ void emuSpectrum()
    suffix.push_back("zee");
    //suffix.push_back("zz");
 
+   // counting variables
    int nb_plus_plus = 0;
    int nb_plus_minus = 0;
    int nb_minus_plus = 0;
    int nb_minus_minus = 0;
 
-//   float sumNPV[5];
-//   float sumNEvt[5];
-//
-//   sumNPV[0] = 0;
-//   sumNPV[1] = 0;
-//   sumNPV[2] = 0;
-//   sumNPV[3] = 0;
-//   sumNPV[4] = 0;
-//   sumNEvt[0] = 0;
-//   sumNEvt[1] = 0;
-//   sumNEvt[2] = 0;
-//   sumNEvt[3] = 0;
-//   sumNEvt[4] = 0;
-
-   //
+   // histogram containers
+   vector<TH1F *> emuMass;
+   vector<TH1F *> emuMass_LS;
+   vector<TH1F *> emuMass_OS;
    vector<TH1F *> emu_mass_accVSgood;
 
    //vector<TH1F *> emu_plus_plus;
    //vector<TH1F *> emu_plus_minus;
    //vector<TH1F *> emu_minus_plus;
    //vector<TH1F *> emu_minus_minus;
-
-   vector<TH1F *> emuMass;
-   vector<TH1F *> emuMass_LS;
-   vector<TH1F *> emuMass_OS;
 
    vector<TH1F *> eleMET;
    vector<TH1F *> eleNVtx;
@@ -256,26 +215,418 @@ void emuSpectrum()
    TH1F *emu_ewk = new TH1F("emu_ewk", "emu_ewk", 100, 0., 1000.);
    TH1F *emu_jet = new TH1F("emu_jet", "emu_jet", 100, 0., 1000.);
 
-   TH1F *emuloose_data_nvalidpv = new TH1F("emuloose_data_nvalidpv", "emuloose_data_nvalidpv", nPVtxMax, 0., nPVtxMax);
-   TH1F *emuloose_ttba_nvalidpv = new TH1F("emuloose_ttba_nvalidpv", "emuloose_ttba_nvalidpv", nPVtxMax, 0., nPVtxMax);
-   TH1F *emuloose_ztau_nvalidpv = new TH1F("emuloose_ztau_nvalidpv", "emuloose_ztau_nvalidpv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuLoose_data_nValidPv = new TH1F("emuLoose_data_nValidPv", "emuLoose_data_nValidPv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuLoose_ttbar_nValidPv = new TH1F("emuLoose_ttbar_nValidPv", "emuLoose_ttbar_nValidPv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuLoose_ztautau_nValidPv = new TH1F("emuLoose_ztautau_nValidPv", "emuLoose_ztautau_nValidPv", nPVtxMax, 0., nPVtxMax);
 
-   TH1F *emuloose_dataoverttba_nvalidpv = new TH1F("emuloose_dataoverttba_nvalidpv", "emuloose_dataoverttba_nvalidpv", nPVtxMax, 0., nPVtxMax);
-   TH1F *emuloose_dataoverztau_nvalidpv = new TH1F("emuloose_dataoverztau_nvalidpv", "emuloose_dataoverztau_nvalidpv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuLoose_dataOverTtbar_nValidPv = new TH1F("emuLoose_dataOverTtbar_nValidPv", "emuLoose_dataOverTtbar_nValidPv", nPVtxMax, 0., nPVtxMax);
+   TH1F *emuLoose_dataOverZtautau_nValidPv = new TH1F("emuLoose_dataOverZtautau_nValidPv", "emuLoose_dataOverZtautau_nValidPv", nPVtxMax, 0., nPVtxMax);
 
-   //
-   //DECLARE HISTOS FOR THE SAMPLES
-   for (int i = 0; i < nbFile; ++i) {
-      //EE
-      emu_mass_accVSgood.push_back(new TH1F("emu_mass_accVSgood", "emu_mass_accVSgood", 100, 0., 1000.));
+   //RUN ID
+   int c_runnumber;
+   int c_eventnumber;
 
-//     emu_plus_plus.push_back(new TH1F("emu_plus_plus", "emu_plus_plus", 100, 0., 1000.));
-//     emu_plus_minus.push_back(new TH1F("emu_plus_minus", "emu_plus_minus", 100, 0., 1000.));
-//     emu_minus_plus.push_back(new TH1F("emu_minus_plus", "emu_minus_plus", 100, 0., 1000.));
-//     emu_minus_minus.push_back(new TH1F("emu_minus_minus", "emu_minus_minus", 100, 0., 1000.));
+   //TRIGGER
+   int c_HLT_Mu15_Photon20_CaloIdL;
+
+   //GLOBAL
+   //int c_nJetsAKT_pt15;
+   //int c_nJetsIC5_pt15;
+   float c_calomet;
+   float c_met;
+   //float c_mass;
+   float c_pthat;
+   float c_bsposx;
+   float c_bsposy;
+   float c_bsposz;
+
+   //JETS IC5
+   //int c_jetIC5_size;
+   //float c_jetIC5_pt[100];
+   //float c_jetIC5_eta[100];
+   //float c_jetIC5_phi[100];
+   //float c_jetIC5_em[100];
+
+   //PRIM VTX
+   int c_pvsize;
+   bool c_pv_isValid[20];
+   float c_pv_ndof[20];
+   int c_pv_nTracks[20];
+   float c_pv_normChi2[20];
+   int c_pv_totTrackSize[20];
+
+   //GSF
+   int c_gsf_size;
+   float c_gsf_gsfet[20];
+   float c_gsf_px[20];
+   float c_gsf_py[20];
+   float c_gsf_pz[20];
+   float c_gsf_pt[20];
+   float c_gsf_eta[20];
+   float c_gsf_theta[20];
+   float c_gsf_phi[20];
+   float c_gsf_isecaldriven[20];
+   float c_gsf_istrackerdriven[20];
+   int c_gsf_isEB[20];
+   int c_gsf_isEE[20];
+   int c_gsf_charge[20];
+   float c_gsf_deltaeta[20];
+   float c_gsf_deltaphi[20];
+   float c_gsf_e1x5overe5x5[20];
+   float c_gsf_e2x5overe5x5[20];
+   float c_gsf_sigmaetaeta[20];
+   float c_gsf_sigmaIetaIeta[20];
+   float c_gsf_hovere[20];
+   float c_gsf_eOVERp[20];
+   float c_gsf_vz[20];
+   int c_gsf_nHits[20];
+   int c_gsf_nLostInnerHits[20];
+   float c_gsf_fBrem[20];
+   float c_gsf_ecaliso[20];
+   float c_gsf_hcaliso1[20];
+   float c_gsf_hcaliso2[20];
+   float c_gsf_trackiso[20];
+   float c_gsf_SwissCross[20];
+
+   float c_gsfsc_px[20];
+   float c_gsfsc_py[20];
+   float c_gsfsc_pt[20];
+   float c_gsfsc_eta[20];
+   float c_gsfsc_phi[20];
+
+   bool c_gsfpass_ID[20];
+   bool c_gsfpass_ISO[20];
+   bool c_gsfpass_HEEP[20];
+
+   //MUONS
+   int c_muon_size;
+   float c_muon_pt[20];
+   float c_muon_eta[20];
+   float c_muon_phi[20];
+   float c_muon_theta[20];
+   float c_muon_ptError[20];
+   float c_muon_etaError[20];
+   float c_muon_phiError[20];
+   float c_muon_thetaError[20];
+   float c_muon_outerPt[20];
+   float c_muon_outerEta[20];
+   float c_muon_outerPhi[20];
+   float c_muon_outerTheta[20];
+   float c_muon_px[20];
+   float c_muon_py[20];
+   float c_muon_pz[20];
+   int c_muon_charge[20];
+   int c_muon_nhitstrack[20];
+   int c_muon_nhitspixel[20];
+   int c_muon_nhitstotal[20];
+   int c_muon_nhitsmuons[20];
+   int c_muon_nSegmentMatch[20];
+   bool c_muon_isTrackerMuon[20];
+   float c_muon_chi2[20];
+   int c_muon_ndof[20];
+   float c_muon_normChi2[20];
+   float c_muon_d0[20];
+   float c_muon_d0Error[20];
+   float c_muon_dzError[20];
+   float c_muon_dxyError[20];
+   float c_muon_dz_cmsCenter[20];
+   float c_muon_dz_beamSpot[20];
+   float c_muon_dz_firstPVtx[20];
+   float c_muon_dxy_cmsCenter[20];
+   float c_muon_dxy_beamSpot[20];
+   float c_muon_dxy_firstPVtx[20];
+   float c_muon_trackIso03[20];
+   float c_muon_trackIso05[20];
+   float c_muon_emIso03[20];
+   float c_muon_emIso05[20];
+   float c_muon_hadIso03[20];
+   float c_muon_hadIso05[20];
+   float c_muon_trackIso03_ptInVeto[20];
+   float c_muon_trackIso05_ptInVeto[20];
+   float c_muon_emIso03_ptInVeto[20];
+   float c_muon_emIso05_ptInVeto[20];
+   float c_muon_hadIso03_ptInVeto[20];
+   float c_muon_hadIso05_ptInVeto[20];
+   float c_muon_innerPosx[20];
+   float c_muon_innerPosy[20];
+   float c_muon_innerPosz[20];
+
+   //RUN ID
+   TBranch        *b_runnumber;
+   TBranch        *b_eventnumber;
+
+   //TRIGGER
+   TBranch        *b_HLT_Mu15_Photon20_CaloIdL;
+
+   //GLOBAL
+   //TBranch        *b_nJetsAKT_pt15;
+   //TBranch        *b_nJetsIC5_pt15;
+   TBranch        *b_calomet;
+   TBranch        *b_met;
+   //TBranch        *b_mass;
+   TBranch        *b_pthat;
+   TBranch        *b_bsposx;
+   TBranch        *b_bsposy;
+   TBranch        *b_bsposz;
+
+   //JETS IC5
+   //TBranch        *b_jetIC5_size;
+   //TBranch        *b_jetIC5_pt;
+   //TBranch        *b_jetIC5_eta;
+   //TBranch        *b_jetIC5_phi;
+   //TBranch        *b_jetIC5_em;
+
+   //PRIM VTX
+   TBranch        *b_pvsize;
+   TBranch        *b_pv_isValid;
+   TBranch        *b_pv_ndof;
+   TBranch        *b_pv_nTracks;
+   TBranch        *b_pv_normChi2;
+   TBranch        *b_pv_totTrackSize;
+
+   //GSF
+   TBranch        *b_gsf_size;
+   TBranch        *b_gsf_gsfet;
+   TBranch        *b_gsf_px;
+   TBranch        *b_gsf_py;
+   TBranch        *b_gsf_pz;
+   TBranch        *b_gsf_pt;
+   TBranch        *b_gsf_eta;
+   TBranch        *b_gsf_theta;
+   TBranch        *b_gsf_phi;
+   TBranch        *b_gsf_isecaldriven;
+   TBranch        *b_gsf_istrackerdriven;
+   TBranch        *b_gsf_isEB;
+   TBranch        *b_gsf_isEE;
+   TBranch        *b_gsf_charge;
+   TBranch        *b_gsf_deltaeta;
+   TBranch        *b_gsf_deltaphi;
+   TBranch        *b_gsf_e1x5overe5x5;
+   TBranch        *b_gsf_e2x5overe5x5;
+   TBranch        *b_gsf_sigmaetaeta;
+   TBranch        *b_gsf_sigmaIetaIeta;
+   TBranch        *b_gsf_hovere;
+   TBranch        *b_gsf_eOVERp;
+   TBranch        *b_gsf_vz;
+   TBranch        *b_gsf_nHits;
+   TBranch        *b_gsf_nLostInnerHits;
+   TBranch        *b_gsf_fBrem;
+   TBranch        *b_gsf_ecaliso;
+   TBranch        *b_gsf_hcaliso1;
+   TBranch        *b_gsf_hcaliso2;
+   TBranch        *b_gsf_trackiso;
+   TBranch        *b_gsf_SwissCross;
+
+   TBranch        *b_gsfsc_px;
+   TBranch        *b_gsfsc_py;
+   TBranch        *b_gsfsc_pt;
+   TBranch        *b_gsfsc_eta;
+   TBranch        *b_gsfsc_phi;
+
+   TBranch        *b_gsfpass_ID;
+   TBranch        *b_gsfpass_ISO;
+   TBranch        *b_gsfpass_HEEP;
+
+   //MUONS
+   TBranch        *b_muon_size;
+   TBranch        *b_muon_pt;
+   TBranch        *b_muon_eta;
+   TBranch        *b_muon_phi;
+   TBranch        *b_muon_theta;
+   TBranch        *b_muon_ptError;
+   TBranch        *b_muon_etaError;
+   TBranch        *b_muon_phiError;
+   TBranch        *b_muon_thetaError;
+   TBranch        *b_muon_outerPt;
+   TBranch        *b_muon_outerEta;
+   TBranch        *b_muon_outerPhi;
+   TBranch        *b_muon_outerTheta;
+   TBranch        *b_muon_px;
+   TBranch        *b_muon_py;
+   TBranch        *b_muon_pz;
+   TBranch        *b_muon_charge;
+   TBranch        *b_muon_nhitstrack;
+   TBranch        *b_muon_nhitspixel;
+   TBranch        *b_muon_nhitstotal;
+   TBranch        *b_muon_nhitsmuons;
+   TBranch        *b_muon_nSegmentMatch;
+   TBranch        *b_muon_isTrackerMuon;
+   TBranch        *b_muon_chi2;
+   TBranch        *b_muon_ndof;
+   TBranch        *b_muon_normChi2;
+   TBranch        *b_muon_d0;
+   TBranch        *b_muon_dz_cmsCenter;
+   TBranch        *b_muon_dz_beamSpot;
+   TBranch        *b_muon_dz_firstPVtx;
+   TBranch        *b_muon_dxy_cmsCenter;
+   TBranch        *b_muon_dxy_beamSpot;
+   TBranch        *b_muon_dxy_firstPVtx;
+   TBranch        *b_muon_d0Error;
+   TBranch        *b_muon_dzError;
+   TBranch        *b_muon_dxyError;
+   TBranch        *b_muon_trackIso03;
+   TBranch        *b_muon_trackIso05;
+   TBranch        *b_muon_emIso03;
+   TBranch        *b_muon_emIso05;
+   TBranch        *b_muon_hadIso03;
+   TBranch        *b_muon_hadIso05;
+   TBranch        *b_muon_trackIso03_ptInVeto;
+   TBranch        *b_muon_trackIso05_ptInVeto;
+   TBranch        *b_muon_emIso03_ptInVeto;
+   TBranch        *b_muon_emIso05_ptInVeto;
+   TBranch        *b_muon_hadIso03_ptInVeto;
+   TBranch        *b_muon_hadIso05_ptInVeto;
+   TBranch        *b_muon_innerPosx;
+   TBranch        *b_muon_innerPosy;
+   TBranch        *b_muon_innerPosz;
+
+   // primary vertex information /////////////////////////////////////////////
+   vector<float> PVX_ScalingFactor_ttbar;
+   vector<float> PVX_ScalingFactor_ztautau;
+   if (usePUInfo) {
+      stringstream ssPUInfile;
+      ssPUInfile << "emu_PUinfo_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
+      // test if the PU file exists already. If yes -> use it; if no -> create it and fill it
+      ifstream iFile(ssPUInfile.str().c_str());
+      if (iFile) {
+         iFile.close();
+         TFile *inputPV = new TFile(ssPUInfile.str().c_str(), "open");
+         inputPV->cd();
+
+         TH1F *copy_emuLoose_dataOverTtbar_nValidPv;
+         TH1F *copy_emuLoose_dataOverZtautau_nValidPv;
+
+         copy_emuLoose_dataOverTtbar_nValidPv = (TH1F*)inputPV->Get("emuLoose_dataOverTtbar_nValidPv");
+         copy_emuLoose_dataOverZtautau_nValidPv = (TH1F*)inputPV->Get("emuLoose_dataOverZtautau_nValidPv");
+
+         for (unsigned int i = 0 ; i < nPVtxMax ; ++i) {
+            PVX_ScalingFactor_ttbar.push_back(copy_emuLoose_dataOverTtbar_nValidPv->GetBinContent(i + 1) * nPVtxMax);
+            PVX_ScalingFactor_ztautau.push_back(copy_emuLoose_dataOverZtautau_nValidPv->GetBinContent(i + 1) * nPVtxMax);
+         }
+         cout << "Pile up information from file: " << ssPUInfile.str() << endl;
+      } else {
+         cout << "Not file with pile up information for this parameter set found. Will create it." << endl;
+         generatePUFile = true;
+      }
+   } else {
+      PVX_ScalingFactor_ttbar.clear();
+      PVX_ScalingFactor_ztautau.clear();
+      for (unsigned int i = 0 ; i < nPVtxMax ; ++i) {
+         PVX_ScalingFactor_ttbar.push_back(1.);
+         PVX_ScalingFactor_ztautau.push_back(1.);
+      }
    }
+   if (usePUInfo && generatePUFile) {
+      // 1st loop to get VERTEX information
+      //for (int p = 0; p < nbFile; ++p) {
+      for (int p = 0; p <= ZTT; ++p) { // only data, ttbar and ztautau
+         cout << "accessing file " << p + 1 << " for PU information: " << input[p]->GetName() << endl;
+         input[p]->cd();
 
-   //
+         // Get the TREE and connect the necessary variables
+         TTree *thetree;
+         thetree = (TTree*)(input[p])->Get("gsfcheckerjob/tree");
+
+         //HLT TRIGGER BITS
+         thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
+         //PRIM VTX
+         thetree->SetBranchAddress("pvsize", &c_pvsize, &b_pvsize);
+         thetree->SetBranchAddress("pv_ndof", &c_pv_ndof, &b_pv_ndof);
+         thetree->SetBranchAddress("pv_nTracks", &c_pv_nTracks, &b_pv_nTracks);
+         //GSF
+         thetree->SetBranchAddress("gsf_size", &c_gsf_size, &b_gsf_size);
+         thetree->SetBranchAddress("gsf_gsfet", &c_gsf_gsfet, &b_gsf_gsfet);
+         thetree->SetBranchAddress("gsfsc_eta", &c_gsfsc_eta, &b_gsfsc_eta);
+         //MUONS
+         thetree->SetBranchAddress("muon_size", &c_muon_size, &b_muon_size);
+         thetree->SetBranchAddress("muon_pt", &c_muon_pt, &b_muon_pt);
+
+         Long64_t nentries = (*thetree).GetEntries();
+         cout << nentries << " events" << endl;
+         //LOOP OVER EVENTS
+         for (unsigned int i = 0; i < nentries; ++i) {
+            if (i % 50000 == 0) cout << i << endl;
+            thetree->GetEntry(i);
+
+            if (p == DATA && c_HLT_Mu15_Photon20_CaloIdL == 0) continue; // ask MuPhoton trigger bit
+
+            //PRIMARY VTX COUNTING
+            unsigned int n_pvValid = 0;
+            for (int j = 0; j < c_pvsize; ++j) {
+               if (c_pv_ndof[j] > 3 && c_pv_nTracks[j] > 3)
+                  n_pvValid++;
+            }
+            if (p == DATA && n_pvValid < 1) continue;
+            if ((p == TTBAR || p == ZTT) && n_pvValid < 1) continue; //ttbar
+
+            //CREATE VTX PONDERATION PLOT
+            float gsfPtMaxB = 0.;
+            float gsfPtMaxE = 0.;
+            int gsfECAL = 0;
+            float muPtMax = 0.;
+            //LOOP OVER ELES
+            for (int j = 0; j < c_gsf_size; ++j) {
+               if ((fabs(c_gsfsc_eta[j]) < 1.442)  //BARREL
+                   &&
+                   c_gsf_gsfet[j] > gsfPtMaxB) {
+                  gsfPtMaxB = c_gsf_gsfet[j];
+                  gsfECAL = 1;
+               }
+               if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)  //ENDCAP
+                   &&
+                   c_gsf_gsfet[j] > gsfPtMaxE) {
+                  gsfPtMaxE = c_gsf_gsfet[j];
+                  gsfECAL = -1;
+               }
+            }
+            //LOOP OVER MUS
+            for (int j = 0; j < c_muon_size; ++j)
+               if (c_muon_pt[j] > muPtMax) muPtMax = c_muon_pt[j];
+
+            if (((gsfECAL == 1 && gsfPtMaxB > bar_et)  //BARREL
+                 ||
+                 (gsfECAL == -1 && gsfPtMaxE > end_et)) //ENDCAP
+                && muPtMax > muon_et) {
+               if (p == DATA) emuLoose_data_nValidPv->Fill(n_pvValid);
+               else if (p == TTBAR) emuLoose_ttbar_nValidPv->Fill(n_pvValid);
+               else if (p == ZTT) emuLoose_ztautau_nValidPv->Fill(n_pvValid);
+            }
+         } // end loop over events
+      } // end 1st loop over files
+
+      emuLoose_dataOverTtbar_nValidPv->Divide(emuLoose_data_nValidPv, emuLoose_ttbar_nValidPv);
+      emuLoose_dataOverTtbar_nValidPv->Scale(1. / emuLoose_dataOverTtbar_nValidPv->Integral());
+
+      TH1F * ttbarScaled = new TH1F("ttbarScaled", "ttbarScaled", nPVtxMax, 0., nPVtxMax);
+      ttbarScaled->Multiply(emuLoose_ttbar_nValidPv, emuLoose_dataOverTtbar_nValidPv);
+      double ttbarEvents =  emuLoose_ttbar_nValidPv->Integral();
+      double scaledTtbarEvents =  ttbarScaled->Integral();
+
+      cout << "PU normalization factor for ttbar: " << ttbarEvents / scaledTtbarEvents / nPVtxMax << endl;
+
+      emuLoose_dataOverTtbar_nValidPv->Scale(ttbarEvents / scaledTtbarEvents / nPVtxMax);
+
+      if (generatePUFile) {
+         stringstream ssPUOutfile;
+         ssPUOutfile << "emu_PUinfo_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
+         TFile *outputPV = new TFile(ssPUOutfile.str().c_str(), "recreate");
+         outputPV->cd();
+
+         emuLoose_data_nValidPv->Write();
+         emuLoose_ttbar_nValidPv->Write();
+         emuLoose_ztautau_nValidPv->Write();
+         emuLoose_dataOverTtbar_nValidPv->Write();
+         emuLoose_dataOverZtautau_nValidPv->Write();
+      }
+
+      for (unsigned int i = 0 ; i < nPVtxMax ; ++i) {
+         PVX_ScalingFactor_ttbar.push_back(emuLoose_dataOverTtbar_nValidPv->GetBinContent(i + 1) * nPVtxMax);
+         PVX_ScalingFactor_ztautau.push_back(emuLoose_dataOverZtautau_nValidPv->GetBinContent(i + 1) * nPVtxMax);
+      }
+   }
+   ///////////////////////////////////////////////////////////////////////////
+
+   // 2nd loop for analysis 
    // GETTING FILES
    for (int p = 0; p < nbFile; ++p) {
       cout << "accessing file " << p + 1 << ": " << input[p]->GetName() << endl;
@@ -286,287 +637,29 @@ void emuSpectrum()
       thetree = (TTree*)(input[p])->Get("gsfcheckerjob/tree");
 
       //RUN ID
-      int c_runnumber;
-      int c_eventnumber;
-
-      int c_HLT_Mu15_Photon20_CaloIdL;
-
-      //GLOBAL
-      int c_nJetsAKT_pt15;
-      int c_nJetsIC5_pt15;
-      float c_calomet;
-      float c_met;
-      float c_mass;
-      float c_pthat;
-      float c_bsposx;
-      float c_bsposy;
-      float c_bsposz;
-
-      //JETS IC5
-      int c_jetIC5_size;
-      float c_jetIC5_pt[100];
-      float c_jetIC5_eta[100];
-      float c_jetIC5_phi[100];
-      float c_jetIC5_em[100];
-
-      //PRIM VTX
-      int c_pvsize;
-      bool c_pv_isValid[20];
-      float c_pv_ndof[20];
-      int c_pv_nTracks[20];
-      float c_pv_normChi2[20];
-      int c_pv_totTrackSize[20];
-
-      //GSF
-      int c_gsf_size;
-      float c_gsf_gsfet[20];
-      float c_gsf_px[20];
-      float c_gsf_py[20];
-      float c_gsf_pz[20];
-      float c_gsf_pt[20];
-      float c_gsf_eta[20];
-      float c_gsf_theta[20];
-      float c_gsf_phi[20];
-      float c_gsf_isecaldriven[20];
-      float c_gsf_istrackerdriven[20];
-      int c_gsf_isEB[20];
-      int c_gsf_isEE[20];
-      int c_gsf_charge[20];
-      float c_gsf_deltaeta[20];
-      float c_gsf_deltaphi[20];
-      float c_gsf_e1x5overe5x5[20];
-      float c_gsf_e2x5overe5x5[20];
-      float c_gsf_sigmaetaeta[20];
-      float c_gsf_sigmaIetaIeta[20];
-      float c_gsf_hovere[20];
-      float c_gsf_eOVERp[20];
-      float c_gsf_vz[20];
-      int c_gsf_nHits[20];
-      int c_gsf_nLostInnerHits[20];
-      float c_gsf_fBrem[20];
-      float c_gsf_ecaliso[20];
-      float c_gsf_hcaliso1[20];
-      float c_gsf_hcaliso2[20];
-      float c_gsf_trackiso[20];
-      float c_gsf_SwissCross[20];
-
-      float c_gsfsc_px[20];
-      float c_gsfsc_py[20];
-      float c_gsfsc_pt[20];
-      float c_gsfsc_eta[20];
-      float c_gsfsc_phi[20];
-
-      bool c_gsfpass_ID[20];
-      bool c_gsfpass_ISO[20];
-      bool c_gsfpass_HEEP[20];
-
-      //MUONS
-      int c_muon_size;
-      float c_muon_pt[20];
-      float c_muon_eta[20];
-      float c_muon_phi[20];
-      float c_muon_theta[20];
-      float c_muon_ptError[20];
-      float c_muon_etaError[20];
-      float c_muon_phiError[20];
-      float c_muon_thetaError[20];
-      float c_muon_outerPt[20];
-      float c_muon_outerEta[20];
-      float c_muon_outerPhi[20];
-      float c_muon_outerTheta[20];
-      float c_muon_px[20];
-      float c_muon_py[20];
-      float c_muon_pz[20];
-      int c_muon_charge[20];
-      int c_muon_nhitstrack[20];
-      int c_muon_nhitspixel[20];
-      int c_muon_nhitstotal[20];
-      int c_muon_nhitsmuons[20];
-      int c_muon_nSegmentMatch[20];
-      bool c_muon_isTrackerMuon[20];
-      float c_muon_chi2[20];
-      int c_muon_ndof[20];
-      float c_muon_normChi2[20];
-      float c_muon_d0[20];
-      float c_muon_d0Error[20];
-      float c_muon_dzError[20];
-      float c_muon_dxyError[20];
-      float c_muon_dz_cmsCenter[20];
-      float c_muon_dz_beamSpot[20];
-      float c_muon_dz_firstPVtx[20];
-      float c_muon_dxy_cmsCenter[20];
-      float c_muon_dxy_beamSpot[20];
-      float c_muon_dxy_firstPVtx[20];
-      float c_muon_trackIso03[20];
-      float c_muon_trackIso05[20];
-      float c_muon_emIso03[20];
-      float c_muon_emIso05[20];
-      float c_muon_hadIso03[20];
-      float c_muon_hadIso05[20];
-      float c_muon_trackIso03_ptInVeto[20];
-      float c_muon_trackIso05_ptInVeto[20];
-      float c_muon_emIso03_ptInVeto[20];
-      float c_muon_emIso05_ptInVeto[20];
-      float c_muon_hadIso03_ptInVeto[20];
-      float c_muon_hadIso05_ptInVeto[20];
-      float c_muon_innerPosx[20];
-      float c_muon_innerPosy[20];
-      float c_muon_innerPosz[20];
-
-      //
-      //RUN ID
-      TBranch        *b_runnumber;
-      TBranch        *b_eventnumber;
-
-      TBranch        *b_HLT_Mu15_Photon20_CaloIdL;
-
-      //GLOBAL
-      TBranch        *b_nJetsAKT_pt15;
-      TBranch        *b_nJetsIC5_pt15;
-      TBranch        *b_calomet;
-      TBranch        *b_met;
-      TBranch        *b_mass;
-      TBranch        *b_pthat;
-      TBranch        *b_bsposx;
-      TBranch        *b_bsposy;
-      TBranch        *b_bsposz;
-
-      //JETS IC5
-      TBranch        *b_jetIC5_size;
-      TBranch        *b_jetIC5_pt;
-      TBranch        *b_jetIC5_eta;
-      TBranch        *b_jetIC5_phi;
-      TBranch        *b_jetIC5_em;
-
-      //PRIM VTX
-      TBranch        *b_pvsize;
-      TBranch        *b_pv_isValid;
-      TBranch        *b_pv_ndof;
-      TBranch        *b_pv_nTracks;
-      TBranch        *b_pv_normChi2;
-      TBranch        *b_pv_totTrackSize;
-
-      //GSF
-      TBranch        *b_gsf_size;
-      TBranch        *b_gsf_gsfet;
-      TBranch        *b_gsf_px;
-      TBranch        *b_gsf_py;
-      TBranch        *b_gsf_pz;
-      TBranch        *b_gsf_pt;
-      TBranch        *b_gsf_eta;
-      TBranch        *b_gsf_theta;
-      TBranch        *b_gsf_phi;
-      TBranch        *b_gsf_isecaldriven;
-      TBranch        *b_gsf_istrackerdriven;
-      TBranch        *b_gsf_isEB;
-      TBranch        *b_gsf_isEE;
-      TBranch        *b_gsf_charge;
-      TBranch        *b_gsf_deltaeta;
-      TBranch        *b_gsf_deltaphi;
-      TBranch        *b_gsf_e1x5overe5x5;
-      TBranch        *b_gsf_e2x5overe5x5;
-      TBranch        *b_gsf_sigmaetaeta;
-      TBranch        *b_gsf_sigmaIetaIeta;
-      TBranch        *b_gsf_hovere;
-      TBranch        *b_gsf_eOVERp;
-      TBranch        *b_gsf_vz;
-      TBranch        *b_gsf_nHits;
-      TBranch        *b_gsf_nLostInnerHits;
-      TBranch        *b_gsf_fBrem;
-      TBranch        *b_gsf_ecaliso;
-      TBranch        *b_gsf_hcaliso1;
-      TBranch        *b_gsf_hcaliso2;
-      TBranch        *b_gsf_trackiso;
-      TBranch        *b_gsf_SwissCross;
-
-      TBranch        *b_gsfsc_px;
-      TBranch        *b_gsfsc_py;
-      TBranch        *b_gsfsc_pt;
-      TBranch        *b_gsfsc_eta;
-      TBranch        *b_gsfsc_phi;
-
-      TBranch        *b_gsfpass_ID;
-      TBranch        *b_gsfpass_ISO;
-      TBranch        *b_gsfpass_HEEP;
-
-      //MUONS
-      TBranch        *b_muon_size;
-      TBranch        *b_muon_pt;
-      TBranch        *b_muon_eta;
-      TBranch        *b_muon_phi;
-      TBranch        *b_muon_theta;
-      TBranch        *b_muon_ptError;
-      TBranch        *b_muon_etaError;
-      TBranch        *b_muon_phiError;
-      TBranch        *b_muon_thetaError;
-      TBranch        *b_muon_outerPt;
-      TBranch        *b_muon_outerEta;
-      TBranch        *b_muon_outerPhi;
-      TBranch        *b_muon_outerTheta;
-      TBranch        *b_muon_px;
-      TBranch        *b_muon_py;
-      TBranch        *b_muon_pz;
-      TBranch        *b_muon_charge;
-      TBranch        *b_muon_nhitstrack;
-      TBranch        *b_muon_nhitspixel;
-      TBranch        *b_muon_nhitstotal;
-      TBranch        *b_muon_nhitsmuons;
-      TBranch        *b_muon_nSegmentMatch;
-      TBranch        *b_muon_isTrackerMuon;
-      TBranch        *b_muon_chi2;
-      TBranch        *b_muon_ndof;
-      TBranch        *b_muon_normChi2;
-      TBranch        *b_muon_d0;
-      TBranch        *b_muon_dz_cmsCenter;
-      TBranch        *b_muon_dz_beamSpot;
-      TBranch        *b_muon_dz_firstPVtx;
-      TBranch        *b_muon_dxy_cmsCenter;
-      TBranch        *b_muon_dxy_beamSpot;
-      TBranch        *b_muon_dxy_firstPVtx;
-      TBranch        *b_muon_d0Error;
-      TBranch        *b_muon_dzError;
-      TBranch        *b_muon_dxyError;
-      TBranch        *b_muon_trackIso03;
-      TBranch        *b_muon_trackIso05;
-      TBranch        *b_muon_emIso03;
-      TBranch        *b_muon_emIso05;
-      TBranch        *b_muon_hadIso03;
-      TBranch        *b_muon_hadIso05;
-      TBranch        *b_muon_trackIso03_ptInVeto;
-      TBranch        *b_muon_trackIso05_ptInVeto;
-      TBranch        *b_muon_emIso03_ptInVeto;
-      TBranch        *b_muon_emIso05_ptInVeto;
-      TBranch        *b_muon_hadIso03_ptInVeto;
-      TBranch        *b_muon_hadIso05_ptInVeto;
-      TBranch        *b_muon_innerPosx;
-      TBranch        *b_muon_innerPosy;
-      TBranch        *b_muon_innerPosz;
-
-      //
-//    //RUN ID
       thetree->SetBranchAddress("runnumber", &c_runnumber, &b_runnumber);
       thetree->SetBranchAddress("eventnumber", &c_eventnumber, &b_eventnumber);
 
       //HLT TRIGGER BITS
       thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
 
-//    //GLOBAL
-//     thetree->SetBranchAddress("nJetsAKT_pt15",&c_nJetsAKT_pt15,&b_nJetsAKT_pt15);
-//     thetree->SetBranchAddress("nJetsIC5_pt15",&c_nJetsIC5_pt15,&b_nJetsIC5_pt15);
+      //GLOBAL
+      //thetree->SetBranchAddress("nJetsAKT_pt15",&c_nJetsAKT_pt15,&b_nJetsAKT_pt15);
+      //thetree->SetBranchAddress("nJetsIC5_pt15",&c_nJetsIC5_pt15,&b_nJetsIC5_pt15);
       thetree->SetBranchAddress("calomet", &c_calomet, &b_calomet);
       thetree->SetBranchAddress("met", &c_met, &b_met);
-//     thetree->SetBranchAddress("mass",&c_mass,&b_mass);
+      //thetree->SetBranchAddress("mass",&c_mass,&b_mass);
       thetree->SetBranchAddress("pthat", &c_pthat, &b_pthat);
       thetree->SetBranchAddress("bsposx", &c_bsposx, &b_bsposx);
       thetree->SetBranchAddress("bsposy", &c_bsposy, &b_bsposy);
       thetree->SetBranchAddress("bsposz", &c_bsposz, &b_bsposz);
 
-      //  //JETS IC5
-      // thetree->SetBranchAddress("jetIC5_size",&c_jetIC5_size,&b_jetIC5_size);
-//     thetree->SetBranchAddress("jetIC5_pt",&c_jetIC5_pt,&b_jetIC5_pt);
-//     thetree->SetBranchAddress("jetIC5_eta",&c_jetIC5_eta,&b_jetIC5_eta);
-//     thetree->SetBranchAddress("jetIC5_phi",&c_jetIC5_phi,&b_jetIC5_phi);
-//     thetree->SetBranchAddress("jetIC5_em",&c_jetIC5_em,&b_jetIC5_em);
+      //JETS IC5
+      //thetree->SetBranchAddress("jetIC5_size",&c_jetIC5_size,&b_jetIC5_size);
+      //thetree->SetBranchAddress("jetIC5_pt",&c_jetIC5_pt,&b_jetIC5_pt);
+      //thetree->SetBranchAddress("jetIC5_eta",&c_jetIC5_eta,&b_jetIC5_eta);
+      //thetree->SetBranchAddress("jetIC5_phi",&c_jetIC5_phi,&b_jetIC5_phi);
+      //thetree->SetBranchAddress("jetIC5_em",&c_jetIC5_em,&b_jetIC5_em);
 
       //PRIM VTX
       thetree->SetBranchAddress("pvsize", &c_pvsize, &b_pvsize);
@@ -613,7 +706,6 @@ void emuSpectrum()
       thetree->SetBranchAddress("gsfsc_pt", &c_gsfsc_pt, &b_gsfsc_pt);
       thetree->SetBranchAddress("gsfsc_eta", &c_gsfsc_eta, &b_gsfsc_eta);
       thetree->SetBranchAddress("gsfsc_phi", &c_gsfsc_phi, &b_gsfsc_phi);
-
       thetree->SetBranchAddress("gsfpass_ID", &c_gsfpass_ID, &b_gsfpass_ID);
       thetree->SetBranchAddress("gsfpass_ISO", &c_gsfpass_ISO, &b_gsfpass_ISO);
       thetree->SetBranchAddress("gsfpass_HEEP", &c_gsfpass_HEEP, &b_gsfpass_HEEP);
@@ -670,12 +762,17 @@ void emuSpectrum()
       thetree->SetBranchAddress("muon_innerPosx", &c_muon_innerPosx, &b_muon_innerPosx);
       thetree->SetBranchAddress("muon_innerPosy", &c_muon_innerPosy, &b_muon_innerPosy);
       thetree->SetBranchAddress("muon_innerPosz", &c_muon_innerPosz, &b_muon_innerPosz);
-      //
 
       // set up invariant mass histograms
       emuMass.push_back(new TH1F("emuMass_" + suffix[p], "emuMass_" + suffix[p], 100, 0., 1000.));
       emuMass_LS.push_back(new TH1F("emuMass_LS_" + suffix[p], "emuMass_LS_" + suffix[p], 100, 0., 1000.));
       emuMass_OS.push_back(new TH1F("emuMass_OS_" + suffix[p], "emuMass_OS_" + suffix[p], 100, 0., 1000.));
+      emu_mass_accVSgood.push_back(new TH1F("emu_mass_accVSgood", "emu_mass_accVSgood", 100, 0., 1000.));
+
+      //emu_plus_plus.push_back(new TH1F("emu_plus_plus", "emu_plus_plus", 100, 0., 1000.));
+      //emu_plus_minus.push_back(new TH1F("emu_plus_minus", "emu_plus_minus", 100, 0., 1000.));
+      //emu_minus_plus.push_back(new TH1F("emu_minus_plus", "emu_minus_plus", 100, 0., 1000.));
+      //emu_minus_minus.push_back(new TH1F("emu_minus_minus", "emu_minus_minus", 100, 0., 1000.));
 
       // set up test histograms
       eleMET.push_back(new TH1F("eleMET_" + suffix[p], "eleMET_" + suffix[p], nPVtxMax, 0., nPVtxMax));
@@ -722,7 +819,7 @@ void emuSpectrum()
          //PRIMARY VTX COUNTING
          unsigned int n_pvValid = 0;
          for (int j = 0; j < c_pvsize; ++j) {
-            if (c_pv_ndof[j] > 3 && c_pv_nTracks[j] > 3.)
+            if (c_pv_ndof[j] > 3 && c_pv_nTracks[j] > 3)
                n_pvValid++;
          }
          if (p == DATA && n_pvValid < 1) continue;
@@ -730,50 +827,11 @@ void emuSpectrum()
 
          //FILL THE VTX WEIGTH
          float npv_weight = 1.;
-
-         for (unsigned int v = 0; v < nPVtxMax; ++v) {//LOOP OVER NPV
-            if (p == TTBAR && n_pvValid == v) npv_weight = PVX_ScalingFactor_ttba[v]; //ttbar
-            //if (p == ZTT && n_pvValid == v) npv_weight = PVX_ScalingFactor_ztau[v]; //ztau
-         }
-
-         //FOR VTX MC PONDERATION
-
-         //CREATE VTX PONDERATION PLOT
-         float gsfPtMaxB = 0.;
-         float gsfPtMaxE = 0.;
-         int gsfECAL = 0;
-         float muPtMax = 0.;
-         //LOOP OVER ELES
-         for (int j = 0; j < c_gsf_size; ++j) {
-            if ((fabs(c_gsfsc_eta[j]) < 1.442)  //BARREL
-                &&
-                c_gsf_gsfet[j] > gsfPtMaxB) {
-               gsfPtMaxB = c_gsf_gsfet[j];
-               gsfECAL = 1;
-            }
-            if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)  //ENDCAP
-                &&
-                c_gsf_gsfet[j] > gsfPtMaxE) {
-               gsfPtMaxE = c_gsf_gsfet[j];
-               gsfECAL = -1;
-            }
-         }
-         //LOOP OVER MUS
-         for (int j = 0; j < c_muon_size; ++j)
-            if (c_muon_pt[j] > muPtMax) muPtMax = c_muon_pt[j];
-
-         if (((gsfECAL == 1 && gsfPtMaxB > bar_et)  //BARREL
-              ||
-              (gsfECAL == -1 && gsfPtMaxE > end_et)) //ENDCAP
-             && muPtMax > muon_et) {
-            if (p == DATA) emuloose_data_nvalidpv->Fill(n_pvValid);
-            else if (p == TTBAR) emuloose_ttba_nvalidpv->Fill(n_pvValid);
-            else if (p == ZTT) emuloose_ztau_nvalidpv->Fill(n_pvValid);
-         }
+         if (p == TTBAR && n_pvValid < nPVtxMax) npv_weight = PVX_ScalingFactor_ttbar[n_pvValid]; //ttbar
+         //if (p == ZTT && n_pvValid == v) npv_weight = PVX_ScalingFactor_ztautau[v]; //ztau
 
          //LOOP OVER ELES
          for (int j = 0; j < c_gsf_size; ++j) {
-
             //CLEANING : FAKE ELES FROM MUONS
             bool fakeEle = false;
             for (int k = 0; k < c_muon_size; ++k) {
@@ -819,14 +877,11 @@ void emuSpectrum()
             //GSF IN ACCEPTANCE
             if (c_gsf_gsfet[j] > bar_et
                 && (fabs(c_gsfsc_eta[j]) < 1.442 || (fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5))
-                && (fabs(c_gsfsc_eta[j]) > 1.56 || c_gsf_SwissCross[j] < 0.95)
                ) GSF_passACC.push_back(j);
-
          }
 
          //LOOP OVER MUS
          for (int j = 0; j < c_muon_size; ++j) {
-
             //MU PASS GOOD
             if (c_muon_pt[j] > muon_et
                 && fabs(c_muon_eta[j]) < muon_etaMax
@@ -841,7 +896,7 @@ void emuSpectrum()
 
             //MU PASS ACC
             if (c_muon_pt[j] > muon_et
-                && fabs(c_muon_eta[j]) < 2.4
+                && fabs(c_muon_eta[j]) < muon_etaMax
                ) MU_passACC.push_back(j);
          }
 
@@ -868,17 +923,13 @@ void emuSpectrum()
             //MASS CUT
             if (invMass < minInvMass) continue;
 
-            //
             emuMass[p]->Fill(invMass, npv_weight);
 
-            //
             float CombRelIso = (c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]] + c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]] + c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]]) / c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]];
-            //
 
             // fill test histograms
             eleMET[p]->Fill(c_calomet, npv_weight);
             eleNVtx[p]->Fill(n_pvValid, npv_weight);
-            //if (p == DATA) eleNVtx[p]->Fill(n_pvValid, npv_weight);
             if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) eleDphi[p]->Fill(fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), npv_weight);
             if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) eleDphi[p]->Fill(6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), npv_weight);
             elePt[p]->Fill(c_gsf_gsfet[GSF_passHEEP[0]], npv_weight);
@@ -973,51 +1024,17 @@ void emuSpectrum()
 
    }//END FILE LOOP
 
-   //PRIM VTX PRINTING
-
-   // cout << "----PRIM VTX PART ------------------------- " << endl;
-//   if (sumNEvt[0] != 0) cout << "nb event in 1st sample = " << sumNEvt[0] <<  " , average nb of PV =  " << sumNPV[0]/sumNEvt[0] << endl;
-//   if (sumNEvt[1] != 0) cout << "nb event in 2nd sample = " << sumNEvt[1] <<  " , average nb of PV =  " << sumNPV[1]/sumNEvt[1] << endl;
-//   if (sumNEvt[2] != 0) cout << "nb event in 3nd sample = " << sumNEvt[2] <<  " , average nb of PV =  " << sumNPV[2]/sumNEvt[2] << endl;
-//   if (sumNEvt[3] != 0) cout << "nb event in 4nd sample = " << sumNEvt[3] <<  " , average nb of PV =  " << sumNPV[3]/sumNEvt[3] << endl;
-//   if (sumNEvt[4] != 0) cout << "nb event in 5nd sample = " << sumNEvt[4] <<  " , average nb of PV =  " << sumNPV[4]/sumNEvt[4] << endl;
-//   cout << "----END PRIM VTX PART --------------------- " << endl;
-//   cout << "" << endl;
-
-   //FOR PV SCALING FACTORS
-   //CREATING PILE-UP FILE
-   //emuloose_data_nvalidpv->Scale( 1./emuloose_data_nvalidpv->Integral() );
-   //emuloose_ttba_nvalidpv->Scale( 1./emuloose_ttba_nvalidpv->Integral() );
-   //emuloose_ztau_nvalidpv->Scale( 1./emuloose_ztau_nvalidpv->Integral() );
-
-   emuloose_dataoverttba_nvalidpv->Divide(emuloose_data_nvalidpv, emuloose_ttba_nvalidpv);
-   emuloose_dataoverttba_nvalidpv->Scale(1. / emuloose_dataoverttba_nvalidpv->Integral());
-
-   TH1F * ttbarScaled = new TH1F("ttbarScaled", "ttbarScaled", nPVtxMax, 0., nPVtxMax);
-   ttbarScaled->Multiply(emuloose_ttba_nvalidpv, emuloose_dataoverttba_nvalidpv);
-   double ttbarEvents =  emuloose_ttba_nvalidpv->Integral();
-   double scaledTtbarEvents =  ttbarScaled->Integral();
-
-   cout << "++++++++++++ ttbarEvents " << ttbarEvents << endl;
-   cout << "++++++++++++ scaledTtbarEvents " << scaledTtbarEvents << endl;
-   cout << "++++++++++++ Correction factor " << ttbarEvents / scaledTtbarEvents / nPVtxMax << endl;
-
-   emuloose_dataoverttba_nvalidpv->Scale(ttbarEvents / scaledTtbarEvents / nPVtxMax);
-   // emuloose_dataoverztau_nvalidpv->Divide(emuloose_data_nvalidpv,emuloose_ztau_nvalidpv);
-   // emuloose_dataoverztau_nvalidpv->Scale( 1./emuloose_dataoverztau_nvalidpv->Integral() );
-
    //SCALE MC
    for (int p = 1; p < nbFile; p++) {
-      emu_mass_accVSgood[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-
-//    emu_plus_plus[p]->Scale(weight[p] * LumiFactor);
-//    emu_plus_minus[p]->Scale(weight[p] * LumiFactor);
-//    emu_minus_plus[p]->Scale(weight[p] * LumiFactor);
-//    emu_minus_minus[p]->Scale(weight[p] * LumiFactor);
+      //emu_plus_plus[p]->Scale(weight[p] * LumiFactor);
+      //emu_plus_minus[p]->Scale(weight[p] * LumiFactor);
+      //emu_minus_plus[p]->Scale(weight[p] * LumiFactor);
+      //emu_minus_minus[p]->Scale(weight[p] * LumiFactor);
 
       emuMass[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
       emuMass_LS[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
       emuMass_OS[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+      emu_mass_accVSgood[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
 
       eleMET[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
       eleNVtx[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
@@ -1074,16 +1091,15 @@ void emuSpectrum()
    //SUM MC
    for (int p = 1; p < nbFile; ++p) {
       for (int q = p + 1; q < nbFile; ++q) {
-         emu_mass_accVSgood[p]->Add(emu_mass_accVSgood[q]);
-
-//       emu_plus_plus[p]->Add(emu_plus_plus[q]);
-//       emu_plus_minus[p]->Add(emu_plus_minus[q]);
-//       emu_minus_plus[p]->Add(emu_minus_plus[q]);
-//       emu_minus_minus[p]->Add(emu_minus_minus[q]);
+         //emu_plus_plus[p]->Add(emu_plus_plus[q]);
+         //emu_plus_minus[p]->Add(emu_plus_minus[q]);
+         //emu_minus_plus[p]->Add(emu_minus_plus[q]);
+         //emu_minus_minus[p]->Add(emu_minus_minus[q]);
 
          emuMass[p]->Add(emuMass[q]);
          emuMass_LS[p]->Add(emuMass_LS[q]);
          emuMass_OS[p]->Add(emuMass_OS[q]);
+         emu_mass_accVSgood[p]->Add(emu_mass_accVSgood[q]);
 
          eleMET[p]->Add(eleMET[q]);
          eleNVtx[p]->Add(eleNVtx[q]);
@@ -1150,10 +1166,17 @@ void emuSpectrum()
    cout << "nb tt       = " << emuMass[1]->Integral(21, 100) << endl;
    cout << "--------------" << endl;
 
-   // SCALE BY QCD CORR FACTOR
-   emuMass[1]->Scale(QCD_ScaleFactor);
+   // calculate qcd scale factor
+   float QCDScaleFactor = 1 + 2 * (emuMass_LS[DATA]->Integral() - emuMass_LS[1]->Integral()) / emuMass[1]->Integral();
+   cout << endl << endl << "calculated QCD scale factor from data: " << QCDScaleFactor << endl;
+   // apply QCD scale factor
+   if (calcQCDScaleFactor) emuMass[1]->Scale(QCDScaleFactor);
+   else {
+      cout << "applied preset QCD scale factor:       " << QCD_ScaleFactor << endl;
+      emuMass[1]->Scale(QCD_ScaleFactor);
+   }
 
-   cout << endl << endl;
+   cout << endl;
    cout << "AFTER CORRECTION WITH QCD FACTOR:" << endl;
    cout << endl;
    cout << "TOTAL INTEGRAL EMU" << endl;
@@ -1199,12 +1222,12 @@ void emuSpectrum()
    emu_ewk->Write();
    emu_jet->Write();
 
-   emuloose_data_nvalidpv->Write();
-   emuloose_ttba_nvalidpv->Write();
-   emuloose_ztau_nvalidpv->Write();
+   emuLoose_data_nValidPv->Write();
+   emuLoose_ttbar_nValidPv->Write();
+   emuLoose_ztautau_nValidPv->Write();
 
-   emuloose_dataoverttba_nvalidpv->Write();
-   emuloose_dataoverztau_nvalidpv->Write();
+   emuLoose_dataOverTtbar_nValidPv->Write();
+   emuLoose_dataOverZtautau_nValidPv->Write();
 
    for (int p = 0; p < nbFile; ++p) {
       emuMass[p]->Write();
