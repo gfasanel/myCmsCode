@@ -31,6 +31,7 @@
 #define WJET 6
 #define ZMM 7
 #define ZEE 8
+#define QCD 9
 
 using namespace std;
 
@@ -58,10 +59,11 @@ void emuSpectrum()
    float Muon_ScaleFactor = 0.985;
    float Lumi_ScaleFactor = 1.0;
 
+   bool useQCDShape = true;
    bool calcQCDScaleFactor = false;
    float QCD_ScaleFactor = 1.10; // overwritten if calcQCDScaleFactor == true
 
-   bool usePUInfo = false;
+   bool usePUInfo = true;
    bool generatePUFile = false;
 
    // selection cuts /////////////////////////////////////////////////////////
@@ -166,6 +168,7 @@ void emuSpectrum()
    suffix.push_back("zmumu");
    suffix.push_back("zee");
    //suffix.push_back("zz");
+   suffix.push_back("qcd");
 
    // counting variables
    int nb_plus_plus = 0;
@@ -767,7 +770,7 @@ void emuSpectrum()
       emuMass.push_back(new TH1F("emuMass_" + suffix[p], "emuMass_" + suffix[p], 100, 0., 1000.));
       emuMass_LS.push_back(new TH1F("emuMass_LS_" + suffix[p], "emuMass_LS_" + suffix[p], 100, 0., 1000.));
       emuMass_OS.push_back(new TH1F("emuMass_OS_" + suffix[p], "emuMass_OS_" + suffix[p], 100, 0., 1000.));
-      emu_mass_accVSgood.push_back(new TH1F("emu_mass_accVSgood", "emu_mass_accVSgood", 100, 0., 1000.));
+      emu_mass_accVSgood.push_back(new TH1F("emu_mass_accVSgood" + suffix[p], "emu_mass_accVSgood" + suffix[p], 100, 0., 1000.));
 
       //emu_plus_plus.push_back(new TH1F("emu_plus_plus", "emu_plus_plus", 100, 0., 1000.));
       //emu_plus_minus.push_back(new TH1F("emu_plus_minus", "emu_plus_minus", 100, 0., 1000.));
@@ -1166,18 +1169,39 @@ void emuSpectrum()
    cout << "nb tt       = " << emuMass[1]->Integral(21, 100) << endl;
    cout << "--------------" << endl;
 
-   // calculate qcd scale factor
-   float QCDScaleFactor = 1 + 2 * (emuMass_LS[DATA]->Integral() - emuMass_LS[1]->Integral()) / emuMass[1]->Integral();
-   cout << endl << endl << "calculated QCD scale factor from data: " << QCDScaleFactor << endl;
-   // apply QCD scale factor
-   if (calcQCDScaleFactor) emuMass[1]->Scale(QCDScaleFactor);
+   if (useQCDShape) {
+      TH1F *qcdBg = new TH1F("qcdBg", "qcdBg", 100, 0., 1000.);
+      qcdBg->Add(emuMass_LS[DATA]);
+      qcdBg->Add(emuMass_LS[1], -1.);
+      for (int i = 0; i < qcdBg->GetNbinsX() + 2; ++i) {
+         if (qcdBg->GetBinContent(i) < 0) qcdBg->SetBinContent(i, 0.);
+      }
+      emuMass.push_back(new TH1F("emuMass_" + suffix[QCD], "emuMass_" + suffix[QCD], 100, 0., 1000.));
+      emuMass_LS.push_back(new TH1F("emuMass_LS_" + suffix[QCD], "emuMass_LS_" + suffix[QCD], 100, 0., 1000.));
+      emuMass_OS.push_back(new TH1F("emuMass_OS_" + suffix[QCD], "emuMass_OS_" + suffix[QCD], 100, 0., 1000.));
+
+      // add QCD histo to histogram stack
+      for (int p = 1; p < nbFile + 1; ++p) {
+         emuMass[p]->Add(qcdBg, 2.);
+         emuMass_LS[p]->Add(qcdBg);
+         emuMass_OS[p]->Add(qcdBg);
+      }
+   }
    else {
-      cout << "applied preset QCD scale factor:       " << QCD_ScaleFactor << endl;
-      emuMass[1]->Scale(QCD_ScaleFactor);
+      // calculate qcd scale factor
+      float QCDScaleFactor = 1 + 2 * (emuMass_LS[DATA]->Integral() - emuMass_LS[1]->Integral()) / emuMass[1]->Integral();
+      cout << endl << endl << "calculated QCD scale factor from data: " << QCDScaleFactor << endl;
+      // apply QCD scale factor
+      if (calcQCDScaleFactor) emuMass[1]->Scale(QCDScaleFactor);
+      else {
+         cout << "applied preset QCD scale factor:       " << QCD_ScaleFactor << endl;
+         emuMass[1]->Scale(QCD_ScaleFactor);
+      }
    }
 
    cout << endl;
-   cout << "AFTER CORRECTION WITH QCD FACTOR:" << endl;
+   if (useQCDShape) cout << "AFTER ADDING QCD CONTRIBUTION:" << endl;
+   else cout << "AFTER CORRECTION WITH QCD FACTOR:" << endl;
    cout << endl;
    cout << "TOTAL INTEGRAL EMU" << endl;
    cout << "nb data     = " << emuMass[DATA]->Integral() << " +- " << sqrt(emuMass[DATA]->Integral()) << endl;
@@ -1194,6 +1218,10 @@ void emuSpectrum()
    cout << "INTEGRAL EMU M>200" << endl;
    cout << "nb data     = " << emuMass[DATA]->Integral(21, 100) << " +- " << sqrt(emuMass[DATA]->Integral(21, 100)) << endl;
    cout << "nb MC       = " << emuMass[1]->Integral(21, 100) << endl;
+   cout << "--------------" << endl;
+   cout << "INTEGRAL EMU M>500" << endl;
+   cout << "nb data     = " << emuMass[DATA]->Integral(51, 100) << " +- " << sqrt(emuMass[DATA]->Integral(51, 100)) << endl;
+   cout << "nb MC       = " << emuMass[1]->Integral(51, 100) << endl;
    cout << "--------------" << endl;
 
    cout << "--For ttlike-- QCD CORR + W+Jet + Zmumu" << endl;
@@ -1260,6 +1288,9 @@ void emuSpectrum()
       muIso2[p]->Write();
       muIso3[p]->Write();
    }
+   emuMass[QCD]->Write();
+   emuMass_LS[QCD]->Write();
+   emuMass_OS[QCD]->Write();
 
    output->Close();
 }
