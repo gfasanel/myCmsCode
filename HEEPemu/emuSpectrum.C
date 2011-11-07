@@ -35,17 +35,21 @@
 
 using namespace std;
 
+int Trigger(TFile *inFile, unsigned int &entry, int &prescale);
+
 void emuSpectrum()
 {
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 3534.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   float LumiFactor = 4699.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   //float LumiFactor = 3534.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    //float LumiFactor = 3190.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    //float LumiFactor = 2179.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    //float LumiFactor = 1932.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    //float LumiFactor = 702.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
 
    // DATA file
-   TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-178078_7TeV_Collisions11_JSON_3534pb-1.root";
+   TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_4699pb-1.root";
+   //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-178078_7TeV_Collisions11_JSON_3534pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-177515_7TeV_Collisions11_JSON_3190pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6-Cert_160404-173692_7TeV_Collisions11_JSON_2179pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco+05Aug2011+PromptReco-AOD-Cert_160404-173244_7TeV_1932pb-1.root";
@@ -230,7 +234,13 @@ void emuSpectrum()
    int c_eventnumber;
 
    //TRIGGER
-   int c_HLT_Mu15_Photon20_CaloIdL;
+//   int c_HLT_Mu15_Photon20_CaloIdL;
+//   int c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+//   int c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+//
+//   int c_prescale_HLT_Mu15_Photon20_CaloIdL;
+//   int c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+//   int c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
 
    //GLOBAL
    //int c_nJetsAKT_pt15;
@@ -359,7 +369,12 @@ void emuSpectrum()
    TBranch        *b_eventnumber;
 
    //TRIGGER
-   TBranch        *b_HLT_Mu15_Photon20_CaloIdL;
+//   TBranch        *b_HLT_Mu15_Photon20_CaloIdL;
+//   TBranch        *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+//   TBranch        *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+//   TBranch        *b_prescale_HLT_Mu15_Photon20_CaloIdL;
+//   TBranch        *b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+//   TBranch        *b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
 
    //GLOBAL
    //TBranch        *b_nJetsAKT_pt15;
@@ -508,7 +523,7 @@ void emuSpectrum()
          }
          cout << "Pile up information from file: " << ssPUInfile.str() << endl;
       } else {
-         cout << "Not file with pile up information for this parameter set found. Will create it." << endl;
+         cout << "No file with pile up information for this parameter set found. Will create it." << endl;
          generatePUFile = true;
       }
    } else {
@@ -531,7 +546,12 @@ void emuSpectrum()
          thetree = (TTree*)(input[p])->Get("gsfcheckerjob/tree");
 
          //HLT TRIGGER BITS
-         thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
+//         thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
+//         thetree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
+//         thetree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
+//         thetree->SetBranchAddress("prescale_HLT_Mu15_Photon20_CaloIdL", &c_prescale_HLT_Mu15_Photon20_CaloIdL, &b_prescale_HLT_Mu15_Photon20_CaloIdL);
+//         thetree->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
+//         thetree->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
          //PRIM VTX
          thetree->SetBranchAddress("pvsize", &c_pvsize, &b_pvsize);
          thetree->SetBranchAddress("pv_ndof", &c_pv_ndof, &b_pv_ndof);
@@ -551,7 +571,8 @@ void emuSpectrum()
             if (i % 50000 == 0) cout << i << endl;
             thetree->GetEntry(i);
 
-            if (p == DATA && c_HLT_Mu15_Photon20_CaloIdL == 0) continue; // ask MuPhoton trigger bit
+	    int prescale = 0;
+	    if (p == DATA && Trigger(input[p], i, prescale) < 1) continue; // ask MuPhoton trigger bit
 
             //PRIMARY VTX COUNTING
             unsigned int n_pvValid = 0;
@@ -644,7 +665,12 @@ void emuSpectrum()
       thetree->SetBranchAddress("eventnumber", &c_eventnumber, &b_eventnumber);
 
       //HLT TRIGGER BITS
-      thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
+//      thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
+//      thetree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
+//      thetree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
+//      thetree->SetBranchAddress("prescale_HLT_Mu15_Photon20_CaloIdL", &c_prescale_HLT_Mu15_Photon20_CaloIdL, &b_prescale_HLT_Mu15_Photon20_CaloIdL);
+//      thetree->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
+//      thetree->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
 
       //GLOBAL
       //thetree->SetBranchAddress("nJetsAKT_pt15",&c_nJetsAKT_pt15,&b_nJetsAKT_pt15);
@@ -811,7 +837,8 @@ void emuSpectrum()
          if (i % 50000 == 0) cout << i << endl;
          thetree->GetEntry(i);
 
-         if (p == DATA && c_HLT_Mu15_Photon20_CaloIdL == 0) continue; // ask MuPhoton trigger bit
+         int prescale = 0;
+         if (p == DATA && Trigger(input[p], i, prescale) < 1) continue; // ask MuPhoton trigger bit
 
          vector<int> GSF_passHEEP;
          vector<int> GSF_passACC;
@@ -1293,4 +1320,51 @@ void emuSpectrum()
    emuMass_OS[QCD]->Write();
 
    output->Close();
+}
+
+int Trigger(TFile *inFile, unsigned int &entry, int &prescale)
+{
+   int c_HLT_Mu15_Photon20_CaloIdL;
+   int c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+   int c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+   int c_prescale_HLT_Mu15_Photon20_CaloIdL;
+   int c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+   int c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+
+   TBranch *b_HLT_Mu15_Photon20_CaloIdL;
+   TBranch *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+   TBranch *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+   TBranch *b_prescale_HLT_Mu15_Photon20_CaloIdL;
+   TBranch *b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+   TBranch *b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+
+   // Get the tree and connect the necessary variables
+   inFile->cd();
+   TTree *thetree;
+   thetree = (TTree*)(inFile)->Get("gsfcheckerjob/tree");
+
+   thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
+   thetree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
+   thetree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
+   thetree->SetBranchAddress("prescale_HLT_Mu15_Photon20_CaloIdL", &c_prescale_HLT_Mu15_Photon20_CaloIdL, &b_prescale_HLT_Mu15_Photon20_CaloIdL);
+   thetree->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
+   thetree->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
+
+   thetree->GetEntry(entry);
+
+   // select an unprescaled trigger
+   if (c_prescale_HLT_Mu15_Photon20_CaloIdL == 1) {
+      prescale = c_prescale_HLT_Mu15_Photon20_CaloIdL;
+      return c_HLT_Mu15_Photon20_CaloIdL;
+   } else if (c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL == 1) {
+      prescale = c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+      return c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+   } else if (c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL == 1) {
+      prescale = c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+      return c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+   }
+
+   cout << "Prescale alert! No unprescaled trigger found." << endl;
+   prescale = 0;
+   return 0;
 }
