@@ -33,13 +33,48 @@ int macro_MakeTestPlot(unsigned int k = 0)
   bool logPlot = false;
   ////////////////////////////////////////////////////////////////////////////
 
+  if (k > 26) k = 0;
+  if (k == 0) {
+    cout << "Use .x macro_MakeTestPlot.C(x) with x being the number of the test histogram to plot." << endl;
+    cout << "-----------------------------------" << endl;
+    cout << "MET                 1" << endl;
+    cout << "nVtx                2" << endl;
+    cout << "dPhi                3" << endl;
+    cout << "elePt               4" << endl;
+    cout << "eleEta              5" << endl;
+    cout << "elePhi              6" << endl;
+    cout << "eleId1              7" << endl;
+    cout << "eleId2              8" << endl;
+    cout << "eleId3              9" << endl;
+    cout << "eleIso1            10" << endl;
+    cout << "eleIso2            11" << endl;
+    cout << "eleIso3            12" << endl;
+    cout << "muIsoCombRel       13" << endl;
+    cout << "muPtEleOPtMu       14" << endl;
+    cout << "muPtPlusOPtMinus   15" << endl;
+    cout << "muPt               16" << endl;
+    cout << "muEta              17" << endl;
+    cout << "muPhi              18" << endl;
+    cout << "muId1              19" << endl;
+    cout << "muId2              20" << endl;
+    cout << "muId3              21" << endl;
+    cout << "muIso1             22" << endl;
+    cout << "muIso2             23" << endl;
+    cout << "muIso3             24" << endl;
+    cout << "numOfJets          25" << endl;
+    cout << "numOfJetsPt15      26" << endl;
+    cout << "-----------------------------------" << endl;
+    return 0;
+  }
+  --k;
+
   // to keep the histogram when the file is closed
   TH1::AddDirectory(kFALSE);
   TH1::SetDefaultSumw2(kTRUE);
 
-  TString testVar[24] = {"eleMET",
-                         "eleNVtx",
-                         "eleDphi",
+  TString testVar[26] = {"MET",
+                         "nVtx",
+                         "dPhi",
                          "elePt",
                          "eleEta",
                          "elePhi",
@@ -60,11 +95,13 @@ int macro_MakeTestPlot(unsigned int k = 0)
                          "muId3",
                          "muIso1",
                          "muIso2",
-                         "muIso3"
+                         "muIso3",
+                         "numOfJets",
+                         "numOfJetsPt15"
                         };
-  TString histoTitleTestVar[24] = {"eleMET",
-                                   "eleNVtx",
-                                   "eleDphi",
+  TString histoTitleTestVar[26] = {"MET",
+                                   "nVtx",
+                                   "dPhi",
                                    "elePt",
                                    "eleEta",
                                    "elePhi",
@@ -85,7 +122,9 @@ int macro_MakeTestPlot(unsigned int k = 0)
                                    "muId3",
                                    "muIso1",
                                    "muIso2",
-                                   "muIso3"
+                                   "muIso3",
+                                   "numOfJets",
+                                   "numOfJetsPt15"
                                   };
   TString nameSuffix[2] = {"", "Cumul"};
   TString titleSuffix[2] = {"", " - Cumulative"};
