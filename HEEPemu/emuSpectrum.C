@@ -160,7 +160,7 @@ void emuSpectrum()
    //weight.push_back(0.000004220);                         //WZ          4 yellow      (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
    weight.push_back(0.000002901);                         //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
    //weight.push_back(0.000009664);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 13 OCT 2011
-   weight.push_back(0.000004845);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 14 NOV 2011
+   weight.push_back(0.000009690);                         //tW          5 pink        (814390+809984 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 14 NOV 2011
    //weight.push_back(0.00063259);                          //W+jet       6 dark green  (49501047 event - xsect NNLO 31314pb) -- 23 JUIN 2011
    weight.push_back(0.000384917);                         //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
    //weight.push_back(0.00078075);                          //Zmumu       7 light blue  (2133856 event  - xsect NNLO 1666pb ) -- 14 OCT 2011) 
