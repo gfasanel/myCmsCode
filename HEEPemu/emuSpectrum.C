@@ -33,6 +33,10 @@
 #define ZEE 8
 #define QCD 9
 
+#define ALL 0
+#define LS 1
+#define OS 2
+
 using namespace std;
 
 int Trigger(TFile *inFile, unsigned int &entry, int &prescale);
@@ -132,11 +136,14 @@ void emuSpectrum()
    input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
    //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WZ_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
    input.push_back(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/T_plus_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_total_tree.root","open")); 
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/T_plus_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_total_tree.root","open")); 
+   input.push_back(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_12.root","open")); 
    //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WJetsToLNu_TuneZ2_7TeV-madgraph-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
    input.push_back(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToMuMu_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v1-AODSIM_TreeEMuSkim35_S3V11v1_RUN2/res/total_tree.root","open"));
-   input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToEE_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN4/res/total_tree.root","open"));
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToMuMu_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v1-AODSIM_TreeEMuSkim35_S3V11v1_RUN2/res/total_tree.root","open"));
+   input.push_back(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_12.root","open"));
+   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToEE_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN4/res/total_tree.root","open"));
+   input.push_back(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_12.root","open"));
    //input.push_back(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root","open"));
 
    int nbFile = input.size();
@@ -152,11 +159,14 @@ void emuSpectrum()
    weight.push_back(0.000020727);                         //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 17.10.2011
    //weight.push_back(0.000004220);                         //WZ          4 yellow      (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
    weight.push_back(0.000002901);                         //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
-   weight.push_back(0.000009664);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 13 OCT 2011
+   //weight.push_back(0.000009664);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 13 OCT 2011
+   weight.push_back(0.000004845);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 14 NOV 2011
    //weight.push_back(0.00063259);                          //W+jet       6 dark green  (49501047 event - xsect NNLO 31314pb) -- 23 JUIN 2011
    weight.push_back(0.000384917);                         //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
-   weight.push_back(0.00078075);                          //Zmumu       7 light blue  (2133856 event  - xsect NNLO 1666pb ) -- 14 OCT 2011) 
-   weight.push_back(0.00073630*(26./25.));                //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 13 OCT 2011 
+   //weight.push_back(0.00078075);                          //Zmumu       7 light blue  (2133856 event  - xsect NNLO 1666pb ) -- 14 OCT 2011) 
+   weight.push_back(0.00077549);                          //Zmumu       7 light blue  (2148325 event  - xsect NNLO 1666pb ) -- 14 NOV 2011) 
+   //weight.push_back(0.00073630*(26./25.));                //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 13 OCT 2011 
+   weight.push_back(0.00073630);                //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011 
    //weight.push_back(0.000000164);                         //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011 
    ///////////////////////////////////////////////////////////////////////////
 
@@ -174,6 +184,8 @@ void emuSpectrum()
    //suffix.push_back("zz");
    suffix.push_back("qcd");
 
+   TString sign[3] = {"", "LS_", "OS_"};
+
    // counting variables
    int nb_plus_plus = 0;
    int nb_plus_minus = 0;
@@ -181,44 +193,42 @@ void emuSpectrum()
    int nb_minus_minus = 0;
 
    // histogram containers
-   vector<TH1F *> emuMass;
-   vector<TH1F *> emuMass_LS;
-   vector<TH1F *> emuMass_OS;
-   vector<TH1F *> emu_mass_accVSgood;
+   vector<vector<TH1F *> > emuMass;
+   vector<vector<TH1F *> > emu_mass_accVSgood;
+
+   vector<vector<TH1F *> > met;
+   vector<vector<TH1F *> > nVtx;
+   vector<vector<TH1F *> > dPhi;
+   vector<vector<TH1F *> > elePt;
+   vector<vector<TH1F *> > eleEta;
+   vector<vector<TH1F *> > elePhi;
+   vector<vector<TH1F *> > eleId1;
+   vector<vector<TH1F *> > eleId2;
+   vector<vector<TH1F *> > eleId3;
+   vector<vector<TH1F *> > eleIso1;
+   vector<vector<TH1F *> > eleIso2;
+   vector<vector<TH1F *> > eleIso3;
+
+   vector<vector<TH1F *> > muIsoCombRel;
+   vector<vector<TH1F *> > muPtEleOPtMu;
+   vector<vector<TH1F *> > muPtPlusOPtMinus;
+   vector<vector<TH1F *> > muPt;
+   vector<vector<TH1F *> > muEta;
+   vector<vector<TH1F *> > muPhi;
+   vector<vector<TH1F *> > muId1;
+   vector<vector<TH1F *> > muId2;
+   vector<vector<TH1F *> > muId3;
+   vector<vector<TH1F *> > muIso1;
+   vector<vector<TH1F *> > muIso2;
+   vector<vector<TH1F *> > muIso3;
+
+   vector<vector<TH1F *> > numOfJets;
+   vector<vector<TH1F *> > numOfJetsPt15;
 
    //vector<TH1F *> emu_plus_plus;
    //vector<TH1F *> emu_plus_minus;
    //vector<TH1F *> emu_minus_plus;
    //vector<TH1F *> emu_minus_minus;
-
-   vector<TH1F *> met;
-   vector<TH1F *> nVtx;
-   vector<TH1F *> dPhi;
-   vector<TH1F *> elePt;
-   vector<TH1F *> eleEta;
-   vector<TH1F *> elePhi;
-   vector<TH1F *> eleId1;
-   vector<TH1F *> eleId2;
-   vector<TH1F *> eleId3;
-   vector<TH1F *> eleIso1;
-   vector<TH1F *> eleIso2;
-   vector<TH1F *> eleIso3;
-
-   vector<TH1F *> muIsoCombRel;
-   vector<TH1F *> muPtEleOPtMu;
-   vector<TH1F *> muPtPlusOPtMinus;
-   vector<TH1F *> muPt;
-   vector<TH1F *> muEta;
-   vector<TH1F *> muPhi;
-   vector<TH1F *> muId1;
-   vector<TH1F *> muId2;
-   vector<TH1F *> muId3;
-   vector<TH1F *> muIso1;
-   vector<TH1F *> muIso2;
-   vector<TH1F *> muIso3;
-
-   vector<TH1F *> numOfJets;
-   vector<TH1F *> numOfJetsPt15;
 
    //
    TH1F *emu_dilepton = new TH1F("emu_dilepton", "emu_dilepton", 150, 0., 1500.);
@@ -287,7 +297,7 @@ void emuSpectrum()
    float c_gsf_eta[20];
    float c_gsf_theta[20];
    float c_gsf_phi[20];
-   float c_gsf_isecaldriven[20];
+   int c_gsf_isecaldriven[20];
    float c_gsf_istrackerdriven[20];
    int c_gsf_isEB[20];
    int c_gsf_isEE[20];
@@ -308,7 +318,6 @@ void emuSpectrum()
    float c_gsf_hcaliso1[20];
    float c_gsf_hcaliso2[20];
    float c_gsf_trackiso[20];
-   float c_gsf_SwissCross[20];
 
    float c_gsfsc_px[20];
    float c_gsfsc_py[20];
@@ -433,7 +442,6 @@ void emuSpectrum()
    TBranch        *b_gsf_hcaliso1;
    TBranch        *b_gsf_hcaliso2;
    TBranch        *b_gsf_trackiso;
-   TBranch        *b_gsf_SwissCross;
 
    TBranch        *b_gsfsc_px;
    TBranch        *b_gsfsc_py;
@@ -582,8 +590,6 @@ void emuSpectrum()
                   n_pvValid++;
             }
             if (n_pvValid < 1) continue;
-            //if (p == DATA && n_pvValid < 1) continue;
-            //if ((p == TTBAR || p == ZTT) && n_pvValid < 1) continue; //ttbar
 
             //CREATE VTX PONDERATION PLOT
             float gsfPtMaxB = 0.;
@@ -725,7 +731,6 @@ void emuSpectrum()
       thetree->SetBranchAddress("gsf_hcaliso1", &c_gsf_hcaliso1, &b_gsf_hcaliso1);
       thetree->SetBranchAddress("gsf_hcaliso2", &c_gsf_hcaliso2, &b_gsf_hcaliso2);
       thetree->SetBranchAddress("gsf_trackiso", &c_gsf_trackiso, &b_gsf_trackiso);
-      thetree->SetBranchAddress("gsf_SwissCross", &c_gsf_SwissCross, &b_gsf_SwissCross);
       thetree->SetBranchAddress("gsfsc_px", &c_gsfsc_px, &b_gsfsc_px);
       thetree->SetBranchAddress("gsfsc_py", &c_gsfsc_py, &b_gsfsc_py);
       thetree->SetBranchAddress("gsfsc_pt", &c_gsfsc_pt, &b_gsfsc_pt);
@@ -788,47 +793,92 @@ void emuSpectrum()
       thetree->SetBranchAddress("muon_innerPosy", &c_muon_innerPosy, &b_muon_innerPosy);
       thetree->SetBranchAddress("muon_innerPosz", &c_muon_innerPosz, &b_muon_innerPosz);
 
-      // set up invariant mass histograms
-      emuMass.push_back(new TH1F("emuMass_" + suffix[p], "emuMass_" + suffix[p], 150, 0., 1500.));
-      emuMass_LS.push_back(new TH1F("emuMass_LS_" + suffix[p], "emuMass_LS_" + suffix[p], 150, 0., 1500.));
-      emuMass_OS.push_back(new TH1F("emuMass_OS_" + suffix[p], "emuMass_OS_" + suffix[p], 150, 0., 1500.));
-      emu_mass_accVSgood.push_back(new TH1F("emu_mass_accVSgood" + suffix[p], "emu_mass_accVSgood" + suffix[p], 150, 0., 1500.));
-
-      //emu_plus_plus.push_back(new TH1F("emu_plus_plus", "emu_plus_plus", 150, 0., 1500.));
-      //emu_plus_minus.push_back(new TH1F("emu_plus_minus", "emu_plus_minus", 150, 0., 1500.));
-      //emu_minus_plus.push_back(new TH1F("emu_minus_plus", "emu_minus_plus", 150, 0., 1500.));
-      //emu_minus_minus.push_back(new TH1F("emu_minus_minus", "emu_minus_minus", 150, 0., 1500.));
-
-      // set up test histograms
-      met.push_back(new TH1F("MET_" + suffix[p], "MET_" + suffix[p], 50, 0., 500.));
-      nVtx.push_back(new TH1F("nVtx_" + suffix[p], "nVtx_" + suffix[p], nPVtxMax, 0., nPVtxMax));
-      dPhi.push_back(new TH1F("dPhi_" + suffix[p], "dPhi_" + suffix[p], 64, 0., 3.2));
-
-      elePt.push_back(new TH1F("elePt_" + suffix[p], "elePt_" + suffix[p], 50, 0., 500.));
-      eleEta.push_back(new TH1F("eleEta_" + suffix[p], "eleEta_" + suffix[p], 25, -2.5, 2.5));
-      elePhi.push_back(new TH1F("elePhi_" + suffix[p], "elePhi_" + suffix[p], 25, -3.14, 3.14));
-      eleId1.push_back(new TH1F("eleId1_" + suffix[p], "eleId1_" + suffix[p], 50, -0.008, 0.008));
-      eleId2.push_back(new TH1F("eleId2_" + suffix[p], "eleId2_" + suffix[p], 50, -0.1, 0.1));
-      eleId3.push_back(new TH1F("eleId3_" + suffix[p], "eleId3_" + suffix[p], 50, 0., 0.04));
-      eleIso1.push_back(new TH1F("eleIso1_" + suffix[p], "eleIso1_" + suffix[p], 50, 0., 10.));
-      eleIso2.push_back(new TH1F("eleIso2_" + suffix[p], "eleIso2_" + suffix[p], 50, 0., 10.));
-      eleIso3.push_back(new TH1F("eleIso3_" + suffix[p], "eleIso3_" + suffix[p], 50, 0., 20.));
-      
-      muIsoCombRel.push_back(new TH1F("muIsoCombRel_" + suffix[p], "muIsoCombRel_" + suffix[p], 50, 0., 0.2));
-      muPtEleOPtMu.push_back(new TH1F("muPtEleOPtMu_" + suffix[p], "muPtEleOPtMu_" + suffix[p], 50, 0., 4.0));
-      muPtPlusOPtMinus.push_back(new TH1F("muPtPlusOPtMinus_" + suffix[p], "muPtPlusOPtMinus_" + suffix[p], 50, 0., 4.0));
-      muPt.push_back(new TH1F("muPt_" + suffix[p], "muPt_" + suffix[p], 50, 0., 500.));
-      muEta.push_back(new TH1F("muEta_" + suffix[p], "muEta_" + suffix[p], 25, -2.5, 2.5));
-      muPhi.push_back(new TH1F("muPhi_" + suffix[p], "muPhi_" + suffix[p], 25, -3.14, 3.14));
-      muId1.push_back(new TH1F("muId1_" + suffix[p], "muId1_" + suffix[p], 50, 0., 10.));
-      muId2.push_back(new TH1F("muId2_" + suffix[p], "muId2_" + suffix[p], 32, 0., 32));
-      muId3.push_back(new TH1F("muId3_" + suffix[p], "muId3_" + suffix[p], 52, 0., 52));
-      muIso1.push_back(new TH1F("muIso1_" + suffix[p], "muIso1_" + suffix[p], 50, 0., 10.));
-      muIso2.push_back(new TH1F("muIso2_" + suffix[p], "muIso2_" + suffix[p], 50, 0., 10.));
-      muIso3.push_back(new TH1F("muIso3_" + suffix[p], "muIso3_" + suffix[p], 50, 0., 20.));
-
-      numOfJets.push_back(new TH1F("numOfJets_" + suffix[p], "numOfJets_" + suffix[p], 20, 0., 20.));
-      numOfJetsPt15.push_back(new TH1F("numOfJetsPt15_" + suffix[p], "numOfJetsPt15_" + suffix[p], 20, 0., 20.));
+      // set up histograms
+      vector<TH1F *> helper;
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMass_" + sign[k] + suffix[p], "emuMass_" + sign[k] + suffix[p], 150, 0., 1500.));
+      emuMass.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emu_mass_accVSgood_" + sign[k] + suffix[p], "emu_mass_accVSgood_" + sign[k] + suffix[p], 150, 0., 1500.));
+      emu_mass_accVSgood.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("MET_" + sign[k] + suffix[p], "MET_" + sign[k] + suffix[p], 50, 0., 500.));
+      met.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("nVtx_" + sign[k] + suffix[p], "nVtx_" + sign[k] + suffix[p], nPVtxMax, 0., nPVtxMax));
+      nVtx.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dPhi_" + sign[k] + suffix[p], "dPhi_" + sign[k] + suffix[p], 64, 0., 3.2));
+      dPhi.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("elePt_" + sign[k] + suffix[p], "elePt_" + sign[k] + suffix[p], 50, 0., 500.));
+      elePt.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEta_" + sign[k] + suffix[p], "eleEta_" + sign[k] + suffix[p], 25, -2.5, 2.5));
+      eleEta.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("elePhi_" + sign[k] + suffix[p], "elePhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
+      elePhi.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleId1_" + sign[k] + suffix[p], "eleId1_" + sign[k] + suffix[p], 50, -0.008, 0.008));
+      eleId1.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleId2_" + sign[k] + suffix[p], "eleId2_" + sign[k] + suffix[p], 50, -0.1, 0.1));
+      eleId2.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleId3_" + sign[k] + suffix[p], "eleId3_" + sign[k] + suffix[p], 50, 0., 0.04));
+      eleId3.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleIso1_" + sign[k] + suffix[p], "eleIso1_" + sign[k] + suffix[p], 50, 0., 10.));
+      eleIso1.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleIso2_" + sign[k] + suffix[p], "eleIso2_" + sign[k] + suffix[p], 50, 0., 10.));
+      eleIso2.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleIso3_" + sign[k] + suffix[p], "eleIso3_" + sign[k] + suffix[p], 50, 0., 20.));
+      eleIso3.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIsoCombRel_" + sign[k] + suffix[p], "muIsoCombRel_" + sign[k] + suffix[p], 50, 0., 0.2));
+      muIsoCombRel.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPtEleOPtMu_" + sign[k] + suffix[p], "muPtEleOPtMu_" + sign[k] + suffix[p], 50, 0., 4.0));
+      muPtEleOPtMu.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPtPlusOPtMinus_" + sign[k] + suffix[p], "muPtPlusOPtMinus_" + sign[k] + suffix[p], 50, 0., 4.0));
+      muPtPlusOPtMinus.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPt_" + sign[k] + suffix[p], "muPt_" + sign[k] + suffix[p], 50, 0., 500.));
+      muPt.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muEta_" + sign[k] + suffix[p], "muEta_" + sign[k] + suffix[p], 25, -2.5, 2.5));
+      muEta.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPhi_" + sign[k] + suffix[p], "muPhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
+      muPhi.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muId1_" + sign[k] + suffix[p], "muId1_" + sign[k] + suffix[p], 50, 0., 10.));
+      muId1.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muId2_" + sign[k] + suffix[p], "muId2_" + sign[k] + suffix[p], 32, 0., 32));
+      muId2.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muId3_" + sign[k] + suffix[p], "muId3_" + sign[k] + suffix[p], 52, 0., 52));
+      muId3.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIso1_" + sign[k] + suffix[p], "muIso1_" + sign[k] + suffix[p], 50, 0., 10.));
+      muIso1.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIso2_" + sign[k] + suffix[p], "muIso2_" + sign[k] + suffix[p], 50, 0., 10.));
+      muIso2.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIso3_" + sign[k] + suffix[p], "muIso3_" + sign[k] + suffix[p], 50, 0., 20.));
+      muIso3.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJets_" + sign[k] + suffix[p], "numOfJets_" + sign[k] + suffix[p], 20, 0., 20.));
+      numOfJets.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJetsPt15_" + sign[k] + suffix[p], "numOfJetsPt15_" + sign[k] + suffix[p], 20, 0., 20.));
+      numOfJetsPt15.push_back(helper);
+      helper.clear();
 
       Long64_t nentries = (*thetree).GetEntries();
       cout << nentries << " events" << endl;
@@ -836,7 +886,6 @@ void emuSpectrum()
       for (unsigned int i = 0; i < nentries; ++i) {
          if (i % 50000 == 0) cout << i << endl;
          thetree->GetEntry(i);
-
          int prescale = 0;
          if (p == DATA && Trigger(input[p], i, prescale) < 1) continue; // ask MuPhoton trigger bit
 
@@ -853,14 +902,10 @@ void emuSpectrum()
                n_pvValid++;
          }
          if (n_pvValid < 1) continue;
-         //if (p == DATA && n_pvValid < 1) continue;
-         //if ((p == TTBAR || p == ZTT) && n_pvValid < 1) continue; //ttbar
 
          //FILL THE VTX WEIGTH take the weights from ttbar for all the MC samples at the moment
          float npv_weight = 1.;
          if (p >= TTBAR && n_pvValid < nPVtxMax) npv_weight = PVX_ScalingFactors.at(p - 1).at(n_pvValid);
-         //if (p >= TTBAR && n_pvValid < nPVtxMax) npv_weight = PVX_ScalingFactor_ttbar[n_pvValid]; //ttbar
-         //if (p == ZTT && n_pvValid == v) npv_weight = PVX_ScalingFactor_ztautau[v]; //ztau
 
          //LOOP OVER ELES
          for (int j = 0; j < c_gsf_size; ++j) {
@@ -879,7 +924,7 @@ void emuSpectrum()
             //BARREL HEEP
             if (fabs(c_gsfsc_eta[j]) < 1.442
                 && c_gsf_gsfet[j] > bar_et
-                && fabs(c_gsf_isecaldriven[j] - 1.) < 0.01 //!!!
+                && c_gsf_isecaldriven[j]
                 && c_gsf_hovere[j] < bar_hoE
                 && fabs(c_gsf_deltaeta[j]) < bar_DEta
                 && fabs(c_gsf_deltaphi[j]) < bar_DPhi
@@ -892,7 +937,7 @@ void emuSpectrum()
             //ENDCAP HEEP
             if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)
                 && c_gsf_gsfet[j] > end_et
-                && fabs(c_gsf_isecaldriven[j] - 1.) < 0.01 //!!!
+                && c_gsf_isecaldriven[j]
                 && c_gsf_hovere[j] < end_hoE
                 && fabs(c_gsf_deltaeta[j]) < end_DEta
                 && fabs(c_gsf_deltaphi[j]) < end_DPhi
@@ -955,88 +1000,80 @@ void emuSpectrum()
             //MASS CUT
             if (invMass < minInvMass) continue;
 
-            emuMass[p]->Fill(invMass, npv_weight);
-
             float CombRelIso = (c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]] + c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]] + c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]]) / c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]];
 
-            // fill test histograms
-            met[p]->Fill(c_calomet, npv_weight);
-            nVtx[p]->Fill(n_pvValid, npv_weight);
-            if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi[p]->Fill(fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), npv_weight);
-            if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) dPhi[p]->Fill(6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), npv_weight);
-            elePt[p]->Fill(c_gsf_gsfet[GSF_passHEEP[0]], npv_weight);
-            eleEta[p]->Fill(c_gsf_eta[GSF_passHEEP[0]], npv_weight);
-            elePhi[p]->Fill(c_gsf_phi[GSF_passHEEP[0]], npv_weight);
-            eleId1[p]->Fill(c_gsf_deltaeta[GSF_passHEEP[0]], npv_weight);
-            eleId2[p]->Fill(c_gsf_deltaphi[GSF_passHEEP[0]], npv_weight);
-            eleId3[p]->Fill(c_gsf_sigmaIetaIeta[GSF_passHEEP[0]], npv_weight);
-            eleIso1[p]->Fill(c_gsf_ecaliso[GSF_passHEEP[0]], npv_weight);
-            eleIso2[p]->Fill(c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]], npv_weight);
-            eleIso3[p]->Fill(c_gsf_trackiso[GSF_passHEEP[0]], npv_weight);
+            // fill histograms for all, LS and OS
+            for (unsigned int k = 0; k< 3; ++k) {
+               if (k == 1 && c_gsf_charge[GSF_passHEEP[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
+               if (k == 2 && c_gsf_charge[GSF_passHEEP[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) continue;
 
-            muIsoCombRel[p]->Fill(CombRelIso, npv_weight);
-            muPtEleOPtMu[p]->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) muPtPlusOPtMinus[p]->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) muPtPlusOPtMinus[p]->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]]/c_gsf_gsfet[GSF_passHEEP[0]], npv_weight);
-            muPt[p]->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muEta[p]->Fill(c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muPhi[p]->Fill(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muId1[p]->Fill(c_muon_normChi2[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muId2[p]->Fill(c_muon_nhitstrack[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muId3[p]->Fill(c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muIso1[p]->Fill(c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muIso2[p]->Fill(c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
-            muIso3[p]->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               emuMass.at(p).at(k)->Fill(invMass, npv_weight);
 
-            numOfJets[p]->Fill(c_jetAKT_size, npv_weight);
-            numOfJetsPt15[p]->Fill(c_nJetsAKT_pt15, npv_weight);
+               // fill test histograms
+               met.at(p).at(k)->Fill(c_calomet, npv_weight);
+               nVtx.at(p).at(k)->Fill(n_pvValid, npv_weight);
+               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi.at(p).at(k)->Fill(fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), npv_weight);
+               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) dPhi.at(p).at(k)->Fill(6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), npv_weight);
+               elePt.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]], npv_weight);
+               eleEta.at(p).at(k)->Fill(c_gsf_eta[GSF_passHEEP[0]], npv_weight);
+               elePhi.at(p).at(k)->Fill(c_gsf_phi[GSF_passHEEP[0]], npv_weight);
+               eleId1.at(p).at(k)->Fill(c_gsf_deltaeta[GSF_passHEEP[0]], npv_weight);
+               eleId2.at(p).at(k)->Fill(c_gsf_deltaphi[GSF_passHEEP[0]], npv_weight);
+               eleId3.at(p).at(k)->Fill(c_gsf_sigmaIetaIeta[GSF_passHEEP[0]], npv_weight);
+               eleIso1.at(p).at(k)->Fill(c_gsf_ecaliso[GSF_passHEEP[0]], npv_weight);
+               eleIso2.at(p).at(k)->Fill(c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]], npv_weight);
+               eleIso3.at(p).at(k)->Fill(c_gsf_trackiso[GSF_passHEEP[0]], npv_weight);
+
+               muIsoCombRel.at(p).at(k)->Fill(CombRelIso, npv_weight);
+               muPtEleOPtMu.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) muPtPlusOPtMinus.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) muPtPlusOPtMinus.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]]/c_gsf_gsfet[GSF_passHEEP[0]], npv_weight);
+               muPt.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muEta.at(p).at(k)->Fill(c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muPhi.at(p).at(k)->Fill(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muId1.at(p).at(k)->Fill(c_muon_normChi2[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muId2.at(p).at(k)->Fill(c_muon_nhitstrack[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muId3.at(p).at(k)->Fill(c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muIso1.at(p).at(k)->Fill(c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muIso2.at(p).at(k)->Fill(c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+               muIso3.at(p).at(k)->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], npv_weight);
+
+               numOfJets.at(p).at(k)->Fill(c_jetAKT_size, npv_weight);
+               numOfJetsPt15.at(p).at(k)->Fill(c_nJetsAKT_pt15, npv_weight);
+
+            }
 
             //LIKE SIGN OPPOSITE SIGN
-            if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) {
-               //(emu_plus_plus[p])->Fill(invMass);
-               emuMass_LS[p]->Fill(invMass, npv_weight);
-               if (p == DATA) nb_plus_plus++;
-            }
-            if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) {
-               //(emu_plus_minus[p])->Fill(invMass);
-               emuMass_OS[p]->Fill(invMass, npv_weight);
-               if (p == DATA) nb_plus_minus++;
-            }
-            if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) {
-               //(emu_minus_plus[p])->Fill(invMass);
-               emuMass_OS[p]->Fill(invMass, npv_weight);
-               if (p == DATA) nb_minus_plus++;
-            }
-            if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) {
-               //(emu_minus_minus[p])->Fill(invMass);
-               emuMass_LS[p]->Fill(invMass, npv_weight);
-               if (p == DATA) nb_minus_minus++;
-            }
+            if (p == DATA) {
+               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) nb_plus_plus++;
+               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) nb_plus_minus++;
+               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) nb_minus_plus++;
+               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) nb_minus_minus++;
 
-            if (p == DATA && invMass > 600.) cout << "HEEP-TightMU event in DATA (M>600) : run number = " << c_runnumber << " , luminosity block = " << c_luminosityBlock << " , event number = " << c_eventnumber << " , mass = " << invMass <<
-               " , muon_pt = " << c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_eta = " << c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_phi = " << c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_trackIso03 = " << c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_emIso03 = " << c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_hadIso03 = " << c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_VETOtrackIso03 = " << c_muon_trackIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_VETOemIso03 = " << c_muon_emIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_VETOhadIso03 = " << c_muon_hadIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_normChi2 = " << c_muon_normChi2[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_dxy_beamSpot = " << c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_nhitstrack = " << c_muon_nhitstrack[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    " , muon_nhitsmuons = " << c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]] <<
-           //    "                                                          " <<
-               " , gsf_et = " << c_gsf_gsfet[GSF_passHEEP[0]] <<
-           //    " , gsf_eta = " << c_gsf_eta[GSF_passHEEP[0]] <<
-           //    " , gsf_phi = " << c_gsf_phi[GSF_passHEEP[0]] <<
-           //    " , gsf_trackIso = " << c_gsf_trackiso[GSF_passHEEP[0]] <<
-           //    " , gsf_ecalIso = " << c_gsf_ecaliso[GSF_passHEEP[0]] <<
-           //    " , gsf_hcalIso1 = " << c_gsf_hcaliso1[GSF_passHEEP[0]] <<
-           //    " , gsf_hcalIso2 = " << c_gsf_hcaliso2[GSF_passHEEP[0]] <<
-               endl;
-
+               if (invMass > 600.) cout << "HEEP-TightMU event in DATA (M>600) : run number = " << c_runnumber << " , luminosity block = " << c_luminosityBlock << " , event number = " << c_eventnumber << " , mass = " << invMass <<
+                  " , muon_pt = " << c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_eta = " << c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_phi = " << c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_trackIso03 = " << c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_emIso03 = " << c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_hadIso03 = " << c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_VETOtrackIso03 = " << c_muon_trackIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_VETOemIso03 = " << c_muon_emIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_VETOhadIso03 = " << c_muon_hadIso03_ptInVeto[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_normChi2 = " << c_muon_normChi2[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_dxy_beamSpot = " << c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_nhitstrack = " << c_muon_nhitstrack[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    " , muon_nhitsmuons = " << c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]] <<
+              //    "                                                          " <<
+                  " , gsf_et = " << c_gsf_gsfet[GSF_passHEEP[0]] <<
+              //    " , gsf_eta = " << c_gsf_eta[GSF_passHEEP[0]] <<
+              //    " , gsf_phi = " << c_gsf_phi[GSF_passHEEP[0]] <<
+              //    " , gsf_trackIso = " << c_gsf_trackiso[GSF_passHEEP[0]] <<
+              //    " , gsf_ecalIso = " << c_gsf_ecaliso[GSF_passHEEP[0]] <<
+              //    " , gsf_hcalIso1 = " << c_gsf_hcaliso1[GSF_passHEEP[0]] <<
+              //    " , gsf_hcalIso2 = " << c_gsf_hcaliso2[GSF_passHEEP[0]] <<
+                  endl;
+            }
          }
 
          //GSF ACC - MU_GOOD
@@ -1052,7 +1089,12 @@ void emuSpectrum()
             mu1.SetPtEtaPhiM(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], 0.10566);
 
             double invMass = (ele1 + mu1).M();
-            (emu_mass_accVSgood[p])->Fill(invMass, npv_weight);
+
+            for (unsigned int k = 0; k< 3; ++k) {
+               if (k == 1 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
+               if (k == 2 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) continue;
+               emu_mass_accVSgood.at(p).at(k)->Fill(invMass, npv_weight);
+            }
          }
 
       } // END LOOP OVER ENTRIES
@@ -1060,45 +1102,40 @@ void emuSpectrum()
    }//END FILE LOOP
 
    //SCALE MC
-   for (int p = 1; p < nbFile; p++) {
-      //emu_plus_plus[p]->Scale(weight[p] * LumiFactor);
-      //emu_plus_minus[p]->Scale(weight[p] * LumiFactor);
-      //emu_minus_plus[p]->Scale(weight[p] * LumiFactor);
-      //emu_minus_minus[p]->Scale(weight[p] * LumiFactor);
+   for (int p = 1; p < nbFile; ++p) {
+      for (unsigned int k = 0; k < 3; ++k) {
+         emuMass.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         emu_mass_accVSgood.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
 
-      emuMass[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      emuMass_LS[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      emuMass_OS[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      emu_mass_accVSgood[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         met.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         nVtx.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         dPhi.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         elePt.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         eleEta.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         elePhi.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         eleId1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         eleId2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         eleId3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         eleIso1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         eleIso2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         eleIso3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
 
-      met[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      nVtx[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      dPhi[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      elePt[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      eleEta[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      elePhi[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      eleId1[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      eleId2[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      eleId3[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      eleIso1[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      eleIso2[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      eleIso3[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muIsoCombRel.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muPtEleOPtMu.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muPtPlusOPtMinus.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muPt.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muEta.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muPhi.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muId1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muId2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muId3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muIso1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muIso2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muIso3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
 
-      muIsoCombRel[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muPtEleOPtMu[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muPtPlusOPtMinus[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muPt[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muEta[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muPhi[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muId1[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muId2[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muId3[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muIso1[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muIso2[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      muIso3[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-
-      numOfJets[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-      numOfJetsPt15[p]->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         numOfJets.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         numOfJetsPt15.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+      }
    }
 
    //PRINT INTEGRAL
@@ -1107,66 +1144,61 @@ void emuSpectrum()
    cout << "HEEP - TIGHT MU        Lumi = " << LumiFactor << "pb-1" << endl;
    cout << "                       pT   = " << bar_et << "GeV/c" << endl;
    cout << "                       M > " << minInvMass << "GeV/c^2" << endl;
-   cout << "nb data      = " << emuMass[DATA]->Integral() << endl;
+   cout << "nb data      = " << emuMass.at(DATA).at(ALL)->Integral() << endl;
    cout << "------------------------------------" << endl;
-   cout << "nb TTbar     = " << emuMass[TTBAR]->Integral() << endl;
-   cout << "nb Ztautau   = " << emuMass[ZTT]->Integral() << endl;
-   cout << "nb WW        = " << emuMass[WW]->Integral() << endl;
-   cout << "nb WZ        = " << emuMass[WZ]->Integral() << endl;
-   cout << "nb tW        = " << emuMass[TW]->Integral() << endl;
+   cout << "nb TTbar     = " << emuMass.at(TTBAR).at(ALL)->Integral() << endl;
+   cout << "nb Ztautau   = " << emuMass.at(ZTT).at(ALL)->Integral() << endl;
+   cout << "nb WW        = " << emuMass.at(WW).at(ALL)->Integral() << endl;
+   cout << "nb WZ        = " << emuMass.at(WZ).at(ALL)->Integral() << endl;
+   cout << "nb tW        = " << emuMass.at(TW).at(ALL)->Integral() << endl;
    cout << "- - - - - - - - - - - - - - - - - - " << endl;
-   cout << "nb WJets     = " << emuMass[WJET]->Integral() << endl;
-   cout << "nb Zmumu     = " << emuMass[ZMM]->Integral() << endl;
-   cout << "nb Zee       = " << emuMass[ZEE]->Integral() << endl;
+   cout << "nb WJets     = " << emuMass.at(WJET).at(ALL)->Integral() << endl;
+   cout << "nb Zmumu     = " << emuMass.at(ZMM).at(ALL)->Integral() << endl;
+   cout << "nb Zee       = " << emuMass.at(ZEE).at(ALL)->Integral() << endl;
    cout << "------------------------------------" << endl;
-   cout << "TOT ttlike   = " << emuMass[TTBAR]->Integral() + emuMass[ZTT]->Integral() + emuMass[WW]->Integral() + emuMass[WZ]->Integral() + emuMass[TW]->Integral() << endl;
-   cout << "TOT contam   = " << emuMass[WJET]->Integral() + emuMass[ZMM]->Integral() + emuMass[ZEE]->Integral() << endl;
+   cout << "TOT ttlike   = " << emuMass.at(TTBAR).at(ALL)->Integral() + emuMass.at(ZTT).at(ALL)->Integral() + emuMass.at(WW).at(ALL)->Integral() + emuMass.at(WZ).at(ALL)->Integral() + emuMass.at(TW).at(ALL)->Integral() << endl;
+   cout << "TOT contam   = " << emuMass.at(WJET).at(ALL)->Integral() + emuMass.at(ZMM).at(ALL)->Integral() + emuMass.at(ZEE).at(ALL)->Integral() << endl;
    cout << "------------------------------------" << endl;
-   cout << "TOT MC       = " << emuMass[TTBAR]->Integral() + emuMass[ZTT]->Integral() + emuMass[WW]->Integral() + emuMass[WZ]->Integral() + emuMass[TW]->Integral() + emuMass[WJET]->Integral() + emuMass[ZMM]->Integral() + emuMass[ZEE]->Integral() << endl;
+   cout << "TOT MC       = " << emuMass.at(TTBAR).at(ALL)->Integral() + emuMass.at(ZTT).at(ALL)->Integral() + emuMass.at(WW).at(ALL)->Integral() + emuMass.at(WZ).at(ALL)->Integral() + emuMass.at(TW).at(ALL)->Integral() + emuMass.at(WJET).at(ALL)->Integral() + emuMass.at(ZMM).at(ALL)->Integral() + emuMass.at(ZEE).at(ALL)->Integral() << endl;
    cout << "------------------------------------" << endl;
    cout << endl;
 
    //SUM MC
    for (int p = 1; p < nbFile; ++p) {
-      for (int q = p + 1; q < nbFile; ++q) {
-         //emu_plus_plus[p]->Add(emu_plus_plus[q]);
-         //emu_plus_minus[p]->Add(emu_plus_minus[q]);
-         //emu_minus_plus[p]->Add(emu_minus_plus[q]);
-         //emu_minus_minus[p]->Add(emu_minus_minus[q]);
+      for (unsigned int k = 0; k < 3; ++k) {
+         for (int q = p + 1; q < nbFile; ++q) {
+            emuMass.at(p).at(k)->Add(emuMass.at(q).at(k));
+            emu_mass_accVSgood.at(p).at(k)->Add(emu_mass_accVSgood.at(q).at(k));
 
-         emuMass[p]->Add(emuMass[q]);
-         emuMass_LS[p]->Add(emuMass_LS[q]);
-         emuMass_OS[p]->Add(emuMass_OS[q]);
-         emu_mass_accVSgood[p]->Add(emu_mass_accVSgood[q]);
-
-         met[p]->Add(met[q]);
-         nVtx[p]->Add(nVtx[q]);
-         dPhi[p]->Add(dPhi[q]);
-         elePt[p]->Add(elePt[q]);
-         eleEta[p]->Add(eleEta[q]);
-         elePhi[p]->Add(elePhi[q]);
-         eleId1[p]->Add(eleId1[q]);
-         eleId2[p]->Add(eleId2[q]);
-         eleId3[p]->Add(eleId3[q]);
-         eleIso1[p]->Add(eleIso1[q]);
-         eleIso2[p]->Add(eleIso2[q]);
-         eleIso3[p]->Add(eleIso3[q]);
+            met.at(p).at(k)->Add(met.at(q).at(k));
+            nVtx.at(p).at(k)->Add(nVtx.at(q).at(k));
+            dPhi.at(p).at(k)->Add(dPhi.at(q).at(k));
+            elePt.at(p).at(k)->Add(elePt.at(q).at(k));
+            eleEta.at(p).at(k)->Add(eleEta.at(q).at(k));
+            elePhi.at(p).at(k)->Add(elePhi.at(q).at(k));
+            eleId1.at(p).at(k)->Add(eleId1.at(q).at(k));
+            eleId2.at(p).at(k)->Add(eleId2.at(q).at(k));
+            eleId3.at(p).at(k)->Add(eleId3.at(q).at(k));
+            eleIso1.at(p).at(k)->Add(eleIso1.at(q).at(k));
+            eleIso2.at(p).at(k)->Add(eleIso2.at(q).at(k));
+            eleIso3.at(p).at(k)->Add(eleIso3.at(q).at(k));
  
-         muIsoCombRel[p]->Add(muIsoCombRel[q]);
-         muPtEleOPtMu[p]->Add(muPtEleOPtMu[q]);
-         muPtPlusOPtMinus[p]->Add(muPtPlusOPtMinus[q]);
-         muPt[p]->Add(muPt[q]);
-         muEta[p]->Add(muEta[q]);
-         muPhi[p]->Add(muPhi[q]);
-         muId1[p]->Add(muId1[q]);
-         muId2[p]->Add(muId2[q]);
-         muId3[p]->Add(muId3[q]);
-         muIso1[p]->Add(muIso1[q]);
-         muIso2[p]->Add(muIso2[q]);
-         muIso3[p]->Add(muIso3[q]);
+            muIsoCombRel.at(p).at(k)->Add(muIsoCombRel.at(q).at(k));
+            muPtEleOPtMu.at(p).at(k)->Add(muPtEleOPtMu.at(q).at(k));
+            muPtPlusOPtMinus.at(p).at(k)->Add(muPtPlusOPtMinus.at(q).at(k));
+            muPt.at(p).at(k)->Add(muPt.at(q).at(k));
+            muEta.at(p).at(k)->Add(muEta.at(q).at(k));
+            muPhi.at(p).at(k)->Add(muPhi.at(q).at(k));
+            muId1.at(p).at(k)->Add(muId1.at(q).at(k));
+            muId2.at(p).at(k)->Add(muId2.at(q).at(k));
+            muId3.at(p).at(k)->Add(muId3.at(q).at(k));
+            muIso1.at(p).at(k)->Add(muIso1.at(q).at(k));
+            muIso2.at(p).at(k)->Add(muIso2.at(q).at(k));
+            muIso3.at(p).at(k)->Add(muIso3.at(q).at(k));
 
-         numOfJets[p]->Add(numOfJets[q]);
-         numOfJetsPt15[p]->Add(numOfJetsPt15[q]);
+            numOfJets.at(p).at(k)->Add(numOfJets.at(q).at(k));
+            numOfJetsPt15.at(p).at(k)->Add(numOfJetsPt15.at(q).at(k));
+         }
       }
    }
 
@@ -1175,11 +1207,11 @@ void emuSpectrum()
    cout << "------------------------------------" << endl;
    cout << "  Like Sign                         " << endl;
    cout << endl;
-   cout << "nb LS DATA   = " << emuMass_LS[DATA]->Integral() << " +- " << sqrt(emuMass_LS[DATA]->Integral()) << endl;
-   cout << "nb LS MC     = " << emuMass_LS[1]->Integral() << endl;
+   cout << "nb LS DATA   = " << emuMass.at(DATA).at(LS)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(LS)->Integral()) << endl;
+   cout << "nb LS MC     = " << emuMass.at(1).at(LS)->Integral() << endl;
    cout << endl;
-   cout << "nb OS DATA   = " << emuMass_OS[DATA]->Integral() << " +- " << sqrt(emuMass_OS[DATA]->Integral()) << endl;
-   cout << "nb OS MC     = " << emuMass_OS[1]->Integral() << endl;
+   cout << "nb OS DATA   = " << emuMass.at(DATA).at(OS)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(OS)->Integral()) << endl;
+   cout << "nb OS MC     = " << emuMass.at(1).at(OS)->Integral() << endl;
    cout << "- - - - - - - - - - - - - - - - - - " << endl;
    cout << "nb e+mu+     = " << nb_plus_plus << endl;
    cout << "nb e+mu-     = " << nb_plus_minus << endl;
@@ -1188,52 +1220,55 @@ void emuSpectrum()
    cout << "------------------------------------" << endl;
    cout << "--For ttlike-- (NO QCD CORR)" << endl;
    cout << "INTEGRAL M> 60" << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(7, 150)  - emuMass[6]->Integral(7, 150) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(7, 150)  - emuMass.at(6).at(ALL)->Integral(7, 150) << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL M>120" << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(13, 150) - emuMass[6]->Integral(13, 150) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(13, 150) - emuMass.at(6).at(ALL)->Integral(13, 150) << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL M>200" << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(21, 150) - emuMass[6]->Integral(21, 150) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(21, 150) - emuMass.at(6).at(ALL)->Integral(21, 150) << endl;
    cout << "--------------" << endl;
    cout << "--For ttlike-- (NO QCD CORR) + W+Jet + Zmumu" << endl;
    cout << "INTEGRAL M> 60" << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(7, 150)  << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(7, 150)  << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL M>120" << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(13, 150) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(13, 150) << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL M>200" << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(21, 150) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(21, 150) << endl;
    cout << "--------------" << endl;
 
    if (useQCDShape) {
       TH1F *qcdBg = new TH1F("qcdBg", "qcdBg", 150, 0., 1500.);
-      qcdBg->Add(emuMass_LS[DATA]);
-      qcdBg->Add(emuMass_LS[1], -1.);
+      qcdBg->Add(emuMass.at(DATA).at(LS));
+      qcdBg->Add(emuMass.at(1).at(LS), -1.);
       for (int i = 0; i < qcdBg->GetNbinsX() + 2; ++i) {
          if (qcdBg->GetBinContent(i) < 0) qcdBg->SetBinContent(i, 0.);
       }
-      emuMass.push_back(new TH1F("emuMass_" + suffix[QCD], "emuMass_" + suffix[QCD], 150, 0., 1500.));
-      emuMass_LS.push_back(new TH1F("emuMass_LS_" + suffix[QCD], "emuMass_LS_" + suffix[QCD], 150, 0., 1500.));
-      emuMass_OS.push_back(new TH1F("emuMass_OS_" + suffix[QCD], "emuMass_OS_" + suffix[QCD], 150, 0., 1500.));
+
+      vector<TH1F *> helper;
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMass_" + sign[k] + suffix[QCD], "emuMass_" + sign[k] + suffix[QCD], 150, 0., 1500.));
+      emuMass.push_back(helper);
 
       // add QCD histo to histogram stack
       for (int p = 1; p < nbFile + 1; ++p) {
-         emuMass[p]->Add(qcdBg, 2.);
-         emuMass_LS[p]->Add(qcdBg);
-         emuMass_OS[p]->Add(qcdBg);
+         for (unsigned int k = 0; k < 3; ++k) {
+            float factor = 1.;
+            if (k == 0) factor = 2.;
+            emuMass.at(p).at(k)->Add(qcdBg, factor);
+         }
       }
    }
    else {
       // calculate qcd scale factor
-      float QCDScaleFactor = 1 + 2 * (emuMass_LS[DATA]->Integral() - emuMass_LS[1]->Integral()) / emuMass[1]->Integral();
+      float QCDScaleFactor = 1 + 2 * (emuMass.at(DATA).at(LS)->Integral() - emuMass.at(1).at(LS)->Integral()) / emuMass.at(1).at(ALL)->Integral();
       cout << endl << endl << "calculated QCD scale factor from data: " << QCDScaleFactor << endl;
       // apply QCD scale factor
-      if (calcQCDScaleFactor) emuMass[1]->Scale(QCDScaleFactor);
+      if (calcQCDScaleFactor) emuMass.at(1).at(ALL)->Scale(QCDScaleFactor);
       else {
          cout << "applied preset QCD scale factor:       " << QCD_ScaleFactor << endl;
-         emuMass[1]->Scale(QCD_ScaleFactor);
+         emuMass.at(1).at(ALL)->Scale(QCD_ScaleFactor);
       }
    }
 
@@ -1242,40 +1277,40 @@ void emuSpectrum()
    else cout << "AFTER CORRECTION WITH QCD FACTOR:" << endl;
    cout << endl;
    cout << "TOTAL INTEGRAL EMU" << endl;
-   cout << "nb data     = " << emuMass[DATA]->Integral() << " +- " << sqrt(emuMass[DATA]->Integral()) << endl;
-   cout << "nb MC       = " << emuMass[1]->Integral() << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral()) << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral() << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>60 " << endl;
-   cout << "nb data     = " << emuMass[DATA]->Integral(7, 150) << " +- " << sqrt(emuMass[DATA]->Integral(7, 150)) << endl;
-   cout << "nb MC       = " << emuMass[1]->Integral(7, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(7, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(7, 150)) << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(7, 150) << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>120" << endl;
-   cout << "nb data     = " << emuMass[DATA]->Integral(13, 150) << " +- " << sqrt((emuMass[DATA])->Integral(13, 150)) << endl;
-   cout << "nb MC       = " << emuMass[1]->Integral(13, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(13, 150) << " +- " << sqrt((emuMass.at(DATA).at(ALL))->Integral(13, 150)) << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(13, 150) << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>200" << endl;
-   cout << "nb data     = " << emuMass[DATA]->Integral(21, 150) << " +- " << sqrt(emuMass[DATA]->Integral(21, 150)) << endl;
-   cout << "nb MC       = " << emuMass[1]->Integral(21, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(21, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(21, 150)) << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(21, 150) << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>500" << endl;
-   cout << "nb data     = " << emuMass[DATA]->Integral(51, 150) << " +- " << sqrt(emuMass[DATA]->Integral(51, 150)) << endl;
-   cout << "nb MC       = " << emuMass[1]->Integral(51, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(51, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(51, 150)) << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(51, 150) << endl;
    cout << "--------------" << endl;
 
    cout << "--For ttlike-- QCD CORR + W+Jet + Zmumu" << endl;
    cout << "60  < M < 120 " << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(7, 12)  << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(7, 12)  << endl;
    cout << "--------------" << endl;
    cout << "120 < M < 200 " << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(13, 20) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(13, 20) << endl;
    cout << "--------------" << endl;
    cout << "M > 200     " << endl;
-   cout << "nb tt       = " << emuMass[1]->Integral(21, 150) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(21, 150) << endl;
    cout << "--------------" << endl;
 
-   emu_dilepton->Add(emuMass[1]);
-   emu_ewk->Add(emuMass[6]);
-   //emu_jet->Add(emuMass[8]);
+   emu_dilepton->Add(emuMass.at(1).at(ALL));
+   emu_ewk->Add(emuMass.at(6).at(ALL));
+   //emu_jet->Add(emuMass.at(8).at(ALL));
 
    //WRITING
    stringstream ssOutfile;
@@ -1296,42 +1331,41 @@ void emuSpectrum()
    //emuLoose_dataOverZtautau_nValidPv->Write();
 
    for (int p = 0; p < nbFile; ++p) {
-      emuMass[p]->Write();
-      emuMass_LS[p]->Write();
-      emuMass_OS[p]->Write();
+      for (unsigned int k = 0; k < 3; ++k) {
+         emuMass.at(p).at(k)->Write();
+         emu_mass_accVSgood.at(p).at(k)->Write();
 
-      met[p]->Write();
-      nVtx[p]->Write();
-      dPhi[p]->Write();
-      elePt[p]->Write();
-      eleEta[p]->Write();
-      elePhi[p]->Write();
-      eleId1[p]->Write();
-      eleId2[p]->Write();
-      eleId3[p]->Write();
-      eleIso1[p]->Write();
-      eleIso2[p]->Write();
-      eleIso3[p]->Write();
+         met.at(p).at(k)->Write();
+         nVtx.at(p).at(k)->Write();
+         dPhi.at(p).at(k)->Write();
+         elePt.at(p).at(k)->Write();
+         eleEta.at(p).at(k)->Write();
+         elePhi.at(p).at(k)->Write();
+         eleId1.at(p).at(k)->Write();
+         eleId2.at(p).at(k)->Write();
+         eleId3.at(p).at(k)->Write();
+         eleIso1.at(p).at(k)->Write();
+         eleIso2.at(p).at(k)->Write();
+         eleIso3.at(p).at(k)->Write();
 
-      muIsoCombRel[p]->Write();
-      muPtEleOPtMu[p]->Write();
-      muPtPlusOPtMinus[p]->Write();
-      muPt[p]->Write();
-      muEta[p]->Write();
-      muPhi[p]->Write();
-      muId1[p]->Write();
-      muId2[p]->Write();
-      muId3[p]->Write();
-      muIso1[p]->Write();
-      muIso2[p]->Write();
-      muIso3[p]->Write();
+         muIsoCombRel.at(p).at(k)->Write();
+         muPtEleOPtMu.at(p).at(k)->Write();
+         muPtPlusOPtMinus.at(p).at(k)->Write();
+         muPt.at(p).at(k)->Write();
+         muEta.at(p).at(k)->Write();
+         muPhi.at(p).at(k)->Write();
+         muId1.at(p).at(k)->Write();
+         muId2.at(p).at(k)->Write();
+         muId3.at(p).at(k)->Write();
+         muIso1.at(p).at(k)->Write();
+         muIso2.at(p).at(k)->Write();
+         muIso3.at(p).at(k)->Write();
 
-      numOfJets[p]->Write();
-      numOfJetsPt15[p]->Write();
+         numOfJets.at(p).at(k)->Write();
+         numOfJetsPt15.at(p).at(k)->Write();
+      }
    }
-   emuMass[QCD]->Write();
-   emuMass_LS[QCD]->Write();
-   emuMass_OS[QCD]->Write();
+   for (unsigned int k = 0; k < 3; ++k) emuMass.at(QCD).at(k)->Write();
 
    output->Close();
 }
