@@ -16,7 +16,7 @@
   //vector<TH1F *> emuTest_zz;
   //vector<TH1F *> emuTest_qcd;
 
-int macro_MakeTestPlot(unsigned int k = 0)
+int macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
   TFile input("testEmuSpec4699pb-1.root", "open");
@@ -35,7 +35,7 @@ int macro_MakeTestPlot(unsigned int k = 0)
 
   if (k > 26) k = 0;
   if (k == 0) {
-    cout << "Use .x macro_MakeTestPlot.C(x) with x being the number of the test histogram to plot." << endl;
+    cout << "Use .x macro_MakeTestPlot.C(x, y) with x {1-26} being the number of the test histogram to plot and y {0-2} selects ALL, LS or OS." << endl;
     cout << "-----------------------------------" << endl;
     cout << "MET                 1" << endl;
     cout << "nVtx                2" << endl;
@@ -126,6 +126,8 @@ int macro_MakeTestPlot(unsigned int k = 0)
                                    "numOfJets",
                                    "numOfJetsPt15"
                                   };
+  TString sign[3] = {"", "_LS", "_OS"};
+  TString nameSign[3] = {"", " LS", " OS"};
   TString nameSuffix[2] = {"", "Cumul"};
   TString titleSuffix[2] = {"", " - Cumulative"};
 
@@ -135,17 +137,17 @@ int macro_MakeTestPlot(unsigned int k = 0)
     input.cd();
 
     // get the histograms
-    emuTest_data.push_back((TH1F *)gDirectory->Get(testVar[k] + "_data"));
-    emuTest_ttbar.push_back((TH1F *)gDirectory->Get(testVar[k] + "_ttbar"));
-    emuTest_ztautau.push_back((TH1F *)gDirectory->Get(testVar[k] + "_ztautau"));
-    emuTest_ww.push_back((TH1F *)gDirectory->Get(testVar[k] + "_ww"));
-    emuTest_wz.push_back((TH1F *)gDirectory->Get(testVar[k] + "_wz"));
-    emuTest_tw.push_back((TH1F *)gDirectory->Get(testVar[k] + "_tw"));
-    emuTest_wjets.push_back((TH1F *)gDirectory->Get(testVar[k] + "_wjets"));
-    emuTest_zmumu.push_back((TH1F *)gDirectory->Get(testVar[k] + "_zmumu"));
-    emuTest_zee.push_back((TH1F *)gDirectory->Get(testVar[k] + "_zee"));
-    //emuTest_zz.push_back((TH1F *)gDirectory->Get(testVar[k] + "_zz"));
-    //emuTest_qcd.push_back((TH1F *)gDirectory->Get(testVar[k] + "_qcd"));
+    emuTest_data.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_data"));
+    emuTest_ttbar.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_ttbar"));
+    emuTest_ztautau.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_ztautau"));
+    emuTest_ww.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_ww"));
+    emuTest_wz.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_wz"));
+    emuTest_tw.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_tw"));
+    emuTest_wjets.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_wjets"));
+    emuTest_zmumu.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_zmumu"));
+    emuTest_zee.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_zee"));
+    //emuTest_zz.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_zz"));
+    //emuTest_qcd.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_qcd"));
 
     // set unique name
     emuTest_data.back()->SetName(emuTest_data.back()->GetName() + nameSuffix[j]);
@@ -160,37 +162,37 @@ int macro_MakeTestPlot(unsigned int k = 0)
     //emuTest_zz.back()->SetName(emuTest_zz.back()->GetName() + nameSuffix[j]);
     //emuTest_qcd.back()->SetName(emuTest_qcd.back()->GetName() + nameSuffix[j]);
 
-    // integrate from the right side
-    if (j == 1) { 
-      // loop over bins
-      double error;
-      for (int i = 1; i < 101; ++i) {
-        emuTest_data.back()->SetBinContent(i, emuTest_data.back()->IntegralAndError(i, 100, error));
-        emuTest_data.back()->SetBinError(i, error);
-        emuTest_ttbar.back()->SetBinContent(i, emuTest_ttbar.back()->IntegralAndError(i, 100, error));
-        emuTest_ttbar.back()->SetBinError(i, error);
-        emuTest_ztautau.back()->SetBinContent(i, emuTest_ztautau.back()->IntegralAndError(i, 100, error));
-        emuTest_ztautau.back()->SetBinError(i, error);
-        emuTest_ww.back()->SetBinContent(i, emuTest_ww.back()->IntegralAndError(i, 100, error));
-        emuTest_ww.back()->SetBinError(i, error);
-        emuTest_wz.back()->SetBinContent(i, emuTest_wz.back()->IntegralAndError(i, 100, error));
-        emuTest_wz.back()->SetBinError(i, error);
-        emuTest_tw.back()->SetBinContent(i, emuTest_tw.back()->IntegralAndError(i, 100, error));
-        emuTest_tw.back()->SetBinError(i, error);
-        emuTest_wjets.back()->SetBinContent(i, emuTest_wjets.back()->IntegralAndError(i, 100, error));
-        emuTest_wjets.back()->SetBinError(i, error);
-        emuTest_zmumu.back()->SetBinContent(i, emuTest_zmumu.back()->IntegralAndError(i, 100, error));
-        emuTest_zmumu.back()->SetBinError(i, error);
-        emuTest_zee.back()->SetBinContent(i, emuTest_zee.back()->IntegralAndError(i, 100, error));
-        emuTest_zee.back()->SetBinError(i, error);
-        //emuTest_zz.back()->SetBinContent(i, emuTest_zz.back()->IntegralAndError(i, 100, error));
-        //emuTest_zz.back()->SetBinError(i, error);
-        //emuTest_qcd.back()->SetBinContent(i, emuTest_qcd.back()->IntegralAndError(i, 100, error));
-        //emuTest_qcd.back()->SetBinError(i, error);
-      }     
-    }
+    //// integrate from the right side
+    //if (j == 1) { 
+    //  // loop over bins
+    //  double error;
+    //  for (int i = 1; i < 101; ++i) {
+    //    emuTest_data.back()->SetBinContent(i, emuTest_data.back()->IntegralAndError(i, 100, error));
+    //    emuTest_data.back()->SetBinError(i, error);
+    //    emuTest_ttbar.back()->SetBinContent(i, emuTest_ttbar.back()->IntegralAndError(i, 100, error));
+    //    emuTest_ttbar.back()->SetBinError(i, error);
+    //    emuTest_ztautau.back()->SetBinContent(i, emuTest_ztautau.back()->IntegralAndError(i, 100, error));
+    //    emuTest_ztautau.back()->SetBinError(i, error);
+    //    emuTest_ww.back()->SetBinContent(i, emuTest_ww.back()->IntegralAndError(i, 100, error));
+    //    emuTest_ww.back()->SetBinError(i, error);
+    //    emuTest_wz.back()->SetBinContent(i, emuTest_wz.back()->IntegralAndError(i, 100, error));
+    //    emuTest_wz.back()->SetBinError(i, error);
+    //    emuTest_tw.back()->SetBinContent(i, emuTest_tw.back()->IntegralAndError(i, 100, error));
+    //    emuTest_tw.back()->SetBinError(i, error);
+    //    emuTest_wjets.back()->SetBinContent(i, emuTest_wjets.back()->IntegralAndError(i, 100, error));
+    //    emuTest_wjets.back()->SetBinError(i, error);
+    //    emuTest_zmumu.back()->SetBinContent(i, emuTest_zmumu.back()->IntegralAndError(i, 100, error));
+    //    emuTest_zmumu.back()->SetBinError(i, error);
+    //    emuTest_zee.back()->SetBinContent(i, emuTest_zee.back()->IntegralAndError(i, 100, error));
+    //    emuTest_zee.back()->SetBinError(i, error);
+    //    //emuTest_zz.back()->SetBinContent(i, emuTest_zz.back()->IntegralAndError(i, 100, error));
+    //    //emuTest_zz.back()->SetBinError(i, error);
+    //    //emuTest_qcd.back()->SetBinContent(i, emuTest_qcd.back()->IntegralAndError(i, 100, error));
+    //    //emuTest_qcd.back()->SetBinError(i, error);
+    //  }     
+    //}
 
-    TCanvas *emuPlot = new TCanvas("emuPlot" + testVar[k] + nameSuffix[j], "emu Spectrum " + histoTitleTestVar[k] + titleSuffix[j], 100, 100, 800, 600);
+    TCanvas *emuPlot = new TCanvas("emuPlot" + testVar[k] + sign[l] + nameSuffix[j], "emu Spectrum " + histoTitleTestVar[k] + nameSign[l] + titleSuffix[j], 100, 100, 800, 600);
     emuPlot->SetBorderMode(0);
     emuPlot->SetFrameBorderMode(0);
     emuPlot->SetFillColor(0);
@@ -208,8 +210,8 @@ int macro_MakeTestPlot(unsigned int k = 0)
     emuTest_ttbar.back()->GetXaxis()->SetLabelSize(0.04);
     //emuTest_ttbar.back()->GetXaxis()->SetRangeUser(60., 1000.);
 
-    if (j == 1) emuTest_ttbar.back()->GetYaxis()->SetTitle("cumulated # of " + histoTitleTestVar[k] + " events");
-    else emuTest_ttbar.back()->GetYaxis()->SetTitle("# of " + histoTitleTestVar[k] + " events");
+    if (j == 1) emuTest_ttbar.back()->GetYaxis()->SetTitle("cumulated # of " + histoTitleTestVar[k] + nameSign[l] + " events");
+    else emuTest_ttbar.back()->GetYaxis()->SetTitle("# of " + histoTitleTestVar[k] + nameSign[l] + " events");
     emuTest_ttbar.back()->GetYaxis()->SetTitleSize(0.04);
     emuTest_ttbar.back()->GetYaxis()->SetTitleOffset(1.2);
 
