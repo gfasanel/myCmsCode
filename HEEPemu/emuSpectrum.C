@@ -39,12 +39,17 @@
 
 using namespace std;
 
-int Trigger(TFile *inFile, unsigned int &entry, int &prescale);
+int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector = 0);
+
+pair<unsigned int, unsigned int> runs_HLT_Mu15_Photon20_CaloIdL(99999999, 0);
+pair<unsigned int, unsigned int> runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL(99999999, 0);
+pair<unsigned int, unsigned int> runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL(99999999, 0);
 
 void emuSpectrum()
 {
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 4699.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   float LumiFactor = 4684.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   //float LumiFactor = 4699.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    //float LumiFactor = 3534.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    //float LumiFactor = 3190.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    //float LumiFactor = 2179.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
@@ -52,20 +57,37 @@ void emuSpectrum()
    //float LumiFactor = 702.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
 
    // DATA file
-   TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_4699pb-1.root";
+   TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_gct1_12_4684pb-1.root";
+   //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_4699pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-178078_7TeV_Collisions11_JSON_3534pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-177515_7TeV_Collisions11_JSON_3190pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6-Cert_160404-173692_7TeV_Collisions11_JSON_2179pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco+05Aug2011+PromptReco-AOD-Cert_160404-173244_7TeV_1932pb-1.root";
    //TString dataFile = "/user_mnt/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/total_MuEG-160404-163869-ReReco10May-GoldenJSON-27May-191pb_+_MuEG-165088-166861-PromptV4-GoldenJSON-17Jun-511pb__702pb.root";
 
+   string outfileName = "testEmuSpec";
+   //string outfileName = "testEmuSpecNewDY";
+
    unsigned nPVtxMax = 20; // max number of primary vertices
 
    // scale factors
+   // TODO errors and distinction EB - EE
    float Elec_trigger = 0.94;
    float Elec_ScaleFactor = 1.008 * 0.978;
    float Muon_ScaleFactor = 0.985;
    float Lumi_ScaleFactor = 1.0;
+
+   // systematical errors
+   float systErrTtbar = 0.15;
+   //float systErrWW = 0.;   // FIXME
+   //float systErrWZ = 0.;   // FIXME
+   //float systErrTW = 0.15; // FIXME
+   //float systErrWJets = 0.;   // FIXME
+   //float systErrZtt = 0.;   // FIXME
+   //float systErrZmm = 0.;   // FIXME
+   //float systErrZee = 0.;   // FIXME
+   float systErrLumi = 0.045;
+   float systErrEff = 0.02;
 
    bool useQCDShape = true;
    bool calcQCDScaleFactor = false;
@@ -87,37 +109,37 @@ void emuSpectrum()
    int muon_nSegMatchMin = 2;
    float muon_relIsoCutMax = 0.1;
 
-   //HEEP selection
+   //HEEP selection v3.2
    //BARREL
    float bar_et = 35.;
    float bar_hoE = 0.05;
    float bar_DEta = 0.005;
-   float bar_DPhi = 0.09;
+   float bar_DPhi = 0.06;
    float bar_e2x5e5x5 = 0.94;
    float bar_e1x5e5x5 = 0.83;
    float bar_isoEcalHcal1_1 = 2.;
    float bar_isoEcalHcal1_2 = 0.03;
-   float bar_isoTrack = 7.5;
+   float bar_isoTrack = 5.;
    int bar_missInnerHits = 0;
 
    //ENDCAP
    float end_et = 40.;
    float end_hoE = 0.05;
    float end_DEta = 0.007 ;
-   float end_DPhi = 0.09;
+   float end_DPhi = 0.06;
    float end_e2x5e5x5 = 0.;
    float end_e1x5e5x5 = 0.;
    float end_sigmaietaieta = 0.03;
    float end_isoEcalHcal1_1 = 2.5;
    float end_isoEcalHcal1_2 = 0.03;
-   float end_isoHcal2 = 0.5;
-   float end_isoTrack = 15.;
+   float end_isoTrack = 5.;
    int end_missInnerHits = 0;
    ///////////////////////////////////////////////////////////////////////////
 
    TH1::SetDefaultSumw2(kTRUE);
 
-   float MCemuScaleFactor = Elec_trigger * Elec_ScaleFactor * Muon_ScaleFactor * Lumi_ScaleFactor; 
+   float MCemuScaleFactor = Elec_ScaleFactor * Muon_ScaleFactor * Lumi_ScaleFactor; 
+   float MCScaleFactor = Elec_ScaleFactor * Muon_ScaleFactor * Lumi_ScaleFactor; 
 
    ///////////////////////////////////////////////////////////////////////////
    // INPUT FILES
@@ -128,21 +150,21 @@ void emuSpectrum()
    input.push_back(new TFile(dataFile, "open"));
 
    // MC
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_TT_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim25_RUN2/res/total_tree.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN1/res/total_missing1And13.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root", "open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root", "open"));
    input.push_back(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WW_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN2/res/total_tree.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WZ_TuneZ2_7TeV_pythia6_tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/T_plus_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_total_tree.root","open")); 
-   input.push_back(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_12.root","open")); 
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/MC-2011-v2_WJetsToLNu_TuneZ2_7TeV-madgraph-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_TreeEMuSkim35_RUN1/res/total_tree.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToMuMu_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v1-AODSIM_TreeEMuSkim35_S3V11v1_RUN2/res/total_tree.root","open"));
+   input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root", "open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root", "open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
+   input.push_back(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root","open")); 
+   //input.push_back(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_12.root","open")); 
+   input.push_back(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root", "open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root","open"));
    input.push_back(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_12.root","open"));
-   //input.push_back(new TFile("/user/vdero/ProdTreeSpring2011/ForTreeProdCMSSW_4_2_3/src/UserCode/HEEPSkims/test/MC-2011-v3_DYToEE_M-20_TuneZ2_7TeV-pythia6-Summer11-PU_S3_START42_V11-v2-AODSIM_TreeEMuSkim35_RUN4/res/total_tree.root","open"));
+   //input.push_back(new TFile("/user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root","open"));
    input.push_back(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_12.root","open"));
    //input.push_back(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root","open"));
 
@@ -151,22 +173,22 @@ void emuSpectrum()
    //WEIGHTS FOR 1pb-1
    weight.push_back(1.);                                  //DATA        0 black
 
-   //weight.push_back(0.000149593);                         //TTbar       1 red         (1089625 event - xsect NNLO 163pb) -- 21 JUIN 2011
-   weight.push_back(0.000044031);                         //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
-   //weight.push_back(0.000936761);                         //Ztautau     2 green       (2032536 event * 14/16 - xsect 1666pb)
+   weight.push_back(4.40309E-5);                          //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 20.11.2011
+   //weight.push_back(0.000044031);                         //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
+   //weight.push_back(8.35612E-5);                         //Ztautau     2 green       (19937479 event  - xsect 1666pb) -- 24.11.2011
    weight.push_back(0.000821491);                         //Ztautau     2 green       (2028020 event  - xsect 1666pb)
-   //weight.push_back(0.000010175);                         //WW          3 dark blue   (4225916 event - xsect NNLO 43.pb (note muons) ) -- 28 JUIL 2011
-   weight.push_back(0.000020727);                         //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 17.10.2011
-   //weight.push_back(0.000004220);                         //WZ          4 yellow      (4265243 event - xsect NNLO 18.pb (note muons) ) -- 28 JUIL 2011
-   weight.push_back(0.000002901);                         //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
-   //weight.push_back(0.000009664);                         //tW          5 pink        (814390/809984 event - xsect NNLO 7.87pb (note tW) ) -- 13 OCT 2011
-   weight.push_back(0.000009690);                         //tW          5 pink        (814390+809984 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 14 NOV 2011
-   //weight.push_back(0.00063259);                          //W+jet       6 dark green  (49501047 event - xsect NNLO 31314pb) -- 23 JUIN 2011
-   weight.push_back(0.000384917);                         //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
-   //weight.push_back(0.00078075);                          //Zmumu       7 light blue  (2133856 event  - xsect NNLO 1666pb ) -- 14 OCT 2011) 
+   weight.push_back(2.20727E-5);                          //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 20.11.2011
+   //weight.push_back(0.000020727);                         //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 17.10.2011
+   weight.push_back(5.41102E-7);                          //WZ          4 yellow      (1097759 event - xsect NLO 0.594pb (AN-11-259) ) -- 20.11.2011
+   //weight.push_back(0.000002901);                         //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
+   weight.push_back(6.04859E-6);                          //tW          5 pink        (814390+323401 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 20.11.2011
+   //weight.push_back(0.000009690);                         //tW          5 pink        (814390+809984 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 14 NOV 2011
+   weight.push_back(3.84951E-4);                          //W+jet       6 dark green  (81345381 event - xsect NNLO 31314pb) -- 20.11.2011
+   //weight.push_back(0.000384917);                         //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
+   //weight.push_back(5.60121E-5);                          //Zmumu       7 light blue  (29743564 event  - xsect NNLO 1666pb ) -- 24 NOV 2011) 
    weight.push_back(0.00077549);                          //Zmumu       7 light blue  (2148325 event  - xsect NNLO 1666pb ) -- 14 NOV 2011) 
-   //weight.push_back(0.00073630*(26./25.));                //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 13 OCT 2011 
-   weight.push_back(0.00073630);                //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011 
+   //weight.push_back(5.64799E-5);                          //Zee         8 cyan        (29497207 event - xsect NNLO 1666pb ) -- 24 NOV 2011 
+   weight.push_back(0.00073630);                          //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011 
    //weight.push_back(0.000000164);                         //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011 
    ///////////////////////////////////////////////////////////////////////////
 
@@ -298,7 +320,7 @@ void emuSpectrum()
    float c_gsf_theta[20];
    float c_gsf_phi[20];
    int c_gsf_isecaldriven[20];
-   float c_gsf_istrackerdriven[20];
+   int c_gsf_istrackerdriven[20];
    int c_gsf_isEB[20];
    int c_gsf_isEE[20];
    int c_gsf_charge[20];
@@ -506,6 +528,9 @@ void emuSpectrum()
    TBranch        *b_muon_innerPosy;
    TBranch        *b_muon_innerPosz;
 
+   unsigned int dataTrig[3] = {0, 0, 0};
+   unsigned int dataEntries = 0;
+
    // primary vertex information /////////////////////////////////////////////
    vector<vector<float> > PVX_ScalingFactors;
    if (usePUInfo) {
@@ -574,14 +599,27 @@ void emuSpectrum()
          thetree->SetBranchAddress("muon_pt", &c_muon_pt, &b_muon_pt);
 
          Long64_t nentries = (*thetree).GetEntries();
+         if (p == DATA) dataEntries = nentries;
          cout << nentries << " events" << endl;
+         unsigned int trig[3] = {0, 0, 0}; // which trigger was used how often
          //LOOP OVER EVENTS
          for (unsigned int i = 0; i < nentries; ++i) {
             if (i % 50000 == 0) cout << i << endl;
             thetree->GetEntry(i);
 
-	    int prescale = 0;
-	    if (p == DATA && Trigger(input[p], i, prescale) < 1) continue; // ask MuPhoton trigger bit
+            int prescale = 0;
+            if (p == DATA && Trigger(input[p], i, prescale, dataTrig) < 1) continue;
+            if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+            //if (p != DATA) {
+               if (i < nentries * dataTrig[0] / dataEntries) {
+                  if (Trigger(input[p], i, prescale, trig, 1) < 1) continue;
+               } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
+                  if (Trigger(input[p], i, prescale, trig, 2) < 1) continue;
+               } else {
+                  if (Trigger(input[p], i, prescale, trig, 3) < 1) continue;
+               }
+            }
+
 
             //PRIMARY VTX COUNTING
             unsigned int n_pvValid = 0;
@@ -661,9 +699,18 @@ void emuSpectrum()
    }
    ///////////////////////////////////////////////////////////////////////////
 
+   dataTrig[0] = 0;
+   dataTrig[1] = 0;
+   dataTrig[1] = 0;
+   dataEntries = 0;
    // 2nd loop for analysis 
    // GETTING FILES
    for (int p = 0; p < nbFile; ++p) {
+      // correction for trigger
+      if (p == ZTT && p == ZMM && p == ZEE) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      //if (0) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      else MCemuScaleFactor = MCScaleFactor;
+
       cout << "accessing file " << p + 1 << ": " << input[p]->GetName() << endl;
       input[p]->cd();
 
@@ -881,13 +928,26 @@ void emuSpectrum()
       helper.clear();
 
       Long64_t nentries = (*thetree).GetEntries();
+      if (p == DATA) dataEntries = nentries;
       cout << nentries << " events" << endl;
+      unsigned int trig[3] = {0, 0, 0};
       //LOOP OVER EVENTS
       for (unsigned int i = 0; i < nentries; ++i) {
          if (i % 50000 == 0) cout << i << endl;
          thetree->GetEntry(i);
+
          int prescale = 0;
-         if (p == DATA && Trigger(input[p], i, prescale) < 1) continue; // ask MuPhoton trigger bit
+         if (p == DATA && Trigger(input[p], i, prescale, dataTrig) < 1) continue;
+         if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+         //if (p != DATA) {
+            if (i < nentries * dataTrig[0] / dataEntries) {
+               if (Trigger(input[p], i, prescale, trig, 1) < 1) continue;
+            } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
+               if (Trigger(input[p], i, prescale, trig, 2) < 1) continue;
+            } else {
+               if (Trigger(input[p], i, prescale, trig, 3) < 1) continue;
+            }
+         }
 
          vector<int> GSF_passHEEP;
          vector<int> GSF_passACC;
@@ -903,7 +963,7 @@ void emuSpectrum()
          }
          if (n_pvValid < 1) continue;
 
-         //FILL THE VTX WEIGTH take the weights from ttbar for all the MC samples at the moment
+         //FILL THE VTX WEIGTH
          float npv_weight = 1.;
          if (p >= TTBAR && n_pvValid < nPVtxMax) npv_weight = PVX_ScalingFactors.at(p - 1).at(n_pvValid);
 
@@ -946,7 +1006,6 @@ void emuSpectrum()
                 && ((c_gsf_gsfet[j] < 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < end_isoEcalHcal1_1)
                     ||
                     (c_gsf_gsfet[j] >= 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (c_gsf_gsfet[j] - 50.))))
-                && c_gsf_hcaliso2[j] < end_isoHcal2
                 && c_gsf_trackiso[j] < end_isoTrack
                 && c_gsf_nLostInnerHits[j] <= end_missInnerHits
                ) GSF_passHEEP.push_back(j);
@@ -965,7 +1024,7 @@ void emuSpectrum()
                 && c_muon_nhitstrack[j] >= muon_nHitsMinGlobal
                 && c_muon_nhitspixel[j] >= muon_nHitsMinPixel
                 && c_muon_nhitsmuons[j] >= muon_nHitsMinMuon
-                && c_muon_dxy_beamSpot[j] < muon_impactParamMax
+                && fabs(c_muon_dxy_beamSpot[j]) < muon_impactParamMax
                 && c_muon_nSegmentMatch[j] >= muon_nSegMatchMin
                 && c_muon_isTrackerMuon[j]
                 && c_muon_trackIso03[j]/ c_muon_pt[j] < muon_relIsoCutMax
@@ -987,6 +1046,7 @@ void emuSpectrum()
          //HEEP - MU_GOOD
          if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) {
             // remove duplicates
+            // TODO implement deltaR <0.1 correctly
             if (fabs(c_gsf_phi[GSF_passHEEP[0]] - c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]]) < 0.1) continue;
 
             TLorentzVector ele1;
@@ -1099,6 +1159,14 @@ void emuSpectrum()
 
       } // END LOOP OVER ENTRIES
 
+      if (p == DATA) {
+         cout << "HLT_Mu15_Photon20_CaloIdL: " << dataTrig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL: " << dataTrig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL: " << dataTrig[2] << " , sum: " << dataTrig[0]+dataTrig[1]+dataTrig[2] << endl;
+         cout << "Runrange HLT_Mu15_Photon20_CaloIdL: " << runs_HLT_Mu15_Photon20_CaloIdL.first << " - " << runs_HLT_Mu15_Photon20_CaloIdL.second << endl;
+         cout << "Runrange HLT_Mu8_Ele17_CaloIdT_CaloIsoVL: " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first << " - " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.second << endl;
+         cout << "Runrange HLT_Mu17_Ele8_CaloIdT_CaloIsoVL: " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first << " - " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.second << endl;
+      }
+      else cout << "HLT_Mu15_Photon20_CaloIdL: " << trig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL: " << trig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL: " << trig[2] << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
+
    }//END FILE LOOP
 
    //SCALE MC
@@ -1138,6 +1206,9 @@ void emuSpectrum()
       }
    }
 
+   float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
+   float systErrTtLuEff = sqrt(systErrTtbar*systErrTtbar + systErrLuEff*systErrLuEff);
+
    //PRINT INTEGRAL
 
    cout << "------------------------------------" << endl;
@@ -1159,9 +1230,6 @@ void emuSpectrum()
    cout << "TOT ttlike   = " << emuMass.at(TTBAR).at(ALL)->Integral() + emuMass.at(ZTT).at(ALL)->Integral() + emuMass.at(WW).at(ALL)->Integral() + emuMass.at(WZ).at(ALL)->Integral() + emuMass.at(TW).at(ALL)->Integral() << endl;
    cout << "TOT contam   = " << emuMass.at(WJET).at(ALL)->Integral() + emuMass.at(ZMM).at(ALL)->Integral() + emuMass.at(ZEE).at(ALL)->Integral() << endl;
    cout << "------------------------------------" << endl;
-   cout << "TOT MC       = " << emuMass.at(TTBAR).at(ALL)->Integral() + emuMass.at(ZTT).at(ALL)->Integral() + emuMass.at(WW).at(ALL)->Integral() + emuMass.at(WZ).at(ALL)->Integral() + emuMass.at(TW).at(ALL)->Integral() + emuMass.at(WJET).at(ALL)->Integral() + emuMass.at(ZMM).at(ALL)->Integral() + emuMass.at(ZEE).at(ALL)->Integral() << endl;
-   cout << "------------------------------------" << endl;
-   cout << endl;
 
    //SUM MC
    for (int p = 1; p < nbFile; ++p) {
@@ -1201,17 +1269,20 @@ void emuSpectrum()
          }
       }
    }
+   cout << "TOT MC       = " << emuMass.at(1).at(ALL)->Integral() << endl;
+   cout << "------------------------------------" << endl;
+   cout << endl;
 
    cout << endl;
    cout << endl;
    cout << "------------------------------------" << endl;
    cout << "  Like Sign                         " << endl;
    cout << endl;
-   cout << "nb LS DATA   = " << emuMass.at(DATA).at(LS)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(LS)->Integral()) << endl;
-   cout << "nb LS MC     = " << emuMass.at(1).at(LS)->Integral() << endl;
+   cout << "nb LS DATA   = " << emuMass.at(DATA).at(LS)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(LS)->Integral()) << "(stat)" << endl;
+   cout << "nb LS MC     = " << emuMass.at(1).at(LS)->Integral() << " +- " << emuMass.at(1).at(LS)->Integral() * systErrLuEff << "(syst)" << endl;
    cout << endl;
-   cout << "nb OS DATA   = " << emuMass.at(DATA).at(OS)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(OS)->Integral()) << endl;
-   cout << "nb OS MC     = " << emuMass.at(1).at(OS)->Integral() << endl;
+   cout << "nb OS DATA   = " << emuMass.at(DATA).at(OS)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(OS)->Integral()) << "(stat)" << endl;
+   cout << "nb OS MC     = " << emuMass.at(1).at(OS)->Integral() << " +- " << emuMass.at(1).at(OS)->Integral() * systErrTtLuEff << "(syst)" << endl;
    cout << "- - - - - - - - - - - - - - - - - - " << endl;
    cout << "nb e+mu+     = " << nb_plus_plus << endl;
    cout << "nb e+mu-     = " << nb_plus_minus << endl;
@@ -1272,40 +1343,48 @@ void emuSpectrum()
       }
    }
 
+   float errQCD = 2 * sqrt(emuMass.at(DATA).at(LS)->Integral() + pow((emuMass.at(1).at(LS)->Integral() - emuMass.at(QCD).at(LS)->Integral()) * systErrLuEff, 2));
+   float systErrQCD = errQCD / (emuMass.at(1).at(ALL)->Integral() - emuMass.at(QCD).at(ALL)->Integral());
+   float systErrTtLuEffQcd = sqrt(systErrTtLuEff*systErrTtLuEff + systErrQCD*systErrQCD);
+
+   cout << "QCD events from LS spectrum:" << endl;
+   cout << "nb QCD      = " << emuMass.at(QCD).at(ALL)->Integral() << " +- " << errQCD << "(syst)" << endl;
+   cout << "\% of total MC: " << 100 * emuMass.at(QCD).at(ALL)->Integral() / (emuMass.at(1).at(ALL)->Integral() - emuMass.at(QCD).at(ALL)->Integral()) << "\% +- " << 100 * systErrQCD << "\%(syst)" << endl;
+
    cout << endl;
    if (useQCDShape) cout << "AFTER ADDING QCD CONTRIBUTION:" << endl;
    else cout << "AFTER CORRECTION WITH QCD FACTOR:" << endl;
    cout << endl;
    cout << "TOTAL INTEGRAL EMU" << endl;
-   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral()) << endl;
-   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral() << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral() << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral()) << "(stat)" << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral() << " +- " << emuMass.at(1).at(ALL)->Integral() * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>60 " << endl;
-   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(7, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(7, 150)) << endl;
-   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(7, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(7, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(7, 150)) << "(stat)" << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(7, 150) << " +- " << emuMass.at(1).at(ALL)->Integral(7, 150) * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>120" << endl;
-   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(13, 150) << " +- " << sqrt((emuMass.at(DATA).at(ALL))->Integral(13, 150)) << endl;
-   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(13, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(13, 150) << " +- " << sqrt((emuMass.at(DATA).at(ALL))->Integral(13, 150)) << "(stat)" << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(13, 150) << " +- " << emuMass.at(1).at(ALL)->Integral(13, 150) * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>200" << endl;
-   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(21, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(21, 150)) << endl;
-   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(21, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(21, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(21, 150)) << "(stat)" << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(21, 150) << " +- " << emuMass.at(1).at(ALL)->Integral(21, 150) * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
    cout << "INTEGRAL EMU M>500" << endl;
-   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(51, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(51, 150)) << endl;
-   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(51, 150) << endl;
+   cout << "nb data     = " << emuMass.at(DATA).at(ALL)->Integral(51, 150) << " +- " << sqrt(emuMass.at(DATA).at(ALL)->Integral(51, 150)) << "(stat)" << endl;
+   cout << "nb MC       = " << emuMass.at(1).at(ALL)->Integral(51, 150) << " +- " << emuMass.at(1).at(ALL)->Integral(51, 150) * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
 
    cout << "--For ttlike-- QCD CORR + W+Jet + Zmumu" << endl;
    cout << "60  < M < 120 " << endl;
-   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(7, 12)  << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(7, 12) << " +- " << emuMass.at(1).at(ALL)->Integral(7, 12) * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
    cout << "120 < M < 200 " << endl;
-   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(13, 20) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(13, 20) << " +- " << emuMass.at(1).at(ALL)->Integral(13, 20) * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
    cout << "M > 200     " << endl;
-   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(21, 150) << endl;
+   cout << "nb tt       = " << emuMass.at(1).at(ALL)->Integral(21, 150) << " +- " << emuMass.at(1).at(ALL)->Integral(21, 150) * systErrTtLuEffQcd << "(syst)" << endl;
    cout << "--------------" << endl;
 
    emu_dilepton->Add(emuMass.at(1).at(ALL));
@@ -1314,7 +1393,7 @@ void emuSpectrum()
 
    //WRITING
    stringstream ssOutfile;
-   ssOutfile << "testEmuSpec" << LumiFactor << "pb-1.root";
+   ssOutfile << outfileName << LumiFactor << "pb-1.root";
    TFile *output = new TFile(ssOutfile.str().c_str(), "recreate");
 
    output->cd();
@@ -1370,8 +1449,9 @@ void emuSpectrum()
    output->Close();
 }
 
-int Trigger(TFile *inFile, unsigned int &entry, int &prescale)
+int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector)
 {
+   unsigned int c_runnumber;
    int c_HLT_Mu15_Photon20_CaloIdL;
    int c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
    int c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
@@ -1379,6 +1459,7 @@ int Trigger(TFile *inFile, unsigned int &entry, int &prescale)
    int c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
    int c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
 
+   TBranch *b_runnumber;
    TBranch *b_HLT_Mu15_Photon20_CaloIdL;
    TBranch *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
    TBranch *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
@@ -1391,6 +1472,7 @@ int Trigger(TFile *inFile, unsigned int &entry, int &prescale)
    TTree *thetree;
    thetree = (TTree*)(inFile)->Get("gsfcheckerjob/tree");
 
+   thetree->SetBranchAddress("runnumber", &c_runnumber, &b_runnumber);
    thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
    thetree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
    thetree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
@@ -1400,19 +1482,42 @@ int Trigger(TFile *inFile, unsigned int &entry, int &prescale)
 
    thetree->GetEntry(entry);
 
-   // select an unprescaled trigger
-   if (c_prescale_HLT_Mu15_Photon20_CaloIdL == 1) {
+   if (selector == 1) {
       prescale = c_prescale_HLT_Mu15_Photon20_CaloIdL;
+      if (c_HLT_Mu15_Photon20_CaloIdL >= 0) trig[0]++;
       return c_HLT_Mu15_Photon20_CaloIdL;
-   } else if (c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL == 1) {
+   } else if (selector == 2) {
       prescale = c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+      if (c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL >= 0) trig[1]++;
       return c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-   } else if (c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL == 1) {
+   } else if (selector == 3) {
       prescale = c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+      if (c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL >= 0) trig[2]++;
       return c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+   } else {
+      // select an unprescaled trigger
+      if (c_prescale_HLT_Mu15_Photon20_CaloIdL == 1) {
+         prescale = c_prescale_HLT_Mu15_Photon20_CaloIdL;
+         trig[0]++;
+         if (c_runnumber < runs_HLT_Mu15_Photon20_CaloIdL.first) runs_HLT_Mu15_Photon20_CaloIdL.first = c_runnumber;
+         if (c_runnumber > runs_HLT_Mu15_Photon20_CaloIdL.second) runs_HLT_Mu15_Photon20_CaloIdL.second = c_runnumber;
+         return c_HLT_Mu15_Photon20_CaloIdL;
+      } else if (c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL == 1) {
+         prescale = c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+         trig[1]++;
+         if (c_runnumber < runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first) runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first = c_runnumber;
+         if (c_runnumber > runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.second) runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.second = c_runnumber;
+         return c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+      } else if (c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL == 1) {
+         prescale = c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+         trig[2]++;
+         if (c_runnumber < runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first) runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first = c_runnumber;
+         if (c_runnumber > runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.second) runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.second = c_runnumber;
+         return c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+      }
    }
 
    cout << "Prescale alert! No unprescaled trigger found." << endl;
    prescale = 0;
-   return 0;
+   return -1;
 }
