@@ -27,7 +27,7 @@ void InvariantMass::Loop()
 {
   // parameters //////////////////////////////////////////////////////////////
   const int ptcut = 35;
-  const float massCut = 50;
+  const float massCut = 0.;
   const float lumiCorrFactor = 1.07895; // from 60GeV to 120GeV with 2177pb-1
                                      // not used if calcLumiCorrFactor=true
   bool calcLumiCorrFactor = true;    // first run over events once to
@@ -35,6 +35,7 @@ void InvariantMass::Loop()
                                      // time with the factor applied
   float normToZPeakFrom = 60;        // lower mass for normalization
   float normToZPeakTo = 120;         // upper mass for normalization
+  bool etShiftData = false;           // match data Z peak with MC peak
 
   string fileNamePrefix = "invMassHistos";   // lumi and .root well be added
   //string fileNamePrefix = "test";
@@ -55,7 +56,6 @@ void InvariantMass::Loop()
   const int ratioRebin = 50;      // rebinning for FR ratio histograms
                                   // should be chosen compatible with binning
   ////////////////////////////////////////////////////////////////////////////
-
 
   vector<float> bins;
   bins.push_back(massMin);
@@ -93,8 +93,10 @@ void InvariantMass::Loop()
   vector<float> minPtG;
   //float lumi = 204;
   //input.push_back(make_pair(new TFile("/user/treis/data2011/gsfcheckertree203_6pb-1.root","read"), 1 / lumi));
-  float lumi = 2928;
-  input.push_back(make_pair(new TFile("/user/lathomas/CMSSW_4_2_7/src/2928pb-1.root","read"), 1 / lumi));
+  //float lumi = 216;
+  //input.push_back(make_pair(new TFile("/user/treis/data2011/Photon-Run2011A-May10ReReco-v1-AOD-Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v3_gct1_10_215_6pb-1.root","read"), 1 / lumi));
+  float lumi = 4679;
+  input.push_back(make_pair(new TFile("/user/treis/data2011/Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-AOD-Cert_160404-180252_7TeV_Collisions11_JSON_gct1_12_4679pb-1.root","read"), 1 / lumi));
   datasetTitle.push_back("Data");
   const unsigned int DATA = 0;
 
@@ -123,6 +125,7 @@ void InvariantMass::Loop()
   minPtDY.push_back(800);
   const unsigned int DY800 = 5;
 
+  //input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root","read"), 4.40309E-5));
   input.push_back(make_pair(new TFile("/user/treis/mcsamples/TT_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_HEEPSkim2ElePt30.root","read"), 1.44545E-4));
   datasetTitle.push_back("ttbar");
   const unsigned int TTBAR = 6;
@@ -185,6 +188,20 @@ void InvariantMass::Loop()
   suffix.push_back(" same EE-EE");
   suffix.push_back(" opposite EE-EE");
 
+  stringstream ssGoodHeepFileName;
+  ssGoodHeepFileName << "goodHeepEvents" << lumi << "pb-1.root";
+  TFile *goodEvFile = new TFile(ssGoodHeepFileName.str().c_str(), "recreate");
+  goodEvFile->cd();
+  TTree *eleDataTree = new TTree("eleDataTree", "eleDataTree");
+  int evtRegion = -1;
+  float hHMass = 0.;
+  eleDataTree->Branch("runnr", &runnumber, "runnr/i");
+  eleDataTree->Branch("eventnr", &eventnumber, "eventnr/i");
+  eleDataTree->Branch("lumiSec", &luminosityBlock, "lumiSec/i");
+  eleDataTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
+  eleDataTree->Branch("weight", &weight, "weight/F");
+  eleDataTree->Branch("mass", &hHMass, "mass/F");
+
   vector<string> folders; // folder names in output root file
 
   stringstream ssOutfile;
@@ -203,6 +220,10 @@ void InvariantMass::Loop()
     Init(thetree);
     Long64_t nentries = (*thetree).GetEntries();
     cout << nentries << " entries" << endl;
+
+    bool etShift = false;
+    if (etShiftData && p == DATA)
+      etShift = true;
 
     // normalize bg
     if (p == 1 && !calcLumiCorrFactor) lumi *= lumiCorrFactor;
@@ -314,12 +335,18 @@ void InvariantMass::Loop()
     /////////////////////////////////////////////////////////////////////////
     // loop over events
     /////////////////////////////////////////////////////////////////////////
-    //for (Long64_t jentry=0; (jentry < 5000 && jentry < nentries); ++jentry) { // for tests
+    //for (Long64_t jentry=0; (jentry < 100000 && jentry < nentries); ++jentry) { // for tests
     for (Long64_t jentry=0; jentry < nentries; ++jentry) {
+      hHMass = 0.;
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       thetree->GetEntry(jentry);
       if (jentry % 50000 == 0 ) cout << "entry " << jentry << endl;
+
+      // trigger fired?
+      int prescale = 0;
+      if (p == DATA && Trigger(prescale) < 1) continue;
+    
       // at least two gsf electrons
       if (gsf_size < 2) continue;
 
@@ -340,11 +367,11 @@ void InvariantMass::Loop()
           iGsf1 = n;
           highestEt = gsf_gsfet[n];
         }
-        if (highestHeepEt < gsf_gsfet[n] && gsfpass_HEEP[n] && gsf_nLostInnerHits[n] == 0) {
+        if (highestHeepEt < gsf_gsfet[n] && PassHEEP(n)) {
           iHeep1 = n;
           highestHeepEt = gsf_gsfet[n];
         }
-        if (highestNoHeepEt < gsf_gsfet[n] && (!gsfpass_HEEP[n] || gsf_nLostInnerHits[n] > 0)) {
+        if (highestNoHeepEt < gsf_gsfet[n] && !PassHEEP(n)) {
           iGsfNoHeep1 = n;
           highestNoHeepEt = gsf_gsfet[n];
         }
@@ -357,11 +384,11 @@ void InvariantMass::Loop()
           iGsf2 = m;
           highestEt = gsf_gsfet[m];
         }
-        if (highestHeepEt < gsf_gsfet[m] && gsfpass_HEEP[m] && gsf_nLostInnerHits[m] == 0 && m != iHeep1) {
+        if (highestHeepEt < gsf_gsfet[m] && PassHEEP(m) && m != iHeep1) {
           iHeep2 = m;
           highestHeepEt = gsf_gsfet[m];
         }
-        if (highestNoHeepEt < gsf_gsfet[m] && (!gsfpass_HEEP[m] || gsf_nLostInnerHits[m] > 0) && m != iGsfNoHeep1) {
+        if (highestNoHeepEt < gsf_gsfet[m] && !PassHEEP(m) && m != iGsfNoHeep1) {
           iGsfNoHeep2 = m;
           highestNoHeepEt = gsf_gsfet[m];
         }
@@ -373,7 +400,7 @@ void InvariantMass::Loop()
       // fill the histograms
       ////////////////////////////////////////////////////////////////////////
       // fill the GSF-GSF cases
-      double gsfGsfMass = CalcInvariantMass(iGsf1, iGsf2);
+      double gsfGsfMass = CalcInvariantMass(iGsf1, iGsf2, etShift);
       if (gsfGsfMass > massCut) {
         if (fabs(gsfsc_eta[iGsf1]) < 2.5 && fabs(gsfsc_eta[iGsf2]) < 2.5) {
           double fakeRate1 = FakeRate(gsf_gsfet[iGsf1], gsfsc_eta[iGsf1]);
@@ -381,7 +408,7 @@ void InvariantMass::Loop()
           if (fabs(gsfsc_eta[iGsf1]) > 1.56 && fabs(gsfsc_eta[iGsf2]) > 1.56) {
             histoGsfGsfMass.at(EE)->Fill(gsfGsfMass, input.at(p).second * lumi);
             // fill the pz of the initial particle for EE-EE events
-            double gsfGsfPZ = CalcPz(iGsf1, iGsf2);
+            double gsfGsfPZ = CalcPz(iGsf1, iGsf2, etShift);
             if (gsfsc_eta[iGsf1] * gsfsc_eta[iGsf2] > 0) {
               histoGsfGsfMass.at(EES)->Fill(gsfGsfMass, input.at(p).second * lumi);
               histoPZ.at(1)->Fill(gsfGsfPZ, input.at(p).second * lumi);
@@ -405,7 +432,7 @@ void InvariantMass::Loop()
 
       if (iGsfNoHeep2 >= 0 && iGsfNoHeep1 >= 0 && iHeep1 < 0 && iHeep2 < 0) {
         // fill the GSF-GSF cases that do not pass the HEEP selection
-        double gsfGsfMassNoHeep = CalcInvariantMass(iGsfNoHeep1, iGsfNoHeep2);
+        double gsfGsfMassNoHeep = CalcInvariantMass(iGsfNoHeep1, iGsfNoHeep2, etShift);
         if (gsfGsfMassNoHeep > massCut) {
           if (fabs(gsfsc_eta[iGsfNoHeep1]) < 2.5 && fabs(gsfsc_eta[iGsfNoHeep2]) < 2.5) {
             double fakeRate1 = FakeRate(gsf_gsfet[iGsfNoHeep1], gsfsc_eta[iGsfNoHeep1]);
@@ -470,7 +497,7 @@ void InvariantMass::Loop()
       if (iHeep1 >= 0) {
         // fill the HEEP-GSF and GSF-HEEP cases
         int iGsf = (iHeep1 == iGsf1) ? iGsf2 : iGsf1;
-        float heepGsfMass = CalcInvariantMass(iHeep1, iGsf);
+        float heepGsfMass = CalcInvariantMass(iHeep1, iGsf, etShift);
         if (heepGsfMass > massCut) {
           if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iGsf]) < 2.5) {
             double fakeRate = FakeRate(gsf_gsfet[iGsf], gsfsc_eta[iGsf]);
@@ -500,7 +527,7 @@ void InvariantMass::Loop()
 
         // fill the HEEP-GSF and GSF-HEEP cases where the GSF does not pass the HEEP selection
         if (iGsfNoHeep1 >= 0 && iHeep2 < 0) {
-          float heepGsfMassNoHeep = CalcInvariantMass(iHeep1, iGsfNoHeep1);
+          float heepGsfMassNoHeep = CalcInvariantMass(iHeep1, iGsfNoHeep1, etShift);
           if (heepGsfMassNoHeep > massCut) {
             if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iGsfNoHeep1]) < 2.5) {
               double fakeRate = FakeRate(gsf_gsfet[iGsfNoHeep1], gsfsc_eta[iGsfNoHeep1]);
@@ -574,7 +601,7 @@ void InvariantMass::Loop()
 
       if (iHeep1 >= 0 && iHeep2 >= 0) {
         // fill the HEEP-HEEP cases
-        float heepHeepMass = CalcInvariantMass(iHeep1, iHeep2);
+        float heepHeepMass = CalcInvariantMass(iHeep1, iHeep2, etShift);
         if (heepHeepMass > massCut) {
           if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iHeep2]) < 2.5) {
             if (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iHeep2]) > 1.56) {
@@ -599,25 +626,64 @@ void InvariantMass::Loop()
                     histoSectionDYCombinedHH.at(EEO)->Fill(heepHeepMass, input.at(p).second * lumi);
                 }
               }
-            } else if ((fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iHeep2]) > 1.56) || (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iHeep2]) < 1.442)) {
-              histoHeepHeepMass.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
-              // fill the correct sector of the DY sample
-              if (p >= DY20 && p <= DY800) {
-                if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
-                  histoSectionDYCombinedHH.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
+            }
+            else {
+              evtRegion = -1;
+              if ((fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iHeep2]) > 1.56) || (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iHeep2]) < 1.442)) {
+                evtRegion = 1;
+                if (p == DATA && heepHeepMass > 800.) cout << "High mass EB-EE event (M>800GeV):";
+                histoHeepHeepMass.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
+                // fill the correct sector of the DY sample
+                if (p >= DY20 && p <= DY800) {
+                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                    histoSectionDYCombinedHH.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
+                }
+              } else if (fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iHeep2]) < 1.442) {
+                evtRegion = 0;
+                if (p == DATA && heepHeepMass > 800.) cout << "High mass EB-EB event (M>800GeV):";
+                histoHeepHeepMass.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
+                // fill the correct sector of the DY sample
+                if (p >= DY20 && p <= DY800) {
+                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                    histoSectionDYCombinedHH.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
+                }
               }
-            } else if (fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iHeep2]) < 1.442) {
-              histoHeepHeepMass.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
-              // fill the correct sector of the DY sample
-              if (p >= DY20 && p <= DY800) {
-                if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
-                  histoSectionDYCombinedHH.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
+              if (p == DATA) {
+                if (heepHeepMass > 800.)
+                  cout << " run number=" << runnumber 
+                       << " , lumi block=" << luminosityBlock 
+                       << " , event number=" << eventnumber 
+                       << " , mass=" << heepHeepMass << "GeV/c^2" 
+                       << " , ele1 et=" << gsf_gsfet[iHeep1] << "GeV" 
+                       << " , ele1 eta = " << gsf_eta[iHeep1] 
+                       << " , ele1 phi = " << gsf_phi[iHeep1] 
+                       << " , ele1 trackIso = " << gsf_trackiso[iHeep1] 
+                       << " , ele1 ecalIso = " << gsf_ecaliso[iHeep1] 
+                       << " , ele1 hcalIso1 = " << gsf_hcaliso1[iHeep1] 
+                       << " , ele1 hcalIso2 = " << gsf_hcaliso2[iHeep1] 
+                       << " , ele2 et=" << gsf_gsfet[iHeep2] << "GeV" 
+                       << " , ele2 eta = " << gsf_eta[iHeep2] 
+                       << " , ele2 phi = " << gsf_phi[iHeep2] 
+                       << " , ele2 trackIso = " << gsf_trackiso[iHeep2] 
+                       << " , ele2 ecalIso = " << gsf_ecaliso[iHeep2] 
+                       << " , ele2 hcalIso1 = " << gsf_hcaliso1[iHeep2] 
+                       << " , ele2 hcalIso2 = " << gsf_hcaliso2[iHeep2] 
+                       << endl;
+                // fill tree with good events
+                hHMass = heepHeepMass;
+                eleDataTree->Fill();
               }
             }
           }
         }
       }
     } // end of loop over events
+
+    // write root file with good HEEP-HEEP event data
+    if (p == DATA) {
+      goodEvFile->cd();
+      eleDataTree->Write();
+    }
 
     outFile->cd();
     outFile->mkdir(folders.back().c_str());
@@ -975,12 +1041,15 @@ InvariantMass::NormalizeToZPeak(const float& lowMass, const float& highMass, con
 }
 
 double
-InvariantMass::CalcInvariantMass (const int& iEle1, const int& iEle2)
+InvariantMass::CalcInvariantMass (const int& iEle1, const int& iEle2, bool &etShift)
 {
-  const float dataEtShiftFactorEB = 1.0036;
-  const float dataEtShiftFactorEE = 1.0256;
-  //const float dataEtShiftFactorEB = 1.; // fix this factor
-  //const float dataEtShiftFactorEE = 1.; // fix this factor
+  float dataEtShiftFactorEB = 1.;
+  float dataEtShiftFactorEE = 1.;
+
+  if (etShift) {
+    dataEtShiftFactorEB = 1.0036;
+    dataEtShiftFactorEE = 1.0256;
+  }
 
   TLorentzVector ele1;
   TLorentzVector ele2;
@@ -988,8 +1057,8 @@ InvariantMass::CalcInvariantMass (const int& iEle1, const int& iEle2)
   Float_t et1 = gsf_gsfet[iEle1];
   Float_t et2 = gsf_gsfet[iEle2];
   // correct energy in data
-  (fabs(gsfsc_eta[iEle1]) > 1.56 && runnumber > 1) ? et1 *= dataEtShiftFactorEE : et1 *= dataEtShiftFactorEB;
-  (fabs(gsfsc_eta[iEle2]) > 1.56 && runnumber > 1) ? et2 *= dataEtShiftFactorEE : et2 *= dataEtShiftFactorEB;
+  (fabs(gsfsc_eta[iEle1]) > 1.56) ? et1 *= dataEtShiftFactorEE : et1 *= dataEtShiftFactorEB;
+  (fabs(gsfsc_eta[iEle2]) > 1.56) ? et2 *= dataEtShiftFactorEE : et2 *= dataEtShiftFactorEB;
 
   ele1.SetPtEtaPhiE(et1, gsf_eta[iEle1], gsf_phi[iEle1], (et1 * cosh(gsf_eta[iEle1])));
   ele2.SetPtEtaPhiE(et2, gsf_eta[iEle2], gsf_phi[iEle2], (et2 * cosh(gsf_eta[iEle2])));
@@ -998,12 +1067,15 @@ InvariantMass::CalcInvariantMass (const int& iEle1, const int& iEle2)
 }
 
 double
-InvariantMass::CalcPz (const int& iEle1, const int& iEle2)
+InvariantMass::CalcPz (const int& iEle1, const int& iEle2, bool &etShift)
 {
-  const float dataEtShiftFactorEB = 1.0036;
-  const float dataEtShiftFactorEE = 1.0256;
-  //const float dataEtShiftFactorEB = 1.; // fix this factor
-  //const float dataEtShiftFactorEE = 1.; // fix this factor
+  float dataEtShiftFactorEB = 1.;
+  float dataEtShiftFactorEE = 1.;
+
+  if (etShift) {
+    dataEtShiftFactorEB = 1.0036;
+    dataEtShiftFactorEE = 1.0256;
+  }
 
   TLorentzVector ele1;
   TLorentzVector ele2;
@@ -1011,8 +1083,8 @@ InvariantMass::CalcPz (const int& iEle1, const int& iEle2)
   Float_t et1 = gsf_gsfet[iEle1];
   Float_t et2 = gsf_gsfet[iEle2];
   // correct energy in data
-  (fabs(gsfsc_eta[iEle1]) > 1.56 && runnumber > 1) ? et1 *= dataEtShiftFactorEE : et1 *= dataEtShiftFactorEB;
-  (fabs(gsfsc_eta[iEle2]) > 1.56 && runnumber > 1) ? et2 *= dataEtShiftFactorEE : et2 *= dataEtShiftFactorEB;
+  (fabs(gsfsc_eta[iEle1]) > 1.56) ? et1 *= dataEtShiftFactorEE : et1 *= dataEtShiftFactorEB;
+  (fabs(gsfsc_eta[iEle2]) > 1.56) ? et2 *= dataEtShiftFactorEE : et2 *= dataEtShiftFactorEB;
 
   ele1.SetPtEtaPhiE(et1, gsf_eta[iEle1], gsf_phi[iEle1], (et1 * cosh(gsf_eta[iEle1])));
   ele2.SetPtEtaPhiE(et2, gsf_eta[iEle2], gsf_phi[iEle2], (et2 * cosh(gsf_eta[iEle2])));
@@ -1094,5 +1166,107 @@ InvariantMass::PassFRPreSel(const int &n, const float &eta)
   }
 
   return true;
+}
+
+bool
+InvariantMass::PassHEEP(const int &n)
+{
+  // HEEP selection v3.2
+
+  // barrel
+  float bar_et = 35.;
+  float bar_hoE = 0.05;
+  float bar_DEta = 0.005;
+  float bar_DPhi = 0.06;
+  float bar_e2x5e5x5 = 0.94;
+  float bar_e1x5e5x5 = 0.83;
+  float bar_isoEcalHcal1_1 = 2.;
+  float bar_isoEcalHcal1_2 = 0.03;
+  float bar_isoTrack = 5.;
+  int bar_missInnerHits = 0;
+
+  // endcap
+  float end_et = 40.;
+  float end_hoE = 0.05;
+  float end_DEta = 0.007 ;
+  float end_DPhi = 0.06;
+  float end_e2x5e5x5 = 0.;
+  float end_e1x5e5x5 = 0.;
+  float end_sigmaietaieta = 0.03;
+  float end_isoEcalHcal1_1 = 2.5;
+  float end_isoEcalHcal1_2 = 0.03;
+  float end_isoTrack = 5.;
+  int end_missInnerHits = 0;
+
+  // barrel
+  if (fabs(gsfsc_eta[n]) < 1.442
+      && gsf_gsfet[n] > bar_et
+      && gsf_isecaldriven[n]
+      && gsf_hovere[n] < bar_hoE
+      && fabs(gsf_deltaeta[n]) < bar_DEta
+      && fabs(gsf_deltaphi[n]) < bar_DPhi
+      && (gsf_e2x5overe5x5[n] > bar_e2x5e5x5 || gsf_e1x5overe5x5[n] > bar_e1x5e5x5)
+      && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * gsf_gsfet[n])
+      && gsf_trackiso[n] < bar_isoTrack
+      && gsf_nLostInnerHits[n] <= bar_missInnerHits
+     ) return true;
+
+  // endcap
+  else if ((fabs(gsfsc_eta[n]) > 1.56 && fabs(gsfsc_eta[n]) < 2.5)
+      && gsf_gsfet[n] > end_et
+      && gsf_isecaldriven[n]
+      && gsf_hovere[n] < end_hoE
+      && fabs(gsf_deltaeta[n]) < end_DEta
+      && fabs(gsf_deltaphi[n]) < end_DPhi
+      && (gsf_e2x5overe5x5[n] > end_e2x5e5x5 || gsf_e1x5overe5x5[n] > end_e1x5e5x5)
+      && gsf_sigmaIetaIeta[n] < end_sigmaietaieta
+      && ((gsf_gsfet[n] < 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < end_isoEcalHcal1_1)
+          ||
+          (gsf_gsfet[n] >= 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (gsf_gsfet[n] - 50.))))
+      && gsf_trackiso[n] < end_isoTrack
+      && gsf_nLostInnerHits[n] <= end_missInnerHits
+     ) return true;
+  return false;
+}
+
+int 
+InvariantMass::Trigger(int &prescale)
+{
+  // Sams trigger selection
+  if (runnumber < 165000 && prescale_HLT_DoublePhoton33 == 1) {
+    prescale = prescale_HLT_DoublePhoton33;
+    return HLT_DoublePhoton33;
+  } else if (runnumber >= 165000) {
+    int triggerBit = 0;
+    if (prescale_HLT_DoubleEle33_CaloIdL == 1 && HLT_DoubleEle33_CaloIdL == 1) {
+      prescale = prescale_HLT_DoubleEle33_CaloIdL;
+      triggerBit = HLT_DoubleEle33_CaloIdL;
+    } else if (prescale_HLT_DoubleEle33_CaloIdT == 1 && HLT_DoubleEle33_CaloIdT == 1) {
+      prescale = prescale_HLT_DoubleEle33_CaloIdT;
+      triggerBit = HLT_DoubleEle33_CaloIdT;
+    } else if (prescale_HLT_DoubleEle45_CaloIdL == 1 && HLT_DoubleEle45_CaloIdL == 1) {
+      prescale = prescale_HLT_DoubleEle45_CaloIdL;
+      triggerBit = HLT_DoubleEle45_CaloIdL;
+    }
+    return triggerBit;
+  }
+
+//  if (runnumber < 163870 && prescale_HLT_DoublePhoton33 == 1) {
+//    prescale = prescale_HLT_DoublePhoton33;
+//    return HLT_DoublePhoton33;
+//  } else if (runnumber > 163869) {
+//    if (prescale_HLT_DoubleEle33_CaloIdL == 1) {
+//      prescale = prescale_HLT_DoubleEle33_CaloIdL;
+//      return HLT_DoubleEle33_CaloIdL;
+//    } else if (prescale_HLT_DoubleEle33_CaloIdT == 1) {
+//      //cout << "HLT_DoubleEle33_CaloIdT" << endl;
+//      prescale = prescale_HLT_DoubleEle33_CaloIdT;
+//      return HLT_DoubleEle33_CaloIdT;
+//    }
+//  }
+
+  cout << "Prescale alert! No unprescaled trigger found. Dropping this event." << endl;
+  prescale = 0;
+  return 0;
 }
 
