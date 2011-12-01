@@ -18,10 +18,10 @@ void macro_MakeStackedPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
   // luminosity of data
-  const float lumi = 2928;
+  const float lumi = 4679;
 
-  string inputFilePrefix = "invMassHistos";  // lumi and .root will be added
-  //string inputFilePrefix = "test";
+  //string inputFilePrefix = "invMassHistos";  // lumi and .root will be added
+  string inputFilePrefix = "test";
 
   // which plot type (cumulated or not) should be plotted?
   bool plotType[2];
@@ -74,7 +74,6 @@ void macro_MakeStackedPlot()
   suffix.push_back(" EE-EE");
 
   stringstream sStream;
-  //sStream << "invMassHistos" << lumi << "pb-1.root";
   //sStream << "invMassHistos" << lumi << "pb-1_save.root";
   sStream << inputFilePrefix << lumi << "pb-1.root";
   TFile input(sStream.str().c_str(), "read");
@@ -98,12 +97,13 @@ void macro_MakeStackedPlot()
       TH1F *histoBgDY = (TH1F *)gDirectory->Get("histoDYCombined" + acroSuffix[p]);
       input.cd("TOTAL");
       TH1F *histoBgWjet = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
-      input.cd("TT_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_HEEPSkim2ElePt30");
+      //input.cd("TT_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_HEEPSkim2ElePt30");
+      input.cd("TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12");
       TH1F *histoBgTtbar = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
       sStream.str("");
       //sStream << "Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6-AOD-Cert_160404-173664_7TeV_Collisions11_JSON_" << lumi << "pb-1";
-      //sStream << "Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6-AOD-Cert_160404-173692_7TeV_Collisions11_JSON_" << lumi << "pb-1";
-      sStream << lumi << "pb-1";
+      sStream << "Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-AOD-Cert_160404-180252_7TeV_Collisions11_JSON_" << lumi << "pb-1";
+      //sStream << lumi << "pb-1";
       input.cd(sStream.str().c_str());
       TH1F *histoData = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
 
