@@ -18,7 +18,7 @@ void macro_MakeFRClosureTest()
 {
   // parameters //////////////////////////////////////////////////////////////
   // luminosity of data
-  const float lumi = 2928;
+  const float lumi = 4679;
 
   string inputFilePrefix = "invMassHistos";  // lumi and .root will be added
   //string inputFilePrefix = "test";
@@ -69,8 +69,8 @@ void macro_MakeFRClosureTest()
     binArray[i] = (Double_t)bins.at(i);
 
   stringstream sStream;
-  //sStream << "Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6-AOD-Cert_160404-173692_7TeV_Collisions11_JSON_" << lumi << "pb-1";
-  sStream << lumi << "pb-1";
+  sStream << "Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-AOD-Cert_160404-180252_7TeV_Collisions11_JSON_" << lumi << "pb-1";
+  //sStream << lumi << "pb-1";
   TString folderDataHisto = sStream.str().c_str();
   // select histograms dynamically depending on state of correction //////////
   vector<TString> folderHeepGsfHisto;
@@ -120,7 +120,7 @@ void macro_MakeFRClosureTest()
   legendGsfGsf.push_back("GSF-GSF uncorrected");
   legendGsfGsf.push_back("GSF-GSF (non HEEP)");
   legendGsfGsf.push_back("GSF-GSF (non HEEP)");
-  legendGsfGsf.push_back("GSF-GSF W+jet + G+jet corrected");
+  legendGsfGsf.push_back("GSF-GSF W+jet + \\gamma+jet corrected");
 
   vector<TString> acroSuffix;
   acroSuffix.push_back("");
