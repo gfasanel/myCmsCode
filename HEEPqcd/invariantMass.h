@@ -34,17 +34,29 @@ public :
 
    TFile* _outF;
   
-   double CalcInvariantMass (const int&, const int&);
-   double CalcPz(const int&, const int&);
+   int NormalizeToZPeak(const float&, const float&, const char*, vector<string>, int);
+   double CalcInvariantMass (const int&, const int&, bool&);
+   double CalcPz(const int&, const int&, bool&);
    double FakeRate (const float&, const float&);
    bool PassFRPreSel(const int&, const float&);
-   int NormalizeToZPeak(const float&, const float&, const char*, vector<string>, int);
+   bool PassHEEP(const int &n);
+   int Trigger(int &prescale);
 
    // Declaration of leaf types
    Int_t           L1trigger_size;
    Int_t           L1trigger_bool[64];   //[L1trigger_size]
    Int_t           PhysDecl_bool;
-   Int_t           HLTriggers[200];
+   Int_t           HLTriggers[300];
+   Int_t           HLT_DoubleEle33_CaloIdL;
+   Int_t           HLT_DoubleEle33_CaloIdL_CaloIsoT;
+   Int_t           HLT_DoubleEle33_CaloIdT;
+   Int_t           HLT_DoubleEle45_CaloIdL;
+   Int_t           HLT_DoublePhoton33;
+   Int_t           prescale_HLT_DoubleEle33_CaloIdL;
+   Int_t           prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT;
+   Int_t           prescale_HLT_DoubleEle33_CaloIdT;
+   Int_t           prescale_HLT_DoubleEle45_CaloIdL;
+   Int_t           prescale_HLT_DoublePhoton33;
    Int_t           nJetsAKT_pt15;
    //Int_t           nJetsIC5_pt15;
    Float_t         calomet;
@@ -95,9 +107,10 @@ public :
    Float_t         muon_trackIso05[100];   //[muon_size]
    Float_t         muon_trackIso03_ptInVeto[100];   //[muon_size]
    Float_t         muon_trackIso05_ptInVeto[100];   //[muon_size]
-   Int_t           runnumber;
-   Int_t           eventnumber;
-   Int_t           eventcounter;
+   UInt_t          runnumber;
+   UInt_t          luminosityBlock;
+   UInt_t          eventnumber;
+   UInt_t          eventcounter;
    Int_t           processid;
    Float_t         pthat;
    Float_t         alphaqcd;
@@ -233,8 +246,8 @@ public :
    Int_t           gsf_charge[100];   //[gsf_size]
    Float_t         gsf_sigmaetaeta[100];   //[gsf_size]
    Float_t         gsf_sigmaIetaIeta[100];   //[gsf_size]
-   Float_t         gsf_isecaldriven[100];   //[gsf_size]
-   Float_t         gsf_istrackerdriven[100];   //[gsf_size]
+   Int_t           gsf_isecaldriven[100];   //[gsf_size]
+   Int_t           gsf_istrackerdriven[100];   //[gsf_size]
    Float_t         gsfsc_e[100];   //[gsf_size]
    Float_t         gsfsc_pt[100];   //[gsf_size]
    Float_t         gsfsc_eta[100];   //[gsf_size]
@@ -285,6 +298,16 @@ public :
    TBranch        *b_L1trigger_bool;   //!
    TBranch        *b_PhysDecl_bool;   //!
    TBranch        *b_HLTriggers;   //!
+   TBranch        *b_HLT_DoubleEle33_CaloIdL;   //!
+   TBranch        *b_HLT_DoubleEle33_CaloIdL_CaloIsoT;   //!
+   TBranch        *b_HLT_DoubleEle33_CaloIdT;   //!
+   TBranch        *b_HLT_DoubleEle45_CaloIdL;   //!
+   TBranch        *b_HLT_DoublePhoton33;   //!
+   TBranch        *b_prescale_HLT_DoubleEle33_CaloIdL;   //!
+   TBranch        *b_prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT;   //!
+   TBranch        *b_prescale_HLT_DoubleEle33_CaloIdT;   //!
+   TBranch        *b_prescale_HLT_DoubleEle45_CaloIdL;   //!
+   TBranch        *b_prescale_HLT_DoublePhoton33;   //!
    TBranch        *b_nJetsAKT_pt15;   //!
    //TBranch        *b_nJetsIC5_pt15;   //!
    TBranch        *b_calomet;   //!
@@ -336,6 +359,7 @@ public :
    TBranch        *b_muon_trackIso03_ptInVeto;   //!
    TBranch        *b_muon_trackIso05_ptInVeto;   //!
    TBranch        *b_runnumber;   //!
+   TBranch        *b_luminosityBlock;   //!
    TBranch        *b_eventnumber;   //!
    TBranch        *b_eventcounter;   //!
    TBranch        *b_processid;   //!
@@ -601,6 +625,16 @@ void InvariantMass::Init(TTree *tree)
    fChain->SetBranchAddress("L1trigger_bool", L1trigger_bool, &b_L1trigger_bool);
    fChain->SetBranchAddress("PhysDecl_bool", &PhysDecl_bool, &b_PhysDecl_bool);
    fChain->SetBranchAddress("HLTriggers", HLTriggers, &b_HLTriggers);
+   fChain->SetBranchAddress("HLT_DoubleEle33_CaloIdL", &HLT_DoubleEle33_CaloIdL, &b_HLT_DoubleEle33_CaloIdL);
+   fChain->SetBranchAddress("HLT_DoubleEle33_CaloIdL_CaloIsoT", &HLT_DoubleEle33_CaloIdL_CaloIsoT, &b_HLT_DoubleEle33_CaloIdL_CaloIsoT);
+   fChain->SetBranchAddress("HLT_DoubleEle33_CaloIdT", &HLT_DoubleEle33_CaloIdT, &b_HLT_DoubleEle33_CaloIdT);
+   fChain->SetBranchAddress("HLT_DoubleEle45_CaloIdL", &HLT_DoubleEle45_CaloIdL, &b_HLT_DoubleEle45_CaloIdL);
+   fChain->SetBranchAddress("HLT_DoublePhoton33", &HLT_DoublePhoton33, &b_HLT_DoublePhoton33);
+   fChain->SetBranchAddress("prescale_HLT_DoubleEle33_CaloIdL", &prescale_HLT_DoubleEle33_CaloIdL, &b_prescale_HLT_DoubleEle33_CaloIdL);
+   fChain->SetBranchAddress("prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT", &prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT, &b_prescale_HLT_DoubleEle33_CaloIdL_CaloIsoT);
+   fChain->SetBranchAddress("prescale_HLT_DoubleEle33_CaloIdT", &prescale_HLT_DoubleEle33_CaloIdT, &b_prescale_HLT_DoubleEle33_CaloIdT);
+   fChain->SetBranchAddress("prescale_HLT_DoubleEle45_CaloIdL", &prescale_HLT_DoubleEle45_CaloIdL, &b_prescale_HLT_DoubleEle45_CaloIdL);
+   fChain->SetBranchAddress("prescale_HLT_DoublePhoton33", &prescale_HLT_DoublePhoton33, &b_prescale_HLT_DoublePhoton33);
    fChain->SetBranchAddress("nJetsAKT_pt15", &nJetsAKT_pt15, &b_nJetsAKT_pt15);
    //fChain->SetBranchAddress("nJetsIC5_pt15", &nJetsIC5_pt15, &b_nJetsIC5_pt15);
    fChain->SetBranchAddress("calomet", &calomet, &b_calomet);
@@ -652,6 +686,7 @@ void InvariantMass::Init(TTree *tree)
    fChain->SetBranchAddress("muon_trackIso03_ptInVeto", muon_trackIso03_ptInVeto, &b_muon_trackIso03_ptInVeto);
    fChain->SetBranchAddress("muon_trackIso05_ptInVeto", muon_trackIso05_ptInVeto, &b_muon_trackIso05_ptInVeto);
    fChain->SetBranchAddress("runnumber", &runnumber, &b_runnumber);
+   fChain->SetBranchAddress("luminosityBlock", &luminosityBlock, &b_luminosityBlock);
    fChain->SetBranchAddress("eventnumber", &eventnumber, &b_eventnumber);
    fChain->SetBranchAddress("eventcounter", &eventcounter, &b_eventcounter);
    fChain->SetBranchAddress("processid", &processid, &b_processid);
