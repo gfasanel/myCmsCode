@@ -44,6 +44,7 @@ int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *tri
 pair<unsigned int, unsigned int> runs_HLT_Mu15_Photon20_CaloIdL(99999999, 0);
 pair<unsigned int, unsigned int> runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL(99999999, 0);
 pair<unsigned int, unsigned int> runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL(99999999, 0);
+unsigned int c_runnumber;
 
 void emuSpectrum()
 {
@@ -57,7 +58,7 @@ void emuSpectrum()
    //float LumiFactor = 702.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
 
    // DATA file
-   TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_gct1_12_4684pb-1.root";
+   TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_gct1_13_4684pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_4699pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-178078_7TeV_Collisions11_JSON_3534pb-1.root";
    //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-177515_7TeV_Collisions11_JSON_3190pb-1.root";
@@ -66,9 +67,11 @@ void emuSpectrum()
    //TString dataFile = "/user_mnt/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/total_MuEG-160404-163869-ReReco10May-GoldenJSON-27May-191pb_+_MuEG-165088-166861-PromptV4-GoldenJSON-17Jun-511pb__702pb.root";
 
    string outfileName = "testEmuSpec";
-   //string outfileName = "testEmuSpecNewDY";
+   //string outfileName = "testEmuSpecSummerFallMix";
+   //string outfileName = "testEmuSpecPureSummer11";
+   //string outfileName = "test";
 
-   unsigned nPVtxMax = 20; // max number of primary vertices
+   unsigned nPVtxMax = 25; // max number of primary vertices
 
    // scale factors
    // TODO errors and distinction EB - EE
@@ -105,6 +108,7 @@ void emuSpectrum()
    int muon_nHitsMinGlobal = 11;
    int muon_nHitsMinPixel = 1;
    int muon_nHitsMinMuon = 1;
+   int muon_nLayersMin = 9; 
    float muon_impactParamMax = 0.2;   // in cm
    int muon_nSegMatchMin = 2;
    float muon_relIsoCutMax = 0.1;
@@ -143,53 +147,31 @@ void emuSpectrum()
 
    ///////////////////////////////////////////////////////////////////////////
    // INPUT FILES
-   vector<TFile *> input;
-   vector<float> weight;
+   vector<pair<TFile *, float> > input;
 
    // DATA
-   input.push_back(new TFile(dataFile, "open"));
+   input.push_back(make_pair(new TFile(dataFile, "open"), 1.)); //DATA        0 black
 
    // MC
-   input.push_back(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root", "open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root", "open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root", "open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   input.push_back(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root","open")); 
-   //input.push_back(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_12.root","open")); 
-   input.push_back(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root", "open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root", "open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root","open"));
-   input.push_back(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_12.root","open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12_emuSkim.root","open"));
-   input.push_back(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_12.root","open"));
-   //input.push_back(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root","open"));
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root", "open"), 4.40309E-5)); //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 20.11.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_13_emuSkim.root", "open"), 0.000044031)); //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 8.35612E-5)); //Ztautau     2 green       (19937479 event  - xsect 1666pb) -- 24.11.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13.root", "open"), 8.19666E-4)); //Ztautau     2 green       (2032536 event  - xsect 1666pb) -- 4.12.2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 2.20727E-5)); //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 20.11.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 2.20727E-5)); //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 4.12.2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root", "open"), 5.41102E-7)); //WZ          4 yellow      (1097759 event - xsect NLO 0.594pb (AN-11-259) ) -- 20.11.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 0.000002901)); //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root","open"), 1.38228E-5)); //tW          5 pink        (814390+323401 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 20.11.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root","open"), 0.000009690)); //tW          5 pink        (814390+809984 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 14 NOV 2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 3.84951E-4)); //W+jet       6 dark green  (81345381 event - xsect NNLO 31314pb) -- 20.11.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 0.000384917)); //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.60121E-5)); //Zmumu       7 light blue  (29743564 event  - xsect NNLO 1666pb ) -- 24 NOV 2011)
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_13.root_emuSkim","open"), 0.00077549)); //Zmumu       7 light blue  (2148325 event  - xsect NNLO 1666pb ) -- 14 NOV 2011)
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.64799E-5)); //Zee         8 cyan        (29497207 event - xsect NNLO 1666pb ) -- 24 NOV 2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13_emuSkim.root","open"), 0.00073630)); //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root","open"), 0.000000164)); //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011
 
    int nbFile = input.size();
-
-   //WEIGHTS FOR 1pb-1
-   weight.push_back(1.);                                  //DATA        0 black
-
-   weight.push_back(4.40309E-5);                          //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 20.11.2011
-   //weight.push_back(0.000044031);                         //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
-   //weight.push_back(8.35612E-5);                         //Ztautau     2 green       (19937479 event  - xsect 1666pb) -- 24.11.2011
-   weight.push_back(0.000821491);                         //Ztautau     2 green       (2028020 event  - xsect 1666pb)
-   weight.push_back(2.20727E-5);                          //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 20.11.2011
-   //weight.push_back(0.000020727);                         //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 17.10.2011
-   weight.push_back(5.41102E-7);                          //WZ          4 yellow      (1097759 event - xsect NLO 0.594pb (AN-11-259) ) -- 20.11.2011
-   //weight.push_back(0.000002901);                         //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
-   weight.push_back(6.04859E-6);                          //tW          5 pink        (814390+323401 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 20.11.2011
-   //weight.push_back(0.000009690);                         //tW          5 pink        (814390+809984 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 14 NOV 2011
-   weight.push_back(3.84951E-4);                          //W+jet       6 dark green  (81345381 event - xsect NNLO 31314pb) -- 20.11.2011
-   //weight.push_back(0.000384917);                         //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
-   //weight.push_back(5.60121E-5);                          //Zmumu       7 light blue  (29743564 event  - xsect NNLO 1666pb ) -- 24 NOV 2011) 
-   weight.push_back(0.00077549);                          //Zmumu       7 light blue  (2148325 event  - xsect NNLO 1666pb ) -- 14 NOV 2011) 
-   //weight.push_back(5.64799E-5);                          //Zee         8 cyan        (29497207 event - xsect NNLO 1666pb ) -- 24 NOV 2011 
-   weight.push_back(0.00073630);                          //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011 
-   //weight.push_back(0.000000164);                         //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011 
    ///////////////////////////////////////////////////////////////////////////
 
    // strings for histogram names
@@ -281,7 +263,6 @@ void emuSpectrum()
    //emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZz_nValidPv", "emuLoose_dataOverZz_nValidPv", nPVtxMax, 0., nPVtxMax));
 
    //RUN ID
-   unsigned int c_runnumber;
    unsigned int c_eventnumber;
    unsigned int c_luminosityBlock;
 
@@ -373,6 +354,7 @@ void emuSpectrum()
    int c_muon_nhitspixel[20];
    int c_muon_nhitstotal[20];
    int c_muon_nhitsmuons[20];
+   int c_muon_nlayerswithhits[20];
    int c_muon_nSegmentMatch[20];
    bool c_muon_isTrackerMuon[20];
    float c_muon_chi2[20];
@@ -497,6 +479,7 @@ void emuSpectrum()
    TBranch        *b_muon_nhitspixel;
    TBranch        *b_muon_nhitstotal;
    TBranch        *b_muon_nhitsmuons;
+   TBranch        *b_muon_nlayerswithhits;
    TBranch        *b_muon_nSegmentMatch;
    TBranch        *b_muon_isTrackerMuon;
    TBranch        *b_muon_chi2;
@@ -535,7 +518,7 @@ void emuSpectrum()
    vector<vector<float> > PVX_ScalingFactors;
    if (usePUInfo) {
       stringstream ssPUInfile;
-      ssPUInfile << "emu_PUinfo_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
+      ssPUInfile << "emu_PUinfo" << nPVtxMax << "PVtx_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
       // test if the PU file exists already. If yes -> use it; if no -> create it and fill it
       ifstream iFile(ssPUInfile.str().c_str());
       if (iFile) {
@@ -579,12 +562,12 @@ void emuSpectrum()
    if (usePUInfo && generatePUFile) {
       // 1st loop to get VERTEX information
       for (int p = 0; p < nbFile; ++p) {
-         cout << "accessing file " << p + 1 << " for PU information: " << input[p]->GetName() << endl;
-         input[p]->cd();
+         cout << "accessing file " << p + 1 << " for PU information: " << input[p].first->GetName() << endl;
+         input[p].first->cd();
 
          // Get the TREE and connect the necessary variables
          TTree *thetree;
-         thetree = (TTree*)(input[p])->Get("gsfcheckerjob/tree");
+         thetree = (TTree*)(input[p].first)->Get("gsfcheckerjob/tree");
 
          //PRIM VTX
          thetree->SetBranchAddress("pvsize", &c_pvsize, &b_pvsize);
@@ -608,15 +591,15 @@ void emuSpectrum()
             thetree->GetEntry(i);
 
             int prescale = 0;
-            if (p == DATA && Trigger(input[p], i, prescale, dataTrig) < 1) continue;
-            if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
-            //if (p != DATA) {
+            if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
+            //if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+            if (p != DATA) {
                if (i < nentries * dataTrig[0] / dataEntries) {
-                  if (Trigger(input[p], i, prescale, trig, 1) < 1) continue;
+                  if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
                } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
-                  if (Trigger(input[p], i, prescale, trig, 2) < 1) continue;
+                  if (Trigger(input[p].first, i, prescale, trig, 2) < 1) continue;
                } else {
-                  if (Trigger(input[p], i, prescale, trig, 3) < 1) continue;
+                  if (Trigger(input[p].first, i, prescale, trig, 3) < 1) continue;
                }
             }
 
@@ -679,7 +662,7 @@ void emuSpectrum()
 
       if (generatePUFile) {
          stringstream ssPUOutfile;
-         ssPUOutfile << "emu_PUinfo_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
+         ssPUOutfile << "emu_PUinfo" << nPVtxMax << "PVtx_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
          TFile *outputPV = new TFile(ssPUOutfile.str().c_str(), "recreate");
          outputPV->cd();
 
@@ -699,6 +682,9 @@ void emuSpectrum()
    }
    ///////////////////////////////////////////////////////////////////////////
 
+   runs_HLT_Mu15_Photon20_CaloIdL.first = 99999999;
+   runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first = 99999999;
+   runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first = 99999999;
    dataTrig[0] = 0;
    dataTrig[1] = 0;
    dataTrig[1] = 0;
@@ -707,16 +693,16 @@ void emuSpectrum()
    // GETTING FILES
    for (int p = 0; p < nbFile; ++p) {
       // correction for trigger
-      if (p == ZTT && p == ZMM && p == ZEE) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
-      //if (0) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      //if (p == ZTT && p == ZMM && p == ZEE) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      if (0) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
       else MCemuScaleFactor = MCScaleFactor;
 
-      cout << "accessing file " << p + 1 << ": " << input[p]->GetName() << endl;
-      input[p]->cd();
+      cout << "accessing file " << p + 1 << ": " << input[p].first->GetName() << endl;
+      input[p].first->cd();
 
       // Get the TREE
       TTree *thetree;
-      thetree = (TTree*)(input[p])->Get("gsfcheckerjob/tree");
+      thetree = (TTree*)(input[p].first)->Get("gsfcheckerjob/tree");
 
       //RUN ID
       thetree->SetBranchAddress("runnumber", &c_runnumber, &b_runnumber);
@@ -809,6 +795,7 @@ void emuSpectrum()
       thetree->SetBranchAddress("muon_nhitspixel", &c_muon_nhitspixel, &b_muon_nhitspixel);
       thetree->SetBranchAddress("muon_nhitstotal", &c_muon_nhitstotal, &b_muon_nhitstotal);
       thetree->SetBranchAddress("muon_nhitsmuons", &c_muon_nhitsmuons, &b_muon_nhitsmuons);
+      thetree->SetBranchAddress("muon_nlayerswithhits", &c_muon_nlayerswithhits, &b_muon_nlayerswithhits);
       thetree->SetBranchAddress("muon_nSegmentMatch", &c_muon_nSegmentMatch, &b_muon_nSegmentMatch);
       thetree->SetBranchAddress("muon_isTrackerMuon", &c_muon_isTrackerMuon, &b_muon_isTrackerMuon);
       thetree->SetBranchAddress("muon_chi2", &c_muon_chi2, &b_muon_chi2);
@@ -937,15 +924,15 @@ void emuSpectrum()
          thetree->GetEntry(i);
 
          int prescale = 0;
-         if (p == DATA && Trigger(input[p], i, prescale, dataTrig) < 1) continue;
-         if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
-         //if (p != DATA) {
+         if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
+         //if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+         if (p != DATA) {
             if (i < nentries * dataTrig[0] / dataEntries) {
-               if (Trigger(input[p], i, prescale, trig, 1) < 1) continue;
+               if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
             } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
-               if (Trigger(input[p], i, prescale, trig, 2) < 1) continue;
+               if (Trigger(input[p].first, i, prescale, trig, 2) < 1) continue;
             } else {
-               if (Trigger(input[p], i, prescale, trig, 3) < 1) continue;
+               if (Trigger(input[p].first, i, prescale, trig, 3) < 1) continue;
             }
          }
 
@@ -979,7 +966,7 @@ void emuSpectrum()
                   break;
                }
             }
-            if (fakeEle) continue;
+            //if (fakeEle) continue;
 
             //BARREL HEEP
             if (fabs(c_gsfsc_eta[j]) < 1.442
@@ -1024,10 +1011,11 @@ void emuSpectrum()
                 && c_muon_nhitstrack[j] >= muon_nHitsMinGlobal
                 && c_muon_nhitspixel[j] >= muon_nHitsMinPixel
                 && c_muon_nhitsmuons[j] >= muon_nHitsMinMuon
+                && c_muon_nlayerswithhits[j] >= muon_nLayersMin
                 && fabs(c_muon_dxy_beamSpot[j]) < muon_impactParamMax
                 && c_muon_nSegmentMatch[j] >= muon_nSegMatchMin
                 && c_muon_isTrackerMuon[j]
-                && c_muon_trackIso03[j]/ c_muon_pt[j] < muon_relIsoCutMax
+                && c_muon_trackIso03[j] / c_muon_pt[j] < muon_relIsoCutMax
                ) MU_passGOOD.push_back(j);
 
             //MU PASS ACC
@@ -1047,7 +1035,7 @@ void emuSpectrum()
          if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) {
             // remove duplicates
             // TODO implement deltaR <0.1 correctly
-            if (fabs(c_gsf_phi[GSF_passHEEP[0]] - c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]]) < 0.1) continue;
+            //if (fabs(c_gsf_phi[GSF_passHEEP[0]] - c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]]) < 0.1) continue;
 
             TLorentzVector ele1;
             TLorentzVector mu1;
@@ -1140,7 +1128,7 @@ void emuSpectrum()
          if (GSF_passACC.size() > 0 && MU_passGOOD.size() > 0) {
 
             //REMOVE DUPLICATES
-            if (fabs(c_gsf_phi[GSF_passACC[0]] - c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]]) < 0.1) continue;
+            //if (fabs(c_gsf_phi[GSF_passACC[0]] - c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]]) < 0.1) continue;
 
             TLorentzVector ele1;
             TLorentzVector mu1;
@@ -1172,37 +1160,37 @@ void emuSpectrum()
    //SCALE MC
    for (int p = 1; p < nbFile; ++p) {
       for (unsigned int k = 0; k < 3; ++k) {
-         emuMass.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         emu_mass_accVSgood.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         emuMass.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         emu_mass_accVSgood.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
 
-         met.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         nVtx.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         dPhi.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         elePt.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         eleEta.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         elePhi.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         eleId1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         eleId2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         eleId3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         eleIso1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         eleIso2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         eleIso3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         met.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         nVtx.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         dPhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         elePt.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         eleEta.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         elePhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         eleId1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         eleId2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         eleId3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         eleIso1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         eleIso2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         eleIso3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
 
-         muIsoCombRel.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muPtEleOPtMu.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muPtPlusOPtMinus.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muPt.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muEta.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muPhi.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muId1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muId2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muId3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muIso1.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muIso2.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         muIso3.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         muIsoCombRel.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muPtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muPtPlusOPtMinus.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muPt.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muEta.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muPhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muId1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muId2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muId3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muIso1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muIso2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         muIso3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
 
-         numOfJets.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
-         numOfJetsPt15.at(p).at(k)->Scale(weight[p] * LumiFactor * MCemuScaleFactor);
+         numOfJets.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         numOfJetsPt15.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
       }
    }
 
@@ -1451,7 +1439,6 @@ void emuSpectrum()
 
 int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector)
 {
-   unsigned int c_runnumber;
    int c_HLT_Mu15_Photon20_CaloIdL;
    int c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
    int c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
@@ -1459,7 +1446,6 @@ int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *tri
    int c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
    int c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
 
-   TBranch *b_runnumber;
    TBranch *b_HLT_Mu15_Photon20_CaloIdL;
    TBranch *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
    TBranch *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
@@ -1472,7 +1458,6 @@ int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *tri
    TTree *thetree;
    thetree = (TTree*)(inFile)->Get("gsfcheckerjob/tree");
 
-   thetree->SetBranchAddress("runnumber", &c_runnumber, &b_runnumber);
    thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
    thetree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
    thetree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
