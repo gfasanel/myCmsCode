@@ -31,6 +31,8 @@
 #define WJET 6
 #define ZMM 7
 #define ZEE 8
+#define ZZ 9
+//#define QCD 10
 #define QCD 9
 
 #define ALL 0
@@ -155,8 +157,8 @@ void emuSpectrum()
    // MC
    input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root", "open"), 4.40309E-5)); //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 20.11.2011
    //input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_13_emuSkim.root", "open"), 0.000044031)); //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 8.35612E-5)); //Ztautau     2 green       (19937479 event  - xsect 1666pb) -- 24.11.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13.root", "open"), 8.19666E-4)); //Ztautau     2 green       (2032536 event  - xsect 1666pb) -- 4.12.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 8.35612E-5)); //Ztautau     2 green       (19937479 event  - xsect 1666pb) -- 24.11.2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13.root", "open"), 8.19666E-4)); //Ztautau     2 green       (2032536 event  - xsect 1666pb) -- 4.12.2011
    input.push_back(make_pair(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 2.20727E-5)); //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 20.11.2011
    //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 2.20727E-5)); //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 4.12.2011
    input.push_back(make_pair(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root", "open"), 5.41102E-7)); //WZ          4 yellow      (1097759 event - xsect NLO 0.594pb (AN-11-259) ) -- 20.11.2011
@@ -165,11 +167,12 @@ void emuSpectrum()
    //input.push_back(make_pair(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root","open"), 0.000009690)); //tW          5 pink        (814390+809984 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 14 NOV 2011
    input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 3.84951E-4)); //W+jet       6 dark green  (81345381 event - xsect NNLO 31314pb) -- 20.11.2011
    //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 0.000384917)); //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.60121E-5)); //Zmumu       7 light blue  (29743564 event  - xsect NNLO 1666pb ) -- 24 NOV 2011)
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_13.root_emuSkim","open"), 0.00077549)); //Zmumu       7 light blue  (2148325 event  - xsect NNLO 1666pb ) -- 14 NOV 2011)
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.64799E-5)); //Zee         8 cyan        (29497207 event - xsect NNLO 1666pb ) -- 24 NOV 2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13_emuSkim.root","open"), 0.00073630)); //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_HEEPSkim1Ele1MuPt35_gct1_6.root","open"), 0.000000164)); //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.60121E-5)); //Zmumu       7 light blue  (29743564 event  - xsect NNLO 1666pb ) -- 24 NOV 2011)
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_13_emuSkim.root","open"), 0.00077549)); //Zmumu       7 light blue  (2148325 event  - xsect NNLO 1666pb ) -- 14 NOV 2011)
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.64799E-5)); //Zee         8 cyan        (29497207 event - xsect NNLO 1666pb ) -- 24 NOV 2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13_emuSkim.root","open"), 0.00073630)); //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root","open"), 0.000000164)); //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root","open"), 0.000000164)); //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011
 
    int nbFile = input.size();
    ///////////////////////////////////////////////////////////////////////////
@@ -535,7 +538,7 @@ void emuSpectrum()
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverWjets_nValidPv"));
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZmumu_nValidPv"));
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZee_nValidPv"));
-         //copy_emuLoose_dataOverX_nValidPv.push_back(new TH1F((TH1F*)inputPV->Get("emuLoose_dataOverZz_nValidPv")));
+         //copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZz_nValidPv"));
 
          for (unsigned int p = 0; p < copy_emuLoose_dataOverX_nValidPv.size(); ++p) {
             vector<float> PVX_ScalingFactor;
@@ -592,8 +595,8 @@ void emuSpectrum()
 
             int prescale = 0;
             if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
-            //if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
-            if (p != DATA) {
+            if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+            //if (p != DATA) {
                if (i < nentries * dataTrig[0] / dataEntries) {
                   if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
                } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
@@ -693,11 +696,12 @@ void emuSpectrum()
    // GETTING FILES
    for (int p = 0; p < nbFile; ++p) {
       // correction for trigger
-      //if (p == ZTT && p == ZMM && p == ZEE) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
-      if (0) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      if (p == ZTT || p == ZMM || p == ZEE) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      //if (0) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
       else MCemuScaleFactor = MCScaleFactor;
 
       cout << "accessing file " << p + 1 << ": " << input[p].first->GetName() << endl;
+      if (p > DATA) cout << "MC correction factor: " << MCemuScaleFactor << endl;
       input[p].first->cd();
 
       // Get the TREE
@@ -925,8 +929,8 @@ void emuSpectrum()
 
          int prescale = 0;
          if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
-         //if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
-         if (p != DATA) {
+         if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+         //if (p != DATA) {
             if (i < nentries * dataTrig[0] / dataEntries) {
                if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
             } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
@@ -1138,7 +1142,7 @@ void emuSpectrum()
 
             double invMass = (ele1 + mu1).M();
 
-            for (unsigned int k = 0; k< 3; ++k) {
+            for (unsigned int k = 0; k < 3; ++k) {
                if (k == 1 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
                if (k == 2 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) continue;
                emu_mass_accVSgood.at(p).at(k)->Fill(invMass, npv_weight);
@@ -1155,44 +1159,44 @@ void emuSpectrum()
       }
       else cout << "HLT_Mu15_Photon20_CaloIdL: " << trig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL: " << trig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL: " << trig[2] << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
 
-   }//END FILE LOOP
+      //SCALE MC
+      if (p > DATA) {
+         for (unsigned int k = 0; k < 3; ++k) {
+            emuMass.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            emu_mass_accVSgood.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
 
-   //SCALE MC
-   for (int p = 1; p < nbFile; ++p) {
-      for (unsigned int k = 0; k < 3; ++k) {
-         emuMass.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         emu_mass_accVSgood.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            met.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            nVtx.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            dPhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            elePt.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            eleEta.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            elePhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            eleId1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            eleId2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            eleId3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            eleIso1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            eleIso2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            eleIso3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
 
-         met.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         nVtx.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         dPhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         elePt.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         eleEta.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         elePhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         eleId1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         eleId2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         eleId3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         eleIso1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         eleIso2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         eleIso3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muIsoCombRel.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muPtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muPtPlusOPtMinus.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muPt.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muEta.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muPhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muId1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muId2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muId3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muIso1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muIso2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            muIso3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
 
-         muIsoCombRel.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muPtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muPtPlusOPtMinus.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muPt.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muEta.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muPhi.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muId1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muId2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muId3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muIso1.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muIso2.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         muIso3.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-
-         numOfJets.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
-         numOfJetsPt15.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            numOfJets.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+            numOfJetsPt15.at(p).at(k)->Scale(input[p].second * LumiFactor * MCemuScaleFactor);
+         }
       }
-   }
+
+   }//END FILE LOOP
 
    float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
    float systErrTtLuEff = sqrt(systErrTtbar*systErrTtbar + systErrLuEff*systErrLuEff);
@@ -1214,6 +1218,7 @@ void emuSpectrum()
    cout << "nb WJets     = " << emuMass.at(WJET).at(ALL)->Integral() << endl;
    cout << "nb Zmumu     = " << emuMass.at(ZMM).at(ALL)->Integral() << endl;
    cout << "nb Zee       = " << emuMass.at(ZEE).at(ALL)->Integral() << endl;
+   //cout << "nb ZZ        = " << emuMass.at(ZZ).at(ALL)->Integral() << endl;
    cout << "------------------------------------" << endl;
    cout << "TOT ttlike   = " << emuMass.at(TTBAR).at(ALL)->Integral() + emuMass.at(ZTT).at(ALL)->Integral() + emuMass.at(WW).at(ALL)->Integral() + emuMass.at(WZ).at(ALL)->Integral() + emuMass.at(TW).at(ALL)->Integral() << endl;
    cout << "TOT contam   = " << emuMass.at(WJET).at(ALL)->Integral() + emuMass.at(ZMM).at(ALL)->Integral() + emuMass.at(ZEE).at(ALL)->Integral() << endl;
@@ -1335,7 +1340,7 @@ void emuSpectrum()
    float systErrQCD = errQCD / (emuMass.at(1).at(ALL)->Integral() - emuMass.at(QCD).at(ALL)->Integral());
    float systErrTtLuEffQcd = sqrt(systErrTtLuEff*systErrTtLuEff + systErrQCD*systErrQCD);
 
-   cout << "QCD events from LS spectrum:" << endl;
+   cout << endl << "QCD events from LS spectrum:" << endl;
    cout << "nb QCD      = " << emuMass.at(QCD).at(ALL)->Integral() << " +- " << errQCD << "(syst)" << endl;
    cout << "\% of total MC: " << 100 * emuMass.at(QCD).at(ALL)->Integral() / (emuMass.at(1).at(ALL)->Integral() - emuMass.at(QCD).at(ALL)->Integral()) << "\% +- " << 100 * systErrQCD << "\%(syst)" << endl;
 
