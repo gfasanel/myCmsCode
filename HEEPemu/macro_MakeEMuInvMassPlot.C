@@ -1,12 +1,38 @@
+#include <stdio>
+#include <string>
+#include <sstream>
+#include <vector>
+#include "TH1F.h"
+#include "TCanvas.h"
+
+#define DATA 0
+#define TTBAR 1
+#define ZTT 2
+#define WW 3
+#define WZ 4
+#define TW 5
+#define WJET 6
+#define ZMM 7
+#define ZEE 8
+#define ZZ 9
+//#define QCD 10
+#define QCD 9
+
+#define ALL 0
+#define LS 1
+#define OS 2
+
+float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked = false);
+float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked = false);
+
+void macro_MakeEMuInvMassPlot()
 {
-  #include <string>
-  #include <sstream>
-  #include <vector>
-  #include "TH1F.h"
-  #include "TCanvas.h"
- 
   // parameters //////////////////////////////////////////////////////////////
+  //TFile input("test4684pb-1.root", "open");
   TFile input("testEmuSpec4684pb-1.root", "open");
+  //TFile input("testEmuSpecSummerFallMix4684pb-1.root", "open");
+  //TFile input("testEmuSpecPureSummer114684pb-1.root", "open");
+  //TFile input("testEmuSpecNewDYNoPURew4684pb-1.root", "open");
   //TFile input("testEmuSpec4699pb-1.root", "open");
   //TFile input("testEmuSpecNewDY4699pb-1.root", "open");
   //TFile input("testEmuSpec3534pb-1.root", "open");
@@ -14,6 +40,7 @@
   //TFile input("./PUreweightTests20111020/testEmuSpec_PUrew20_3534pb-1.root", "open");
 
   const float lumi = 4684.;
+  const float minInvMass = 60.;
 
   bool plotSign[3];
   plotSign[0] = true;  // all
@@ -22,19 +49,21 @@
 
   bool plotType[2];
   plotType[0] = true;  // emu spectrum
-  plotType[1] = false;  // cumulative emu spectrum
+  plotType[1] = true;  // cumulative emu spectrum
 
   bool logPlot = true;
 
   // systematical errors
-  float systErrTtbar = 0.15;
-  //float systErrWW = 0.;   // FIXME
-  //float systErrWZ = 0.;   // FIXME
-  //float systErrTW = 0.15; // FIXME
-  //float systErrWJets = 0.;   // FIXME
-  //float systErrZtt = 0.;   // FIXME
-  //float systErrZmm = 0.;   // FIXME
-  //float systErrZee = 0.;   // FIXME
+  vector<float> systErrMC;
+  systErrMC.push_back(0.15);  //ttbar
+  systErrMC.push_back(0.);    //z->tt  //FIXME
+  systErrMC.push_back(0.);    //WW     //FIXME
+  systErrMC.push_back(0.);    //WZ     //FIXME
+  systErrMC.push_back(0.15);  //tW     //FIXME
+  systErrMC.push_back(0.);    //WJets  //FIXME
+  systErrMC.push_back(0.);    //Z->mm  //FIXME
+  systErrMC.push_back(0.);    //Z->ee  //FIXME
+  systErrMC.push_back(0.);    //ZZ     //FIXME
   float systErrLumi = 0.045;
   float systErrEff = 0.02;
   ////////////////////////////////////////////////////////////////////////////
@@ -62,7 +91,6 @@
 
   // loop over full spectrum, LS and OS
   for (unsigned int k = 0; k < 3; ++k) {
-    if (!plotSign[k]) continue;
     // loop to get nowmal and cumulated spectrum
     for (unsigned int j = 0; j < 2; ++j) {
       if (!plotType[j]) continue;
@@ -93,6 +121,8 @@
       emuMass_zee.back()->SetName(emuMass_zee.back()->GetName() + nameSuffix[j]);
       //emuMass_zz.back()->SetName(emuMass_zz.back()->GetName() + nameSuffix[j]);
       emuMass_qcd.back()->SetName(emuMass_qcd.back()->GetName() + nameSuffix[j]);
+
+      if (!plotSign[k]) continue;
 
       // integrate from the right side
       if (j == 1) { 
@@ -222,68 +252,244 @@
     } // end loop over normal or cumulated
   } // end loop over full, LS and OS
 
+  vector<vector<TH1F *> > emuMasses;
+
+  emuMasses.push_back(emuMass_data);
+  emuMasses.push_back(emuMass_ttbar);
+  emuMasses.push_back(emuMass_ztautau);
+  emuMasses.push_back(emuMass_ww);
+  emuMasses.push_back(emuMass_wz);
+  emuMasses.push_back(emuMass_tw);
+  emuMasses.push_back(emuMass_wjets);
+  emuMasses.push_back(emuMass_zmumu);
+  emuMasses.push_back(emuMass_zee);
+  //emuMasses.push_back(emuMass_zz);
+  emuMasses.push_back(emuMass_qcd);
+  if (plotType[1]) {
+    for (vector<vector<TH1F *> >::iterator iter = emuMasses.begin(); iter < emuMasses.end(); ++iter) {
+      iter->erase(iter->begin() + 5);
+      iter->erase(iter->begin() + 3);
+      iter->erase(iter->begin() + 1);
+    }
+  }
+
   float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
-  float systErrTtLuEff = sqrt(systErrTtbar*systErrTtbar + systErrLuEff*systErrLuEff);
+
+  // calculate rate of syst errors
+  float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
+  vector<float> systErrMCLuEff;
+  for (unsigned int it = TTBAR - 1; it < ZEE; ++it) 
+     systErrMCLuEff.push_back(sqrt(systErrMC[it]*systErrMC[it] + systErrLuEff*systErrLuEff));
+
+  // define groups of MC samples
+  vector<bool> ttLikeSamples(5, true);
+  vector<bool> contamSamples(5, false);
+  contamSamples.push_back(true); // WJets
+  contamSamples.push_back(true); // Zmm
+  contamSamples.push_back(true); // Zee
+  vector<bool> allSamples(8, true);
+
   // write numbers
-  cout << "------------------------------------" << endl;
-  cout << "HEEP - TIGHT MU        Lumi = " << lumi << "pb-1" << endl;
-  cout << "------------------------------------" << endl;
-  cout << "nb data      = " << emuMass_data.at(0)->Integral() << endl;
-  cout << "TOT MC       = " << emuMass_ttbar.at(0)->Integral() - emuMass_qcd.at(0)->Integral() << endl;
-  cout << "------------------------------------" << endl;
   cout << endl;
-  cout << "------------------------------------" << endl;
-  cout << "  Like Sign                         " << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  cout << "HEEP - TIGHT MU        Lumi        = " << lumi << "pb-1" << endl;
+  //cout << "                       e pT EB     > " << bar_et << "GeV/c" << endl;
+  //cout << "                       e pT EE     > " << end_et << "GeV/c" << endl;
+  //cout << "                       mu pT       > " << muon_et << "GeV/c" << endl;
+  //cout << "                       mu |eta|    < " << muon_etaMax << endl;
   cout << endl;
-  cout << "nb LS DATA   = " << emuMass_data.at(1)->Integral() << " +- " << sqrt(emuMass_data.at(1)->Integral()) << "(stat)" << endl;
-  cout << "nb LS MC     = " << emuMass_ttbar.at(1)->Integral() - emuMass_qcd.at(1)->Integral() << " +- " << (emuMass_ttbar.at(1)->Integral() - emuMass_qcd.at(1)->Integral()) * systErrLuEff << "(syst)" << endl;
+  cout << "Systematic errors" << endl;
+  cout << " Luminosity:  " << systErrLumi * 100 << "%" << endl;
+  cout << " Efficiency:  " << systErrEff * 100 << "%" << endl;
+  cout << " ttbar:      " << systErrMC[TTBAR-1] * 100 << "%" << endl;
+  cout << " Z->tautau:   " << systErrMC[ZTT-1] * 100 << "%" << endl;
+  cout << " WW:          " << systErrMC[WW-1] * 100 << "%" << endl;
+  cout << " WZ:          " << systErrMC[WZ-1] * 100 << "%" << endl;
+  cout << " tW, tbarW:  " << systErrMC[TW-1] * 100 << "%" << endl;
+  cout << " Z->mumu:     " << systErrMC[ZMM-1] * 100 << "%" << endl;
+  cout << " Z->ee:       " << systErrMC[ZEE-1] * 100 << "%" << endl;
+  cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  cout << "M_emu         |         > 60GeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2          |" << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
+         emuMass_data.at(ALL)->Integral(), sqrt(emuMass_data.at(ALL)->Integral()),         
+         emuMass_data.at(ALL)->Integral(13,151), sqrt(emuMass_data.at(ALL)->Integral(13,151)),
+         emuMass_data.at(ALL)->Integral(21,151), sqrt(emuMass_data.at(ALL)->Integral(21,151)));
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  printf("nb ttbar      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_ttbar.at(ALL)->Integral() - emuMass_ztautau.at(ALL)->Integral(), (emuMass_ttbar.at(ALL)->Integral() - emuMass_ztautau.at(ALL)->Integral()) * systErrMCLuEff[TTBAR-1], 
+         emuMass_ttbar.at(ALL)->Integral(13,151) - emuMass_ztautau.at(ALL)->Integral(13,151), (emuMass_ttbar.at(ALL)->Integral(13,151) - emuMass_ztautau.at(ALL)->Integral(13,151)) * systErrMCLuEff[TTBAR-1], 
+         emuMass_ttbar.at(ALL)->Integral(21,151) - emuMass_ztautau.at(ALL)->Integral(21,151), (emuMass_ttbar.at(ALL)->Integral(21,151) - emuMass_ztautau.at(ALL)->Integral(21,151)) * systErrMCLuEff[TTBAR-1]);
+  printf("nb Ztautau    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_ztautau.at(ALL)->Integral() - emuMass_ww.at(ALL)->Integral(), (emuMass_ztautau.at(ALL)->Integral() - emuMass_ww.at(ALL)->Integral()) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(ALL)->Integral(13,151) - emuMass_ww.at(ALL)->Integral(13,151), (emuMass_ztautau.at(ALL)->Integral(13,151) - emuMass_ww.at(ALL)->Integral(13,151)) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(ALL)->Integral(21,151) - emuMass_ww.at(ALL)->Integral(21,151), (emuMass_ztautau.at(ALL)->Integral(21,151) - emuMass_ww.at(ALL)->Integral(21,151)) * systErrMCLuEff[ZTT-1]); 
+  printf("nb WW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_ww.at(ALL)->Integral() - emuMass_wz.at(ALL)->Integral(), (emuMass_ww.at(ALL)->Integral() - emuMass_wz.at(ALL)->Integral()) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(ALL)->Integral(13,151) - emuMass_wz.at(ALL)->Integral(13,151), (emuMass_ww.at(ALL)->Integral(13,151) - emuMass_wz.at(ALL)->Integral(13,151)) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(ALL)->Integral(21,151) - emuMass_wz.at(ALL)->Integral(21,151), (emuMass_ww.at(ALL)->Integral(21,151) - emuMass_wz.at(ALL)->Integral(21,151)) * systErrMCLuEff[WW-1]);
+  printf("nb WZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_wz.at(ALL)->Integral() - emuMass_tw.at(ALL)->Integral(), (emuMass_wz.at(ALL)->Integral() - emuMass_tw.at(ALL)->Integral()) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(ALL)->Integral(13,151) - emuMass_tw.at(ALL)->Integral(13,151), (emuMass_wz.at(ALL)->Integral(13,151) - emuMass_tw.at(ALL)->Integral(13,151)) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(ALL)->Integral(21,151) - emuMass_tw.at(ALL)->Integral(21,151), (emuMass_wz.at(ALL)->Integral(21,151) - emuMass_tw.at(ALL)->Integral(21,151)) * systErrMCLuEff[WZ-1]);
+  printf("nb tW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_tw.at(ALL)->Integral() - emuMass_wjets.at(ALL)->Integral(), (emuMass_tw.at(ALL)->Integral() - emuMass_wjets.at(ALL)->Integral()) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(ALL)->Integral(13,151) - emuMass_wjets.at(ALL)->Integral(13,151), (emuMass_tw.at(ALL)->Integral(13,151) - emuMass_wjets.at(ALL)->Integral(13,151)) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(ALL)->Integral(21,151) - emuMass_wjets.at(ALL)->Integral(21,151), (emuMass_tw.at(ALL)->Integral(21,151) - emuMass_wjets.at(ALL)->Integral(21,151)) * systErrMCLuEff[TW-1]);
+  cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+  printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_wjets.at(ALL)->Integral() - emuMass_zmumu.at(ALL)->Integral(), (emuMass_wjets.at(ALL)->Integral() - emuMass_zmumu.at(ALL)->Integral()) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(ALL)->Integral(13,151) - emuMass_zmumu.at(ALL)->Integral(13,151), (emuMass_wjets.at(ALL)->Integral(13,151) - emuMass_zmumu.at(ALL)->Integral(13,151)) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(ALL)->Integral(21,151) - emuMass_zmumu.at(ALL)->Integral(21,151), (emuMass_wjets.at(ALL)->Integral(21,151) - emuMass_zmumu.at(ALL)->Integral(21,151)) * systErrMCLuEff[WJET-1]);
+  printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_zmumu.at(ALL)->Integral() - emuMass_zee.at(ALL)->Integral(), (emuMass_zmumu.at(ALL)->Integral() - emuMass_zee.at(ALL)->Integral()) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(ALL)->Integral(13,151) - emuMass_zee.at(ALL)->Integral(13,151), (emuMass_zmumu.at(ALL)->Integral(13,151) - emuMass_zee.at(ALL)->Integral(13,151)) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(ALL)->Integral(21,151) - emuMass_zee.at(ALL)->Integral(21,151), (emuMass_zmumu.at(ALL)->Integral(21,151) - emuMass_zee.at(ALL)->Integral(21,151)) * systErrMCLuEff[ZMM-1]);
+  printf("nb Zee        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_zee.at(ALL)->Integral() - emuMass_qcd.at(ALL)->Integral(), (emuMass_zee.at(ALL)->Integral() - emuMass_qcd.at(ALL)->Integral()) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(ALL)->Integral(13,151) - emuMass_qcd.at(ALL)->Integral(13,151), (emuMass_zee.at(ALL)->Integral(13,151) - emuMass_qcd.at(ALL)->Integral(13,151)) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(ALL)->Integral(21,151) - emuMass_qcd.at(ALL)->Integral(21,151), (emuMass_zee.at(ALL)->Integral(21,151) - emuMass_qcd.at(ALL)->Integral(21,151)) * systErrMCLuEff[ZEE-1]); 
+  //printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+  //       emuMass_zz.at(ALL)->Integral() - emuMass_qcd.at(ALL)->Integral(), (emuMass_zz.at(ALL)->Integral() - emuMass_qcd.at(ALL)->Integral()) * systErrMCLuEff[ZZ-1], 
+  //       emuMass_zz.at(ALL)->Integral(13,151) - emuMass_qcd.at(ALL)->Integral(13,151), (emuMass_zz.at(ALL)->Integral(13,151) - emuMass_qcd.at(ALL)->Integral(13,151)) * systErrMCLuEff[ZZ-1], 
+  //       emuMass_zz.at(ALL)->Integral(21,151) - emuMass_qcd.at(ALL)->Integral(21,151), (emuMass_zz.at(ALL)->Integral(21,151) - emuMass_qcd.at(ALL)->Integral(21,151)) * systErrMCLuEff[ZZ-1]); 
   cout << endl;
-  cout << "nb OS DATA   = " << emuMass_data.at(2)->Integral() << " +- " << sqrt(emuMass_data.at(2)->Integral()) << "(stat)" << endl;
-  cout << "nb OS MC     = " << emuMass_ttbar.at(2)->Integral() - emuMass_qcd.at(2)->Integral() << " +- " << (emuMass_ttbar.at(2)->Integral() - emuMass_qcd.at(2)->Integral()) * systErrTtLuEff << "(syst)" << endl;
-  cout << "------------------------------------" << endl;
+  cout << "---Without QCD correction:---------------------------------------------------------------------------------" << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  printf("TOT ttlike    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+         emuMass_ttbar.at(ALL)->Integral() - emuMass_wjets.at(ALL)->Integral(), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, 7, 151, true),
+         emuMass_ttbar.at(ALL)->Integral(13,151) - emuMass_wjets.at(ALL)->Integral(13,151), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, 13, 151, true),
+         emuMass_ttbar.at(ALL)->Integral(21,151) - emuMass_wjets.at(ALL)->Integral(21,151), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, 21, 151, true));
+  printf("TOT contam    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+         emuMass_wjets.at(ALL)->Integral() - emuMasses.at(QCD).at(ALL)->Integral(), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALL, 7, 151, true),
+         emuMass_wjets.at(ALL)->Integral(13,151) - emuMasses.at(QCD).at(ALL)->Integral(13,151), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALL, 13, 151, true),
+         emuMass_wjets.at(ALL)->Integral(21,151) - emuMasses.at(QCD).at(ALL)->Integral(21,151), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALL, 21, 151, true));
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
 
-  float errQCD = 2 * sqrt(emuMass_data.at(1)->Integral() + pow((emuMass_ttbar.at(1)->Integral() - emuMass_qcd.at(1)->Integral()) * systErrLuEff, 2));
-  float systErrQCD = errQCD / (emuMass_ttbar.at(0)->Integral() - emuMass_qcd.at(0)->Integral());
-  float systErrTtLuEffQcd = sqrt(systErrTtLuEff*systErrTtLuEff + systErrQCD*systErrQCD);
+  printf("TOT MC        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+         emuMasses.at(1).at(ALL)->Integral() - emuMasses.at(QCD).at(ALL)->Integral(), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALL, 7, 151, true),
+         emuMasses.at(1).at(ALL)->Integral(13,151) - emuMasses.at(QCD).at(ALL)->Integral(13,151), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALL, 13, 151, true),
+         emuMasses.at(1).at(ALL)->Integral(21,151) - emuMasses.at(QCD).at(ALL)->Integral(21,151), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALL, 21, 151, true));
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  cout << endl << endl << endl;
 
-  cout << "QCD events from LS spectrum:" << endl;
-  cout << "nb QCD      = " << emuMass_qcd.at(0)->Integral() << " +- " << errQCD << "(syst)" << endl;
-  cout << "\% of total MC: " << 100 * emuMass_qcd.at(0)->Integral() / (emuMass_ttbar.at(0)->Integral() - emuMass_qcd.at(0)->Integral()) << "\% +- " << 100 * systErrQCD << "%(syst)" << endl;
+
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  printf("nb LS DATA    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
+         emuMasses.at(DATA).at(LS)->Integral(), sqrt(emuMasses.at(DATA).at(LS)->Integral()),
+         emuMasses.at(DATA).at(LS)->Integral(13,151), sqrt(emuMasses.at(DATA).at(LS)->Integral(13,151)),
+         emuMasses.at(DATA).at(LS)->Integral(21,151), sqrt(emuMasses.at(DATA).at(LS)->Integral(21,151)));
+  printf("nb LS MC      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+         emuMasses.at(1).at(LS)->Integral() - emuMasses.back().at(LS)->Integral(), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, 7, 151, true),
+         emuMasses.at(1).at(LS)->Integral(13,151) - emuMasses.back().at(LS)->Integral(13,151), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, 13, 151, true),
+         emuMasses.at(1).at(LS)->Integral(21,151) - emuMasses.back().at(LS)->Integral(21,151), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, 21, 151, true));
+  cout << endl;
+  printf("nb OS DATA    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
+         emuMasses.at(DATA).at(OS)->Integral(), sqrt(emuMasses.at(DATA).at(OS)->Integral()),
+         emuMasses.at(DATA).at(OS)->Integral(13,151), sqrt(emuMasses.at(DATA).at(OS)->Integral(13,151)),
+         emuMasses.at(DATA).at(OS)->Integral(21,151), sqrt(emuMasses.at(DATA).at(OS)->Integral(21,151)));
+  printf("nb OS MC      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+         emuMasses.at(1).at(OS)->Integral() - emuMasses.back().at(OS)->Integral(), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, 7, 151, true),
+         emuMasses.at(1).at(OS)->Integral(13,151) - emuMasses.back().at(OS)->Integral(13,151), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, 13, 151, true),
+         emuMasses.at(1).at(OS)->Integral(21,151) - emuMasses.back().at(OS)->Integral(21,151), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, 21, 151, true));
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+
+  systErrMC.push_back(2 * sqrt(emuMasses.at(DATA).at(LS)->Integral() + pow(CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, 1, 151, true), 2)) / emuMasses.at(QCD).at(ALL)->Integral());
+  systErrMCLuEff.push_back(systErrMC[QCD]);
+
+  vector<bool> onlyQCD(8, false);
+  onlyQCD.push_back(true);
+  contamSamples.push_back(true);
+  allSamples.push_back(true);
 
   cout << endl;
-  cout << "AFTER ADDING QCD CONTRIBUTION:" << endl;
+  cout << "---QCD events from LS spectrum:-----------------------------------------------------------------------------------------------------" << endl;
+  cout << "------------------------------------------------------------------------------------------------------------------------------------" << endl;
+  printf("nb QCD        | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) |\n",
+         emuMasses.at(QCD).at(ALL)->Integral(), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 7, 151, true), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 7, 151, true) / emuMasses.at(QCD).at(ALL)->Integral(),
+         emuMasses.at(QCD).at(ALL)->Integral(13,151), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 13, 151, true), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 13, 151, true) / emuMasses.at(QCD).at(ALL)->Integral(13,151),
+         emuMasses.at(QCD).at(ALL)->Integral(21,151), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 21, 151, true), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 21, 151, true) / emuMasses.at(QCD).at(ALL)->Integral(21,151));
+  printf("%% of total MC |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |\n",
+         100 * emuMasses.at(QCD).at(ALL)->Integral() / (emuMasses.at(1).at(ALL)->Integral() - emuMasses.at(QCD).at(ALL)->Integral()), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 7, 151, true) / (emuMasses.at(1).at(ALL)->Integral() - emuMasses.at(QCD).at(ALL)->Integral()),
+         100 * emuMasses.at(QCD).at(ALL)->Integral(13,151) / (emuMasses.at(1).at(ALL)->Integral(13,151) - emuMasses.at(QCD).at(ALL)->Integral(13,151)), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 13, 151, true) / (emuMasses.at(1).at(ALL)->Integral(13,151) - emuMasses.at(QCD).at(ALL)->Integral(13,151)),
+         100 * emuMasses.at(QCD).at(ALL)->Integral(21,151) / (emuMasses.at(1).at(ALL)->Integral(21,151) - emuMasses.at(QCD).at(ALL)->Integral(21,151)), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, 21, 151, true) / (emuMasses.at(1).at(ALL)->Integral(21,151) - emuMasses.at(QCD).at(ALL)->Integral(21,151)));
+  cout << "------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
   cout << endl;
-  cout << "TOTAL INTEGRAL EMU" << endl;
-  cout << "nb data     = " << emuMass_data.at(0)->Integral() << " +- " << sqrt(emuMass_data.at(0)->Integral()) << "(stat)" << endl;
-  cout << "nb MC       = " << emuMass_ttbar.at(0)->Integral() << " +- " << emuMass_ttbar.at(0)->Integral() * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
-  cout << "INTEGRAL EMU M>60 " << endl;
-  cout << "nb data     = " << emuMass_data.at(0)->Integral(7, 150) << " +- " << sqrt(emuMass_data.at(0)->Integral(7, 150)) << "(stat)" << endl;
-  cout << "nb MC       = " << emuMass_ttbar.at(0)->Integral(7, 150) << " +- " << emuMass_ttbar.at(0)->Integral(7, 150) * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
-  cout << "INTEGRAL EMU M>120" << endl;
-  cout << "nb data     = " << emuMass_data.at(0)->Integral(13, 150) << " +- " << sqrt((emuMass_data.at(0))->Integral(13, 150)) << "(stat)" << endl;
-  cout << "nb MC       = " << emuMass_ttbar.at(0)->Integral(13, 150) << " +- " << emuMass_ttbar.at(0)->Integral(13, 150) * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
-  cout << "INTEGRAL EMU M>200" << endl;
-  cout << "nb data     = " << emuMass_data.at(0)->Integral(21, 150) << " +- " << sqrt(emuMass_data.at(0)->Integral(21, 150)) << "(stat)" << endl;
-  cout << "nb MC       = " << emuMass_ttbar.at(0)->Integral(21, 150) << " +- " << emuMass_ttbar.at(0)->Integral(21, 150) * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
-  cout << "INTEGRAL EMU M>500" << endl;
-  cout << "nb data     = " << emuMass_data.at(0)->Integral(51, 150) << " +- " << sqrt(emuMass_data.at(0)->Integral(51, 150)) << "(stat)" << endl;
-  cout << "nb MC       = " << emuMass_ttbar.at(0)->Integral(51, 150) << " +- " << emuMass_ttbar.at(0)->Integral(51, 150) * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
+  cout << "--After adding QCD contribution:----------------------------------------------------------------------------------------------------------" << endl;
+  cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+  printf("M_emu         |      >%6.0fGeV/c^2          |        > 120GeV/c^2          |         > 200GeV/c^2         |         > 500GeV/c^2         |\n", minInvMass);
+  cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+  printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
+          emuMasses.at(DATA).at(ALL)->Integral(7, 151), sqrt(emuMasses.at(DATA).at(ALL)->Integral(7, 151)),
+          emuMasses.at(DATA).at(ALL)->Integral(13, 151), sqrt((emuMasses.at(DATA).at(ALL))->Integral(13, 151)),
+          emuMasses.at(DATA).at(ALL)->Integral(21, 151), sqrt(emuMasses.at(DATA).at(ALL)->Integral(21, 151)),
+          emuMasses.at(DATA).at(ALL)->Integral(51, 151), sqrt(emuMasses.at(DATA).at(ALL)->Integral(51, 151)));
+  printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+          emuMasses.at(1).at(ALL)->Integral(7, 151), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, 7, 151, true),
+          emuMasses.at(1).at(ALL)->Integral(13, 151), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, 13, 151, true),
+          emuMasses.at(1).at(ALL)->Integral(21, 151), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, 21, 151, true),
+          emuMasses.at(1).at(ALL)->Integral(51, 151), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, 51, 151, true));
+  cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl << endl;
 
-  cout << "--For ttlike-- QCD CORR + W+Jet + Zmumu" << endl;
-  cout << "60  < M < 120 " << endl;
-  cout << "nb tt       = " << emuMass_ttbar.at(0)->Integral(7, 12) << " +- " << emuMass_ttbar.at(0)->Integral(7, 12) * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
-  cout << "120 < M < 200 " << endl;
-  cout << "nb tt       = " << emuMass_ttbar.at(0)->Integral(13, 20) << " +- " << emuMass_ttbar.at(0)->Integral(13, 20) * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
-  cout << "M > 200     " << endl;
-  cout << "nb tt       = " << emuMass_ttbar.at(0)->Integral(21, 150) << " +- " << emuMass_ttbar.at(0)->Integral(21, 150) * systErrTtLuEffQcd << "(syst)" << endl;
-  cout << "--------------" << endl;
-
-
+  cout << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  printf("M_emu         |    %6.0f - 120GeV/c^2       |      120 - 200GeV/c^2        |       200 - 400GeV/c^2       |\n", minInvMass);
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
+          emuMasses.at(DATA).at(ALL)->Integral(7, 12), sqrt(emuMasses.at(DATA).at(ALL)->Integral(7, 12)),
+          emuMasses.at(DATA).at(ALL)->Integral(13, 20), sqrt((emuMasses.at(DATA).at(ALL))->Integral(13, 20)),
+          emuMasses.at(DATA).at(ALL)->Integral(21, 40), sqrt(emuMasses.at(DATA).at(ALL)->Integral(21, 40)));
+  printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+          emuMasses.at(1).at(ALL)->Integral(7, 12), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, 7, 12, true),
+          emuMasses.at(1).at(ALL)->Integral(13, 20), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, 13, 20, true),
+          emuMasses.at(1).at(ALL)->Integral(21, 40), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, 21, 40, true));
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  printf("nb data OS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
+          emuMasses.at(DATA).at(OS)->Integral(7, 12), sqrt(emuMasses.at(DATA).at(OS)->Integral(7, 12)),
+          emuMasses.at(DATA).at(OS)->Integral(13, 20), sqrt((emuMasses.at(DATA).at(OS))->Integral(13, 20)),
+          emuMasses.at(DATA).at(OS)->Integral(21, 40), sqrt(emuMasses.at(DATA).at(OS)->Integral(21, 40)));
+  printf("nb MC OS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+          emuMasses.at(1).at(OS)->Integral(7, 12), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, 7, 12, true),
+          emuMasses.at(1).at(OS)->Integral(13, 20), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, 13, 20, true),
+          emuMasses.at(1).at(OS)->Integral(21, 40), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, 21, 40, true));
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl << endl;
 }
+
+float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked)
+{
+   float err2 = 0.;
+
+   // for stacked histograms subtract all contributions below the current one 
+   if (stacked) {
+      for (unsigned int i = 0; i < samples.size() && i < histos.size()-1; ++i) {
+         if (samples[i]) {
+            float numEv;
+            if (i < histos.size()-2) numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin) - histos.at(i+2).at(region)->Integral(lowerBin, upperBin);
+            else numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin);
+            err2 += pow(numEv, 2) * errors[i] * errors[i];
+         }
+      }
+   } else {
+      for (unsigned int i = 0; i < samples.size(); ++i) {
+         if (samples[i])
+            err2 += histos.at(i+1).at(region)->Integral(lowerBin, upperBin) * histos.at(i+1).at(region)->Integral(lowerBin, upperBin) * errors[i] * errors[i];
+      }
+   }
+
+   return sqrt(err2);
+}
+
+float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked)
+{
+   float qcdErr = 0.;
+   vector<bool> allButQCD(8, true);
+
+   qcdErr = 2 * sqrt(histos.at(DATA).at(LS)->Integral(lowerBin, upperBin) + pow(CalcSystErr(histos, errors, allButQCD, LS, lowerBin, upperBin, stacked), 2));
+   errors.back() = qcdErr / histos.at(QCD).at(region)->Integral(lowerBin, upperBin);
+
+   return CalcSystErr(histos, errors, samples, region, lowerBin, upperBin, stacked);
+}
+
