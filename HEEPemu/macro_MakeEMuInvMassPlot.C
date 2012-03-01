@@ -29,8 +29,8 @@ void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
   //TFile input("test4684pb-1.root", "open");
-  TFile input("testEmuSpec4684pb-1.root", "open");
-  //TFile input("testEmuSpecSummerFallMix4684pb-1.root", "open");
+  //TFile input("testEmuSpec4684pb-1.root", "open");
+  TFile input("testEmuSpecSummerFallMix4684pb-1.root", "open");
   //TFile input("testEmuSpecPureSummer114684pb-1.root", "open");
   //TFile input("testEmuSpecNewDYNoPURew4684pb-1.root", "open");
   //TFile input("testEmuSpec4699pb-1.root", "open");
@@ -52,6 +52,7 @@ void macro_MakeEMuInvMassPlot()
   plotType[1] = true;  // cumulative emu spectrum
 
   bool logPlot = true;
+  bool prelim = true;
 
   // systematical errors
   vector<float> systErrMC;
@@ -73,7 +74,8 @@ void macro_MakeEMuInvMassPlot()
   TH1::SetDefaultSumw2(kTRUE);
 
   TString histoSign[3] = {"", "LS_", "OS_"};
-  TString histoTitleSign[3] = {"", " LS", " OS"};
+  TString histoTitleSign[3] = {"E", "e^{#pm}#mu^{#pm} e", "e^{+}#mu^{-}/e^{-}#mu^{+} e"};
+  TString xAxisTitle[3] = {"m(e#mu)", "m(e^{#pm}#mu^{#pm})", "m(e^{+}#mu^{-})/m(e^{-}#mu^{+})"};
   TString nameSuffix[2] = {"", "Cumul"};
   TString titleSuffix[2] = {"", " - Cumulative"};
 
@@ -166,14 +168,15 @@ void macro_MakeEMuInvMassPlot()
       gStyle->SetOptTitle(0);
       gStyle->SetTitleXOffset(1.);
       gStyle->SetTitleYOffset(1.3);
+      gPad->SetTicks(1, 1);
 
-      emuMass_ttbar.back()->GetXaxis()->SetTitle("M_{e#mu} (GeV/c^{2})");
+      emuMass_ttbar.back()->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
       emuMass_ttbar.back()->GetXaxis()->SetTitleSize(0.04);
       emuMass_ttbar.back()->GetXaxis()->SetLabelSize(0.04);
-      emuMass_ttbar.back()->GetXaxis()->SetRangeUser(60., 1500.);
+      //emuMass_ttbar.back()->GetXaxis()->SetRangeUser(60., 1110.);
     
-      if (j == 1) emuMass_ttbar.back()->GetYaxis()->SetTitle("# of" + histoTitleSign[k] + " events >= M_{e#mu}");
-      else emuMass_ttbar.back()->GetYaxis()->SetTitle("# of" + histoTitleSign[k] + " events / 10 GeV/c^{2}");
+      if (j == 1) emuMass_ttbar.back()->GetYaxis()->SetTitle(histoTitleSign[k] + "vents #geq " + xAxisTitle[k]);
+      else emuMass_ttbar.back()->GetYaxis()->SetTitle(histoTitleSign[k] + "vents / 10 GeV");
       emuMass_ttbar.back()->GetYaxis()->SetTitleSize(0.04);
       emuMass_ttbar.back()->GetYaxis()->SetTitleOffset(1.2);
     
@@ -213,37 +216,31 @@ void macro_MakeEMuInvMassPlot()
       emuMass_ttbar.back()->Draw("sameaxis");
 
       // legent and labels
-      TLegend legend(0.7, 0.8, 0.88, 0.54);
+      TLegend legend(0.69, 0.37, 0.85, 0.76);
       legend.SetTextSize(0.03);
       legend.SetFillColor(0);
     
-      legend.AddEntry(emuMass_data.back(), "Data");
-      legend.AddEntry(emuMass_ttbar.back(), "t #bar{t} (MC)");
-      legend.AddEntry(emuMass_ztautau.back(), "Z #rightarrow #tau #tau (MC)");
-      legend.AddEntry(emuMass_ww.back(), "WW, (MC)");
-      legend.AddEntry(emuMass_wz.back(), "WZ, (MC)");
-      legend.AddEntry(emuMass_tw.back(), "tW, (MC)");
-      legend.AddEntry(emuMass_wjets.back(), "W+jets (MC)");
-      legend.AddEntry(emuMass_zmumu.back(), "Z #rightarrow #mu #mu (MC)");
-      legend.AddEntry(emuMass_zee.back(), "Z #rightarrow ee (MC)");
-      //legend.AddEntry(emuMass_zz.back(), "ZZ, (MC)");
-      legend.AddEntry(emuMass_qcd.back(), "QCD");
+      legend.AddEntry(emuMass_data.back(), "DATA");
+      legend.AddEntry(emuMass_ttbar.back(), "t #bar{t} (MC)" ,"F");
+      legend.AddEntry(emuMass_ztautau.back(), "Z/#gamma* #rightarrow #tau#tau (MC)" ,"F");
+      legend.AddEntry(emuMass_ww.back(), "WW (MC)" ,"F");
+      legend.AddEntry(emuMass_wz.back(), "WZ (MC)" ,"F");
+      legend.AddEntry(emuMass_tw.back(), "tW (MC)" ,"F");
+      legend.AddEntry(emuMass_wjets.back(), "W+jets (MC)" ,"F");
+      legend.AddEntry(emuMass_zmumu.back(), "Z/#gamma* #rightarrow #mu#mu (MC)" ,"F");
+      legend.AddEntry(emuMass_zee.back(), "Z/#gamma* #rightarrow ee (MC)" ,"F");
+      //legend.AddEntry(emuMass_zz.back(), "ZZ, (MC)" ,"F");
+      legend.AddEntry(emuMass_qcd.back(), "QCD" ,"F");
     
       legend.SetBorderSize(0);
       legend.DrawClone("sames");
       
-      TPaveLabel labelPrelim(0.7, 0.91, 0.9, 0.82, "CMS Preliminary", "brNDC");
-      labelPrelim.SetFillColor(0);
-      labelPrelim.SetFillStyle(0);
-      labelPrelim.SetBorderSize(0);
-      labelPrelim.SetTextSize(0.40);
-      labelPrelim.DrawClone("sames");
-    
       stringstream sStream;
       sStream.str("");
-      sStream << "#sqrt{s} = 7TeV,  #int L dt = 4.7fb^{-1}";
+      if (prelim) sStream << "CMS preliminary    #sqrt{s} = 7 TeV    #int L dt = 4.7 fb^{-1}";
+      else sStream << "CMS     #sqrt{s} = 7 TeV    #int L dt = 4.7 fb^{-1}";
       //sStream << "#sqrt{s} = 7TeV,  #int L dt = " << lumi << "pb^{-1}";
-      TPaveLabel labelLumi(0.3, 0.88, 0.65, 0.78, sStream.str().c_str(), "brNDC");
+      TPaveLabel labelLumi(0.32, 0.78, 0.88, 0.87, sStream.str().c_str(), "brNDC");
       labelLumi.SetFillColor(0);
       labelLumi.SetFillStyle(0);
       labelLumi.SetBorderSize(0);
