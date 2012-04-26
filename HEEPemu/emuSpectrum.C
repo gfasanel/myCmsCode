@@ -25,16 +25,23 @@
 
 #define DATA 0
 #define TTBAR 1
-#define ZTT 2
-#define WW 3
-#define WZ 4
-#define TW 5
-#define WJET 6
-#define ZMM 7
-#define ZEE 8
-#define ZZ 9
+//#define ZTT 2
+#define ZTT 6
+//#define WW 3
+#define WW 2
+//#define WZ 4
+#define WZ 3
+//#define TW 5
+//#define WJET 6
+#define WJET 4
+//#define ZMM 7
+#define ZMM 5
+//#define ZEE 8
+#define ZEE 6
+//#define ZZ 9
 //#define QCD 10
-#define QCD 9
+//#define QCD 9
+#define QCD 7 
 
 #define ALL 0
 #define LS 1
@@ -46,47 +53,34 @@ float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector
 float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked = false);
 int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector = 0);
 
-pair<unsigned int, unsigned int> runs_HLT_Mu15_Photon20_CaloIdL(99999999, 0);
-pair<unsigned int, unsigned int> runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL(99999999, 0);
-pair<unsigned int, unsigned int> runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL(99999999, 0);
+pair<unsigned int, unsigned int> runs_HLT_Mu22_Photon22_CaloIdL(99999999, 0);
+pair<unsigned int, unsigned int> runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL(99999999, 0);
+pair<unsigned int, unsigned int> runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL(99999999, 0);
 //RUN ID
 unsigned int c_runnumber;
 unsigned int c_eventnumber;
 unsigned int c_luminosityBlock;
 //trigger
-int c_HLT_Mu15;
-int c_HLT_Mu30;
+int c_HLT_Mu15_eta2p1;
+int c_HLT_Mu30_eta2p1;
 
 void emuSpectrum()
 {
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 4684.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
-   //float LumiFactor = 4800.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
-   //float LumiFactor = 5035.; //Lumi in pb-1   -new LUMI FROM GOLDEN JSON
-   //float LumiFactor = 2511.; //Lumi in pb-1   -LUMI run2011B FROM GOLDEN JSON
-   //float LumiFactor = 2173.; //Lumi in pb-1   -LUMI run2011A FROM GOLDEN JSON
-   //float LumiFactor = 4699.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
-   //float LumiFactor = 3534.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
-   //float LumiFactor = 3190.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
-   //float LumiFactor = 2179.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
-   //float LumiFactor = 1932.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
-   //float LumiFactor = 702.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   float LumiFactor = 816.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
 
    // DATA file
-   TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_gct1_13_4684pb-1.root";
-   //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-180252_7TeV_Collisions11_JSON_4699pb-1.root";
-   //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-178078_7TeV_Collisions11_JSON_3534pb-1.root";
-   //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-Cert_160404-177515_7TeV_Collisions11_JSON_3190pb-1.root";
-   //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco-v1+05Aug2011-v1+PromptReco-v4+PromptReco-v6-Cert_160404-173692_7TeV_Collisions11_JSON_2179pb-1.root";
-   //TString dataFile = "/user/treis/data2011/MuEG-Run2011A-May10ReReco+05Aug2011+PromptReco-AOD-Cert_160404-173244_7TeV_1932pb-1.root";
-   //TString dataFile = "/user_mnt/user/vdero/ProdTreeSpring2011/CMSSW_4_2_1_patch2/src/UserCode/HEEPSkims/test/total_MuEG-160404-163869-ReReco10May-GoldenJSON-27May-191pb_+_MuEG-165088-166861-PromptV4-GoldenJSON-17Jun-511pb__702pb.root";
+   TString dataFile = "/user/lathomas/data2012/MuEG_Run2012A-PromptReco-v1_AOD_DCSonly20april2012_816pb.root";
+   //TString dataFile = "/user/treis/data2012/MuEG_Run2012A-PromptReco-v1_AOD_Cert_190456-191276_8TeV_PromptReco_Collisions12_JSON_gct1_24_291pb-1.root";
 
-   //string outfileName = "testEmuSpec";
-   //string outfileName = "testEmuSpecSummerFallMix";
-   //string outfileName = "testEmuSpecPureSummer11";
-   string outfileName = "test";
+   string outfileName = "testEmuSpec";
+   //string outfileName = "test";
 
-   unsigned nPVtxMax = 25; // max number of primary vertices
+   //unsigned selection = 0;   // HEEP v3.2
+   //unsigned selection = 1;   // HEEP v4.0strong
+   unsigned selection = 2;   // HEEP v4.0light
+
+   unsigned nPVtxMax = 90; // max number of primary vertices
 
    // scale factors
    // TODO errors and distinction EB - EE
@@ -98,19 +92,19 @@ void emuSpectrum()
    // systematical errors
    vector<float> systErrMC;
    systErrMC.push_back(0.15);  //ttbar
-   systErrMC.push_back(0.);    //z->tt  //FIXME
+//   systErrMC.push_back(0.);    //z->tt  //FIXME
    systErrMC.push_back(0.);    //WW     //FIXME
    systErrMC.push_back(0.);    //WZ     //FIXME
-   systErrMC.push_back(0.15);  //tW     //FIXME
+//   systErrMC.push_back(0.15);  //tW     //FIXME
    systErrMC.push_back(0.);    //WJets  //FIXME
    systErrMC.push_back(0.);    //Z->mm  //FIXME
    systErrMC.push_back(0.);    //Z->ee  //FIXME
-   systErrMC.push_back(0.);    //ZZ     //FIXME
-   float systErrLumi = 0.045;
+//   systErrMC.push_back(0.);    //ZZ     //FIXME
+   float systErrLumi = 0.022;
    float systErrEff = 0.02;
 
-   bool useQCDShape = true;
-   bool calcQCDScaleFactor = true;
+   bool useQCDShape = false;
+   bool calcQCDScaleFactor = false;
    float QCD_ScaleFactor = 1.10; // overwritten if calcQCDScaleFactor == true
 
    bool usePUInfo = true;
@@ -130,31 +124,136 @@ void emuSpectrum()
    int muon_nSegMatchMin = 2;
    float muon_relIsoCutMax = 0.1;
 
-   //HEEP selection v3.2
    //BARREL
-   float bar_et = 35.;
-   float bar_hoE = 0.05;
-   float bar_DEta = 0.005;
-   float bar_DPhi = 0.06;
-   float bar_e2x5e5x5 = 0.94;
-   float bar_e1x5e5x5 = 0.83;
-   float bar_isoEcalHcal1_1 = 2.;
-   float bar_isoEcalHcal1_2 = 0.03;
-   float bar_isoTrack = 5.;
+   float bar_et = 0.;
+   float bar_hoE = 0.;
+   float bar_coshFactor = 0.;
+   float bar_coshOffset = 0.;
+   float bar_etaFactor = 0.;
+   float bar_DEta = 0.;
+   float bar_DPhi = 0.;
+   float bar_e2x5e5x5 = 0.;
+   float bar_e2x5e5x5Rho = 0.;
+   float bar_e1x5e5x5 = 0.;
+   float bar_e1x5e5x5Rho = 0.;
+   float bar_isoEcalHcal1_1 = 0.;
+   float bar_isoEcalHcal1_2 = 0.;
+   float bar_isoEcalHcalRho = 0.;
+   float bar_isoTrack = 0.;
    int bar_missInnerHits = 0;
 
    //ENDCAP
-   float end_et = 40.;
-   float end_hoE = 0.05;
-   float end_DEta = 0.007 ;
-   float end_DPhi = 0.06;
-   float end_e2x5e5x5 = 0.;
-   float end_e1x5e5x5 = 0.;
-   float end_sigmaietaieta = 0.03;
-   float end_isoEcalHcal1_1 = 2.5;
-   float end_isoEcalHcal1_2 = 0.03;
-   float end_isoTrack = 5.;
+   float end_et = 0.;
+   float end_hoE = 0.;
+   float end_coshFactor = 0.;
+   float end_coshOffset = 0.;
+   float end_etaFactor = 0.;
+   float end_DEta = 0.;
+   float end_DPhi = 0.;
+   float end_sigmaietaieta = 0.;
+   float end_isoEcalHcal1_1 = 0.;
+   float end_isoEcalHcal1_1_1 = 0.;
+   float end_isoEcalHcal1_1_2 = 0.;
+   float end_isoEcalHcal1_2 = 0.;
+   float end_isoEcalHcalRho = 0.;
+   float end_isoTrack = 0.;
    int end_missInnerHits = 0;
+
+   switch (selection) {
+      case 0: {  // HEEP v3.2
+         outfileName += "HEEP32_";
+         //BARREL
+         bar_et = 35.;
+         bar_hoE = 0.05;
+         bar_DEta = 0.005;
+         bar_DPhi = 0.06;
+         bar_e2x5e5x5 = 0.94;
+         bar_e1x5e5x5 = 0.83;
+         bar_isoEcalHcal1_1 = 2.;
+         bar_isoEcalHcal1_2 = 0.03;
+         bar_isoTrack = 5.;
+         bar_missInnerHits = 0;
+     
+         //ENDCAP
+         end_et = 35.;
+         end_hoE = 0.05;
+         end_DEta = 0.007 ;
+         end_DPhi = 0.06;
+         end_sigmaietaieta = 0.03;
+         end_isoEcalHcal1_1 = 2.5;
+         end_isoEcalHcal1_2 = 0.03;
+         end_isoTrack = 5.;
+         end_missInnerHits = 0;
+         break;
+      }
+      case 1: {   // HEEP v4.0 strong
+         outfileName += "HEEP4strong";
+         //BARREL
+         bar_et = 35.;
+         bar_hoE = 0.05;
+         bar_coshFactor = 0.13;
+         bar_coshOffset = 0.085;
+         bar_etaFactor = 0.41;
+         bar_DEta = 0.005;
+         bar_DPhi = 0.06;
+         bar_e2x5e5x5 = 0.94;
+         bar_e2x5e5x5Rho = 0.0054;
+         bar_e1x5e5x5 = 0.83;
+         bar_e1x5e5x5Rho = 0.0045;
+         bar_isoEcalHcal1_1 = 2.;
+         bar_isoEcalHcal1_2 = 0.03;
+         bar_isoEcalHcalRho = 0.28;
+         bar_isoTrack = 5.;
+         bar_missInnerHits = 0;
+     
+         //ENDCAP
+         end_et = 35.;
+         end_hoE = 0.05;
+         end_coshFactor = 0.13;
+         end_coshOffset = 0.085;
+         end_etaFactor = 0.41;
+         end_DEta = 0.007 ;
+         end_DPhi = 0.06;
+         end_sigmaietaieta = 0.03;
+         end_isoEcalHcal1_1_1 = 2.5;
+         end_isoEcalHcal1_1_2 = 1.;
+         end_isoEcalHcal1_2 = 0.03;
+         end_isoEcalHcalRho = 0.28;
+         end_isoTrack = 5.;
+         end_missInnerHits = 0;
+         break;
+ 
+      }
+      case 2: {  // HEEP v4.0 light
+         outfileName += "HEEP4light_";
+         //BARREL
+         bar_et = 35.;
+         bar_hoE = 0.05;
+         bar_DEta = 0.005;
+         bar_DPhi = 0.06;
+         bar_e2x5e5x5 = 0.94;
+         bar_e1x5e5x5 = 0.83;
+         bar_isoEcalHcal1_1 = 2.;
+         bar_isoEcalHcal1_2 = 0.03;
+         bar_isoEcalHcalRho = 0.28;
+         bar_isoTrack = 5.;
+         bar_missInnerHits = 0;
+     
+         //ENDCAP
+         end_et = 35.;
+         end_hoE = 0.05;
+         end_DEta = 0.007 ;
+         end_DPhi = 0.06;
+         end_sigmaietaieta = 0.03;
+         end_isoEcalHcal1_1_1 = 2.5;
+         end_isoEcalHcal1_1_2 = 1.;
+         end_isoEcalHcal1_2 = 0.03;
+         end_isoEcalHcalRho = 0.28;
+         end_isoTrack = 5.;
+         end_missInnerHits = 0;
+         break;
+      }
+   }
    ///////////////////////////////////////////////////////////////////////////
 
    TH1::SetDefaultSumw2(kTRUE);
@@ -176,35 +275,23 @@ void emuSpectrum()
    input.push_back(make_pair(new TFile(dataFile, "open"), 1.)); //DATA        0 black
 
    // MC
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root", "open"), 4.441E-5)); //TTbar       1 red         (3701947 event - xsect NNLO 164.4pb) -- 22.02.2012
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root", "open"), 4.40309E-5)); //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 20.11.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_13_emuSkim.root", "open"), 0.000044031)); //TTbar       1 red         (3701947 event - xsect NNLO 163pb) -- 17.10.2011
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2star_8TeV-madgraph-tauola_Summer12-PU_S7_START52_V5-v1_AODSIM_gct1_24_emuSkim.root", "open"), 1.95739E-4  )); //TTbar       1 red         (1195467 event - xsect LO*k 234pb) -- 16.4.2012
 
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 8.35612E-5)); //Ztautau     2 green       (19937479 event  - xsect 1666pb) -- 24.11.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYJetsToLL_TuneZ2_M-50_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_18_emuSkim.root", "open"), 1.5537E-4)); //Z+Jets to LL     2 green       (19617630 event  - xsect 3048pb AN-11-390) -- 27.2.2012  instead of all the othe r DY samples
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13.root", "open"), 8.19666E-4)); //Ztautau     2 green       (2032536 event  - xsect 1666pb) -- 4.12.2011
-
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 2.20727E-5)); //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 20.11.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WWTo2L2Nu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 2.20727E-5)); //WW          3 dark blue   (210667 event - xsect NLO 4.65pb (AN-11-259) ) -- 4.12.2011
-
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root", "open"), 5.41102E-7)); //WZ          4 yellow      (1097759 event - xsect NLO 0.594pb (AN-11-259) ) -- 20.11.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WZTo3LNu_TuneZ2_7TeV_pythia6_tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 0.000002901)); //WZ          4 yellow      (204725 event - xsect NLO 0.594pb (AN-11-259) ) -- 17.10.2011
-
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root","open"), 1.38228E-5)); //tW          5 pink        (814390+323401 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 20.11.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root","open"), 0.000009690)); //tW          5 pink        (814390+809984 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 14 NOV 2011
-
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root", "open"), 3.84951E-4)); //W+jet       6 dark green  (81345381 event - xsect NNLO 31314pb) -- 20.11.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root", "open"), 0.000384917)); //W+jet       6 dark green  (81352581 event - xsect NNLO 31314pb) -- 17.10.2011
-
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.60121E-5)); //Zmumu       7 light blue  (29743564 event  - xsect NNLO 1666pb ) -- 24 NOV 2011)
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S4_START42_V11-v2_AODSIM_gct1_13_emuSkim.root","open"), 0.00077549)); //Zmumu       7 light blue  (2148325 event  - xsect NNLO 1666pb ) -- 14 NOV 2011)
-
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2_7TeV-powheg-pythia_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13_emuSkim.root","open"), 5.64799E-5)); //Zee         8 cyan        (29497207 event - xsect NNLO 1666pb ) -- 24 NOV 2011
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13_emuSkim.root","open"), 0.00073630)); //Zee         8 cyan        (2262653 event - xsect NNLO 1666pb ) -- 14 NOV 2011
+//   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_gct1_13.root", "open"), 8.19666E-4)); //Ztautau     2 green       (2032536 event  - xsect 1666pb) -- 4.12.2011
+//
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12-PU_S7_START50_V15-v1_AODSIM_gct1_24_emuSkim.root", "open"), 5.29508E-6)); //WW          3 dark blue   (9820431 event - xsect LO*k 52pb  ) -- 16.4.2012
+//
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12-PU_S7_START50_V15-v1_AODSIM_gct1_24_emuSkim.root", "open"), 2.32031E-6)); //WZ          4 yellow      (9481467 event - xsect LO*k 22pb ) -- 17.4.2012
+//
+//   input.push_back(make_pair(new TFile("/user/treis/mcsamples/T-and-Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root","open"), 1.38228E-5)); //tW          5 pink        (814390+323401 event - xsect NNLO 7.87pb+7.87pb (note tW) ) -- 20.11.2011
+//
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12-E8TeV4BX50ns-v1_AODSIM_gct1_24.root", "open"), 1.66933E-2)); //W+jet       6 dark green  (2053500 events - xsect LO*k 34280pb) -- 20.4.2012
+//
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M_20_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START50_V15-v1_AODSIM_gct1_24_emuSkim.root","open"), 9.52989E-4)); //Zmumu       7 light blue  (1963296 event  - xsect NLO 1871pb ) -- 16 Apr 2012)
+//
+   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M_20_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START50_V15-v1_AODSIM_gct1_24_emuSkim.root","open"), 9.38723E-4)); //Zee         8 cyan        (1993134 events - xsect NLO 1871pb ) -- 16 Apr 2012
 
    //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZ_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root","open"), 1.4394E-6)); //ZZ          9 violett     (4098843 event - xsect 5.9pb (AN-11-472) ) -- 22.02.2012
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root","open"), 0.000000164)); //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZTo4e_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_gct1_13.root","open"), 0.000000164)); //ZZ          9 violett     (499929 event - xsect NLO 0.082pb (AN-11-259) ) -- 17.10.2011
 
    int nbFile = input.size();
    ///////////////////////////////////////////////////////////////////////////
@@ -213,14 +300,14 @@ void emuSpectrum()
    vector<TString> suffix;
    suffix.push_back("data");
    suffix.push_back("ttbar");
-   suffix.push_back("ztautau");
+//   suffix.push_back("ztautau");
    suffix.push_back("ww");
    suffix.push_back("wz");
-   suffix.push_back("tw");
+//   suffix.push_back("tw");
    suffix.push_back("wjets");
    suffix.push_back("zmumu");
    suffix.push_back("zee");
-   //suffix.push_back("zz");
+//   //suffix.push_back("zz");
    suffix.push_back("qcd");
 
    TString sign[3] = {"", "LS_", "OS_"};
@@ -245,8 +332,8 @@ void emuSpectrum()
    emuOSDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
    emuOSDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
    emuOSDataTree->Branch("mass", &emuInvMass, "mass/F");
-   emuOSDataTree->Branch("HLT_Mu15", &c_HLT_Mu15, "HLT_Mu15/I");
-   emuOSDataTree->Branch("HLT_Mu30", &c_HLT_Mu30, "HLT_Mu30/I");
+   emuOSDataTree->Branch("HLT_Mu15_eta2p1", &c_HLT_Mu15_eta2p1, "HLT_Mu15_eta2p1/I");
+   emuOSDataTree->Branch("HLT_Mu30_eta2p1", &c_HLT_Mu30_eta2p1, "HLT_Mu30_eta2p1/I");
 
    // counting variables
    int nb_plus_plus = 0;
@@ -302,25 +389,25 @@ void emuSpectrum()
    vector<TH1F *> emuLoose_nValidPv;
    emuLoose_nValidPv.push_back(new TH1F("emuLoose_data_nValidPv", "emuLoose_data_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_nValidPv.push_back(new TH1F("emuLoose_ttbar_nValidPv", "emuLoose_ttbar_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_ztautau_nValidPv", "emuLoose_ztautau_nValidPv", nPVtxMax, 0., nPVtxMax));
+//   emuLoose_nValidPv.push_back(new TH1F("emuLoose_ztautau_nValidPv", "emuLoose_ztautau_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_nValidPv.push_back(new TH1F("emuLoose_ww_nValidPv", "emuLoose_ww_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_nValidPv.push_back(new TH1F("emuLoose_wz_nValidPv", "emuLoose_wz_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_tw_nValidPv", "emuLoose_tw_nValidPv", nPVtxMax, 0., nPVtxMax));
+//   emuLoose_nValidPv.push_back(new TH1F("emuLoose_tw_nValidPv", "emuLoose_tw_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_nValidPv.push_back(new TH1F("emuLoose_wjets_nValidPv", "emuLoose_wjets_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_nValidPv.push_back(new TH1F("emuLoose_zmumu_nValidPv", "emuLoose_zmumu_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_nValidPv.push_back(new TH1F("emuLoose_zee_nValidPv", "emuLoose_zee_nValidPv", nPVtxMax, 0., nPVtxMax));
-   //emuLoose_nValidPv.push_back(new TH1F("emuLoose_zz_nValidPv", "emuLoose_zz_nValidPv", nPVtxMax, 0., nPVtxMax));
+//   //emuLoose_nValidPv.push_back(new TH1F("emuLoose_zz_nValidPv", "emuLoose_zz_nValidPv", nPVtxMax, 0., nPVtxMax));
 
    vector<TH1F *> emuLoose_dataOverX_nValidPv;
    emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverTtbar_nValidPv", "emuLoose_dataOverTtbar_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZtautau_nValidPv", "emuLoose_dataOverZtautau_nValidPv", nPVtxMax, 0., nPVtxMax));
+//   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZtautau_nValidPv", "emuLoose_dataOverZtautau_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverWw_nValidPv", "emuLoose_dataOverWw_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverWz_nValidPv", "emuLoose_dataOverWz_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverTw_nValidPv", "emuLoose_dataOverTw_nValidPv", nPVtxMax, 0., nPVtxMax));
+//   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverTw_nValidPv", "emuLoose_dataOverTw_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverWjets_nValidPv", "emuLoose_dataOverWjets_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZmumu_nValidPv", "emuLoose_dataOverZmumu_nValidPv", nPVtxMax, 0., nPVtxMax));
    emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZee_nValidPv", "emuLoose_dataOverZee_nValidPv", nPVtxMax, 0., nPVtxMax));
-   //emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZz_nValidPv", "emuLoose_dataOverZz_nValidPv", nPVtxMax, 0., nPVtxMax));
+//   //emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZz_nValidPv", "emuLoose_dataOverZz_nValidPv", nPVtxMax, 0., nPVtxMax));
 
    //GLOBAL
    int c_nJetsAKT_pt15;
@@ -340,109 +427,112 @@ void emuSpectrum()
 
    //PRIM VTX
    int c_pvsize;
-   int c_pvz[20];
-   bool c_pv_isValid[20];
-   float c_pv_ndof[20];
-   int c_pv_nTracks[20];
-   float c_pv_normChi2[20];
-   int c_pv_totTrackSize[20];
+   int c_pvz[100];
+   bool c_pv_isValid[100];
+   float c_pv_ndof[100];
+   int c_pv_nTracks[100];
+   float c_pv_normChi2[100];
+   int c_pv_totTrackSize[100];
+
+   float c_rho;
 
    //GSF
    int c_gsf_size;
-   float c_gsf_gsfet[20];
-   float c_gsf_px[20];
-   float c_gsf_py[20];
-   float c_gsf_pz[20];
-   float c_gsf_pt[20];
-   float c_gsf_eta[20];
-   float c_gsf_theta[20];
-   float c_gsf_phi[20];
-   float c_gsf_dz[20];
-   int c_gsf_isecaldriven[20];
-   int c_gsf_istrackerdriven[20];
-   int c_gsf_isEB[20];
-   int c_gsf_isEE[20];
-   int c_gsf_charge[20];
-   float c_gsf_deltaeta[20];
-   float c_gsf_deltaphi[20];
-   float c_gsf_e1x5overe5x5[20];
-   float c_gsf_e2x5overe5x5[20];
-   float c_gsf_sigmaetaeta[20];
-   float c_gsf_sigmaIetaIeta[20];
-   float c_gsf_hovere[20];
-   float c_gsf_eOVERp[20];
-   float c_gsf_vz[20];
-   int c_gsf_nHits[20];
-   int c_gsf_nLostInnerHits[20];
-   float c_gsf_fBrem[20];
-   float c_gsf_ecaliso[20];
-   float c_gsf_hcaliso1[20];
-   float c_gsf_hcaliso2[20];
-   float c_gsf_trackiso[20];
+   float c_gsf_gsfet[100];
+   float c_gsf_px[100];
+   float c_gsf_py[100];
+   float c_gsf_pz[100];
+   float c_gsf_pt[100];
+   float c_gsf_eta[100];
+   float c_gsf_theta[100];
+   float c_gsf_phi[100];
+   float c_gsf_dz[100];
+   int c_gsf_isecaldriven[100];
+   int c_gsf_istrackerdriven[100];
+   int c_gsf_isEB[100];
+   int c_gsf_isEE[100];
+   int c_gsf_charge[100];
+   float c_gsf_deltaeta[100];
+   float c_gsf_deltaphi[100];
+   float c_gsf_e5x5[100];
+   float c_gsf_e1x5overe5x5[100];
+   float c_gsf_e2x5overe5x5[100];
+   float c_gsf_sigmaetaeta[100];
+   float c_gsf_sigmaIetaIeta[100];
+   float c_gsf_hovere[100];
+   float c_gsf_eOVERp[100];
+   float c_gsf_vz[100];
+   int c_gsf_nHits[100];
+   int c_gsf_nLostInnerHits[100];
+   float c_gsf_fBrem[100];
+   float c_gsf_ecaliso[100];
+   float c_gsf_hcaliso1[100];
+   float c_gsf_hcaliso2[100];
+   float c_gsf_trackiso[100];
 
-   float c_gsfsc_px[20];
-   float c_gsfsc_py[20];
-   float c_gsfsc_pt[20];
-   float c_gsfsc_eta[20];
-   float c_gsfsc_phi[20];
+   float c_gsfsc_px[100];
+   float c_gsfsc_py[100];
+   float c_gsfsc_pt[100];
+   float c_gsfsc_eta[100];
+   float c_gsfsc_phi[100];
 
-   bool c_gsfpass_ID[20];
-   bool c_gsfpass_ISO[20];
-   bool c_gsfpass_HEEP[20];
+   bool c_gsfpass_ID[100];
+   bool c_gsfpass_ISO[100];
+   bool c_gsfpass_HEEP[100];
 
    //MUONS
    int c_muon_size;
-   float c_muon_pt[20];
-   float c_muon_eta[20];
-   float c_muon_phi[20];
-   float c_muon_theta[20];
-   float c_muon_ptError[20];
-   float c_muon_etaError[20];
-   float c_muon_phiError[20];
-   float c_muon_thetaError[20];
-   float c_muon_outerPt[20];
-   float c_muon_outerEta[20];
-   float c_muon_outerPhi[20];
-   float c_muon_outerTheta[20];
-   float c_muon_px[20];
-   float c_muon_py[20];
-   float c_muon_pz[20];
-   int c_muon_charge[20];
-   int c_muon_nhitstrack[20];
-   int c_muon_nhitspixel[20];
-   int c_muon_nhitstotal[20];
-   int c_muon_nhitsmuons[20];
-   int c_muon_nlayerswithhits[20];
-   int c_muon_nSegmentMatch[20];
-   bool c_muon_isTrackerMuon[20];
-   float c_muon_chi2[20];
-   int c_muon_ndof[20];
-   float c_muon_normChi2[20];
-   float c_muon_d0[20];
-   float c_muon_d0Error[20];
-   float c_muon_dzError[20];
-   float c_muon_dxyError[20];
-   float c_muon_dz_cmsCenter[20];
-   float c_muon_dz_beamSpot[20];
-   float c_muon_dz_firstPVtx[20];
-   float c_muon_dxy_cmsCenter[20];
-   float c_muon_dxy_beamSpot[20];
-   float c_muon_dxy_firstPVtx[20];
-   float c_muon_trackIso03[20];
-   float c_muon_trackIso05[20];
-   float c_muon_emIso03[20];
-   float c_muon_emIso05[20];
-   float c_muon_hadIso03[20];
-   float c_muon_hadIso05[20];
-   float c_muon_trackIso03_ptInVeto[20];
-   float c_muon_trackIso05_ptInVeto[20];
-   float c_muon_emIso03_ptInVeto[20];
-   float c_muon_emIso05_ptInVeto[20];
-   float c_muon_hadIso03_ptInVeto[20];
-   float c_muon_hadIso05_ptInVeto[20];
-   float c_muon_innerPosx[20];
-   float c_muon_innerPosy[20];
-   float c_muon_innerPosz[20];
+   float c_muon_pt[100];
+   float c_muon_eta[100];
+   float c_muon_phi[100];
+   float c_muon_theta[100];
+   float c_muon_ptError[100];
+   float c_muon_etaError[100];
+   float c_muon_phiError[100];
+   float c_muon_thetaError[100];
+   float c_muon_outerPt[100];
+   float c_muon_outerEta[100];
+   float c_muon_outerPhi[100];
+   float c_muon_outerTheta[100];
+   float c_muon_px[100];
+   float c_muon_py[100];
+   float c_muon_pz[100];
+   int c_muon_charge[100];
+   int c_muon_nhitstrack[100];
+   int c_muon_nhitspixel[100];
+   int c_muon_nhitstotal[100];
+   int c_muon_nhitsmuons[100];
+   int c_muon_nlayerswithhits[100];
+   int c_muon_nSegmentMatch[100];
+   bool c_muon_isTrackerMuon[100];
+   float c_muon_chi2[100];
+   int c_muon_ndof[100];
+   float c_muon_normChi2[100];
+   float c_muon_d0[100];
+   float c_muon_d0Error[100];
+   float c_muon_dzError[100];
+   float c_muon_dxyError[100];
+   float c_muon_dz_cmsCenter[100];
+   float c_muon_dz_beamSpot[100];
+   float c_muon_dz_firstPVtx[100];
+   float c_muon_dxy_cmsCenter[100];
+   float c_muon_dxy_beamSpot[100];
+   float c_muon_dxy_firstPVtx[100];
+   float c_muon_trackIso03[100];
+   float c_muon_trackIso05[100];
+   float c_muon_emIso03[100];
+   float c_muon_emIso05[100];
+   float c_muon_hadIso03[100];
+   float c_muon_hadIso05[100];
+   float c_muon_trackIso03_ptInVeto[100];
+   float c_muon_trackIso05_ptInVeto[100];
+   float c_muon_emIso03_ptInVeto[100];
+   float c_muon_emIso05_ptInVeto[100];
+   float c_muon_hadIso03_ptInVeto[100];
+   float c_muon_hadIso05_ptInVeto[100];
+   float c_muon_innerPosx[100];
+   float c_muon_innerPosy[100];
+   float c_muon_innerPosz[100];
 
    //RUN ID
    TBranch        *b_runnumber;
@@ -474,9 +564,11 @@ void emuSpectrum()
    TBranch        *b_pv_normChi2;
    TBranch        *b_pv_totTrackSize;
 
+   TBranch        *b_rho;
+
    //TRIGGER
-   TBranch        *b_HLT_Mu15;
-   TBranch        *b_HLT_Mu30;
+   TBranch        *b_HLT_Mu15_eta2p1;
+   TBranch        *b_HLT_Mu30_eta2p1;
 
    //GSF
    TBranch        *b_gsf_size;
@@ -496,6 +588,7 @@ void emuSpectrum()
    TBranch        *b_gsf_charge;
    TBranch        *b_gsf_deltaeta;
    TBranch        *b_gsf_deltaphi;
+   TBranch        *b_gsf_e5x5;
    TBranch        *b_gsf_e1x5overe5x5;
    TBranch        *b_gsf_e2x5overe5x5;
    TBranch        *b_gsf_sigmaetaeta;
@@ -592,14 +685,14 @@ void emuSpectrum()
 
          vector<TH1F *> copy_emuLoose_dataOverX_nValidPv;
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverTtbar_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZtautau_nValidPv"));
+//         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZtautau_nValidPv"));
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverWw_nValidPv"));
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverWz_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverTw_nValidPv"));
+//         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverTw_nValidPv"));
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverWjets_nValidPv"));
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZmumu_nValidPv"));
          copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZee_nValidPv"));
-         //copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZz_nValidPv"));
+//         //copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZz_nValidPv"));
 
          for (unsigned int p = 0; p < copy_emuLoose_dataOverX_nValidPv.size(); ++p) {
             vector<float> PVX_ScalingFactor;
@@ -662,7 +755,7 @@ void emuSpectrum()
 
             int prescale = 0;
             if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
-            if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+            if (p != DATA && p != ZTT && p != WW && p != WZ && p != ZMM && p != ZEE) {
             //if (p != DATA) {
                if (i < nentries * dataTrig[0] / dataEntries) {
                   if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
@@ -759,9 +852,9 @@ void emuSpectrum()
    }
    ///////////////////////////////////////////////////////////////////////////
 
-   runs_HLT_Mu15_Photon20_CaloIdL.first = 99999999;
-   runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first = 99999999;
-   runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first = 99999999;
+   runs_HLT_Mu22_Photon22_CaloIdL.first = 99999999;
+   runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first = 99999999;
+   runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first = 99999999;
    dataTrig[0] = 0;
    dataTrig[1] = 0;
    dataTrig[2] = 0;
@@ -770,8 +863,8 @@ void emuSpectrum()
    // GETTING FILES
    for (int p = 0; p < nbFile; ++p) {
       // correction for trigger
-      if (p == ZTT || p == ZMM || p == ZEE) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
-      //if (0) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      if (p == ZTT || p == WW || p == WZ || p == ZMM || p == ZEE) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+      //if (1) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
       else MCemuScaleFactor = MCScaleFactor;
 
       cout << "accessing file " << p + 1 << ": " << input[p].first->GetName() << endl;
@@ -812,9 +905,11 @@ void emuSpectrum()
       thetree->SetBranchAddress("pv_normChi2", &c_pv_normChi2, &b_pv_normChi2);
       thetree->SetBranchAddress("pv_totTrackSize", &c_pv_totTrackSize, &b_pv_totTrackSize);
 
+      thetree->SetBranchAddress("rho", &c_rho, &b_rho);
+
       //TRIGGER
-      thetree->SetBranchAddress("HLT_Mu15", &c_HLT_Mu15, &b_HLT_Mu15);
-      thetree->SetBranchAddress("HLT_Mu30", &c_HLT_Mu30, &b_HLT_Mu30);
+      thetree->SetBranchAddress("HLT_Mu15_eta2p1", &c_HLT_Mu15_eta2p1, &b_HLT_Mu15_eta2p1);
+      thetree->SetBranchAddress("HLT_Mu30_eta2p1", &c_HLT_Mu30_eta2p1, &b_HLT_Mu30_eta2p1);
 
       //GSF
       thetree->SetBranchAddress("gsf_size", &c_gsf_size, &b_gsf_size);
@@ -834,6 +929,7 @@ void emuSpectrum()
       thetree->SetBranchAddress("gsf_charge", &c_gsf_charge, &b_gsf_charge);
       thetree->SetBranchAddress("gsf_deltaeta", &c_gsf_deltaeta, &b_gsf_deltaeta);
       thetree->SetBranchAddress("gsf_deltaphi", &c_gsf_deltaphi, &b_gsf_deltaphi);
+      thetree->SetBranchAddress("gsf_e5x5", &c_gsf_e5x5, &b_gsf_e5x5);
       thetree->SetBranchAddress("gsf_e1x5overe5x5", &c_gsf_e1x5overe5x5, &b_gsf_e1x5overe5x5);
       thetree->SetBranchAddress("gsf_e2x5overe5x5", &c_gsf_e2x5overe5x5, &b_gsf_e2x5overe5x5);
       thetree->SetBranchAddress("gsf_sigmaetaeta", &c_gsf_sigmaetaeta, &b_gsf_sigmaetaeta);
@@ -1043,7 +1139,7 @@ void emuSpectrum()
 
          int prescale = 0;
          if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
-         if (p != DATA && p != ZTT && p != ZMM && p != ZEE) {
+         if (p != DATA && p != ZTT && p != WW && p != WZ && p != ZMM && p != ZEE) {
          //if (p != DATA) {
             if (i < nentries * dataTrig[0] / dataEntries) {
                if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
@@ -1089,34 +1185,65 @@ void emuSpectrum()
             }
             if (fakeEle) continue;
 
-            //BARREL HEEP
-            if (fabs(c_gsfsc_eta[j]) < 1.442
-                && c_gsf_gsfet[j] > bar_et
-                && c_gsf_isecaldriven[j]
-                && c_gsf_hovere[j] < bar_hoE
-                && fabs(c_gsf_deltaeta[j]) < bar_DEta
-                && fabs(c_gsf_deltaphi[j]) < bar_DPhi
-                && (c_gsf_e2x5overe5x5[j] > bar_e2x5e5x5 || c_gsf_e1x5overe5x5[j] > bar_e1x5e5x5)
-                && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * c_gsf_gsfet[j])
-                && c_gsf_trackiso[j] < bar_isoTrack
-                && c_gsf_nLostInnerHits[j] <= bar_missInnerHits
-               ) GSF_passHEEP.push_back(j);
+            if (selection == 0) {
+               // HEEP v3.2 /////////////////////////////////////////////////////////////////////////////
+               //BARREL HEEP
+               if (fabs(c_gsfsc_eta[j]) < 1.442
+                   && c_gsf_gsfet[j] > bar_et
+                   && c_gsf_isecaldriven[j]
+                   && c_gsf_hovere[j] < bar_hoE
+                   && fabs(c_gsf_deltaeta[j]) < bar_DEta
+                   && fabs(c_gsf_deltaphi[j]) < bar_DPhi
+                   && (c_gsf_e2x5overe5x5[j] > bar_e2x5e5x5 || c_gsf_e1x5overe5x5[j] > bar_e1x5e5x5)
+                   && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * c_gsf_gsfet[j])
+                   && c_gsf_trackiso[j] < bar_isoTrack
+                   && c_gsf_nLostInnerHits[j] <= bar_missInnerHits
+                  ) GSF_passHEEP.push_back(j);
 
-            //ENDCAP HEEP
-            if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)
-                && c_gsf_gsfet[j] > end_et
-                && c_gsf_isecaldriven[j]
-                && c_gsf_hovere[j] < end_hoE
-                && fabs(c_gsf_deltaeta[j]) < end_DEta
-                && fabs(c_gsf_deltaphi[j]) < end_DPhi
-                && (c_gsf_e2x5overe5x5[j] > end_e2x5e5x5 || c_gsf_e1x5overe5x5[j] > end_e1x5e5x5)
-                && c_gsf_sigmaIetaIeta[j] < end_sigmaietaieta
-                && ((c_gsf_gsfet[j] < 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < end_isoEcalHcal1_1)
-                    ||
-                    (c_gsf_gsfet[j] >= 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (c_gsf_gsfet[j] - 50.))))
-                && c_gsf_trackiso[j] < end_isoTrack
-                && c_gsf_nLostInnerHits[j] <= end_missInnerHits
-               ) GSF_passHEEP.push_back(j);
+               //ENDCAP HEEP
+               if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)
+                   && c_gsf_gsfet[j] > end_et
+                   && c_gsf_isecaldriven[j]
+                   && c_gsf_hovere[j] < end_hoE
+                   && fabs(c_gsf_deltaeta[j]) < end_DEta
+                   && fabs(c_gsf_deltaphi[j]) < end_DPhi
+                   && c_gsf_sigmaIetaIeta[j] < end_sigmaietaieta
+                   && ((c_gsf_gsfet[j] < 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < end_isoEcalHcal1_1)
+                       ||
+                       (c_gsf_gsfet[j] >= 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (c_gsf_gsfet[j] - 50.))))
+                   && c_gsf_trackiso[j] < end_isoTrack
+                   && c_gsf_nLostInnerHits[j] <= end_missInnerHits
+                  ) GSF_passHEEP.push_back(j);
+            } else {
+               //BARREL HEEP
+               if (fabs(c_gsfsc_eta[j]) < 1.442
+                   && c_gsf_gsfet[j] > bar_et
+                   && c_gsf_isecaldriven[j]
+                   && (c_gsf_hovere[j] * c_gsf_gsfet[j]) < (bar_hoE * c_gsf_gsfet[j] + (bar_coshFactor * cosh(bar_etaFactor * c_gsfsc_eta[j]) - bar_coshOffset) * c_rho)
+                   && fabs(c_gsf_deltaeta[j]) < bar_DEta
+                   && fabs(c_gsf_deltaphi[j]) < bar_DPhi
+                   && ((c_gsf_e2x5overe5x5[j] * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j])) > (bar_e2x5e5x5 * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j]) - bar_e2x5e5x5Rho * c_rho) 
+                      || (c_gsf_e1x5overe5x5[j] * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j])) > (bar_e1x5e5x5 * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j]) - bar_e1x5e5x5Rho * c_rho))
+                   && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * c_gsf_gsfet[j] + bar_isoEcalHcalRho * c_rho)
+                   && c_gsf_trackiso[j] < bar_isoTrack
+                   && c_gsf_nLostInnerHits[j] <= bar_missInnerHits
+                  ) GSF_passHEEP.push_back(j);
+   
+               //ENDCAP HEEP
+               if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)
+                   && c_gsf_gsfet[j] > end_et
+                   && c_gsf_isecaldriven[j]
+                   && (c_gsf_hovere[j] * c_gsf_gsfet[j]) < (end_hoE * c_gsf_gsfet[j] + (end_coshFactor * cosh(end_etaFactor * c_gsfsc_eta[j]) - end_coshOffset) * c_rho)
+                   && fabs(c_gsf_deltaeta[j]) < end_DEta
+                   && fabs(c_gsf_deltaphi[j]) < end_DPhi
+                   && c_gsf_sigmaIetaIeta[j] < end_sigmaietaieta
+                   && ((c_gsf_gsfet[j] < 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1_1 + end_isoEcalHcalRho * c_rho))
+                      || (c_gsf_gsfet[j] >= 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1_2 + end_isoEcalHcal1_2 * c_gsf_gsfet[j] + end_isoEcalHcalRho * c_rho)))
+                   && c_gsf_trackiso[j] < end_isoTrack
+                   && c_gsf_nLostInnerHits[j] <= end_missInnerHits
+                  ) GSF_passHEEP.push_back(j);
+            }
+            /////////////////////////////////////////////////////////////////////////////////////////////
 
             //GSF IN ACCEPTANCE
             if (c_gsf_gsfet[j] > bar_et
@@ -1216,8 +1343,8 @@ void emuSpectrum()
                numOfJetsPt15.at(p).at(k)->Fill(c_nJetsAKT_pt15, npv_weight);
 
                if (p == DATA) {
-               //if (p == DATA && c_HLT_Mu15) {
-               //if (p == DATA && c_HLT_Mu30) {
+               //if (p == DATA && c_HLT_Mu15_eta2p1) {
+               //if (p == DATA && c_HLT_Mu30_eta2p1) {
                   // fill tree with good events
                   emuInvMass = invMass;
                   if (k == ALL) emuDataTree->Fill();
@@ -1288,12 +1415,12 @@ void emuSpectrum()
       } // END LOOP OVER ENTRIES
 
       if (p == DATA) {
-         cout << "HLT_Mu15_Photon20_CaloIdL: " << dataTrig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL: " << dataTrig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL: " << dataTrig[2] << " , sum: " << dataTrig[0]+dataTrig[1]+dataTrig[2] << endl;
-         cout << "Runrange HLT_Mu15_Photon20_CaloIdL: " << runs_HLT_Mu15_Photon20_CaloIdL.first << " - " << runs_HLT_Mu15_Photon20_CaloIdL.second << endl;
-         cout << "Runrange HLT_Mu8_Ele17_CaloIdT_CaloIsoVL: " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first << " - " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.second << endl;
-         cout << "Runrange HLT_Mu17_Ele8_CaloIdT_CaloIsoVL: " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first << " - " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.second << endl;
+         cout << "HLT_Mu22_Photon22_CaloIdL: " << dataTrig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[2] << " , sum: " << dataTrig[0]+dataTrig[1]+dataTrig[2] << endl;
+         cout << "Runrange HLT_Mu22_Photon22_CaloIdL: " << runs_HLT_Mu22_Photon22_CaloIdL.first << " - " << runs_HLT_Mu22_Photon22_CaloIdL.second << endl;
+         cout << "Runrange HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
+         cout << "Runrange HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
       }
-      else cout << "HLT_Mu15_Photon20_CaloIdL: " << trig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL: " << trig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL: " << trig[2] << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
+      else cout << "HLT_Mu22_Photon22_CaloIdL: " << trig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[2] << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
 
       if (p == DATA) {
          // write root file with good emu event data
@@ -1370,13 +1497,14 @@ void emuSpectrum()
    cout << " Luminosity:  " << systErrLumi * 100 << "%" << endl;
    cout << " Efficiency:  " << systErrEff * 100 << "%" << endl;
    cout << " ttbar:      " << systErrMC[TTBAR-1] * 100 << "%" << endl;
-   cout << " Z->tautau:   " << systErrMC[ZTT-1] * 100 << "%" << endl;
+//   cout << " Z->tautau:   " << systErrMC[ZTT-1] * 100 << "%" << endl;
    cout << " WW:          " << systErrMC[WW-1] * 100 << "%" << endl;
    cout << " WZ:          " << systErrMC[WZ-1] * 100 << "%" << endl;
-   cout << " tW, tbarW:  " << systErrMC[TW-1] * 100 << "%" << endl;
+//   cout << " tW, tbarW:  " << systErrMC[TW-1] * 100 << "%" << endl;
+   cout << " W+Jets:      " << systErrMC[WJET-1] * 100 << "%" << endl;
    cout << " Z->mumu:     " << systErrMC[ZMM-1] * 100 << "%" << endl;
    cout << " Z->ee:       " << systErrMC[ZEE-1] * 100 << "%" << endl;
-   cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
+//   cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
    cout << "-----------------------------------------------------------------------------------------------------------" << endl;
    printf("M_emu         |       >%5.0fGeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2          |\n", minInvMass);
    cout << "-----------------------------------------------------------------------------------------------------------" << endl;
@@ -1389,10 +1517,10 @@ void emuSpectrum()
           emuMass.at(TTBAR).at(ALL)->Integral(), emuMass.at(TTBAR).at(ALL)->Integral() * systErrMCLuEff[TTBAR-1], 
           emuMass.at(TTBAR).at(ALL)->Integral(13,151), emuMass.at(TTBAR).at(ALL)->Integral(13,151) * systErrMCLuEff[TTBAR-1], 
           emuMass.at(TTBAR).at(ALL)->Integral(21,151), emuMass.at(TTBAR).at(ALL)->Integral(21,151) * systErrMCLuEff[TTBAR-1]);
-   printf("nb Ztautau    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(ZTT).at(ALL)->Integral(), emuMass.at(ZTT).at(ALL)->Integral() * systErrMCLuEff[ZTT-1], 
-          emuMass.at(ZTT).at(ALL)->Integral(13,151), emuMass.at(ZTT).at(ALL)->Integral(13,151) * systErrMCLuEff[ZTT-1], 
-          emuMass.at(ZTT).at(ALL)->Integral(21,151), emuMass.at(ZTT).at(ALL)->Integral(21,151) * systErrMCLuEff[ZTT-1]);
+//   printf("nb Ztautau    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+//          emuMass.at(ZTT).at(ALL)->Integral(), emuMass.at(ZTT).at(ALL)->Integral() * systErrMCLuEff[ZTT-1], 
+//          emuMass.at(ZTT).at(ALL)->Integral(13,151), emuMass.at(ZTT).at(ALL)->Integral(13,151) * systErrMCLuEff[ZTT-1], 
+//          emuMass.at(ZTT).at(ALL)->Integral(21,151), emuMass.at(ZTT).at(ALL)->Integral(21,151) * systErrMCLuEff[ZTT-1]);
    printf("nb WW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
           emuMass.at(WW).at(ALL)->Integral(), emuMass.at(WW).at(ALL)->Integral() * systErrMCLuEff[WW-1], 
           emuMass.at(WW).at(ALL)->Integral(13,151), emuMass.at(WW).at(ALL)->Integral(13,151) * systErrMCLuEff[WW-1], 
@@ -1401,11 +1529,11 @@ void emuSpectrum()
           emuMass.at(WZ).at(ALL)->Integral(), emuMass.at(WZ).at(ALL)->Integral() * systErrMCLuEff[WZ-1], 
           emuMass.at(WZ).at(ALL)->Integral(13,151), emuMass.at(WZ).at(ALL)->Integral(13,151) * systErrMCLuEff[WZ-1], 
           emuMass.at(WZ).at(ALL)->Integral(21,151), emuMass.at(WZ).at(ALL)->Integral(21,151) * systErrMCLuEff[WZ-1]);
-   printf("nb tW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(TW).at(ALL)->Integral(), emuMass.at(TW).at(ALL)->Integral() * systErrMCLuEff[TW-1], 
-          emuMass.at(TW).at(ALL)->Integral(13,151), emuMass.at(TW).at(ALL)->Integral(13,151) * systErrMCLuEff[TW-1], 
-          emuMass.at(TW).at(ALL)->Integral(21,151), emuMass.at(TW).at(ALL)->Integral(21,151) * systErrMCLuEff[TW-1]);
-   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
+//   printf("nb tW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+//          emuMass.at(TW).at(ALL)->Integral(), emuMass.at(TW).at(ALL)->Integral() * systErrMCLuEff[TW-1], 
+//          emuMass.at(TW).at(ALL)->Integral(13,151), emuMass.at(TW).at(ALL)->Integral(13,151) * systErrMCLuEff[TW-1], 
+//          emuMass.at(TW).at(ALL)->Integral(21,151), emuMass.at(TW).at(ALL)->Integral(21,151) * systErrMCLuEff[TW-1]);
+//   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
    printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
           emuMass.at(WJET).at(ALL)->Integral(), emuMass.at(WJET).at(ALL)->Integral() * systErrMCLuEff[WJET-1], 
           emuMass.at(WJET).at(ALL)->Integral(13,151), emuMass.at(WJET).at(ALL)->Integral(13,151) * systErrMCLuEff[WJET-1], 
@@ -1418,10 +1546,10 @@ void emuSpectrum()
           emuMass.at(ZEE).at(ALL)->Integral(), emuMass.at(ZEE).at(ALL)->Integral() * systErrMCLuEff[ZEE-1], 
           emuMass.at(ZEE).at(ALL)->Integral(13,151), emuMass.at(ZEE).at(ALL)->Integral(13,151) * systErrMCLuEff[ZEE-1], 
           emuMass.at(ZEE).at(ALL)->Integral(21,151), emuMass.at(ZEE).at(ALL)->Integral(21,151) * systErrMCLuEff[ZEE-1]);
-   //printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-   //       emuMass.at(ZZ).at(ALL)->Integral(), emuMass.at(ZZ).at(ALL)->Integral() * systErrMCLuEff[ZZ-1], 
-   //       emuMass.at(ZZ).at(ALL)->Integral(13,151), emuMass.at(ZZ).at(ALL)->Integral(13,151) * systErrMCLuEff[ZZ-1], 
-   //       emuMass.at(ZZ).at(ALL)->Integral(21,151), emuMass.at(ZZ).at(ALL)->Integral(21,151) * systErrMCLuEff[ZZ-1]);
+//   //printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+//   //       emuMass.at(ZZ).at(ALL)->Integral(), emuMass.at(ZZ).at(ALL)->Integral() * systErrMCLuEff[ZZ-1], 
+//   //       emuMass.at(ZZ).at(ALL)->Integral(13,151), emuMass.at(ZZ).at(ALL)->Integral(13,151) * systErrMCLuEff[ZZ-1], 
+//   //       emuMass.at(ZZ).at(ALL)->Integral(21,151), emuMass.at(ZZ).at(ALL)->Integral(21,151) * systErrMCLuEff[ZZ-1]);
    cout << "-----------------------------------------------------------------------------------------------------------" << endl;
 
    //printf("TOT ttlike    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
@@ -1623,7 +1751,7 @@ void emuSpectrum()
    cout << "-----------------------------------------------------------------------------------------------------------" << endl << endl;
 
    emu_dilepton->Add(emuMass.at(1).at(ALL));
-   emu_ewk->Add(emuMass.at(6).at(ALL));
+   //emu_ewk->Add(emuMass.at(6).at(ALL));
    //emu_jet->Add(emuMass.at(8).at(ALL));
 
    //WRITING
@@ -1634,8 +1762,8 @@ void emuSpectrum()
    output->cd();
 
    emu_dilepton->Write();
-   emu_ewk->Write();
-   emu_jet->Write();
+   //emu_ewk->Write();
+   //emu_jet->Write();
 
    //emuLoose_data_nValidPv->Write();
    //emuLoose_ttbar_nValidPv->Write();
@@ -1723,70 +1851,70 @@ float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors,
 
 int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector)
 {
-   int c_HLT_Mu15_Photon20_CaloIdL;
-   int c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-   int c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
-   int c_prescale_HLT_Mu15_Photon20_CaloIdL;
-   int c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-   int c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+   int c_HLT_Mu22_Photon22_CaloIdL;
+   int c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+   int c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+   int c_prescale_HLT_Mu22_Photon22_CaloIdL;
+   int c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+   int c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
 
-   TBranch *b_HLT_Mu15_Photon20_CaloIdL;
-   TBranch *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-   TBranch *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
-   TBranch *b_prescale_HLT_Mu15_Photon20_CaloIdL;
-   TBranch *b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-   TBranch *b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+   TBranch *b_HLT_Mu22_Photon22_CaloIdL;
+   TBranch *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+   TBranch *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+   TBranch *b_prescale_HLT_Mu22_Photon22_CaloIdL;
+   TBranch *b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+   TBranch *b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
 
    // Get the tree and connect the necessary variables
    inFile->cd();
    TTree *thetree;
    thetree = (TTree*)(inFile)->Get("gsfcheckerjob/tree");
 
-   thetree->SetBranchAddress("HLT_Mu15_Photon20_CaloIdL", &c_HLT_Mu15_Photon20_CaloIdL, &b_HLT_Mu15_Photon20_CaloIdL);
-   thetree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
-   thetree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
-   thetree->SetBranchAddress("prescale_HLT_Mu15_Photon20_CaloIdL", &c_prescale_HLT_Mu15_Photon20_CaloIdL, &b_prescale_HLT_Mu15_Photon20_CaloIdL);
-   thetree->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL);
-   thetree->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL", &c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL);
+   thetree->SetBranchAddress("HLT_Mu22_Photon22_CaloIdL", &c_HLT_Mu22_Photon22_CaloIdL, &b_HLT_Mu22_Photon22_CaloIdL);
+   thetree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
+   thetree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
+   thetree->SetBranchAddress("prescale_HLT_Mu22_Photon22_CaloIdL", &c_prescale_HLT_Mu22_Photon22_CaloIdL, &b_prescale_HLT_Mu22_Photon22_CaloIdL);
+   thetree->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
+   thetree->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
 
    thetree->GetEntry(entry);
 
    if (selector == 1) {
-      prescale = c_prescale_HLT_Mu15_Photon20_CaloIdL;
-      if (c_HLT_Mu15_Photon20_CaloIdL >= 0) trig[0]++;
-      return c_HLT_Mu15_Photon20_CaloIdL;
+      prescale = c_prescale_HLT_Mu22_Photon22_CaloIdL;
+      if (c_HLT_Mu22_Photon22_CaloIdL >= 0) trig[0]++;
+      return c_HLT_Mu22_Photon22_CaloIdL;
    } else if (selector == 2) {
-      prescale = c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-      if (c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL >= 0) trig[1]++;
-      return c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+      prescale = c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+      if (c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL >= 0) trig[1]++;
+      return c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    } else if (selector == 3) {
-      prescale = c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
-      if (c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL >= 0) trig[2]++;
-      return c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+      prescale = c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+      if (c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL >= 0) trig[2]++;
+      return c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    } else {
       // select an unprescaled trigger
-      if (c_prescale_HLT_Mu15_Photon20_CaloIdL == 1) {
-         prescale = c_prescale_HLT_Mu15_Photon20_CaloIdL;
+      if (c_prescale_HLT_Mu22_Photon22_CaloIdL == 1) {
+         prescale = c_prescale_HLT_Mu22_Photon22_CaloIdL;
          trig[0]++;
-         if (c_runnumber < runs_HLT_Mu15_Photon20_CaloIdL.first) runs_HLT_Mu15_Photon20_CaloIdL.first = c_runnumber;
-         if (c_runnumber > runs_HLT_Mu15_Photon20_CaloIdL.second) runs_HLT_Mu15_Photon20_CaloIdL.second = c_runnumber;
-         return c_HLT_Mu15_Photon20_CaloIdL;
-      } else if (c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL == 1) {
-         prescale = c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
+         if (c_runnumber < runs_HLT_Mu22_Photon22_CaloIdL.first) runs_HLT_Mu22_Photon22_CaloIdL.first = c_runnumber;
+         if (c_runnumber > runs_HLT_Mu22_Photon22_CaloIdL.second) runs_HLT_Mu22_Photon22_CaloIdL.second = c_runnumber;
+         return c_HLT_Mu22_Photon22_CaloIdL;
+      } else if (c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL == 1) {
+         prescale = c_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
          trig[1]++;
-         if (c_runnumber < runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first) runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.first = c_runnumber;
-         if (c_runnumber > runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.second) runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL.second = c_runnumber;
-         return c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL;
-      } else if (c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL == 1) {
-         prescale = c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+         if (c_runnumber < runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first) runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first = c_runnumber;
+         if (c_runnumber > runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second) runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second = c_runnumber;
+         return c_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+      } else if (c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL == 1) {
+         prescale = c_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
          trig[2]++;
-         if (c_runnumber < runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first) runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.first = c_runnumber;
-         if (c_runnumber > runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.second) runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL.second = c_runnumber;
-         return c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL;
+         if (c_runnumber < runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first) runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first = c_runnumber;
+         if (c_runnumber > runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second) runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second = c_runnumber;
+         return c_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
       }
    }
 
-   cout << "Prescale alert! No unprescaled trigger found." << endl;
+   //cout << "Prescale alert! No unprescaled trigger found." << endl;
    prescale = 0;
    return -1;
 }
