@@ -34,6 +34,7 @@ void InvariantMass::Loop()
                                      // calculate correction and the second 
                                      // time with the factor applied
   float normToZPeakFrom = 60;        // lower mass for normalization
+  //float normToZPeakTo = 60;         // upper mass for normalization
   float normToZPeakTo = 120;         // upper mass for normalization
   bool etShiftData = false;           // match data Z peak with MC peak
 
@@ -95,79 +96,84 @@ void InvariantMass::Loop()
   //input.push_back(make_pair(new TFile("/user/treis/data2011/gsfcheckertree203_6pb-1.root","read"), 1 / lumi));
   //float lumi = 216;
   //input.push_back(make_pair(new TFile("/user/treis/data2011/Photon-Run2011A-May10ReReco-v1-AOD-Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v3_gct1_10_215_6pb-1.root","read"), 1 / lumi));
-  float lumi = 4679;
-  input.push_back(make_pair(new TFile("/user/treis/data2011/Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-AOD-Cert_160404-180252_7TeV_Collisions11_JSON_gct1_12_4679pb-1.root","read"), 1 / lumi));
+  float lumi = 291.;
+  input.push_back(make_pair(new TFile("/user/treis/data2012/Photon_Run2012A-PromptReco-v1_AOD_Cert_190456-191276_8TeV_PromptReco_Collisions12_JSON_gct1_24_291pb-1.root","read"), 1 / lumi));
   datasetTitle.push_back("Data");
   const unsigned int DATA = 0;
 
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-20_TuneZ2_7TeV-pythia6_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 7.54408E-4));
+  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M_20_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START50_V15-v1_AODSIM_gct1_24.root","read"), 8.35870E-4));
   datasetTitle.push_back("DY > 20GeV");
   minPtDY.push_back(20);
   const unsigned int DY20 = 1;
 
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-120_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 1.80678E-4));
-  datasetTitle.push_back("DY > 120GeV");
-  minPtDY.push_back(120);
-  const unsigned int DY120 = 2;
-
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-200_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 2.18298E-5));
-  datasetTitle.push_back("DY > 200GeV");
-  minPtDY.push_back(200);
-  const unsigned int DY200 = 3;
-
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-500_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 6.17792E-7));
-  datasetTitle.push_back("DY > 500GeV");
-  minPtDY.push_back(500);
-  const unsigned int DY500 = 4;
-
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-800_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 7.47055E-8));
-  datasetTitle.push_back("DY > 800GeV");
-  minPtDY.push_back(800);
-  const unsigned int DY800 = 5;
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-120_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 1.80678E-4));
+//  datasetTitle.push_back("DY > 120GeV");
+//  minPtDY.push_back(120);
+//  const unsigned int DY120 = 2;
+//
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-200_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 2.18298E-5));
+//  datasetTitle.push_back("DY > 200GeV");
+//  minPtDY.push_back(200);
+//  const unsigned int DY200 = 3;
+//
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-500_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 6.17792E-7));
+//  datasetTitle.push_back("DY > 500GeV");
+//  minPtDY.push_back(500);
+//  const unsigned int DY500 = 4;
+//
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-800_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 7.47055E-8));
+//  datasetTitle.push_back("DY > 800GeV");
+//  minPtDY.push_back(800);
+//  const unsigned int DY800 = 5;
+  const unsigned int DY800 = 1;
 
   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root","read"), 4.40309E-5));
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/TT_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_AODSIM_HEEPSkim2ElePt30.root","read"), 1.44545E-4));
+  input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2star_8TeV-madgraph-tauola_Summer12-PU_S7_START52_V5-v1_AODSIM_gct1_24.root","read"), 1.36348E-4));
   datasetTitle.push_back("ttbar");
-  const unsigned int TTBAR = 6;
+//  const unsigned int TTBAR = 6;
+  const unsigned int TTBAR = 2;
 
-  input.push_back(make_pair(new TFile("/user/lathomas/CMSSW_4_2_3/src/UserCode/HEEPSkims/test/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola-Summer11-PU_S4_START42_V11-v1-AODSIM_HEEPSkim2ElePt30/res/TOTAL.root","read"), 0.000607645));
+  input.push_back(make_pair(new TFile("/user/lathomas/mcsamples/WToENu_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START50_V15-v1_AODSIM.root","read"), 1.85602E-2));
   datasetTitle.push_back("W+jets");
-  const unsigned int WJETS = 7;
-  
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-30to50_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 7.6306E-3));
-  datasetTitle.push_back("Gamma 30to50GeV");
-  minPtG.push_back(30);
+//  const unsigned int WJETS = 7;
+  const unsigned int WJETS = 3;
+//  
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-30to50_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 7.6306E-3));
+//  datasetTitle.push_back("Gamma 30to50GeV");
+//  minPtG.push_back(30);
+//  const unsigned int G30T50 = 8;
   const unsigned int G30T50 = 8;
-  
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-50to80_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 1.3365E-3));
-  datasetTitle.push_back("Gamma 50to80GeV");
-  minPtG.push_back(50);
-  const unsigned int G50T80 = 9;
-  
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-80to120_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 2.1850E-4));
-  datasetTitle.push_back("Gamma 80to120GeV");
-  minPtG.push_back(80);
-  const unsigned int G80T120 = 10;
-  
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-120to170_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 4.0307E-5));
-  datasetTitle.push_back("Gamma 120to170GeV");
-  minPtG.push_back(120);
-  const unsigned int G120T170 = 11;
-  
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-170to300_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 1.0942E-5));
-  datasetTitle.push_back("Gamma 170to300GeV");
-  minPtG.push_back(170);
-  const unsigned int G170T300 = 12;
-  
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-300to470_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 7.1887E-7));
-  datasetTitle.push_back("Gamma 300to470GeV");
-  minPtG.push_back(300);
-  const unsigned int G300T470 = 13;
-  
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-470to800_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 6.3386E-8));
-  datasetTitle.push_back("Gamma 470to800GeV");
-  minPtG.push_back(470);
-  const unsigned int G470T800 = 14;
+//  
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-50to80_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 1.3365E-3));
+//  datasetTitle.push_back("Gamma 50to80GeV");
+//  minPtG.push_back(50);
+//  const unsigned int G50T80 = 9;
+//  
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-80to120_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 2.1850E-4));
+//  datasetTitle.push_back("Gamma 80to120GeV");
+//  minPtG.push_back(80);
+//  const unsigned int G80T120 = 10;
+//  
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-120to170_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 4.0307E-5));
+//  datasetTitle.push_back("Gamma 120to170GeV");
+//  minPtG.push_back(120);
+//  const unsigned int G120T170 = 11;
+//  
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-170to300_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 1.0942E-5));
+//  datasetTitle.push_back("Gamma 170to300GeV");
+//  minPtG.push_back(170);
+//  const unsigned int G170T300 = 12;
+//  
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-300to470_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 7.1887E-7));
+//  datasetTitle.push_back("Gamma 300to470GeV");
+//  minPtG.push_back(300);
+//  const unsigned int G300T470 = 13;
+//  
+//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-470to800_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 6.3386E-8));
+//  datasetTitle.push_back("Gamma 470to800GeV");
+//  minPtG.push_back(470);
+//  const unsigned int G470T800 = 14;
+  const unsigned int G470T800 = 1;
   ////////////////////////////////////////////////////////////////////////////
   
   minPtDY.push_back(100000); // set ridiculously high to catch the tail of the last DY sample
@@ -335,7 +341,7 @@ void InvariantMass::Loop()
     /////////////////////////////////////////////////////////////////////////
     // loop over events
     /////////////////////////////////////////////////////////////////////////
-    //for (Long64_t jentry=0; (jentry < 100000 && jentry < nentries); ++jentry) { // for tests
+    //for (Long64_t jentry=0; (jentry < 10000 && jentry < nentries); ++jentry) { // for tests
     for (Long64_t jentry=0; jentry < nentries; ++jentry) {
       hHMass = 0.;
       Long64_t ientry = LoadTree(jentry);
@@ -440,52 +446,52 @@ void InvariantMass::Loop()
             if (fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep2]) > 1.56) {
               histoGsfGsfMassNoHeep.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
               if (p >= DY20 && p <= DY800) {
-                if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                   histoSectionDYCombinedGGNH.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
               }
               if (gsfsc_eta[iGsfNoHeep1] * gsfsc_eta[iGsfNoHeep2] > 0) {
                 histoGsfGsfMassNoHeep.at(EES)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedGGNH.at(EES)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
                 }
               } else {
                 histoGsfGsfMassNoHeep.at(EEO)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedGGNH.at(EEO)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
                 }
               }
               if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1]) && PassFRPreSel(iGsfNoHeep2, gsfsc_eta[iGsfNoHeep2])) {
                 histoGsfGsfMassNoHeepFR.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedGGNHFR.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 }
               }
             } else if ((fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep2]) > 1.56) || (fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep2]) < 1.442)) {
               histoGsfGsfMassNoHeep.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
               if (p >= DY20 && p <= DY800) {
-                if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                   histoSectionDYCombinedGGNH.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
               }
               if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1]) && PassFRPreSel(iGsfNoHeep2, gsfsc_eta[iGsfNoHeep2])) {
                 histoGsfGsfMassNoHeepFR.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedGGNHFR.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 }
               }
             } else if (fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep2]) < 1.442) {
               histoGsfGsfMassNoHeep.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
               if (p >= DY20 && p <= DY800) {
-                if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                   histoSectionDYCombinedGGNH.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
               }
               if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1]) && PassFRPreSel(iGsfNoHeep2, gsfsc_eta[iGsfNoHeep2])) {
                 histoGsfGsfMassNoHeepFR.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedGGNHFR.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 }
               }
@@ -534,39 +540,39 @@ void InvariantMass::Loop()
               if (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56) {
                 histoHeepGsfMassNoHeep.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedHGNH.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                 }
                 if (gsfsc_eta[iHeep1] * gsfsc_eta[iGsfNoHeep1] > 0) {
                   histoHeepGsfMassNoHeep.at(EES)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                   if (p >= DY20 && p <= DY800) {
-                    if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                    if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                       histoSectionDYCombinedHGNH.at(EES)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                   }
                 } else {
                   histoHeepGsfMassNoHeep.at(EEO)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                   if (p >= DY20 && p <= DY800) {
-                    if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                    if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                       histoSectionDYCombinedHGNH.at(EEO)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                   }
                 }
                 if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1])) {
                   histoHeepGsfMassNoHeepFR.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
                   if (p >= DY20 && p <= DY800) {
-                    if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                    if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                       histoSectionDYCombinedHGNHFR.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
                   }
                 }
               } else if ((fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56) || (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442)) {
                 histoHeepGsfMassNoHeep.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedHGNH.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                 }
                 if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1])) {
                   histoHeepGsfMassNoHeepFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
                   if (p >= DY20 && p <= DY800) {
-                    if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                    if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                       histoSectionDYCombinedHGNHFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
                   }
                 }
@@ -578,13 +584,13 @@ void InvariantMass::Loop()
               } else if (fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442) {
                 histoHeepGsfMassNoHeep.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedHGNH.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
                 }
                 if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1])) {
                   histoHeepGsfMassNoHeepFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
                   if (p >= DY20 && p <= DY800) {
-                    if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                    if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                       histoSectionDYCombinedHGNHFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
                   }
                 }
@@ -608,21 +614,21 @@ void InvariantMass::Loop()
               histoHeepHeepMass.at(EE)->Fill(heepHeepMass, input.at(p).second * lumi);
               // fill the correct sector of the DY sample
               if (p >= DY20 && p <= DY800) {
-                if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                   histoSectionDYCombinedHH.at(EE)->Fill(heepHeepMass, input.at(p).second * lumi);
               }
               if (gsfsc_eta[iHeep1] * gsfsc_eta[iHeep2] > 0) {
                 histoHeepHeepMass.at(EES)->Fill(heepHeepMass, input.at(p).second * lumi);
                 // fill the correct sector of the DY sample
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedHH.at(EES)->Fill(heepHeepMass, input.at(p).second * lumi);
                 }
               } else {
                 histoHeepHeepMass.at(EEO)->Fill(heepHeepMass, input.at(p).second * lumi);
                 // fill the correct sector of the DY sample
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedHH.at(EEO)->Fill(heepHeepMass, input.at(p).second * lumi);
                 }
               }
@@ -635,7 +641,7 @@ void InvariantMass::Loop()
                 histoHeepHeepMass.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
                 // fill the correct sector of the DY sample
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedHH.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
                 }
               } else if (fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iHeep2]) < 1.442) {
@@ -644,7 +650,7 @@ void InvariantMass::Loop()
                 histoHeepHeepMass.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
                 // fill the correct sector of the DY sample
                 if (p >= DY20 && p <= DY800) {
-                  if (genboson_m_branch >= minPtDY.at(p - DY20) && genboson_m_branch < minPtDY.at(p))
+                  if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
                     histoSectionDYCombinedHH.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
                 }
               }
@@ -815,6 +821,8 @@ void InvariantMass::Loop()
       (*it)->Write();
   } // end of loop over input files
 
+cout << "end loop over files" << endl;
+
   outFile->cd();
   outFile->mkdir("combinations");  // WORKAROUND - should be in cd() but there seems to be a bug in root 4.27 that gives "R__unzip: error in header" in the rescaling process when histograms are in the base directory
   outFile->cd("combinations");
@@ -831,6 +839,8 @@ void InvariantMass::Loop()
     histoDYCombined.back()->Write();
   }
   sStream.str("");
+
+cout << "DY combined done" << endl;
 
   // combined DY and gamma MC HEEP GSF fake rate
   vector<TH1F *> histosHGNHFRDYCombined;
@@ -869,6 +879,8 @@ void InvariantMass::Loop()
   }
   sStream.str("");
 
+cout << "fake rate correction done" << endl;
+
   vector<TH1F *> histoRatioMassCorrFR;
   for (unsigned int i = 0; i < histosGsfGsfCorr.size(); ++i) {
     TH1F *numHisto = (TH1F *)histosGsfGsfCorr.at(i)->Clone("numHistoCorr" + acroSuffix.at(i));
@@ -882,6 +894,8 @@ void InvariantMass::Loop()
     histoRatioMassCorrFR.back()->SetTitle("Ratio between corrected GSF-GSF and corrected HEEP-GSF" + suffix.at(i) + ";M_{ee} (GeV/c^{2});GSF-GSF / HEEP-GSF");
     histoRatioMassCorrFR.back()->Write();
   }
+
+cout << "writing out done" << endl;
 
   outFile->Close();
 
@@ -900,8 +914,10 @@ InvariantMass::NormalizeToZPeak(const float& lowMass, const float& highMass, con
 {
   float factor = 1.;
   const unsigned int DATA = 0;
-  const unsigned int TTBAR = 6;
-  const unsigned int WJETS = 7;
+  //const unsigned int TTBAR = 6;
+  const unsigned int TTBAR = 2;
+  //const unsigned int WJETS = 7;
+  const unsigned int WJETS = 3;
 
   vector<TString> acroSuffix;
   acroSuffix.push_back("");
@@ -1172,7 +1188,32 @@ bool
 InvariantMass::PassHEEP(const int &n)
 {
   // HEEP selection v3.2
+//  // barrel
+//  float bar_et = 35.;
+//  float bar_hoE = 0.05;
+//  float bar_DEta = 0.005;
+//  float bar_DPhi = 0.06;
+//  float bar_e2x5e5x5 = 0.94;
+//  float bar_e1x5e5x5 = 0.83;
+//  float bar_isoEcalHcal1_1 = 2.;
+//  float bar_isoEcalHcal1_2 = 0.03;
+//  float bar_isoTrack = 5.;
+//  int bar_missInnerHits = 0;
+//
+//  // endcap
+//  float end_et = 40.;
+//  float end_hoE = 0.05;
+//  float end_DEta = 0.007 ;
+//  float end_DPhi = 0.06;
+//  float end_e2x5e5x5 = 0.;
+//  float end_e1x5e5x5 = 0.;
+//  float end_sigmaietaieta = 0.03;
+//  float end_isoEcalHcal1_1 = 2.5;
+//  float end_isoEcalHcal1_2 = 0.03;
+//  float end_isoTrack = 5.;
+//  int end_missInnerHits = 0;
 
+  // HEEP v4.0
   // barrel
   float bar_et = 35.;
   float bar_hoE = 0.05;
@@ -1182,22 +1223,54 @@ InvariantMass::PassHEEP(const int &n)
   float bar_e1x5e5x5 = 0.83;
   float bar_isoEcalHcal1_1 = 2.;
   float bar_isoEcalHcal1_2 = 0.03;
+  float bar_isoEcalHcalRho = 0.28;
   float bar_isoTrack = 5.;
   int bar_missInnerHits = 0;
 
   // endcap
-  float end_et = 40.;
+  float end_et = 35.;
   float end_hoE = 0.05;
   float end_DEta = 0.007 ;
   float end_DPhi = 0.06;
-  float end_e2x5e5x5 = 0.;
-  float end_e1x5e5x5 = 0.;
   float end_sigmaietaieta = 0.03;
-  float end_isoEcalHcal1_1 = 2.5;
+  float end_isoEcalHcal1_1_1 = 2.5;
+  float end_isoEcalHcal1_1_2 = 1.;
   float end_isoEcalHcal1_2 = 0.03;
+  float end_isoEcalHcalRho = 0.28;
   float end_isoTrack = 5.;
   int end_missInnerHits = 0;
 
+//  HEEP v3.2
+//  // barrel
+//  if (fabs(gsfsc_eta[n]) < 1.442
+//      && gsf_gsfet[n] > bar_et
+//      && gsf_isecaldriven[n]
+//      && gsf_hovere[n] < bar_hoE
+//      && fabs(gsf_deltaeta[n]) < bar_DEta
+//      && fabs(gsf_deltaphi[n]) < bar_DPhi
+//      && (gsf_e2x5overe5x5[n] > bar_e2x5e5x5 || gsf_e1x5overe5x5[n] > bar_e1x5e5x5)
+//      && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * gsf_gsfet[n])
+//      && gsf_trackiso[n] < bar_isoTrack
+//      && gsf_nLostInnerHits[n] <= bar_missInnerHits
+//     ) return true;
+//
+//  // endcap
+//  else if ((fabs(gsfsc_eta[n]) > 1.56 && fabs(gsfsc_eta[n]) < 2.5)
+//      && gsf_gsfet[n] > end_et
+//      && gsf_isecaldriven[n]
+//      && gsf_hovere[n] < end_hoE
+//      && fabs(gsf_deltaeta[n]) < end_DEta
+//      && fabs(gsf_deltaphi[n]) < end_DPhi
+//      && (gsf_e2x5overe5x5[n] > end_e2x5e5x5 || gsf_e1x5overe5x5[n] > end_e1x5e5x5)
+//      && gsf_sigmaIetaIeta[n] < end_sigmaietaieta
+//      && ((gsf_gsfet[n] < 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < end_isoEcalHcal1_1)
+//          ||
+//          (gsf_gsfet[n] >= 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (gsf_gsfet[n] - 50.))))
+//      && gsf_trackiso[n] < end_isoTrack
+//      && gsf_nLostInnerHits[n] <= end_missInnerHits
+//     ) return true;
+
+  // HEEP v4.0
   // barrel
   if (fabs(gsfsc_eta[n]) < 1.442
       && gsf_gsfet[n] > bar_et
@@ -1206,23 +1279,21 @@ InvariantMass::PassHEEP(const int &n)
       && fabs(gsf_deltaeta[n]) < bar_DEta
       && fabs(gsf_deltaphi[n]) < bar_DPhi
       && (gsf_e2x5overe5x5[n] > bar_e2x5e5x5 || gsf_e1x5overe5x5[n] > bar_e1x5e5x5)
-      && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * gsf_gsfet[n])
+      && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * gsf_gsfet[n] + bar_isoEcalHcalRho * rho)
       && gsf_trackiso[n] < bar_isoTrack
       && gsf_nLostInnerHits[n] <= bar_missInnerHits
      ) return true;
-
+  
   // endcap
-  else if ((fabs(gsfsc_eta[n]) > 1.56 && fabs(gsfsc_eta[n]) < 2.5)
+  if ((fabs(gsfsc_eta[n]) > 1.56 && fabs(gsfsc_eta[n]) < 2.5)
       && gsf_gsfet[n] > end_et
       && gsf_isecaldriven[n]
       && gsf_hovere[n] < end_hoE
       && fabs(gsf_deltaeta[n]) < end_DEta
       && fabs(gsf_deltaphi[n]) < end_DPhi
-      && (gsf_e2x5overe5x5[n] > end_e2x5e5x5 || gsf_e1x5overe5x5[n] > end_e1x5e5x5)
       && gsf_sigmaIetaIeta[n] < end_sigmaietaieta
-      && ((gsf_gsfet[n] < 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < end_isoEcalHcal1_1)
-          ||
-          (gsf_gsfet[n] >= 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (gsf_gsfet[n] - 50.))))
+      && ((gsf_gsfet[n] < 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (end_isoEcalHcal1_1_1 + end_isoEcalHcalRho * rho))
+         || (gsf_gsfet[n] >= 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (end_isoEcalHcal1_1_2 + end_isoEcalHcal1_2 * gsf_gsfet[n] + end_isoEcalHcalRho * rho)))
       && gsf_trackiso[n] < end_isoTrack
       && gsf_nLostInnerHits[n] <= end_missInnerHits
      ) return true;
@@ -1232,24 +1303,38 @@ InvariantMass::PassHEEP(const int &n)
 int 
 InvariantMass::Trigger(int &prescale)
 {
-  // Sams trigger selection
-  if (runnumber < 165000 && prescale_HLT_DoublePhoton33 == 1) {
-    prescale = prescale_HLT_DoublePhoton33;
-    return HLT_DoublePhoton33;
-  } else if (runnumber >= 165000) {
-    int triggerBit = 0;
-    if (prescale_HLT_DoubleEle33_CaloIdL == 1 && HLT_DoubleEle33_CaloIdL == 1) {
-      prescale = prescale_HLT_DoubleEle33_CaloIdL;
-      triggerBit = HLT_DoubleEle33_CaloIdL;
-    } else if (prescale_HLT_DoubleEle33_CaloIdT == 1 && HLT_DoubleEle33_CaloIdT == 1) {
-      prescale = prescale_HLT_DoubleEle33_CaloIdT;
-      triggerBit = HLT_DoubleEle33_CaloIdT;
-    } else if (prescale_HLT_DoubleEle45_CaloIdL == 1 && HLT_DoubleEle45_CaloIdL == 1) {
-      prescale = prescale_HLT_DoubleEle45_CaloIdL;
-      triggerBit = HLT_DoubleEle45_CaloIdL;
-    }
-    return triggerBit;
+  // trigger selection 2012
+  int triggerBit = 0;
+  if (prescale_HLT_DoubleEle33_CaloIdL == 1 && HLT_DoubleEle33_CaloIdL == 1) {
+    prescale = prescale_HLT_DoubleEle33_CaloIdL;
+    triggerBit = HLT_DoubleEle33_CaloIdL;
+  } else if (prescale_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL == 1 && HLT_DoubleEle33_CaloIdL_GsfTrkIdVL == 1) {
+    prescale = prescale_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
+    triggerBit = HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
+  } else if (prescale_HLT_DoubleEle33_CaloIdT == 1 && HLT_DoubleEle33_CaloIdT == 1) {
+    prescale = prescale_HLT_DoubleEle33_CaloIdT;
+    triggerBit = HLT_DoubleEle33_CaloIdT;
   }
+  return triggerBit;
+
+//  // Sams trigger selection 2011
+//  if (runnumber < 165000 && prescale_HLT_DoublePhoton33 == 1) {
+//    prescale = prescale_HLT_DoublePhoton33;
+//    return HLT_DoublePhoton33;
+//  } else if (runnumber >= 165000) {
+//    int triggerBit = 0;
+//    if (prescale_HLT_DoubleEle33_CaloIdL == 1 && HLT_DoubleEle33_CaloIdL == 1) {
+//      prescale = prescale_HLT_DoubleEle33_CaloIdL;
+//      triggerBit = HLT_DoubleEle33_CaloIdL;
+//    } else if (prescale_HLT_DoubleEle33_CaloIdT == 1 && HLT_DoubleEle33_CaloIdT == 1) {
+//      prescale = prescale_HLT_DoubleEle33_CaloIdT;
+//      triggerBit = HLT_DoubleEle33_CaloIdT;
+//    } else if (prescale_HLT_DoubleEle45_CaloIdL == 1 && HLT_DoubleEle45_CaloIdL == 1) {
+//      prescale = prescale_HLT_DoubleEle45_CaloIdL;
+//      triggerBit = HLT_DoubleEle45_CaloIdL;
+//    }
+//    return triggerBit;
+//  }
 
 //  if (runnumber < 163870 && prescale_HLT_DoublePhoton33 == 1) {
 //    prescale = prescale_HLT_DoublePhoton33;
