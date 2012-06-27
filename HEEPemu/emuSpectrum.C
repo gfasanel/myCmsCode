@@ -81,8 +81,8 @@ void emuSpectrum()
    // TODO errors and distinction EB - EE
    float Elec_trigger = 0.886; // 0.97 from L1 and 0.913 from Mu40 measured by Z' to mumu
    float triggerDataMCScaleFactor = 0.993; // scale factor between data and mc measured by Z' to mumu for Mu40
-   float Elec_ScaleFactorBar = 1. * 1.001;
-   float Elec_ScaleFactorEnd = 1. * 0.983;
+   float Elec_ScaleFactorBar = 1. * 0.997;
+   float Elec_ScaleFactorEnd = 1. * 0.988;
    //float Elec_ScaleFactorBar = 1.008 * 0.997; // epsilon_cand * epsilon_id
    //float Elec_ScaleFactorEnd = 1.008 * 0.982;
    float Muon_ScaleFactor = 0.985;
@@ -285,6 +285,7 @@ void emuSpectrum()
    input.push_back(make_pair(new TFile("/user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root","read"), 2.25503E-5)); //tW          5 pink        (497658+493460 event - xsect NLO 11.18pb+11.18pb -- 15.5.2012
 
    input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_31.root", "read"), 1.97124E-3)); //W+jet       6 dark green  (18393090 events - xsect NNLO 36257.2pb) -- 15.5.2012
+   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_PtW-100_TuneZ2star_8TeV-madgraph_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root", "read"), 1.84088E-5)); //W+jet       6 dark green  (18393090 events - xsect NNLO 36257.2pb) -- 15.5.2012
 
    input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M_20_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root","read"), 9.57492E-4)); //Zmumu       7 light blue  (2000016 events  - xsect NNLO 1915pb ) -- 25.5.2012)
 
@@ -346,32 +347,37 @@ void emuSpectrum()
    vector<vector<TH1F *> > emuMassEE;
    vector<vector<TH1F *> > emu_mass_accVSgood;
 
-   vector<vector<TH1F *> > met;
+   vector<vector<TH1F *> > pfMet;
    vector<vector<TH1F *> > nVtx;
+   vector<vector<TH1F *> > rho;
    vector<vector<TH1F *> > nJets;
+   vector<vector<TH1F *> > nJetsPt20;
+   vector<vector<TH1F *> > nJetsPt30;
    vector<vector<TH1F *> > dPhi;
-   vector<vector<TH1F *> > elePt;
+   vector<vector<TH1F *> > eleEt;
    vector<vector<TH1F *> > eleEta;
    vector<vector<TH1F *> > elePhi;
-   vector<vector<TH1F *> > eleId1;
-   vector<vector<TH1F *> > eleId2;
-   vector<vector<TH1F *> > eleId3;
-   vector<vector<TH1F *> > eleIso1;
-   vector<vector<TH1F *> > eleIso2;
-   vector<vector<TH1F *> > eleIso3;
+   vector<vector<TH1F *> > eleDEta;
+   vector<vector<TH1F *> > eleDPhi;
+   vector<vector<TH1F *> > eleHOE;
+   vector<vector<TH1F *> > eleSigmaIEIE;
+   vector<vector<TH1F *> > eleEcalIso;
+   vector<vector<TH1F *> > eleHcalIso12;
+   vector<vector<TH1F *> > eleTrkIso;
+   vector<vector<TH1F *> > eleLostHits;
 
    vector<vector<TH1F *> > muIsoCombRel;
-   vector<vector<TH1F *> > muPtEleOPtMu;
+   vector<vector<TH1F *> > muEtEleOPtMu;
    vector<vector<TH1F *> > muPtPlusOPtMinus;
    vector<vector<TH1F *> > muPt;
    vector<vector<TH1F *> > muEta;
    vector<vector<TH1F *> > muPhi;
-   vector<vector<TH1F *> > muId1;
-   vector<vector<TH1F *> > muId2;
-   vector<vector<TH1F *> > muId3;
-   vector<vector<TH1F *> > muIso1;
-   vector<vector<TH1F *> > muIso2;
-   vector<vector<TH1F *> > muIso3;
+   vector<vector<TH1F *> > muHitLayers;
+   vector<vector<TH1F *> > muPxlHits;
+   vector<vector<TH1F *> > muMuHits;
+   vector<vector<TH1F *> > muDxyBeamSpot;
+   vector<vector<TH1F *> > muNSeg;
+   vector<vector<TH1F *> > muTrkIso03;
 
    //vector<TH1F *> emu_plus_plus;
    //vector<TH1F *> emu_plus_minus;
@@ -415,6 +421,7 @@ void emuSpectrum()
    float c_bsposy;
    float c_bsposz;
    int c_jetColl_size;
+   float c_jetPt[100];
 
    //PRIM VTX
    int c_pvsize;
@@ -537,6 +544,7 @@ void emuSpectrum()
    TBranch        *b_bsposy;
    TBranch        *b_bsposz;
    TBranch        *b_jetColl_size;
+   TBranch        *b_jetPt;
 
    //PRIM VTX
    TBranch        *b_pvsize;
@@ -877,6 +885,7 @@ void emuSpectrum()
       thetree->SetBranchAddress("bsposy", &c_bsposy, &b_bsposy);
       thetree->SetBranchAddress("bsposz", &c_bsposz, &b_bsposz);
       thetree->SetBranchAddress("JetColl_size", &c_jetColl_size, &b_jetColl_size);
+      thetree->SetBranchAddress("Jet_pt", &c_jetPt, &b_jetPt);
 
       //PRIM VTX
       thetree->SetBranchAddress("pvsize", &c_pvsize, &b_pvsize);
@@ -1001,17 +1010,20 @@ void emuSpectrum()
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emu_mass_accVSgood_" + sign[k] + suffix[p], "emu_mass_accVSgood_" + sign[k] + suffix[p], nBins, 0., 1500.));
       emu_mass_accVSgood.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("MET_" + sign[k] + suffix[p], "PFMET_" + sign[k] + suffix[p], 50, 0., 500.));
-      met.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("PFMET_" + sign[k] + suffix[p], "PFMET_" + sign[k] + suffix[p], 50, 0., 500.));
+      pfMet.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("nVtx_" + sign[k] + suffix[p], "nVtx_" + sign[k] + suffix[p], nPVtxMax, 0., nPVtxMax));
       nVtx.push_back(helper);
       helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("rho_" + sign[k] + suffix[p], "rho_" + sign[k] + suffix[p], 50, 0., 50.));
+      rho.push_back(helper);
+      helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dPhi_" + sign[k] + suffix[p], "dPhi_" + sign[k] + suffix[p], 64, 0., 3.2));
       dPhi.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("elePt_" + sign[k] + suffix[p], "elePt_" + sign[k] + suffix[p], 50, 0., 500.));
-      elePt.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEt_" + sign[k] + suffix[p], "eleEt_" + sign[k] + suffix[p], 50, 0., 500.));
+      eleEt.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEta_" + sign[k] + suffix[p], "eleEta_" + sign[k] + suffix[p], 25, -2.5, 2.5));
       eleEta.push_back(helper);
@@ -1019,29 +1031,35 @@ void emuSpectrum()
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("elePhi_" + sign[k] + suffix[p], "elePhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
       elePhi.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleId1_" + sign[k] + suffix[p], "eleId1_" + sign[k] + suffix[p], 50, -0.008, 0.008));
-      eleId1.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleDEta_" + sign[k] + suffix[p], "eleDEta_" + sign[k] + suffix[p], 50, -0.008, 0.008));
+      eleDEta.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleId2_" + sign[k] + suffix[p], "eleId2_" + sign[k] + suffix[p], 50, -0.1, 0.1));
-      eleId2.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleDPhi_" + sign[k] + suffix[p], "eleDPhi_" + sign[k] + suffix[p], 50, -0.06, 0.06));
+      eleDPhi.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleId3_" + sign[k] + suffix[p], "eleId3_" + sign[k] + suffix[p], 50, 0., 0.04));
-      eleId3.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleHOE_" + sign[k] + suffix[p], "eleHOE_" + sign[k] + suffix[p], 100, 0., 0.06));
+      eleHOE.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleIso1_" + sign[k] + suffix[p], "eleIso1_" + sign[k] + suffix[p], 50, 0., 10.));
-      eleIso1.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleSigmaIEIE_" + sign[k] + suffix[p], "eleSigmaIEIE_" + sign[k] + suffix[p], 50, 0., 0.04));
+      eleSigmaIEIE.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleIso2_" + sign[k] + suffix[p], "eleIso2_" + sign[k] + suffix[p], 50, 0., 10.));
-      eleIso2.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEcalIso_" + sign[k] + suffix[p], "eleEcalIso_" + sign[k] + suffix[p], 45, -10., 35.));
+      eleEcalIso.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleIso3_" + sign[k] + suffix[p], "eleIso3_" + sign[k] + suffix[p], 50, 0., 20.));
-      eleIso3.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleHcalIso12_" + sign[k] + suffix[p], "eleHcalIso12_" + sign[k] + suffix[p], 20, 0., 20.));
+      eleHcalIso12.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleTrkIso_" + sign[k] + suffix[p], "eleTrkIso_" + sign[k] + suffix[p], 50, 0., 5.));
+      eleTrkIso.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleLostHits_" + sign[k] + suffix[p], "eleLostHits_" + sign[k] + suffix[p], 3, 0., 3.));
+      eleLostHits.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIsoCombRel_" + sign[k] + suffix[p], "muIsoCombRel_" + sign[k] + suffix[p], 50, 0., 0.2));
       muIsoCombRel.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPtEleOPtMu_" + sign[k] + suffix[p], "muPtEleOPtMu_" + sign[k] + suffix[p], 50, 0., 4.0));
-      muPtEleOPtMu.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muEtEleOPtMu_" + sign[k] + suffix[p], "muEtEleOPtMu_" + sign[k] + suffix[p], 50, 0., 4.0));
+      muEtEleOPtMu.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPtPlusOPtMinus_" + sign[k] + suffix[p], "muPtPlusOPtMinus_" + sign[k] + suffix[p], 50, 0., 4.0));
       muPtPlusOPtMinus.push_back(helper);
@@ -1055,26 +1073,32 @@ void emuSpectrum()
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPhi_" + sign[k] + suffix[p], "muPhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
       muPhi.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muId1_" + sign[k] + suffix[p], "muId1_" + sign[k] + suffix[p], 50, 0., 10.));
-      muId1.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muHitLayers_" + sign[k] + suffix[p], "muHitLayers_" + sign[k] + suffix[p], 20, 0., 20.));
+      muHitLayers.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muId2_" + sign[k] + suffix[p], "muId2_" + sign[k] + suffix[p], 32, 0., 32));
-      muId2.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPxlHits_" + sign[k] + suffix[p], "muPxlHits_" + sign[k] + suffix[p], 10, 0., 10));
+      muPxlHits.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muId3_" + sign[k] + suffix[p], "muId3_" + sign[k] + suffix[p], 52, 0., 52));
-      muId3.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muMuHits_" + sign[k] + suffix[p], "muMuHits_" + sign[k] + suffix[p], 12, 0., 12));
+      muMuHits.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIso1_" + sign[k] + suffix[p], "muIso1_" + sign[k] + suffix[p], 50, 0., 10.));
-      muIso1.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muDxyBeamSpot_" + sign[k] + suffix[p], "muDxyBeamSpot_" + sign[k] + suffix[p], 200, -0.2, 0.2));
+      muDxyBeamSpot.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIso2_" + sign[k] + suffix[p], "muIso2_" + sign[k] + suffix[p], 50, 0., 10.));
-      muIso2.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muNSeg_" + sign[k] + suffix[p], "muNSeg_" + sign[k] + suffix[p], 10, 0., 10.));
+      muNSeg.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIso3_" + sign[k] + suffix[p], "muIso3_" + sign[k] + suffix[p], 50, 0., 20.));
-      muIso3.push_back(helper);
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muTrkIso03_" + sign[k] + suffix[p], "muTrkIso03_" + sign[k] + suffix[p], 50, 0., 20.));
+      muTrkIso03.push_back(helper);
       helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJets_" + sign[k] + suffix[p], "numOfJets_" + sign[k] + suffix[p], 20, 0., 20.));
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJets_" + sign[k] + suffix[p], "numOfJets_" + sign[k] + suffix[p], 30, 0., 30.));
       nJets.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJetsPt20_" + sign[k] + suffix[p], "numOfJetsPt20_" + sign[k] + suffix[p], 30, 0., 30.));
+      nJetsPt20.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJetsPt30_" + sign[k] + suffix[p], "numOfJetsPt30_" + sign[k] + suffix[p], 30, 0., 30.));
+      nJetsPt30.push_back(helper);
 
       Long64_t nentries = (*thetree).GetEntries();
       cout << nentries << " events" << endl;
@@ -1308,35 +1332,47 @@ void emuSpectrum()
                if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) emuMassEB.at(p).at(k)->Fill(invMass, weight);
                if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) emuMassEE.at(p).at(k)->Fill(invMass, weight);
 
+               int jetsPt20 = 0;
+               int jetsPt30 = 0;
+               for (int jetIt = 0; jetIt < c_jetColl_size; ++ jetIt) {
+                  if (c_jetPt[jetIt] > 20.) ++jetsPt20;
+                  if (c_jetPt[jetIt] > 30.) ++jetsPt30;
+               }
+
                // fill test histograms
-               met.at(p).at(k)->Fill(c_pfmet, weight);
+               pfMet.at(p).at(k)->Fill(c_pfmet, weight);
                nVtx.at(p).at(k)->Fill(n_pvValid, weight);
+               rho.at(p).at(k)->Fill(c_rho, weight);
                nJets.at(p).at(k)->Fill(c_jetColl_size, weight);
+               nJetsPt20.at(p).at(k)->Fill(jetsPt20, weight);
+               nJetsPt30.at(p).at(k)->Fill(jetsPt30, weight);
                if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi.at(p).at(k)->Fill(fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
                if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) dPhi.at(p).at(k)->Fill(6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
-               elePt.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]], weight);
+               eleEt.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]], weight);
                eleEta.at(p).at(k)->Fill(c_gsf_eta[GSF_passHEEP[0]], weight);
                elePhi.at(p).at(k)->Fill(c_gsf_phi[GSF_passHEEP[0]], weight);
-               eleId1.at(p).at(k)->Fill(c_gsf_deltaeta[GSF_passHEEP[0]], weight);
-               eleId2.at(p).at(k)->Fill(c_gsf_deltaphi[GSF_passHEEP[0]], weight);
-               eleId3.at(p).at(k)->Fill(c_gsf_sigmaIetaIeta[GSF_passHEEP[0]], weight);
-               eleIso1.at(p).at(k)->Fill(c_gsf_ecaliso[GSF_passHEEP[0]], weight);
-               eleIso2.at(p).at(k)->Fill(c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]], weight);
-               eleIso3.at(p).at(k)->Fill(c_gsf_trackiso[GSF_passHEEP[0]], weight);
+               eleDEta.at(p).at(k)->Fill(c_gsf_deltaeta[GSF_passHEEP[0]], weight);
+               eleDPhi.at(p).at(k)->Fill(c_gsf_deltaphi[GSF_passHEEP[0]], weight);
+               eleHOE.at(p).at(k)->Fill(c_gsf_hovere[GSF_passHEEP[0]], weight);
+               eleSigmaIEIE.at(p).at(k)->Fill(c_gsf_sigmaIetaIeta[GSF_passHEEP[0]], weight);
+               eleEcalIso.at(p).at(k)->Fill(c_gsf_ecaliso[GSF_passHEEP[0]], weight);
+               eleHcalIso12.at(p).at(k)->Fill(c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]], weight);
+               eleTrkIso.at(p).at(k)->Fill(c_gsf_trackiso[GSF_passHEEP[0]], weight);
+               eleLostHits.at(p).at(k)->Fill(c_gsf_nLostInnerHits[GSF_passHEEP[0]], weight);
 
                muIsoCombRel.at(p).at(k)->Fill(CombRelIso, weight);
-               muPtEleOPtMu.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               muEtEleOPtMu.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
                if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) muPtPlusOPtMinus.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
                if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) muPtPlusOPtMinus.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]]/c_gsf_gsfet[GSF_passHEEP[0]], weight);
                muPt.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
                muEta.at(p).at(k)->Fill(c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], weight);
                muPhi.at(p).at(k)->Fill(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muId1.at(p).at(k)->Fill(c_muon_normChi2[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muId2.at(p).at(k)->Fill(c_muon_nhitstrack[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muId3.at(p).at(k)->Fill(c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muIso1.at(p).at(k)->Fill(c_muon_emIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muIso2.at(p).at(k)->Fill(c_muon_hadIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muIso3.at(p).at(k)->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               muHitLayers.at(p).at(k)->Fill(c_muon_nlayerswithhits[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               muPxlHits.at(p).at(k)->Fill(c_muon_nhitspixel[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               muMuHits.at(p).at(k)->Fill(c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               muDxyBeamSpot.at(p).at(k)->Fill(c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               muNSeg.at(p).at(k)->Fill(c_muon_nSegmentMatch[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               muTrkIso03.at(p).at(k)->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
 
                if (p == DATA) {
                //if (p == DATA && c_HLT_Mu15_eta2p1) {
@@ -1352,10 +1388,10 @@ void emuSpectrum()
 
             //LIKE SIGN OPPOSITE SIGN
             if (p == DATA) {
-               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) nb_plus_plus++;
-               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) nb_plus_minus++;
-               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) nb_minus_plus++;
-               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) nb_minus_minus++;
+               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) ++nb_plus_plus;
+               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) ++nb_plus_minus;
+               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) ++nb_minus_plus;
+               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) ++nb_minus_minus;
 
                if (invMass > 600. || invMass < 1.) {
                   if (invMass > 600.) cout << "M_emu > 600GeV/c^2 event | " << setw(6) << c_runnumber << " | " << setw(4) << c_luminosityBlock << " | " << setw(10) << c_eventnumber << " | "; 
@@ -1437,32 +1473,37 @@ void emuSpectrum()
             emuMassEE.at(p).at(k)->Scale(input[p].second * LumiFactor);
             emu_mass_accVSgood.at(p).at(k)->Scale(input[p].second * LumiFactor);
 
-            met.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            pfMet.at(p).at(k)->Scale(input[p].second * LumiFactor);
             nVtx.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            rho.at(p).at(k)->Scale(input[p].second * LumiFactor);
             nJets.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            nJetsPt20.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            nJetsPt30.at(p).at(k)->Scale(input[p].second * LumiFactor);
             dPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            elePt.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleEt.at(p).at(k)->Scale(input[p].second * LumiFactor);
             eleEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
             elePhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleId1.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleId2.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleId3.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleIso1.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleIso2.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleIso3.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleDEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleDPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleHOE.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleSigmaIEIE.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleEcalIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleHcalIso12.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleTrkIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            eleLostHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
 
             muIsoCombRel.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muPtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            muEtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor);
             muPtPlusOPtMinus.at(p).at(k)->Scale(input[p].second * LumiFactor);
             muPt.at(p).at(k)->Scale(input[p].second * LumiFactor);
             muEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
             muPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muId1.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muId2.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muId3.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muIso1.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muIso2.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muIso3.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            muHitLayers.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            muPxlHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            muMuHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            muDxyBeamSpot.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            muNSeg.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            muTrkIso03.at(p).at(k)->Scale(input[p].second * LumiFactor);
 
             // set systematic errors
             //for (unsigned int i = 0; i < emuMass.at(p).at(k)->GetNbinsX() + 2; ++i) emuMass.at(p).at(k)->SetBinError(i, emuMass.at(p).at(k)->GetBinContent(i) * systErrMCLuEff[p - 1]);
@@ -1575,32 +1616,37 @@ void emuSpectrum()
             emuMassEE.at(p).at(k)->Add(emuMassEE.at(q).at(k));
             emu_mass_accVSgood.at(p).at(k)->Add(emu_mass_accVSgood.at(q).at(k));
 
-            met.at(p).at(k)->Add(met.at(q).at(k));
+            pfMet.at(p).at(k)->Add(pfMet.at(q).at(k));
             nVtx.at(p).at(k)->Add(nVtx.at(q).at(k));
+            rho.at(p).at(k)->Add(rho.at(q).at(k));
             nJets.at(p).at(k)->Add(nJets.at(q).at(k));
+            nJetsPt20.at(p).at(k)->Add(nJetsPt20.at(q).at(k));
+            nJetsPt30.at(p).at(k)->Add(nJetsPt30.at(q).at(k));
             dPhi.at(p).at(k)->Add(dPhi.at(q).at(k));
-            elePt.at(p).at(k)->Add(elePt.at(q).at(k));
+            eleEt.at(p).at(k)->Add(eleEt.at(q).at(k));
             eleEta.at(p).at(k)->Add(eleEta.at(q).at(k));
             elePhi.at(p).at(k)->Add(elePhi.at(q).at(k));
-            eleId1.at(p).at(k)->Add(eleId1.at(q).at(k));
-            eleId2.at(p).at(k)->Add(eleId2.at(q).at(k));
-            eleId3.at(p).at(k)->Add(eleId3.at(q).at(k));
-            eleIso1.at(p).at(k)->Add(eleIso1.at(q).at(k));
-            eleIso2.at(p).at(k)->Add(eleIso2.at(q).at(k));
-            eleIso3.at(p).at(k)->Add(eleIso3.at(q).at(k));
+            eleDEta.at(p).at(k)->Add(eleDEta.at(q).at(k));
+            eleDPhi.at(p).at(k)->Add(eleDPhi.at(q).at(k));
+            eleHOE.at(p).at(k)->Add(eleHOE.at(q).at(k));
+            eleSigmaIEIE.at(p).at(k)->Add(eleSigmaIEIE.at(q).at(k));
+            eleEcalIso.at(p).at(k)->Add(eleEcalIso.at(q).at(k));
+            eleHcalIso12.at(p).at(k)->Add(eleHcalIso12.at(q).at(k));
+            eleTrkIso.at(p).at(k)->Add(eleTrkIso.at(q).at(k));
+            eleLostHits.at(p).at(k)->Add(eleLostHits.at(q).at(k));
  
             muIsoCombRel.at(p).at(k)->Add(muIsoCombRel.at(q).at(k));
-            muPtEleOPtMu.at(p).at(k)->Add(muPtEleOPtMu.at(q).at(k));
+            muEtEleOPtMu.at(p).at(k)->Add(muEtEleOPtMu.at(q).at(k));
             muPtPlusOPtMinus.at(p).at(k)->Add(muPtPlusOPtMinus.at(q).at(k));
             muPt.at(p).at(k)->Add(muPt.at(q).at(k));
             muEta.at(p).at(k)->Add(muEta.at(q).at(k));
             muPhi.at(p).at(k)->Add(muPhi.at(q).at(k));
-            muId1.at(p).at(k)->Add(muId1.at(q).at(k));
-            muId2.at(p).at(k)->Add(muId2.at(q).at(k));
-            muId3.at(p).at(k)->Add(muId3.at(q).at(k));
-            muIso1.at(p).at(k)->Add(muIso1.at(q).at(k));
-            muIso2.at(p).at(k)->Add(muIso2.at(q).at(k));
-            muIso3.at(p).at(k)->Add(muIso3.at(q).at(k));
+            muHitLayers.at(p).at(k)->Add(muHitLayers.at(q).at(k));
+            muPxlHits.at(p).at(k)->Add(muPxlHits.at(q).at(k));
+            muMuHits.at(p).at(k)->Add(muMuHits.at(q).at(k));
+            muDxyBeamSpot.at(p).at(k)->Add(muDxyBeamSpot.at(q).at(k));
+            muNSeg.at(p).at(k)->Add(muNSeg.at(q).at(k));
+            muTrkIso03.at(p).at(k)->Add(muTrkIso03.at(q).at(k));
          }
       }
    }
@@ -1808,32 +1854,37 @@ void emuSpectrum()
          emuMassEE.at(p).at(k)->Write();
          emu_mass_accVSgood.at(p).at(k)->Write();
 
-         met.at(p).at(k)->Write();
+         pfMet.at(p).at(k)->Write();
          nVtx.at(p).at(k)->Write();
+         rho.at(p).at(k)->Write();
          nJets.at(p).at(k)->Write();
+         nJetsPt20.at(p).at(k)->Write();
+         nJetsPt30.at(p).at(k)->Write();
          dPhi.at(p).at(k)->Write();
-         elePt.at(p).at(k)->Write();
+         eleEt.at(p).at(k)->Write();
          eleEta.at(p).at(k)->Write();
          elePhi.at(p).at(k)->Write();
-         eleId1.at(p).at(k)->Write();
-         eleId2.at(p).at(k)->Write();
-         eleId3.at(p).at(k)->Write();
-         eleIso1.at(p).at(k)->Write();
-         eleIso2.at(p).at(k)->Write();
-         eleIso3.at(p).at(k)->Write();
+         eleDEta.at(p).at(k)->Write();
+         eleDPhi.at(p).at(k)->Write();
+         eleHOE.at(p).at(k)->Write();
+         eleSigmaIEIE.at(p).at(k)->Write();
+         eleEcalIso.at(p).at(k)->Write();
+         eleHcalIso12.at(p).at(k)->Write();
+         eleTrkIso.at(p).at(k)->Write();
+         eleLostHits.at(p).at(k)->Write();
 
          muIsoCombRel.at(p).at(k)->Write();
-         muPtEleOPtMu.at(p).at(k)->Write();
+         muEtEleOPtMu.at(p).at(k)->Write();
          muPtPlusOPtMinus.at(p).at(k)->Write();
          muPt.at(p).at(k)->Write();
          muEta.at(p).at(k)->Write();
          muPhi.at(p).at(k)->Write();
-         muId1.at(p).at(k)->Write();
-         muId2.at(p).at(k)->Write();
-         muId3.at(p).at(k)->Write();
-         muIso1.at(p).at(k)->Write();
-         muIso2.at(p).at(k)->Write();
-         muIso3.at(p).at(k)->Write();
+         muHitLayers.at(p).at(k)->Write();
+         muPxlHits.at(p).at(k)->Write();
+         muMuHits.at(p).at(k)->Write();
+         muDxyBeamSpot.at(p).at(k)->Write();
+         muNSeg.at(p).at(k)->Write();
+         muTrkIso03.at(p).at(k)->Write();
       }
    }
    for (unsigned int k = 0; k < 3; ++k) emuMass.at(QCD).at(k)->Write();
