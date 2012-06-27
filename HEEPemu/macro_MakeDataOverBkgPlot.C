@@ -30,11 +30,9 @@
 void macro_MakeDataOverBkgPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
-  TFile input("testEmuSpec4684pb-1.root", "open");
-  //TFile input("testEmuSpecSummerFallMix4684pb-1.root", "open");
-  //TFile input("testEmuSpecPureSummer114684pb-1.root", "open");
+  TFile input("testEmuSpecHEEP4_3692pb-1.root", "open");
 
-  const float lumi = 4684.;
+  const float lumi = 3692.;
 
   bool plotSign[3];
   plotSign[0] = true;  // all
@@ -44,16 +42,16 @@ void macro_MakeDataOverBkgPlot()
   // systematical errors
   vector<float> systErrMC;
   systErrMC.push_back(0.15);  //ttbar
-  systErrMC.push_back(0.);    //z->tt  //FIXME
-  systErrMC.push_back(0.);    //WW     //FIXME
-  systErrMC.push_back(0.);    //WZ     //FIXME
-  systErrMC.push_back(0.15);  //tW     //FIXME
-  systErrMC.push_back(0.);    //WJets  //FIXME
-  systErrMC.push_back(0.);    //Z->mm  //FIXME
-  systErrMC.push_back(0.);    //Z->ee  //FIXME
-  systErrMC.push_back(0.);    //ZZ     //FIXME
-  float systErrLumi = 0.036;
-  float systErrEff = 0.02;
+  systErrMC.push_back(0.054); //z->tt
+  systErrMC.push_back(0.035); //WWE
+  systErrMC.push_back(0.038); //WZ
+  systErrMC.push_back(0.075); //tW
+  systErrMC.push_back(0.05);  //WJets
+  systErrMC.push_back(0.054); //Z->mm
+  systErrMC.push_back(0.054); //Z->ee
+  //  systErrMC.push_back(0.025); //ZZ
+  float systErrLumi = 0.022;
+  float systErrEff = 0.008; // muon err & ele err
   ////////////////////////////////////////////////////////////////////////////
 
   // to keep the histogram when the file is closed
@@ -61,14 +59,14 @@ void macro_MakeDataOverBkgPlot()
   TH1::SetDefaultSumw2(kTRUE);
 
   TString histoSign[3] = {"", "LS_", "OS_"};
-  TString histoTitleSign[3] = {"", " e^{#pm}#mu^{#pm}", " e^{+}#mu^{-}/e^{-}#mu^{+}"};
-  TString xAxisTitle[3] = {"m(e#mu)", " m(e^{#pm}#mu^{#pm})", " m(e^{+}#mu^{-}/m(e^{-}#mu^{+})"};
+  TString histoTitleSign[3] = {"", " e^{#pm}#mu^{#pm}", " e^{#pm}#mu^{#mp}"};
+  TString xAxisTitle[3] = {"m(e#mu)", "m(e^{#pm}#mu^{#pm})", "m(e^{#pm}#mu^{#mp})"};
 
   vector<TH1F *> emuMass_data;
   vector<TH1F *> emuMass_bg;
 
-  int nBins = 42;
-  Double_t binArray[43] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 420, 440, 460, 480, 500, 560, 620, 680, 740, 800, 1000, 1500};
+  int nBins = 41;
+  Double_t binArray[42] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 420, 440, 460, 480, 500, 560, 620, 680, 800, 1000, 1500};
 
   // loop over full spectrum, LS and OS
   for (unsigned int k = 0; k < 3; ++k) {
@@ -103,7 +101,7 @@ void macro_MakeDataOverBkgPlot()
     gStyle->SetTitleXOffset(1.);
     gStyle->SetTitleYOffset(1.3);
 
-    dataHistoRebinned->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+    dataHistoRebinned->GetXaxis()->SetTitle(xAxisTitle[k] + " (GeV)");
     dataHistoRebinned->GetXaxis()->SetTitleSize(0.04);
     dataHistoRebinned->GetXaxis()->SetLabelSize(0.04);
     dataHistoRebinned->GetXaxis()->SetRangeUser(10., 800.);
@@ -128,13 +126,14 @@ void macro_MakeDataOverBkgPlot()
 
     stringstream sStream;
     sStream.str("");
-    sStream << "CMS preliminary    #sqrt{s} = 7 TeV    #int L dt = 4.7 fb^{-1}";
-    //sStream << "#sqrt{s} = 7TeV,  #int L dt = " << lumi << "pb^{-1}";
+    sStream << "CMS Preliminary    #sqrt{s} = 8 TeV    #int L dt = 3.7 fb^{-1}";
+    //sStream << "#sqrt{s} = 8TeV,  #int L dt = " << lumi << "pb^{-1}";
     TPaveLabel labelLumi(0.13, 0.79, 0.69, 0.88, sStream.str().c_str(), "brNDC");
     labelLumi.SetFillColor(0);
     labelLumi.SetFillStyle(0);
     labelLumi.SetBorderSize(0);
     labelLumi.SetTextSize(0.40);
+    labelLumi.SetTextFont(42);
     labelLumi.DrawClone("sames");
   } // end loop over full, LS and OS
 }
