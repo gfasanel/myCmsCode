@@ -61,11 +61,11 @@ int c_HLT_Mu30_eta2p1;
 void emuSpectrum()
 {
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 3692.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   float LumiFactor = 5205.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
 
    // DATA file
    //TString dataFile = "/user/treis/data2012/MuEG_Run2012A-PromptReco-v1_AOD_json_DCSONLY_20120508_0700_gct1_30_840pb-1.root";
-   TString dataFile = "/user/treis/data2012/MuEG_Run2012A+B-PromptReco+23May2012-v1_AOD_Cert_190456-195775_8TeV_PromptReco+May23ReReco_Collisions12_JSON_gct1_32_3692pb-1.root";
+   TString dataFile = "/user/treis/data2012/MuEG_Run2012A+B-PromptReco+23May2012-v1_AOD_Cert_190456-196531_8TeV_PromptReco+May23ReReco_Collisions12_JSON_gct1_32_5205pb-1.root";
    //TString dataFile = "/user/lathomas/data2012/MuEG_Run2012A-PromptReco-v1_AOD_AND_MuEG_Run2012B-PromptReco-v1_AOD_gct1_32Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON_920pb-1.root";
 
    string outfileName = "testEmuSpec";
@@ -312,28 +312,28 @@ void emuSpectrum()
 
    TString sign[3] = {"", "LS_", "OS_"};
 
-   stringstream ssGoodHeepFileName;
-   ssGoodHeepFileName << "goodEmuEvents" << LumiFactor << "pb-1.root";
-   TFile *goodEvFile = new TFile(ssGoodHeepFileName.str().c_str(), "recreate");
-   goodEvFile->Cd("");
-   float emuInvMass = 0.;
-   TTree *emuDataTree = new TTree("emuDataTree", "emuDataTree");
-   emuDataTree->Branch("runnr", &c_runnumber, "runnr/i");
-   emuDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
-   emuDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
-   emuDataTree->Branch("mass", &emuInvMass, "mass/F");
-   TTree *emuLSDataTree = new TTree("emuLSDataTree", "emuLSDataTree");
-   emuLSDataTree->Branch("runnr", &c_runnumber, "runnr/i");
-   emuLSDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
-   emuLSDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
-   emuLSDataTree->Branch("mass", &emuInvMass, "mass/F");
-   TTree *emuOSDataTree = new TTree("emuOSDataTree", "emuOSDataTree");
-   emuOSDataTree->Branch("runnr", &c_runnumber, "runnr/i");
-   emuOSDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
-   emuOSDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
-   emuOSDataTree->Branch("mass", &emuInvMass, "mass/F");
-   emuOSDataTree->Branch("HLT_Mu15_eta2p1", &c_HLT_Mu15_eta2p1, "HLT_Mu15_eta2p1/I");
-   emuOSDataTree->Branch("HLT_Mu30_eta2p1", &c_HLT_Mu30_eta2p1, "HLT_Mu30_eta2p1/I");
+   //stringstream ssGoodHeepFileName;
+   //ssGoodHeepFileName << "goodEmuEvents" << LumiFactor << "pb-1.root";
+   //TFile *goodEvFile = new TFile(ssGoodHeepFileName.str().c_str(), "recreate");
+   //goodEvFile->Cd("");
+   //float emuInvMass = 0.;
+   //TTree *emuDataTree = new TTree("emuDataTree", "emuDataTree");
+   //emuDataTree->Branch("runnr", &c_runnumber, "runnr/i");
+   //emuDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
+   //emuDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
+   //emuDataTree->Branch("mass", &emuInvMass, "mass/F");
+   //TTree *emuLSDataTree = new TTree("emuLSDataTree", "emuLSDataTree");
+   //emuLSDataTree->Branch("runnr", &c_runnumber, "runnr/i");
+   //emuLSDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
+   //emuLSDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
+   //emuLSDataTree->Branch("mass", &emuInvMass, "mass/F");
+   //TTree *emuOSDataTree = new TTree("emuOSDataTree", "emuOSDataTree");
+   //emuOSDataTree->Branch("runnr", &c_runnumber, "runnr/i");
+   //emuOSDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
+   //emuOSDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
+   //emuOSDataTree->Branch("mass", &emuInvMass, "mass/F");
+   //emuOSDataTree->Branch("HLT_Mu15_eta2p1", &c_HLT_Mu15_eta2p1, "HLT_Mu15_eta2p1/I");
+   //emuOSDataTree->Branch("HLT_Mu30_eta2p1", &c_HLT_Mu30_eta2p1, "HLT_Mu30_eta2p1/I");
 
    // counting variables
    int nb_plus_plus = 0;
@@ -854,6 +854,11 @@ void emuSpectrum()
    }
    ///////////////////////////////////////////////////////////////////////////
 
+   // output file
+   stringstream ssOutfile;
+   ssOutfile << outfileName << LumiFactor << "pb-1.root";
+   TFile *output = new TFile(ssOutfile.str().c_str(), "recreate");
+
    runs_HLT_Mu22_Photon22_CaloIdL.first = 99999999;
    runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first = 99999999;
    runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first = 99999999;
@@ -995,6 +1000,24 @@ void emuSpectrum()
       thetree->SetBranchAddress("muon_innerPosx", &c_muon_innerPosx, &b_muon_innerPosx);
       thetree->SetBranchAddress("muon_innerPosy", &c_muon_innerPosy, &b_muon_innerPosy);
       thetree->SetBranchAddress("muon_innerPosz", &c_muon_innerPosz, &b_muon_innerPosz);
+
+      // tree with event data
+      float emuInvMass = 0.;
+      int evtRegion;
+      int eCharge;
+      int muCharge;
+      float totWeight = 1.;
+      float puWeight = 1.;
+      TTree *emuTree = new TTree("emuTree_" + suffix[p], "emuTree_" + suffix[p]);
+      emuTree->Branch("runnr", &c_runnumber, "runnr/i");
+      emuTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
+      emuTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
+      emuTree->Branch("mass", &emuInvMass, "mass/F");
+      emuTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
+      emuTree->Branch("eCharge", &eCharge, "eCharge/I");
+      emuTree->Branch("muCharge", &muCharge, "muCharge/I");
+      emuTree->Branch("weight", &totWeight, "weight/F");
+      emuTree->Branch("puWeight", &puWeight, "puWeight/F");
 
       // set up histograms
       vector<TH1F *> helper;
@@ -1323,6 +1346,19 @@ void emuSpectrum()
 
             if (lowMassPuOnly && invMass > puMassCut) weight = 1.;
             if (p > DATA) weight *= MCemuScaleFactor;
+
+            // fill the data tree
+            emuInvMass = invMass;
+            eCharge = c_gsf_charge[GSF_passHEEP[0]];
+            muCharge = c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]];
+            totWeight = weight;
+            if (p > DATA) totWeight *= input[p].second * LumiFactor;
+            puWeight = npv_weight;
+            if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) evtRegion = 0;
+            else if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) evtRegion = 1;
+            else evtRegion = -1;
+            emuTree->Fill();
+
             // fill histograms for all, LS and OS
             for (unsigned int k = 0; k< 3; ++k) {
                if (k == 1 && c_gsf_charge[GSF_passHEEP[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
@@ -1374,16 +1410,15 @@ void emuSpectrum()
                muNSeg.at(p).at(k)->Fill(c_muon_nSegmentMatch[MU_passGOOD[MU_leadingPassGOOD]], weight);
                muTrkIso03.at(p).at(k)->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
 
-               if (p == DATA) {
-               //if (p == DATA && c_HLT_Mu15_eta2p1) {
-               //if (p == DATA && c_HLT_Mu30_eta2p1) {
-                  // fill tree with good events
-                  emuInvMass = invMass;
-                  if (k == ALL) emuDataTree->Fill();
-                  if (k == LS) emuLSDataTree->Fill();
-                  if (k == OS) emuOSDataTree->Fill();
-               }
-
+               //if (p == DATA) {
+               ////if (p == DATA && c_HLT_Mu15_eta2p1) {
+               ////if (p == DATA && c_HLT_Mu30_eta2p1) {
+               //   // fill tree with good events
+               //   emuInvMass = invMass;
+               //   if (k == ALL) emuDataTree->Fill();
+               //   if (k == LS) emuLSDataTree->Fill();
+               //   if (k == OS) emuOSDataTree->Fill();
+               //}
             }
 
             //LIKE SIGN OPPOSITE SIGN
@@ -1457,13 +1492,13 @@ void emuSpectrum()
       }
       else cout << "HLT_Mu22_Photon22_CaloIdL: " << trig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[2] << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
 
-      if (p == DATA) {
-         // write root file with good emu event data
-         goodEvFile->Cd("");
-         emuDataTree->Write();
-         emuLSDataTree->Write();
-         emuOSDataTree->Write();
-      }
+      //if (p == DATA) {
+      //   // write root file with good emu event data
+      //   goodEvFile->Cd("");
+      //   emuDataTree->Write();
+      //   emuLSDataTree->Write();
+      //   emuOSDataTree->Write();
+      //}
 
       if (p > DATA) {
          for (unsigned int k = 0; k < 3; ++k) {
@@ -1510,7 +1545,8 @@ void emuSpectrum()
             //cout << "Systematic error for file " << p << ": " << systErrMCLuEff[p - 1] << endl;
          }
       }
-
+      output->Cd("");
+      emuTree->Write();
    }//END FILE LOOP
 
    // define groups of MC samples
@@ -1830,10 +1866,6 @@ void emuSpectrum()
    //emu_jet->Add(emuMass.at(8).at(ALL));
 
    //WRITING
-   stringstream ssOutfile;
-   ssOutfile << outfileName << LumiFactor << "pb-1.root";
-   TFile *output = new TFile(ssOutfile.str().c_str(), "recreate");
-
    output->Cd("");
 
    emu_dilepton->Write();
