@@ -5,6 +5,8 @@
 #include "TBranch.h"
 #include "TLorentzVector.h"
 #include "TPaveLabel.h"
+#include "TParameter.h"
+#include "THashList.h"
 #include "TChain.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -25,16 +27,16 @@
 
 #define DATA 0
 #define TTBAR 1
-#define ZTT 2
-#define WW 3
-#define WZ 4
-#define TW 5
-#define WJET 6
-#define ZMM 7
-#define ZEE 8
-//#define ZZ 9
-//#define QCD 10
-#define QCD 9
+#define TTBAR700TO1000 2
+#define TTBAR1000UP 3
+#define ZTT 4
+#define WW 5
+#define WZ 6
+#define TW 7
+#define WJET 8
+#define ZMM 9
+#define ZEE 10
+#define ZZ 11
 
 #define ALL 0
 #define LS 1
@@ -42,8 +44,6 @@
 
 using namespace std;
 
-float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked = false);
-float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked = false);
 int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector = 0);
 float CorrectEnergy(TFile *inFile, int &pos);
 
@@ -54,60 +54,55 @@ pair<unsigned int, unsigned int> runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_Tr
 unsigned int c_runnumber;
 unsigned int c_eventnumber;
 unsigned int c_luminosityBlock;
-//trigger
-int c_HLT_Mu15_eta2p1;
-int c_HLT_Mu30_eta2p1;
 
 void emuSpectrum()
 {
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 5205.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   float LumiFactor = 19619.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   TParameter<float> lumi("lumi", LumiFactor);
 
    // DATA file
-   //TString dataFile = "/user/treis/data2012/MuEG_Run2012A-PromptReco-v1_AOD_json_DCSONLY_20120508_0700_gct1_30_840pb-1.root";
-   TString dataFile = "/user/treis/data2012/MuEG_Run2012A+B-PromptReco+23May2012-v1_AOD_Cert_190456-196531_8TeV_PromptReco+May23ReReco_Collisions12_JSON_gct1_32_5205pb-1.root";
-   //TString dataFile = "/user/lathomas/data2012/MuEG_Run2012A-PromptReco-v1_AOD_AND_MuEG_Run2012B-PromptReco-v1_AOD_gct1_32Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON_920pb-1.root";
+   //TString dataFile = "dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/treis/data2012/MuEG_Run2012A+B+C_13Jul2012+06Aug2012+PromptReco-v1+v2_gct1_37_12201pb-1.root";
+   TString dataFile = "file:////user/treis/data2012/MuEG_Run2012A+B+C+D_13Jul2012+06Aug2012+24Aug2012+11Dec2012+PromptReco-Cv2+Dv1_Cert_190456-208686_gct1_46_19619pb-1.root";
+   // pile up histogram
+   TString puFile = "file:////user/treis/data2012/pileup/pileup_runA+B+C-ReReco+D-Prompt_puJSON-190389-208686_MuEG.root";
 
    string outfileName = "testEmuSpec";
    //string outfileName = "test";
 
    //unsigned selection = 0;   // HEEP v3.2
    //unsigned selection = 1;   // HEEP v4.0strong
-   unsigned selection = 2;   // HEEP v4.0
+   //unsigned selection = 2;   // HEEP v4.0
+   unsigned selection = 3;   // HEEP v4.1
 
-   unsigned nPVtxMax = 90; // max number of primary vertices
+   int nPVtxMax = 60; // maximum number of primary vertices
 
    // scale factors
-   // TODO errors and distinction EB - EE
-   float Elec_trigger = 0.886; // 0.97 from L1 and 0.913 from Mu40 measured by Z' to mumu
-   float triggerDataMCScaleFactor = 0.993; // scale factor between data and mc measured by Z' to mumu for Mu40
-   float Elec_ScaleFactorBar = 1. * 0.997;
-   float Elec_ScaleFactorEnd = 1. * 0.988;
-   //float Elec_ScaleFactorBar = 1.008 * 0.997; // epsilon_cand * epsilon_id
-   //float Elec_ScaleFactorEnd = 1.008 * 0.982;
-   float Muon_ScaleFactor = 0.985;
-   float Lumi_ScaleFactor = 1.0;
+   // muon factors  https://indico.cern.ch/getFile.py/access?contribId=3&resId=0&materialId=slides&confId=214870
+   TParameter<float> trgEff("trgEff", 0.99 * 0.891); // ele L1 eff times Mu40 eff measured by Z' to mumu
+   TParameter<float> trgEffLowEta("trgEffLowEta", 0.99 * 0.941); // ele L1 eff times Mu40 eff measured by Z' to mumu for |eta|<0.9
+   TParameter<float> trgEffMidEta("trgEffMidEta", 0.99 * 0.844); // ele L1 eff times Mu40 eff measured by Z' to mumu for 0.9<|eta|<1.2
+   TParameter<float> trgEffHighEta("trgEffHighEta", 0.99 * 0.827); // ele L1 eff times Mu40 eff measured by Z' to mumu for 1.2<|eta|
+   TParameter<float> trgDataMcScaleFactor("trgDataMcScaleFactor", 0.981); // scale factor between data and mc measured by Z' to mumu for Mu40
+   TParameter<float> trgDataMcScaleFactorLowEta("trgDataMcScaleFactorLowEta", 0.981); // scale factor between data and mc measured by Z' to mumu for Mu40 for |eta|<0.9
+   TParameter<float> trgDataMcScaleFactorMidEta("trgDataMcScaleFactorMidEta", 0.962); // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
+   TParameter<float> trgDataMcScaleFactorHighEta("trgDataMcScaleFactorHighEta", 0.990); // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
+   // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
+   TParameter<float> eleScaleFactorEB("eleScaleFactorEB", 0.995 * 1.007); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak)
+   TParameter<float> eleScaleFactorEE("eleScaleFactorEE", 0.994 * 1.004); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak)
+   TParameter<float> muScaleFactor("muScaleFactor", 0.982);
+   TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.979); // for |eta|<0.9
+   TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.967); // for 0.9<|eta|<1.2
+   TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.993); // for 1.2<|eta|
+   TParameter<float> lumiScaleFactor("lumiScaleFactor", 0.980);  // not used // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
+   TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.993);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
+   TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.948);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
-   // systematical errors
-   vector<float> systErrMC;
-   systErrMC.push_back(0.15);  //ttbar
-   systErrMC.push_back(0.054); //z->tt
-   systErrMC.push_back(0.035); //WWE
-   systErrMC.push_back(0.038); //WZ
-   systErrMC.push_back(0.075); //tW
-   systErrMC.push_back(0.05);  //WJets
-   systErrMC.push_back(0.054); //Z->mm
-   systErrMC.push_back(0.054); //Z->ee
-//   systErrMC.push_back(0.025); //ZZ
-   float systErrLumi = 0.022;
-   float systErrEff = 0.008; // muon err & ele err
-
-   bool useQCDShape = true;
-   bool calcQCDScaleFactor = false;
-   float QCD_ScaleFactor = 1.10; // overwritten if calcQCDScaleFactor == true
+   // global systematic errors
+   TParameter<float> systErrLumi("systErrLumi", 0.022);
+   TParameter<float> systErrEff("systErrEff", 0.007); // muon err (0.002) & ele err (0.007)
 
    bool usePUInfo = true;
-   bool generatePUFile = false;
    bool lowMassPuOnly = false;
    float puMassCut = 120.;
 
@@ -116,13 +111,15 @@ void emuSpectrum()
    float minInvMass = 0.;
 
    //MUON selection
-   float muon_et = 35.;
+   float muon_pt = 35.;
+   float muon_dptOverPt = 0.3;
    float muon_etaMax = 2.4;
    int muon_nHitsMinGlobal = 0;
    int muon_nHitsMinPixel = 1;
    int muon_nHitsMinMuon = 1;
-   int muon_nLayersMin = 9; 
-   float muon_impactParamMax = 0.2;   // in cm
+   int muon_nLayersMin = 6; 
+   float muon_impactParamMaxXY = 0.2;   // in cm
+   float muon_impactParamMaxZ = 0.5;   // in cm , not used
    int muon_nSegMatchMin = 2;
    float muon_relIsoCutMax = 0.1;
 
@@ -142,6 +139,7 @@ void emuSpectrum()
    float bar_isoEcalHcal1_2 = 0.;
    float bar_isoEcalHcalRho = 0.;
    float bar_isoTrack = 0.;
+   float bar_dxy = 0.;
    int bar_missInnerHits = 0;
 
    //ENDCAP
@@ -159,6 +157,7 @@ void emuSpectrum()
    float end_isoEcalHcal1_2 = 0.;
    float end_isoEcalHcalRho = 0.;
    float end_isoTrack = 0.;
+   float end_dxy = 0.;
    int end_missInnerHits = 0;
 
    switch (selection) {
@@ -255,44 +254,141 @@ void emuSpectrum()
          end_missInnerHits = 0;
          break;
       }
-   }
+      case 3: {  // HEEP v4.1
+         outfileName += "HEEP41_";
+         //BARREL
+         bar_et = 35.;
+         bar_hoE = 0.05;
+         bar_DEta = 0.005;
+         bar_DPhi = 0.06;
+         bar_e2x5e5x5 = 0.94;
+         bar_e1x5e5x5 = 0.83;
+         bar_isoEcalHcal1_1 = 2.;
+         bar_isoEcalHcal1_2 = 0.03;
+         bar_isoEcalHcalRho = 0.28;
+         bar_isoTrack = 5.;
+         bar_dxy = 0.02;
+         bar_missInnerHits = 1;
+     
+         //ENDCAP
+         end_et = 35.;
+         end_hoE = 0.05;
+         end_DEta = 0.007 ;
+         end_DPhi = 0.06;
+         end_sigmaietaieta = 0.03;
+         end_isoEcalHcal1_1_1 = 2.5;
+         end_isoEcalHcal1_1_2 = 1.;
+         end_isoEcalHcal1_2 = 0.03;
+         end_isoEcalHcalRho = 0.28;
+         end_isoTrack = 5.;
+         end_dxy = 0.05;
+         end_missInnerHits = 1;
+         break;
+      }
+    }
    ///////////////////////////////////////////////////////////////////////////
 
    TH1::SetDefaultSumw2(kTRUE);
 
-   // calculate rate of syst errors
-   float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
-   vector<float> systErrMCLuEff;
-   for (unsigned int i = TTBAR - 1; i < ZEE; ++i) 
-      systErrMCLuEff.push_back(sqrt(systErrMC[i]*systErrMC[i] + systErrLuEff*systErrLuEff));
-
    ///////////////////////////////////////////////////////////////////////////
    // INPUT FILES
    vector<pair<TFile *, float> > input;
+   vector<bool> storeGenMTtbar;
+   THashList systErrMCs;
+   THashList mcWeights;
 
    // DATA
-   input.push_back(make_pair(new TFile(dataFile, "read"), 1.)); //DATA        0 black
+   TFile *inData = TFile::Open(dataFile);
+   input.push_back(make_pair(inData, 1.)); //DATA        0 black
+   storeGenMTtbar.push_back(0);
 
    // MC
-   input.push_back(make_pair(new TFile("/user/lathomas/mcsamples/TTJets_TuneZ2star_8TeV-madgraph-tauola_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root", "read"), 3.34E-5)); //TTbar       1 red         (6736135 events - xsect NLO  225.197pb) -- 22.5.2012
+   TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root");
+   //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
+   input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
+   //TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TTJets_TuneZ2star_8TeV-madgraph-tauola_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_41_6736135ev.root");
+   //input.push_back(make_pair(inTTbar, 225.197 / 6736135.)); 
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.067));
+   storeGenMTtbar.push_back(1);
 
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToTauTau_M_20_TuneZ2star_8TeV_pythia6_tauola_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_31.root", "read"), 9.63388E-4)); //Ztautau     2 green       (1987776 events  - xsect NNLO 1915pb) -- 15.5.2012
+   TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3082812ev.root");
+   input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 234./211.));  // ttbar  mtt 700to1000
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.15));
+   storeGenMTtbar.push_back(1);
 
-   input.push_back(make_pair(new TFile("/user/lathomas/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root", "read"), 5.70975E-6)); //WW          3 dark blue   (10000431 event - xsect NLO 57.1pb  ) -- 15.5.2012
+   TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_1249111ev.root");
+   input.push_back(make_pair(inTTbar1000up, 2.954 / 1249111. * 234./211.));  // ttbar  mtt>1000
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.15));
+   storeGenMTtbar.push_back(1);
 
-   input.push_back(make_pair(new TFile("/user/lathomas/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root", "read"), 3.23E-6)); //WZ          4 yellow      (999622 events - xsect LO*k 22pb ) -- 22.5.2012
+   TFile *inZtt = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3295238ev.root");
+   input.push_back(make_pair(inZtt, 1915.1 / 3295238.)); //Ztautau
+   systErrMCs.Add(new TParameter<float>("systErrMcDyTauTau", 0.054));
+   storeGenMTtbar.push_back(0);
 
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root","read"), 2.25503E-5)); //tW          5 pink        (497658+493460 event - xsect NLO 11.18pb+11.18pb -- 15.5.2012
+   TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000431ev.root");
+   input.push_back(make_pair(inWW, 54.838 / 10000431.)); //WW
+   systErrMCs.Add(new TParameter<float>("systErrMcWW", 0.035));
+   storeGenMTtbar.push_back(0);
 
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_31.root", "read"), 1.97124E-3)); //W+jet       6 dark green  (18393090 events - xsect NNLO 36257.2pb) -- 15.5.2012
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/WJetsToLNu_PtW-100_TuneZ2star_8TeV-madgraph_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root", "read"), 1.84088E-5)); //W+jet       6 dark green  (18393090 events - xsect NNLO 36257.2pb) -- 15.5.2012
+   TFile *inWZ = TFile::Open("file:////user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000283ev.root");
+   input.push_back(make_pair(inWZ, 33.21 / 10000283.)); //WZ
+   systErrMCs.Add(new TParameter<float>("systErrMcWZ", 0.038));
+   storeGenMTtbar.push_back(0);
 
-   input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToMuMu_M_20_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_32.root","read"), 9.57492E-4)); //Zmumu       7 light blue  (2000016 events  - xsect NNLO 1915pb ) -- 25.5.2012)
+   TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_991118ev.root");
+   input.push_back(make_pair(inTW, 22.2 / 991118.)); //tW
+   systErrMCs.Add(new TParameter<float>("systErrMcTW", 0.069));
+   storeGenMTtbar.push_back(0);
 
-   input.push_back(make_pair(new TFile("/user/lathomas/mcsamples/DYToEE_M_20_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START52_V9-v1_AODSIM_escale_gct1_32.root","read"), 9.58E-4)); //Zee         8 cyan        (1998282 events - xsect NNLO 1915pb ) -- 22.5.2012
+   TFile *inWJet = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_76102995ev.root");
+   input.push_back(make_pair(inWJet, 36257.2 / 76102995.)); //W+jet
+   systErrMCs.Add(new TParameter<float>("systErrMcWJets", 0.05));
+   storeGenMTtbar.push_back(0);
 
-   //input.push_back(make_pair(new TFile("/user/treis/mcsamples/ZZ_TuneZ2_7TeV_pythia6_tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_13.root","read"), 1.4394E-6)); //ZZ          9 violett     (4098843 event - xsect 5.9pb (AN-11-472) ) -- 22.02.2012
+   TFile *inZmm = TFile::Open("file:////user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3293740ev.root");
+   input.push_back(make_pair(inZmm, 1915. / 3293740.)); //Zmumu
+   systErrMCs.Add(new TParameter<float>("systErrMcDyMuMu", 0.054));
+   storeGenMTtbar.push_back(0);
 
+   TFile *inZee = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3297045ev.root");
+   input.push_back(make_pair(inZee, 1915. / 3297045.)); //Zee
+   systErrMCs.Add(new TParameter<float>("systErrMcDyEE", 0.054));
+   storeGenMTtbar.push_back(0);
+
+   TFile *inZZ = TFile::Open("file:////user/treis/mcsamples/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_9799908ev.root");
+   input.push_back(make_pair(inZZ, 17.654 / 9799908.)); //ZZ
+   systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.025));
+   storeGenMTtbar.push_back(0);
+
+   TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_16365457ev.root");
+   input.push_back(make_pair(inTTbar22l, 13.43 / 16365457.)); //TT to 2l
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.));
+   storeGenMTtbar.push_back(1);
+
+   TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A_ext-v1_AODSIM_gct1_46_25424818ev.root");
+   input.push_back(make_pair(inTTbar21l, 53.2 / 25424818.)); //TT to 1l1jet
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.));
+   storeGenMTtbar.push_back(1);
+
+   TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_196046ev.root");
+   input.push_back(make_pair(inTTW, 0.2149 / 196046.)); //TTW
+   systErrMCs.Add(new TParameter<float>("systErrMcTtW", 0.));
+   storeGenMTtbar.push_back(1);
+
+   TFile *inTTWW = TFile::Open("file:////user/treis/mcsamples/TTWWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_217820ev.root");
+   input.push_back(make_pair(inTTWW, 0.002037 / 217820.)); //TTWW
+   systErrMCs.Add(new TParameter<float>("systErrMcTtWW", 0.));
+   storeGenMTtbar.push_back(1);
+
+   //TFile *inWJet2 = TFile::Open("dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/treis/mcsamples2012/WJetsToLNu_PtW-70To100_TuneZ2star_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_35_22447541ev.root");
+   //input.push_back(make_pair(inWJet2, 1.91068E-5)); //W+jet
+   //systErrMCs.Add(new TParameter<float>("systErrMcWJets70t0100", 0.05));
+   //storeGenMTtbar.push_back(0);
+   //TFile *inWJet3 = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_PtW-100_TuneZ2star_8TeV-madgraph_Summer12-PU_S7_START52_V9-v1_AODSIM_gct1_33_12766180ev.root");
+   //input.push_back(make_pair(inWJet3, 1.79302E-5)); //W+jet
+   //systErrMCs.Add(new TParameter<float>("systErrMcWJets100up", 0.05));
+   //storeGenMTtbar.push_back(0);
    int nbFile = input.size();
    ///////////////////////////////////////////////////////////////////////////
 
@@ -300,6 +396,8 @@ void emuSpectrum()
    vector<TString> suffix;
    suffix.push_back("data");
    suffix.push_back("ttbar");
+   suffix.push_back("ttbar700to1000");
+   suffix.push_back("ttbar1000up");
    suffix.push_back("ztautau");
    suffix.push_back("ww");
    suffix.push_back("wz");
@@ -307,33 +405,13 @@ void emuSpectrum()
    suffix.push_back("wjets");
    suffix.push_back("zmumu");
    suffix.push_back("zee");
-//   //suffix.push_back("zz");
-   suffix.push_back("qcd");
+   suffix.push_back("zz");
+   suffix.push_back("ttbarto2l");
+   suffix.push_back("ttbarto1l1jet");
+   suffix.push_back("ttbarw");
+   suffix.push_back("ttbarww");
 
    TString sign[3] = {"", "LS_", "OS_"};
-
-   //stringstream ssGoodHeepFileName;
-   //ssGoodHeepFileName << "goodEmuEvents" << LumiFactor << "pb-1.root";
-   //TFile *goodEvFile = new TFile(ssGoodHeepFileName.str().c_str(), "recreate");
-   //goodEvFile->Cd("");
-   //float emuInvMass = 0.;
-   //TTree *emuDataTree = new TTree("emuDataTree", "emuDataTree");
-   //emuDataTree->Branch("runnr", &c_runnumber, "runnr/i");
-   //emuDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
-   //emuDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
-   //emuDataTree->Branch("mass", &emuInvMass, "mass/F");
-   //TTree *emuLSDataTree = new TTree("emuLSDataTree", "emuLSDataTree");
-   //emuLSDataTree->Branch("runnr", &c_runnumber, "runnr/i");
-   //emuLSDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
-   //emuLSDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
-   //emuLSDataTree->Branch("mass", &emuInvMass, "mass/F");
-   //TTree *emuOSDataTree = new TTree("emuOSDataTree", "emuOSDataTree");
-   //emuOSDataTree->Branch("runnr", &c_runnumber, "runnr/i");
-   //emuOSDataTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
-   //emuOSDataTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
-   //emuOSDataTree->Branch("mass", &emuInvMass, "mass/F");
-   //emuOSDataTree->Branch("HLT_Mu15_eta2p1", &c_HLT_Mu15_eta2p1, "HLT_Mu15_eta2p1/I");
-   //emuOSDataTree->Branch("HLT_Mu30_eta2p1", &c_HLT_Mu30_eta2p1, "HLT_Mu30_eta2p1/I");
 
    // counting variables
    int nb_plus_plus = 0;
@@ -342,42 +420,45 @@ void emuSpectrum()
    int nb_minus_minus = 0;
 
    // histogram containers
-   vector<vector<TH1F *> > emuMass;
-   vector<vector<TH1F *> > emuMassEB;
-   vector<vector<TH1F *> > emuMassEE;
-   vector<vector<TH1F *> > emu_mass_accVSgood;
+   vector<vector<TH1F *> > h_emuMass;
+   vector<vector<TH1F *> > h_emuMassEB;
+   vector<vector<TH1F *> > h_emuMassEE;
+   vector<vector<TH1F *> > h_emu_mass_accVSgood;
 
-   vector<vector<TH1F *> > pfMet;
-   vector<vector<TH1F *> > nVtx;
-   vector<vector<TH1F *> > rho;
-   vector<vector<TH1F *> > nJets;
-   vector<vector<TH1F *> > nJetsPt20;
-   vector<vector<TH1F *> > nJetsPt30;
-   vector<vector<TH1F *> > dPhi;
-   vector<vector<TH1F *> > eleEt;
-   vector<vector<TH1F *> > eleEta;
-   vector<vector<TH1F *> > elePhi;
-   vector<vector<TH1F *> > eleDEta;
-   vector<vector<TH1F *> > eleDPhi;
-   vector<vector<TH1F *> > eleHOE;
-   vector<vector<TH1F *> > eleSigmaIEIE;
-   vector<vector<TH1F *> > eleEcalIso;
-   vector<vector<TH1F *> > eleHcalIso12;
-   vector<vector<TH1F *> > eleTrkIso;
-   vector<vector<TH1F *> > eleLostHits;
+   vector<vector<TH1F *> > h_pfMet;
+   vector<vector<TH1F *> > h_nVtx;
+   vector<vector<TH1F *> > h_dDz;
+   vector<vector<TH1F *> > h_dDzBeamSpot;
+   vector<vector<TH1F *> > h_dDzFirstPVtx;
+   vector<vector<TH1F *> > h_rho;
+   vector<vector<TH1F *> > h_nJets;
+   vector<vector<TH1F *> > h_nJetsPt20;
+   vector<vector<TH1F *> > h_nJetsPt30;
+   vector<vector<TH1F *> > h_dPhi;
+   vector<vector<TH1F *> > h_eleEt;
+   vector<vector<TH1F *> > h_eleEta;
+   vector<vector<TH1F *> > h_elePhi;
+   vector<vector<TH1F *> > h_eleDEta;
+   vector<vector<TH1F *> > h_eleDPhi;
+   vector<vector<TH1F *> > h_eleHOE;
+   vector<vector<TH1F *> > h_eleSigmaIEIE;
+   vector<vector<TH1F *> > h_eleEcalIso;
+   vector<vector<TH1F *> > h_eleHcalIso12;
+   vector<vector<TH1F *> > h_eleTrkIso;
+   vector<vector<TH1F *> > h_eleLostHits;
 
-   vector<vector<TH1F *> > muIsoCombRel;
-   vector<vector<TH1F *> > muEtEleOPtMu;
-   vector<vector<TH1F *> > muPtPlusOPtMinus;
-   vector<vector<TH1F *> > muPt;
-   vector<vector<TH1F *> > muEta;
-   vector<vector<TH1F *> > muPhi;
-   vector<vector<TH1F *> > muHitLayers;
-   vector<vector<TH1F *> > muPxlHits;
-   vector<vector<TH1F *> > muMuHits;
-   vector<vector<TH1F *> > muDxyBeamSpot;
-   vector<vector<TH1F *> > muNSeg;
-   vector<vector<TH1F *> > muTrkIso03;
+   vector<vector<TH1F *> > h_muIsoCombRel;
+   vector<vector<TH1F *> > h_muEtEleOPtMu;
+   vector<vector<TH1F *> > h_muPtPlusOPtMinus;
+   vector<vector<TH1F *> > h_muPt;
+   vector<vector<TH1F *> > h_muEta;
+   vector<vector<TH1F *> > h_muPhi;
+   vector<vector<TH1F *> > h_muHitLayers;
+   vector<vector<TH1F *> > h_muPxlHits;
+   vector<vector<TH1F *> > h_muMuHits;
+   vector<vector<TH1F *> > h_muDxyBeamSpot;
+   vector<vector<TH1F *> > h_muNSeg;
+   vector<vector<TH1F *> > h_muTrkIso03;
 
    //vector<TH1F *> emu_plus_plus;
    //vector<TH1F *> emu_plus_minus;
@@ -389,28 +470,14 @@ void emuSpectrum()
    TH1F *emu_ewk = new TH1F("emu_ewk", "emu_ewk", nBins, 0., 1500.);
    TH1F *emu_jet = new TH1F("emu_jet", "emu_jet", nBins, 0., 1500.);
 
-   vector<TH1F *> emuLoose_nValidPv;
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_data_nValidPv", "emuLoose_data_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_ttbar_nValidPv", "emuLoose_ttbar_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_ztautau_nValidPv", "emuLoose_ztautau_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_ww_nValidPv", "emuLoose_ww_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_wz_nValidPv", "emuLoose_wz_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_tw_nValidPv", "emuLoose_tw_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_wjets_nValidPv", "emuLoose_wjets_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_zmumu_nValidPv", "emuLoose_zmumu_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_nValidPv.push_back(new TH1F("emuLoose_zee_nValidPv", "emuLoose_zee_nValidPv", nPVtxMax, 0., nPVtxMax));
-//   //emuLoose_nValidPv.push_back(new TH1F("emuLoose_zz_nValidPv", "emuLoose_zz_nValidPv", nPVtxMax, 0., nPVtxMax));
-
-   vector<TH1F *> emuLoose_dataOverX_nValidPv;
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverTtbar_nValidPv", "emuLoose_dataOverTtbar_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZtautau_nValidPv", "emuLoose_dataOverZtautau_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverWw_nValidPv", "emuLoose_dataOverWw_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverWz_nValidPv", "emuLoose_dataOverWz_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverTw_nValidPv", "emuLoose_dataOverTw_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverWjets_nValidPv", "emuLoose_dataOverWjets_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZmumu_nValidPv", "emuLoose_dataOverZmumu_nValidPv", nPVtxMax, 0., nPVtxMax));
-   emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZee_nValidPv", "emuLoose_dataOverZee_nValidPv", nPVtxMax, 0., nPVtxMax));
-//   //emuLoose_dataOverX_nValidPv.push_back(new TH1F("emuLoose_dataOverZz_nValidPv", "emuLoose_dataOverZz_nValidPv", nPVtxMax, 0., nPVtxMax));
+   // data pileup histogram
+   TFile *dataPuInfile = TFile::Open(puFile);
+   dataPuInfile->Cd("");
+   TH1F *puData = (TH1F *)gDirectory->Get("pileup");
+   puData->SetDirectory(0);
+   puData->SetName("puData");
+   dataPuInfile->Close();
+   TH1F *puDataNorm = (TH1F *)puData->DrawNormalized()->Clone("puDataNorm");
 
    //GLOBAL
    float c_calomet;
@@ -433,6 +500,7 @@ void emuSpectrum()
    int c_pv_totTrackSize[100];
 
    float c_rho;
+   int c_trueNVtx;
 
    //GSF
    int c_gsf_size;
@@ -444,7 +512,12 @@ void emuSpectrum()
    float c_gsf_eta[100];
    float c_gsf_theta[100];
    float c_gsf_phi[100];
+   float c_gsf_dxy[100];
+   float c_gsf_dxy_beamSpot[100];
+   float c_gsf_dxy_firstPVtx[100];
    float c_gsf_dz[100];
+   float c_gsf_dz_beamSpot[100];
+   float c_gsf_dz_firstPVtx[100];
    bool c_gsf_isecaldriven[100];
    int c_gsf_charge[100];
    float c_gsf_deltaeta[100];
@@ -455,25 +528,17 @@ void emuSpectrum()
    float c_gsf_sigmaetaeta[100];
    float c_gsf_sigmaIetaIeta[100];
    float c_gsf_hovere[100];
-   float c_gsf_eOVERp[100];
-   float c_gsf_vz[100];
    int c_gsf_nHits[100];
    int c_gsf_nLostInnerHits[100];
-   float c_gsf_fBrem[100];
    float c_gsf_ecaliso[100];
    float c_gsf_hcaliso1[100];
    float c_gsf_hcaliso2[100];
    float c_gsf_trackiso[100];
 
-   float c_gsfsc_px[100];
-   float c_gsfsc_py[100];
-   float c_gsfsc_pt[100];
    float c_gsfsc_e[100];
    float c_gsfsc_eta[100];
    float c_gsfsc_phi[100];
 
-   bool c_gsfpass_ID[100];
-   bool c_gsfpass_ISO[100];
    bool c_gsfpass_HEEP[100];
 
    //MUONS
@@ -501,11 +566,7 @@ void emuSpectrum()
    int c_muon_nlayerswithhits[100];
    int c_muon_nSegmentMatch[100];
    bool c_muon_isTrackerMuon[100];
-   float c_muon_chi2[100];
-   int c_muon_ndof[100];
    float c_muon_normChi2[100];
-   float c_muon_d0[100];
-   float c_muon_d0Error[100];
    float c_muon_dzError[100];
    float c_muon_dxyError[100];
    float c_muon_dz_cmsCenter[100];
@@ -515,349 +576,154 @@ void emuSpectrum()
    float c_muon_dxy_beamSpot[100];
    float c_muon_dxy_firstPVtx[100];
    float c_muon_trackIso03[100];
-   float c_muon_trackIso05[100];
    float c_muon_emIso03[100];
-   float c_muon_emIso05[100];
    float c_muon_hadIso03[100];
-   float c_muon_hadIso05[100];
    float c_muon_trackIso03_ptInVeto[100];
-   float c_muon_trackIso05_ptInVeto[100];
    float c_muon_emIso03_ptInVeto[100];
-   float c_muon_emIso05_ptInVeto[100];
    float c_muon_hadIso03_ptInVeto[100];
-   float c_muon_hadIso05_ptInVeto[100];
-   float c_muon_innerPosx[100];
-   float c_muon_innerPosy[100];
-   float c_muon_innerPosz[100];
+
+   float c_genPair_mass;
 
    //RUN ID
-   TBranch        *b_runnumber;
-   TBranch        *b_eventnumber;
-   TBranch        *b_luminosityBlock;
+   TBranch *b_runnumber;
+   TBranch *b_eventnumber;
+   TBranch *b_luminosityBlock;
 
    //GLOBAL
-   TBranch        *b_calomet;
-   TBranch        *b_met;
-   TBranch        *b_pfmet;
-   TBranch        *b_pthat;
-   TBranch        *b_bsposx;
-   TBranch        *b_bsposy;
-   TBranch        *b_bsposz;
-   TBranch        *b_jetColl_size;
-   TBranch        *b_jetPt;
+   TBranch *b_calomet;
+   TBranch *b_met;
+   TBranch *b_pfmet;
+   TBranch *b_pthat;
+   TBranch *b_bsposx;
+   TBranch *b_bsposy;
+   TBranch *b_bsposz;
+   TBranch *b_jetColl_size;
+   TBranch *b_jetPt;
 
    //PRIM VTX
-   TBranch        *b_pvsize;
-   TBranch        *b_pvz;
-   TBranch        *b_pv_isValid;
-   TBranch        *b_pv_ndof;
-   TBranch        *b_pv_nTracks;
-   TBranch        *b_pv_normChi2;
-   TBranch        *b_pv_totTrackSize;
+   TBranch *b_pvsize;
+   TBranch *b_pvz;
+   TBranch *b_pv_isValid;
+   TBranch *b_pv_ndof;
+   TBranch *b_pv_nTracks;
+   TBranch *b_pv_normChi2;
+   TBranch *b_pv_totTrackSize;
 
-   TBranch        *b_rho;
-
-   //TRIGGER
-   TBranch        *b_HLT_Mu15_eta2p1;
-   TBranch        *b_HLT_Mu30_eta2p1;
+   TBranch *b_rho;
+   TBranch *b_trueNVtx;
 
    //GSF
-   TBranch        *b_gsf_size;
-   TBranch        *b_gsf_gsfet;
-   TBranch        *b_gsf_px;
-   TBranch        *b_gsf_py;
-   TBranch        *b_gsf_pz;
-   TBranch        *b_gsf_pt;
-   TBranch        *b_gsf_eta;
-   TBranch        *b_gsf_theta;
-   TBranch        *b_gsf_phi;
-   TBranch        *b_gsf_dz;
-   TBranch        *b_gsf_isecaldriven;
-   TBranch        *b_gsf_charge;
-   TBranch        *b_gsf_deltaeta;
-   TBranch        *b_gsf_deltaphi;
-   TBranch        *b_gsf_e5x5;
-   TBranch        *b_gsf_e1x5overe5x5;
-   TBranch        *b_gsf_e2x5overe5x5;
-   TBranch        *b_gsf_sigmaetaeta;
-   TBranch        *b_gsf_sigmaIetaIeta;
-   TBranch        *b_gsf_hovere;
-   TBranch        *b_gsf_eOVERp;
-   TBranch        *b_gsf_vz;
-   TBranch        *b_gsf_nHits;
-   TBranch        *b_gsf_nLostInnerHits;
-   TBranch        *b_gsf_fBrem;
-   TBranch        *b_gsf_ecaliso;
-   TBranch        *b_gsf_hcaliso1;
-   TBranch        *b_gsf_hcaliso2;
-   TBranch        *b_gsf_trackiso;
+   TBranch *b_gsf_size;
+   TBranch *b_gsf_gsfet;
+   TBranch *b_gsf_px;
+   TBranch *b_gsf_py;
+   TBranch *b_gsf_pz;
+   TBranch *b_gsf_pt;
+   TBranch *b_gsf_eta;
+   TBranch *b_gsf_theta;
+   TBranch *b_gsf_phi;
+   TBranch *b_gsf_dxy;
+   TBranch *b_gsf_dxy_beamSpot;
+   TBranch *b_gsf_dxy_firstPVtx;
+   TBranch *b_gsf_dz;
+   TBranch *b_gsf_dz_beamSpot;
+   TBranch *b_gsf_dz_firstPVtx;
+   TBranch *b_gsf_isecaldriven;
+   TBranch *b_gsf_charge;
+   TBranch *b_gsf_deltaeta;
+   TBranch *b_gsf_deltaphi;
+   TBranch *b_gsf_e5x5;
+   TBranch *b_gsf_e1x5overe5x5;
+   TBranch *b_gsf_e2x5overe5x5;
+   TBranch *b_gsf_sigmaetaeta;
+   TBranch *b_gsf_sigmaIetaIeta;
+   TBranch *b_gsf_hovere;
+   TBranch *b_gsf_nHits;
+   TBranch *b_gsf_nLostInnerHits;
+   TBranch *b_gsf_ecaliso;
+   TBranch *b_gsf_hcaliso1;
+   TBranch *b_gsf_hcaliso2;
+   TBranch *b_gsf_trackiso;
 
-   TBranch        *b_gsfsc_px;
-   TBranch        *b_gsfsc_py;
-   TBranch        *b_gsfsc_pt;
-   TBranch        *b_gsfsc_e;
-   TBranch        *b_gsfsc_eta;
-   TBranch        *b_gsfsc_phi;
+   TBranch *b_gsfsc_e;
+   TBranch *b_gsfsc_eta;
+   TBranch *b_gsfsc_phi;
 
-   TBranch        *b_gsfpass_ID;
-   TBranch        *b_gsfpass_ISO;
-   TBranch        *b_gsfpass_HEEP;
+   TBranch *b_gsfpass_HEEP;
 
    //MUONS
-   TBranch        *b_muon_size;
-   TBranch        *b_muon_pt;
-   TBranch        *b_muon_eta;
-   TBranch        *b_muon_phi;
-   TBranch        *b_muon_theta;
-   TBranch        *b_muon_ptError;
-   TBranch        *b_muon_etaError;
-   TBranch        *b_muon_phiError;
-   TBranch        *b_muon_thetaError;
-   TBranch        *b_muon_outerPt;
-   TBranch        *b_muon_outerEta;
-   TBranch        *b_muon_outerPhi;
-   TBranch        *b_muon_outerTheta;
-   TBranch        *b_muon_px;
-   TBranch        *b_muon_py;
-   TBranch        *b_muon_pz;
-   TBranch        *b_muon_charge;
-   TBranch        *b_muon_nhitstrack;
-   TBranch        *b_muon_nhitspixel;
-   TBranch        *b_muon_nhitstotal;
-   TBranch        *b_muon_nhitsmuons;
-   TBranch        *b_muon_nlayerswithhits;
-   TBranch        *b_muon_nSegmentMatch;
-   TBranch        *b_muon_isTrackerMuon;
-   TBranch        *b_muon_chi2;
-   TBranch        *b_muon_ndof;
-   TBranch        *b_muon_normChi2;
-   TBranch        *b_muon_d0;
-   TBranch        *b_muon_dz_cmsCenter;
-   TBranch        *b_muon_dz_beamSpot;
-   TBranch        *b_muon_dz_firstPVtx;
-   TBranch        *b_muon_dxy_cmsCenter;
-   TBranch        *b_muon_dxy_beamSpot;
-   TBranch        *b_muon_dxy_firstPVtx;
-   TBranch        *b_muon_d0Error;
-   TBranch        *b_muon_dzError;
-   TBranch        *b_muon_dxyError;
-   TBranch        *b_muon_trackIso03;
-   TBranch        *b_muon_trackIso05;
-   TBranch        *b_muon_emIso03;
-   TBranch        *b_muon_emIso05;
-   TBranch        *b_muon_hadIso03;
-   TBranch        *b_muon_hadIso05;
-   TBranch        *b_muon_trackIso03_ptInVeto;
-   TBranch        *b_muon_trackIso05_ptInVeto;
-   TBranch        *b_muon_emIso03_ptInVeto;
-   TBranch        *b_muon_emIso05_ptInVeto;
-   TBranch        *b_muon_hadIso03_ptInVeto;
-   TBranch        *b_muon_hadIso05_ptInVeto;
-   TBranch        *b_muon_innerPosx;
-   TBranch        *b_muon_innerPosy;
-   TBranch        *b_muon_innerPosz;
+   TBranch *b_muon_size;
+   TBranch *b_muon_pt;
+   TBranch *b_muon_eta;
+   TBranch *b_muon_phi;
+   TBranch *b_muon_theta;
+   TBranch *b_muon_ptError;
+   TBranch *b_muon_etaError;
+   TBranch *b_muon_phiError;
+   TBranch *b_muon_thetaError;
+   TBranch *b_muon_outerPt;
+   TBranch *b_muon_outerEta;
+   TBranch *b_muon_outerPhi;
+   TBranch *b_muon_outerTheta;
+   TBranch *b_muon_px;
+   TBranch *b_muon_py;
+   TBranch *b_muon_pz;
+   TBranch *b_muon_charge;
+   TBranch *b_muon_nhitstrack;
+   TBranch *b_muon_nhitspixel;
+   TBranch *b_muon_nhitstotal;
+   TBranch *b_muon_nhitsmuons;
+   TBranch *b_muon_nlayerswithhits;
+   TBranch *b_muon_nSegmentMatch;
+   TBranch *b_muon_isTrackerMuon;
+   TBranch *b_muon_normChi2;
+   TBranch *b_muon_dz_cmsCenter;
+   TBranch *b_muon_dz_beamSpot;
+   TBranch *b_muon_dz_firstPVtx;
+   TBranch *b_muon_dxy_cmsCenter;
+   TBranch *b_muon_dxy_beamSpot;
+   TBranch *b_muon_dxy_firstPVtx;
+   TBranch *b_muon_dzError;
+   TBranch *b_muon_dxyError;
+   TBranch *b_muon_trackIso03;
+   TBranch *b_muon_emIso03;
+   TBranch *b_muon_hadIso03;
+   TBranch *b_muon_trackIso03_ptInVeto;
+   TBranch *b_muon_emIso03_ptInVeto;
+   TBranch *b_muon_hadIso03_ptInVeto;
+
+   TBranch *b_genPair_mass;
 
    unsigned int dataTrig[3] = {0, 0, 0};
    unsigned int dataEntries = 0;
-
-   // primary vertex information /////////////////////////////////////////////
-   vector<vector<float> > PVX_ScalingFactors;
-   if (usePUInfo) {
-      stringstream ssPUInfile;
-      ssPUInfile << "emu_PUinfo" << nPVtxMax << "PVtx_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
-      // test if the PU file exists already. If yes -> use it; if no -> create it and fill it
-      ifstream iFile(ssPUInfile.str().c_str());
-      if (iFile) {
-         iFile.close();
-         TFile *inputPV = new TFile(ssPUInfile.str().c_str(), "read");
-         inputPV->Cd("");
-
-         vector<TH1F *> copy_emuLoose_dataOverX_nValidPv;
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverTtbar_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZtautau_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverWw_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverWz_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverTw_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverWjets_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZmumu_nValidPv"));
-         copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZee_nValidPv"));
-         //copy_emuLoose_dataOverX_nValidPv.push_back((TH1F*)inputPV->Get("emuLoose_dataOverZz_nValidPv"));
-
-         for (unsigned int p = 0; p < copy_emuLoose_dataOverX_nValidPv.size(); ++p) {
-            vector<float> PVX_ScalingFactor;
-            for (unsigned int i = 0; i < nPVtxMax; ++i) {
-               //PVX_ScalingFactor.push_back(copy_emuLoose_dataOverX_nValidPv.at(p)->GetBinContent(i + 1) * nPVtxMax);
-               PVX_ScalingFactor.push_back(copy_emuLoose_dataOverX_nValidPv.at(p)->GetBinContent(i + 1));
-            }
-            PVX_ScalingFactors.push_back(PVX_ScalingFactor);
-         }
-         cout << "Pile up information from file: " << ssPUInfile.str() << endl;
-      } else {
-         cout << "No file with pile up information for this parameter set found. Will create it." << endl;
-         generatePUFile = true;
-      }
-   } else {
-      PVX_ScalingFactors.clear();
-      for (unsigned int p = 0; p < emuLoose_dataOverX_nValidPv.size(); ++p) {
-         vector<float> PVX_ScalingFactor;
-         for (unsigned int i = 0 ; i < nPVtxMax ; ++i) {
-            PVX_ScalingFactor.push_back(1.);
-         }
-         PVX_ScalingFactors.push_back(PVX_ScalingFactor);
-      }
-   }
-   if (usePUInfo && generatePUFile) {
-      // 1st loop to get VERTEX information
-      for (int p = 0; p < nbFile; ++p) {
-         cout << "accessing file " << p + 1 << " for PU information: " << input[p].first->GetName() << endl;
-         input[p].first->Cd("");
-
-         // Get the TREE and connect the necessary variables
-         TTree *thetree;
-         thetree = (TTree*)(input[p].first)->Get("gsfcheckerjob/tree");
-
-         //RUN ID
-         thetree->SetBranchAddress("runnumber", &c_runnumber, &b_runnumber);
-         //PRIM VTX
-         thetree->SetBranchAddress("pvsize", &c_pvsize, &b_pvsize);
-         thetree->SetBranchAddress("pv_ndof", &c_pv_ndof, &b_pv_ndof);
-         thetree->SetBranchAddress("pv_nTracks", &c_pv_nTracks, &b_pv_nTracks);
-         //GSF
-         thetree->SetBranchAddress("gsf_size", &c_gsf_size, &b_gsf_size);
-         thetree->SetBranchAddress("gsf_gsfet", &c_gsf_gsfet, &b_gsf_gsfet);
-         thetree->SetBranchAddress("gsfsc_eta", &c_gsfsc_eta, &b_gsfsc_eta);
-         thetree->SetBranchAddress("gsfsc_phi", &c_gsfsc_phi, &b_gsfsc_phi);
-          //MUONS
-         thetree->SetBranchAddress("muon_size", &c_muon_size, &b_muon_size);
-         thetree->SetBranchAddress("muon_pt", &c_muon_pt, &b_muon_pt);
-         thetree->SetBranchAddress("muon_eta", &c_muon_eta, &b_muon_eta);
-         thetree->SetBranchAddress("muon_phi", &c_muon_eta, &b_muon_eta);
-
-         Long64_t nentries = (*thetree).GetEntries();
-         cout << nentries << " events" << endl;
-         unsigned int trig[3] = {0, 0, 0}; // which trigger was used how often
-         unsigned int counter = 0;
-         //LOOP OVER EVENTS
-         for (unsigned int i = 0; i < nentries; ++i) {
-            if (i % 50000 == 0) cout << i << endl;
-            thetree->GetEntry(i);
-
-            // at least one gsf electron and one muon above the threshold
-            if (c_gsf_size < 1 || c_muon_size < 1) continue;
-
-            int prescale = 0;
-            if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
-            if (p != DATA) {
-            //if (p != DATA) {
-               if (i < nentries * dataTrig[0] / dataEntries) {
-                  if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
-               } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
-                  if (Trigger(input[p].first, i, prescale, trig, 2) < 1) continue;
-               } else {
-                  if (Trigger(input[p].first, i, prescale, trig, 3) < 1) continue;
-               }
-            }
-
-            //PRIMARY VTX COUNTING
-            unsigned int n_pvValid = 0;
-            for (int j = 0; j < c_pvsize; ++j) {
-               //if (c_pv_ndof[j] > 3 && c_pv_nTracks[j] > 3)
-                  n_pvValid++;
-            }
-            if (n_pvValid < 1) continue;
-
-            //CREATE VTX PONDERATION PLOT
-            float gsfPtMaxB = 0.;
-            float gsfPtMaxE = 0.;
-            int gsfECAL = 0;
-            float muPtMax = 0.;
-            //LOOP OVER ELES
-            for (int j = 0; j < c_gsf_size; ++j) {
-               // correct the energy
-               c_gsf_gsfet[j] = CorrectEnergy(input[p].first, j);
-               //CLEANING : FAKE ELES FROM MUONS
-               bool fakeEle = false;
-               for (int k = 0; k < c_muon_size; ++k) {
-                  //if (c_muon_pt[k] < muon_et) continue;
-                  float DeltaR = sqrt((c_gsf_eta[j] - c_muon_eta[k]) * (c_gsf_eta[j] - c_muon_eta[k]) + (c_gsf_phi[j] - c_muon_phi[k]) * (c_gsf_phi[j] - c_muon_phi[k]));
-                  if (DeltaR < 0.1) {
-                     fakeEle = true;
-                     break;
-                  }
-               }
-               if (fakeEle) continue;
-
-               if ((fabs(c_gsfsc_eta[j]) < 1.442)  //BARREL
-                   &&
-                   c_gsf_gsfet[j] > gsfPtMaxB) {
-                  gsfPtMaxB = c_gsf_gsfet[j];
-                  gsfECAL = 1;
-               }
-               if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)  //ENDCAP
-                   &&
-                   c_gsf_gsfet[j] > gsfPtMaxE) {
-                  gsfPtMaxE = c_gsf_gsfet[j];
-                  gsfECAL = -1;
-               }
-            }
-            //LOOP OVER MUS
-            for (int j = 0; j < c_muon_size; ++j)
-               if (fabs(c_muon_eta[j]) < muon_etaMax && c_muon_pt[j] > muPtMax) muPtMax = c_muon_pt[j];
-
-            if (((gsfECAL == 1 && gsfPtMaxB > bar_et)  //BARREL
-                 ||
-                 (gsfECAL == -1 && gsfPtMaxE > end_et)) //ENDCAP
-                && muPtMax > muon_et) {
-
-               emuLoose_nValidPv.at(p)->Fill(n_pvValid);
-               ++counter;
-            }
-         } // end loop over events
-
-         cout << "Number of events used for PV spectrum: " << counter << endl;
-
-         // calculate PU reweighting factors
-         if (p == DATA) {
-            emuLoose_nValidPv.at(DATA)->Scale(1. / emuLoose_nValidPv.at(DATA)->Integral());
-            dataEntries = dataTrig[0] + dataTrig[1] + dataTrig[2];
-         }
-         if (p > DATA) {
-            emuLoose_nValidPv.at(p)->Scale(1. / emuLoose_nValidPv.at(p)->Integral());
-            emuLoose_dataOverX_nValidPv.at(p - 1)->Divide(emuLoose_nValidPv.at(DATA), emuLoose_nValidPv.at(p));
-            cout << "sum over pv ratio: " << emuLoose_dataOverX_nValidPv.at(p - 1)->Integral() << endl;
-            //emuLoose_dataOverX_nValidPv.at(p - 1)->Scale(nPVtxMax / emuLoose_dataOverX_nValidPv.at(p - 1)->Integral());
-
-            cout << "Normalization factor PU reweighting: " << emuLoose_dataOverX_nValidPv.at(p - 1)->Integral() / nPVtxMax << endl;
-         }
-      } // end 1st loop over files
-
-      stringstream ssPUOutfile;
-      ssPUOutfile << "emu_PUinfo" << nPVtxMax << "PVtx_eleBar" << bar_et << "_eleEnd" << end_et << "_mu" << muon_et << "_" << LumiFactor << "pb-1.root";
-      TFile *outputPV = new TFile(ssPUOutfile.str().c_str(), "recreate");
-      outputPV->Cd("");
-
-      emuLoose_nValidPv.at(DATA)->Write();
-      for (unsigned int p = 0; p < emuLoose_dataOverX_nValidPv.size(); ++p) {
-         emuLoose_nValidPv.at(p + 1)->Write();
-         emuLoose_dataOverX_nValidPv.at(p)->Write();
-      }
-      outputPV->Close();
-
-      PVX_ScalingFactors.clear();
-      for (unsigned int p = 0; p < emuLoose_dataOverX_nValidPv.size(); ++p) {
-         vector<float> PVX_ScalingFactor;
-         for (unsigned int i = 0; i < nPVtxMax; ++i) {
-            PVX_ScalingFactor.push_back(emuLoose_dataOverX_nValidPv.at(p)->GetBinContent(i + 1));
-         }
-         PVX_ScalingFactors.push_back(PVX_ScalingFactor);
-      }
-   }
-   ///////////////////////////////////////////////////////////////////////////
 
    // output file
    stringstream ssOutfile;
    ssOutfile << outfileName << LumiFactor << "pb-1.root";
    TFile *output = new TFile(ssOutfile.str().c_str(), "recreate");
+
+   // write parameters
+   lumi.Write();
+   trgEff.Write();
+   trgEffLowEta.Write();
+   trgEffMidEta.Write();
+   trgEffHighEta.Write();
+   trgDataMcScaleFactor.Write();
+   trgDataMcScaleFactorLowEta.Write();
+   trgDataMcScaleFactorMidEta.Write();
+   trgDataMcScaleFactorHighEta.Write();
+   lumiScaleFactor.Write();
+   lumiScaleFactorEB.Write();
+   lumiScaleFactorEE.Write();
+   eleScaleFactorEB.Write();
+   eleScaleFactorEE.Write();
+   muScaleFactor.Write();
+   muScaleFactorLowEta.Write();
+   muScaleFactorMidEta.Write();
+   muScaleFactorHighEta.Write();
+   systErrLumi.Write();
+   systErrEff.Write();
+   systErrMCs.Write("systErrMCs", TObject::kSingleKey);
 
    runs_HLT_Mu22_Photon22_CaloIdL.first = 99999999;
    runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first = 99999999;
@@ -866,7 +732,6 @@ void emuSpectrum()
    dataTrig[1] = 0;
    dataTrig[2] = 0;
    dataEntries = 0;
-   // 2nd loop for analysis 
    // GETTING FILES
    for (int p = 0; p < nbFile; ++p) {
       cout << "accessing file " << p + 1 << ": " << input[p].first->GetName() << endl;
@@ -902,10 +767,7 @@ void emuSpectrum()
       thetree->SetBranchAddress("pv_totTrackSize", &c_pv_totTrackSize, &b_pv_totTrackSize);
 
       thetree->SetBranchAddress("rho", &c_rho, &b_rho);
-
-      //TRIGGER
-      thetree->SetBranchAddress("HLT_Mu15_eta2p1", &c_HLT_Mu15_eta2p1, &b_HLT_Mu15_eta2p1);
-      thetree->SetBranchAddress("HLT_Mu30_eta2p1", &c_HLT_Mu30_eta2p1, &b_HLT_Mu30_eta2p1);
+      thetree->SetBranchAddress("trueNVtx", &c_trueNVtx, &b_trueNVtx);
 
       //GSF
       thetree->SetBranchAddress("gsf_size", &c_gsf_size, &b_gsf_size);
@@ -917,7 +779,12 @@ void emuSpectrum()
       thetree->SetBranchAddress("gsf_eta", &c_gsf_eta, &b_gsf_eta);
       thetree->SetBranchAddress("gsf_theta", &c_gsf_theta, &b_gsf_theta);
       thetree->SetBranchAddress("gsf_phi", &c_gsf_phi, &b_gsf_phi);
+      thetree->SetBranchAddress("gsf_dxy", &c_gsf_dxy, &b_gsf_dxy);
+      thetree->SetBranchAddress("gsf_dxy_beamSpot", &c_gsf_dxy_beamSpot, &b_gsf_dxy_beamSpot);
+      thetree->SetBranchAddress("gsf_dxy_firstPVtx", &c_gsf_dxy_firstPVtx, &b_gsf_dxy_firstPVtx);
       thetree->SetBranchAddress("gsf_dz", &c_gsf_dz, &b_gsf_dz);
+      thetree->SetBranchAddress("gsf_dz_beamSpot", &c_gsf_dz_beamSpot, &b_gsf_dz_beamSpot);
+      thetree->SetBranchAddress("gsf_dz_firstPVtx", &c_gsf_dz_firstPVtx, &b_gsf_dz_firstPVtx);
       thetree->SetBranchAddress("gsf_isecaldriven", &c_gsf_isecaldriven, &b_gsf_isecaldriven);
       thetree->SetBranchAddress("gsf_charge", &c_gsf_charge, &b_gsf_charge);
       thetree->SetBranchAddress("gsf_deltaeta", &c_gsf_deltaeta, &b_gsf_deltaeta);
@@ -928,23 +795,15 @@ void emuSpectrum()
       thetree->SetBranchAddress("gsf_sigmaetaeta", &c_gsf_sigmaetaeta, &b_gsf_sigmaetaeta);
       thetree->SetBranchAddress("gsf_sigmaIetaIeta", &c_gsf_sigmaIetaIeta, &b_gsf_sigmaIetaIeta);
       thetree->SetBranchAddress("gsf_hovere", &c_gsf_hovere, &b_gsf_hovere);
-      thetree->SetBranchAddress("gsf_eOVERp", &c_gsf_eOVERp, &b_gsf_eOVERp);
-      thetree->SetBranchAddress("gsf_vz", &c_gsf_vz, &b_gsf_vz);
       thetree->SetBranchAddress("gsf_nHits", &c_gsf_nHits, &b_gsf_nHits);
       thetree->SetBranchAddress("gsf_nLostInnerHits", &c_gsf_nLostInnerHits, &b_gsf_nLostInnerHits);
-      thetree->SetBranchAddress("gsf_fBrem", &c_gsf_fBrem, &b_gsf_fBrem);
       thetree->SetBranchAddress("gsf_ecaliso", &c_gsf_ecaliso, &b_gsf_ecaliso);
       thetree->SetBranchAddress("gsf_hcaliso1", &c_gsf_hcaliso1, &b_gsf_hcaliso1);
       thetree->SetBranchAddress("gsf_hcaliso2", &c_gsf_hcaliso2, &b_gsf_hcaliso2);
       thetree->SetBranchAddress("gsf_trackiso", &c_gsf_trackiso, &b_gsf_trackiso);
-      thetree->SetBranchAddress("gsfsc_px", &c_gsfsc_px, &b_gsfsc_px);
-      thetree->SetBranchAddress("gsfsc_py", &c_gsfsc_py, &b_gsfsc_py);
-      thetree->SetBranchAddress("gsfsc_pt", &c_gsfsc_pt, &b_gsfsc_pt);
       thetree->SetBranchAddress("gsfsc_e", &c_gsfsc_e, &b_gsfsc_e);
       thetree->SetBranchAddress("gsfsc_eta", &c_gsfsc_eta, &b_gsfsc_eta);
       thetree->SetBranchAddress("gsfsc_phi", &c_gsfsc_phi, &b_gsfsc_phi);
-      thetree->SetBranchAddress("gsfpass_ID", &c_gsfpass_ID, &b_gsfpass_ID);
-      thetree->SetBranchAddress("gsfpass_ISO", &c_gsfpass_ISO, &b_gsfpass_ISO);
       thetree->SetBranchAddress("gsfpass_HEEP", &c_gsfpass_HEEP, &b_gsfpass_HEEP);
 
       //MUONS
@@ -972,36 +831,37 @@ void emuSpectrum()
       thetree->SetBranchAddress("muon_nlayerswithhits", &c_muon_nlayerswithhits, &b_muon_nlayerswithhits);
       thetree->SetBranchAddress("muon_nSegmentMatch", &c_muon_nSegmentMatch, &b_muon_nSegmentMatch);
       thetree->SetBranchAddress("muon_isTrackerMuon", &c_muon_isTrackerMuon, &b_muon_isTrackerMuon);
-      thetree->SetBranchAddress("muon_chi2", &c_muon_chi2, &b_muon_chi2);
-      thetree->SetBranchAddress("muon_ndof", &c_muon_ndof, &b_muon_ndof);
       thetree->SetBranchAddress("muon_normChi2", &c_muon_normChi2, &b_muon_normChi2);
-      thetree->SetBranchAddress("muon_d0", &c_muon_d0, &b_muon_d0);
       thetree->SetBranchAddress("muon_dz_cmsCenter", &c_muon_dz_cmsCenter, &b_muon_dz_cmsCenter);
       thetree->SetBranchAddress("muon_dz_beamSpot", &c_muon_dz_beamSpot, &b_muon_dz_beamSpot);
       thetree->SetBranchAddress("muon_dz_firstPVtx", &c_muon_dz_firstPVtx, &b_muon_dz_firstPVtx);
       thetree->SetBranchAddress("muon_dxy_cmsCenter", &c_muon_dxy_cmsCenter, &b_muon_dxy_cmsCenter);
       thetree->SetBranchAddress("muon_dxy_beamSpot", &c_muon_dxy_beamSpot, &b_muon_dxy_beamSpot);
       thetree->SetBranchAddress("muon_dxy_firstPVtx", &c_muon_dxy_firstPVtx, &b_muon_dxy_firstPVtx);
-      thetree->SetBranchAddress("muon_d0Error", &c_muon_d0Error, &b_muon_d0Error);
       thetree->SetBranchAddress("muon_dzError", &c_muon_dzError, &b_muon_dzError);
       thetree->SetBranchAddress("muon_dxyError", &c_muon_dxyError, &b_muon_dxyError);
       thetree->SetBranchAddress("muon_trackIso03", &c_muon_trackIso03, &b_muon_trackIso03);
-      thetree->SetBranchAddress("muon_trackIso05", &c_muon_trackIso05, &b_muon_trackIso05);
       thetree->SetBranchAddress("muon_emIso03", &c_muon_emIso03, &b_muon_emIso03);
-      thetree->SetBranchAddress("muon_emIso05", &c_muon_emIso05, &b_muon_emIso05);
       thetree->SetBranchAddress("muon_hadIso03", &c_muon_hadIso03, &b_muon_hadIso03);
-      thetree->SetBranchAddress("muon_hadIso05", &c_muon_hadIso05, &b_muon_hadIso05);
       thetree->SetBranchAddress("muon_trackIso03_ptInVeto", &c_muon_trackIso03_ptInVeto, &b_muon_trackIso03_ptInVeto);
-      thetree->SetBranchAddress("muon_trackIso05_ptInVeto", &c_muon_trackIso05_ptInVeto, &b_muon_trackIso05_ptInVeto);
       thetree->SetBranchAddress("muon_emIso03_ptInVeto", &c_muon_emIso03_ptInVeto, &b_muon_emIso03_ptInVeto);
-      thetree->SetBranchAddress("muon_emIso05_ptInVeto", &c_muon_emIso05_ptInVeto, &b_muon_emIso05_ptInVeto);
       thetree->SetBranchAddress("muon_hadIso03_ptInVeto", &c_muon_hadIso03_ptInVeto, &b_muon_hadIso03_ptInVeto);
-      thetree->SetBranchAddress("muon_hadIso05_ptInVeto", &c_muon_hadIso05_ptInVeto, &b_muon_hadIso05_ptInVeto);
-      thetree->SetBranchAddress("muon_innerPosx", &c_muon_innerPosx, &b_muon_innerPosx);
-      thetree->SetBranchAddress("muon_innerPosy", &c_muon_innerPosy, &b_muon_innerPosy);
-      thetree->SetBranchAddress("muon_innerPosz", &c_muon_innerPosz, &b_muon_innerPosz);
+      
+      if (storeGenMTtbar[p]) thetree->SetBranchAddress("genPair_mass", &c_genPair_mass, &b_genPair_mass);
+
+      // get the histogram with the true number of vertices
+      TH1F *puMc = new TH1F("puMc" + suffix[p], "puMc" + suffix[p], 100, 0., 100.);
+      thetree->Draw("trueNVtx>>puMc" + suffix[p]);
+      TH1F *puMcNorm = new TH1F("dummy" + suffix[p], "dummy" + suffix[p], 100, 0., 100.);
+      if (p > DATA) puMcNorm = (TH1F *)puMc->DrawNormalized();
+      puMcNorm->SetName("puMc" + suffix[p] + "Norm");
+      puMcNorm->SetTitle("puMc" + suffix[p] + "Norm");
+      // calculate the pu weights
+      TH1F *puWeights = new TH1F("puWeight" + suffix[p], "puWeight" + suffix[p], 100, 0., 100.);
+      if (p > DATA) puWeights->Divide(puDataNorm, puMcNorm);
 
       // tree with event data
+      bool passTrg = false;
       float emuInvMass = 0.;
       int evtRegion;
       int eCharge;
@@ -1012,122 +872,198 @@ void emuSpectrum()
       emuTree->Branch("runnr", &c_runnumber, "runnr/i");
       emuTree->Branch("eventnr", &c_eventnumber, "eventnr/i");
       emuTree->Branch("lumiSec", &c_luminosityBlock, "lumiSec/i");
+      emuTree->Branch("passTrg", &passTrg, "passTrg/O");
       emuTree->Branch("mass", &emuInvMass, "mass/F");
       emuTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
       emuTree->Branch("eCharge", &eCharge, "eCharge/I");
       emuTree->Branch("muCharge", &muCharge, "muCharge/I");
       emuTree->Branch("weight", &totWeight, "weight/F");
       emuTree->Branch("puWeight", &puWeight, "puWeight/F");
+      if (storeGenMTtbar[p]) emuTree->Branch("genMTtbar", &c_genPair_mass, "genMTtbar/F");
+      // control variables
+      float dZFstPVtx = 0.;
+      float dXYFstPVtx = 0.;
+      float dPhi = 0.;
+      float dEta = 0.;
+      float eleEt = 0.;
+      float eleEta = 0.;
+      float elePhi = 0.;
+      float eleDEta = 0.;
+      float eleDPhi = 0.;
+      float eleHOE = 0.;
+      float eleSigmaIEIE = 0.;
+      float eleEcalIso = 0.;
+      float eleHcalIso12 = 0.;
+      float eleTrkIso = 0.;
+      float eleLostHits = 0.;
+      float muIsoCombRel = 0.;
+      float muEtEleOPtMu = 0.;
+      float muPtPlusOPtMinus = 0.;
+      float muPt = 0.;
+      float muEta = 0.;
+      float muPhi = 0.;
+      float muHitLayers = 0.;
+      float muPxlHits = 0.;
+      float muMuHits = 0.;
+      float muDZFstPVtx = 0.;
+      float muDXYFstPVtx = 0.;
+      float muNSeg = 0.;
+      float muTrkIso03 = 0.;
+      float numOfJetsPt20 = 0.;
+      float numOfJetsPt30 = 0.;
+      emuTree->Branch("pfMet", &c_pfmet, "pfMet/F");
+      emuTree->Branch("nVtx", &c_pvsize, "nVtx/F");
+      emuTree->Branch("dZFstPVtx", &dZFstPVtx, "dZFstPVtx/F");
+      emuTree->Branch("dXYFstPVtx", &dXYFstPVtx, "dXYFstPVtx/F");
+      emuTree->Branch("rho", &c_rho, "rho/F");
+      emuTree->Branch("dPhi", &dPhi, "dPhi/F");
+      emuTree->Branch("dEta", &dEta, "dEta/F");
+      emuTree->Branch("eleEt", &eleEt, "eleEt/F");
+      emuTree->Branch("eleEta", &eleEta, "eleEta/F");
+      emuTree->Branch("elePhi", &elePhi, "eleDPhi/F");
+      emuTree->Branch("eleDEta", &eleDEta, "eleDEta/F");
+      emuTree->Branch("eleDPhi", &eleDPhi, "eleDPhi/F");
+      emuTree->Branch("eleHOE", &eleHOE, "eleHOE/F");
+      emuTree->Branch("eleSigmaIEIE", &eleSigmaIEIE, "eleSigmaIEIE/F");
+      emuTree->Branch("eleEcalIso", &eleEcalIso, "eleEcalIso/F");
+      emuTree->Branch("eleHcalIso12", &eleHcalIso12, "eleHcalIso12/F");
+      emuTree->Branch("eleTrkIso", &eleTrkIso, "eleTrkIso/F");
+      emuTree->Branch("eleLostHits", &eleLostHits, "eleLostHits/F");
+      emuTree->Branch("muIsoCombRel", &muIsoCombRel, "muIsoCombRel/F");
+      emuTree->Branch("muEtEleOPtMu", &muEtEleOPtMu, "muEtEleOPtMu/F");
+      emuTree->Branch("muPtPlusOPtMinus", &muPtPlusOPtMinus, "muPtPlusOPtMinus/F");
+      emuTree->Branch("muPt", &muPt, "muPt/F");
+      emuTree->Branch("muEta", &muEta, "muEta/F");
+      emuTree->Branch("muPhi", &muPhi, "muPhi/F");
+      emuTree->Branch("muHitLayers", &muHitLayers, "muHitLayers/F");
+      emuTree->Branch("muPxlHits", &muPxlHits, "muPxlHits/F");
+      emuTree->Branch("muMuHits", &muMuHits, "muMuHits/F");
+      emuTree->Branch("muDZFstPVtx", &muDZFstPVtx, "muDZFstPVtx/F");
+      emuTree->Branch("muDXYFstPVtx", &muDXYFstPVtx, "muDXYFstPVtx/F");
+      emuTree->Branch("muNSeg", &muNSeg, "muNSeg/F");
+      emuTree->Branch("muTrkIso03", &muTrkIso03, "muTrkIso03/F");
+      emuTree->Branch("numOfJets", &c_jetColl_size, "numOfJets/F");
+      emuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
+      emuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
 
       // set up histograms
       vector<TH1F *> helper;
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMass_" + sign[k] + suffix[p], "emuMass_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      emuMass.push_back(helper);
+      h_emuMass.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMassEB_" + sign[k] + suffix[p], "emuMassEB_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      emuMassEB.push_back(helper);
+      h_emuMassEB.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMassEE_" + sign[k] + suffix[p], "emuMassEE_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      emuMassEE.push_back(helper);
+      h_emuMassEE.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emu_mass_accVSgood_" + sign[k] + suffix[p], "emu_mass_accVSgood_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      emu_mass_accVSgood.push_back(helper);
+      h_emu_mass_accVSgood.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("PFMET_" + sign[k] + suffix[p], "PFMET_" + sign[k] + suffix[p], 50, 0., 500.));
-      pfMet.push_back(helper);
+      h_pfMet.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("nVtx_" + sign[k] + suffix[p], "nVtx_" + sign[k] + suffix[p], nPVtxMax, 0., nPVtxMax));
-      nVtx.push_back(helper);
+      h_nVtx.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dDz_" + sign[k] + suffix[p], "dDz_" + sign[k] + suffix[p], 50, 0., 2.));
+      h_dDz.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dDzBeamSpot_" + sign[k] + suffix[p], "dDzBeamSpot_" + sign[k] + suffix[p], 100, 0., 0.2));
+      h_dDzBeamSpot.push_back(helper);
+      helper.clear();
+      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dDzFirstPVtx_" + sign[k] + suffix[p], "dDzFirstPVtx_" + sign[k] + suffix[p], 100, 0., 0.2));
+      h_dDzFirstPVtx.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("rho_" + sign[k] + suffix[p], "rho_" + sign[k] + suffix[p], 50, 0., 50.));
-      rho.push_back(helper);
+      h_rho.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dPhi_" + sign[k] + suffix[p], "dPhi_" + sign[k] + suffix[p], 64, 0., 3.2));
-      dPhi.push_back(helper);
+      h_dPhi.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEt_" + sign[k] + suffix[p], "eleEt_" + sign[k] + suffix[p], 50, 0., 500.));
-      eleEt.push_back(helper);
+      h_eleEt.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEta_" + sign[k] + suffix[p], "eleEta_" + sign[k] + suffix[p], 25, -2.5, 2.5));
-      eleEta.push_back(helper);
+      h_eleEta.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("elePhi_" + sign[k] + suffix[p], "elePhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
-      elePhi.push_back(helper);
+      h_elePhi.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleDEta_" + sign[k] + suffix[p], "eleDEta_" + sign[k] + suffix[p], 50, -0.008, 0.008));
-      eleDEta.push_back(helper);
+      h_eleDEta.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleDPhi_" + sign[k] + suffix[p], "eleDPhi_" + sign[k] + suffix[p], 50, -0.06, 0.06));
-      eleDPhi.push_back(helper);
+      h_eleDPhi.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleHOE_" + sign[k] + suffix[p], "eleHOE_" + sign[k] + suffix[p], 100, 0., 0.06));
-      eleHOE.push_back(helper);
+      h_eleHOE.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleSigmaIEIE_" + sign[k] + suffix[p], "eleSigmaIEIE_" + sign[k] + suffix[p], 50, 0., 0.04));
-      eleSigmaIEIE.push_back(helper);
+      h_eleSigmaIEIE.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEcalIso_" + sign[k] + suffix[p], "eleEcalIso_" + sign[k] + suffix[p], 45, -10., 35.));
-      eleEcalIso.push_back(helper);
+      h_eleEcalIso.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleHcalIso12_" + sign[k] + suffix[p], "eleHcalIso12_" + sign[k] + suffix[p], 20, 0., 20.));
-      eleHcalIso12.push_back(helper);
+      h_eleHcalIso12.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleTrkIso_" + sign[k] + suffix[p], "eleTrkIso_" + sign[k] + suffix[p], 50, 0., 5.));
-      eleTrkIso.push_back(helper);
+      h_eleTrkIso.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleLostHits_" + sign[k] + suffix[p], "eleLostHits_" + sign[k] + suffix[p], 3, 0., 3.));
-      eleLostHits.push_back(helper);
+      h_eleLostHits.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIsoCombRel_" + sign[k] + suffix[p], "muIsoCombRel_" + sign[k] + suffix[p], 50, 0., 0.2));
-      muIsoCombRel.push_back(helper);
+      h_muIsoCombRel.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muEtEleOPtMu_" + sign[k] + suffix[p], "muEtEleOPtMu_" + sign[k] + suffix[p], 50, 0., 4.0));
-      muEtEleOPtMu.push_back(helper);
+      h_muEtEleOPtMu.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPtPlusOPtMinus_" + sign[k] + suffix[p], "muPtPlusOPtMinus_" + sign[k] + suffix[p], 50, 0., 4.0));
-      muPtPlusOPtMinus.push_back(helper);
+      h_muPtPlusOPtMinus.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPt_" + sign[k] + suffix[p], "muPt_" + sign[k] + suffix[p], 50, 0., 500.));
-      muPt.push_back(helper);
+      h_muPt.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muEta_" + sign[k] + suffix[p], "muEta_" + sign[k] + suffix[p], 25, -2.5, 2.5));
-      muEta.push_back(helper);
+      h_muEta.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPhi_" + sign[k] + suffix[p], "muPhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
-      muPhi.push_back(helper);
+      h_muPhi.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muHitLayers_" + sign[k] + suffix[p], "muHitLayers_" + sign[k] + suffix[p], 20, 0., 20.));
-      muHitLayers.push_back(helper);
+      h_muHitLayers.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPxlHits_" + sign[k] + suffix[p], "muPxlHits_" + sign[k] + suffix[p], 10, 0., 10));
-      muPxlHits.push_back(helper);
+      h_muPxlHits.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muMuHits_" + sign[k] + suffix[p], "muMuHits_" + sign[k] + suffix[p], 12, 0., 12));
-      muMuHits.push_back(helper);
+      h_muMuHits.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muDxyBeamSpot_" + sign[k] + suffix[p], "muDxyBeamSpot_" + sign[k] + suffix[p], 200, -0.2, 0.2));
-      muDxyBeamSpot.push_back(helper);
+      h_muDxyBeamSpot.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muNSeg_" + sign[k] + suffix[p], "muNSeg_" + sign[k] + suffix[p], 10, 0., 10.));
-      muNSeg.push_back(helper);
+      h_muNSeg.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muTrkIso03_" + sign[k] + suffix[p], "muTrkIso03_" + sign[k] + suffix[p], 50, 0., 20.));
-      muTrkIso03.push_back(helper);
+      h_muTrkIso03.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJets_" + sign[k] + suffix[p], "numOfJets_" + sign[k] + suffix[p], 30, 0., 30.));
-      nJets.push_back(helper);
+      h_nJets.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJetsPt20_" + sign[k] + suffix[p], "numOfJetsPt20_" + sign[k] + suffix[p], 30, 0., 30.));
-      nJetsPt20.push_back(helper);
+      h_nJetsPt20.push_back(helper);
       helper.clear();
       for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJetsPt30_" + sign[k] + suffix[p], "numOfJetsPt30_" + sign[k] + suffix[p], 30, 0., 30.));
-      nJetsPt30.push_back(helper);
+      h_nJetsPt30.push_back(helper);
 
       Long64_t nentries = (*thetree).GetEntries();
       cout << nentries << " events" << endl;
       if (p == DATA) {
          cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-         cout << "M_emu > 600GeV/c^2       |  run   | lumi |    event   |   M_emu  |"
+         cout << "M_emu > 600GeV/c^2       |     run:lumi:event    |   M_emu  |"
               << " muon pt |"
               << " muon eta |"
               //<< "  muon phi  |"
@@ -1164,14 +1100,15 @@ void emuSpectrum()
          if (c_gsf_size < 1 || c_muon_size < 1) continue;
 
          int prescale = 0;
-         if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) continue;
+         passTrg = true;
+         if (p == DATA && Trigger(input[p].first, i, prescale, dataTrig) < 1) passTrg = false;
          if (p != DATA) {
             if (i < nentries * dataTrig[0] / dataEntries) {
-               if (Trigger(input[p].first, i, prescale, trig, 1) < 1) continue;
+               if (Trigger(input[p].first, i, prescale, trig, 1) < 1) passTrg = false;
             } else if (i < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
-               if (Trigger(input[p].first, i, prescale, trig, 2) < 1) continue;
+               if (Trigger(input[p].first, i, prescale, trig, 2) < 1) passTrg = false;
             } else {
-               if (Trigger(input[p].first, i, prescale, trig, 3) < 1) continue;
+               if (Trigger(input[p].first, i, prescale, trig, 3) < 1) passTrg = false;
             }
          }
 
@@ -1181,30 +1118,18 @@ void emuSpectrum()
          vector<int> MU_passGOOD;
          vector<int> MU_passACC;
 
-         //PRIMARY VTX COUNTING
-         unsigned int n_pvValid = 0;
-         for (int j = 0; j < c_pvsize; ++j) {
-            //if (c_pv_ndof[j] > 3 && c_pv_nTracks[j] > 3)
-               n_pvValid++;
-         }
-         if (p >= TTBAR && n_pvValid < 1) continue;
-
-         //FILL THE VTX WEIGTH
-         float npv_weight = 1.;
-         if (p >= TTBAR) {
-           if (n_pvValid < nPVtxMax) npv_weight = PVX_ScalingFactors.at(p - 1).at(n_pvValid);
-           else cout << "Event has more than " << nPVtxMax << " vertices. Number of valid primary vertices: " << n_pvValid << endl;
-         }
-         float weight = npv_weight;
+         // set the PU weight
+         if (usePUInfo && p > DATA) puWeight = puWeights->GetBinContent(puWeights->FindBin(c_trueNVtx));
+         float weight = puWeight;
 
          //LOOP OVER ELES
          for (int j = 0; j < c_gsf_size; ++j) {
             // correct the energy
-            c_gsf_gsfet[j] = CorrectEnergy(input[p].first, j);
+            //if (p == 1) c_gsf_gsfet[j] = CorrectEnergy(input[p].first, j);
             //CLEANING : FAKE ELES FROM MUONS
             bool fakeEle = false;
             for (int k = 0; k < c_muon_size; ++k) {
-               //if (c_muon_pt[k] < muon_et) continue;
+               //if (c_muon_pt[k] < muon_pt) continue;
                float DeltaR = sqrt((c_gsf_eta[j] - c_muon_eta[k]) * (c_gsf_eta[j] - c_muon_eta[k]) + (c_gsf_phi[j] - c_muon_phi[k]) * (c_gsf_phi[j] - c_muon_phi[k]));
                if (DeltaR < 0.1) {
                   fakeEle = true;
@@ -1255,7 +1180,7 @@ void emuSpectrum()
                    && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * c_gsf_gsfet[j] + bar_isoEcalHcalRho * c_rho)
                    && c_gsf_trackiso[j] < bar_isoTrack
                    && c_gsf_nLostInnerHits[j] <= bar_missInnerHits
-                  ) GSF_passHEEP.push_back(j);
+                  ) if ((selection == 3 && fabs(c_gsf_dxy_firstPVtx[j]) <= bar_dxy) || selection != 3) GSF_passHEEP.push_back(j);
    
                //ENDCAP HEEP
                if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)
@@ -1269,7 +1194,7 @@ void emuSpectrum()
                       || (c_gsf_gsfet[j] >= 50. && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (end_isoEcalHcal1_1_2 + end_isoEcalHcal1_2 * c_gsf_gsfet[j] + end_isoEcalHcalRho * c_rho)))
                    && c_gsf_trackiso[j] < end_isoTrack
                    && c_gsf_nLostInnerHits[j] <= end_missInnerHits
-                  ) GSF_passHEEP.push_back(j);
+                  ) if ((selection == 3 && fabs(c_gsf_dxy_firstPVtx[j]) <= end_dxy) || selection != 3) GSF_passHEEP.push_back(j);
             }
             /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1282,23 +1207,29 @@ void emuSpectrum()
          //LOOP OVER MUS
          for (int j = 0; j < c_muon_size; ++j) {
             //MU PASS GOOD
-            if (c_muon_pt[j] > muon_et
+            if (c_muon_pt[j] > muon_pt
+                && c_muon_ptError[j] / c_muon_pt[j] < muon_dptOverPt
                 && fabs(c_muon_eta[j]) < muon_etaMax
                 && c_muon_nhitstrack[j] >= muon_nHitsMinGlobal
                 && c_muon_nhitspixel[j] >= muon_nHitsMinPixel
                 && c_muon_nhitsmuons[j] >= muon_nHitsMinMuon
                 && c_muon_nlayerswithhits[j] >= muon_nLayersMin
-                && fabs(c_muon_dxy_beamSpot[j]) < muon_impactParamMax
+                && fabs(c_muon_dxy_firstPVtx[j]) < muon_impactParamMaxXY
+                //&& fabs(c_muon_dz_firstPVtx[j]) < muon_impactParamMaxZ
                 && c_muon_nSegmentMatch[j] >= muon_nSegMatchMin
                 && c_muon_isTrackerMuon[j]
                 && c_muon_trackIso03[j] / c_muon_pt[j] < muon_relIsoCutMax
                ) MU_passGOOD.push_back(j);
 
             //MU PASS ACC
-            if (c_muon_pt[j] > muon_et
+            if (c_muon_pt[j] > muon_pt
                 && fabs(c_muon_eta[j]) < muon_etaMax
                ) MU_passACC.push_back(j);
          }
+
+         // veto when there are more than one good candidates
+         if (GSF_passHEEP.size() > 1) continue;
+         if (MU_passGOOD.size() > 1) continue;
 
          //search highest pt passing muon if there are more than one
          unsigned int MU_leadingPassGOOD = 0;
@@ -1309,10 +1240,6 @@ void emuSpectrum()
 
          //HEEP - MU_GOOD
          if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) {
-            // remove duplicates
-            // TODO implement deltaR <0.1 correctly
-            //if (fabs(c_gsf_phi[GSF_passHEEP[0]] - c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]]) < 0.1) continue;
-
             TLorentzVector ele1;
             TLorentzVector mu1;
 
@@ -1321,8 +1248,8 @@ void emuSpectrum()
 
             double invMass = (ele1 + mu1).M();
 
-            // shift MC spectrum
-            //if (p > DATA) invMass -= 5.;
+            // vertex matching of tracks by dz
+            //if (fabs(c_gsf_dz_beamSpot[GSF_passHEEP[0]] - c_muon_dz_beamSpot[MU_passGOOD[MU_leadingPassGOOD]]) > 0.05) continue;
 
             //MASS CUT
             if (invMass < minInvMass) continue;
@@ -1333,19 +1260,34 @@ void emuSpectrum()
 
             // set correction factors according to detector region
             float Elec_ScaleFactor = 1.;
-            if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) Elec_ScaleFactor = Elec_ScaleFactorBar;
-            else if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) Elec_ScaleFactor = Elec_ScaleFactorEnd;
-            float MCemuScaleFactor = Elec_ScaleFactor * Muon_ScaleFactor * Lumi_ScaleFactor * triggerDataMCScaleFactor; 
-            float MCScaleFactor = Elec_ScaleFactor * Muon_ScaleFactor * Lumi_ScaleFactor * triggerDataMCScaleFactor; 
+            float Lumi_ScaleFactor = 1.;
+            if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) {
+              Elec_ScaleFactor = eleScaleFactorEB.GetVal();
+              Lumi_ScaleFactor = lumiScaleFactorEB.GetVal();
+            }
+            else if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) {
+              Elec_ScaleFactor = eleScaleFactorEE.GetVal();
+              Lumi_ScaleFactor = lumiScaleFactorEE.GetVal();
+            }
+            float MCemuScaleFactor = Elec_ScaleFactor * muScaleFactor.GetVal() * Lumi_ScaleFactor * trgDataMcScaleFactor.GetVal(); 
+            float MCScaleFactor = Elec_ScaleFactor * muScaleFactor.GetVal() * Lumi_ScaleFactor * trgDataMcScaleFactor.GetVal(); 
 
             // correction for trigger
-            //if (p == ZMM) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
-            //if (1) MCemuScaleFactor = MCScaleFactor * Elec_trigger;
+            //if (p == ZMM) MCemuScaleFactor = MCScaleFactor * trgEff.GetVal();
+            //if (1) MCemuScaleFactor = MCScaleFactor * trgEff.GetVal();
             //else MCemuScaleFactor = MCScaleFactor;
             MCemuScaleFactor = MCScaleFactor;
 
             if (lowMassPuOnly && invMass > puMassCut) weight = 1.;
             if (p > DATA) weight *= MCemuScaleFactor;
+
+            int jetsPt20 = 0;
+            int jetsPt30 = 0;
+            for (int jetIt = 0; jetIt < c_jetColl_size; ++ jetIt) {
+               if (c_jetPt[jetIt] > 20.) ++jetsPt20;
+               if (c_jetPt[jetIt] > 30.) ++jetsPt30;
+            }
+            //if (c_jetColl_size > 10) continue;
 
             // fill the data tree
             emuInvMass = invMass;
@@ -1353,10 +1295,43 @@ void emuSpectrum()
             muCharge = c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]];
             totWeight = weight;
             if (p > DATA) totWeight *= input[p].second * LumiFactor;
-            puWeight = npv_weight;
             if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) evtRegion = 0;
             else if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) evtRegion = 1;
             else evtRegion = -1;
+            // fill control variables
+            dZFstPVtx = fabs(c_gsf_dz_firstPVtx[GSF_passHEEP[0]] - c_muon_dz_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]]);
+            dXYFstPVtx = fabs(c_gsf_dxy_firstPVtx[GSF_passHEEP[0]] - c_muon_dxy_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]]);
+            if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi = fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]);
+            if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) dPhi = 6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]);
+            dEta = fabs(c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_eta[GSF_passHEEP[0]]);
+            eleEt = c_gsf_gsfet[GSF_passHEEP[0]];
+            eleEta = c_gsf_eta[GSF_passHEEP[0]];
+            elePhi = c_gsf_phi[GSF_passHEEP[0]];
+            eleDEta = c_gsf_deltaeta[GSF_passHEEP[0]];
+            eleDPhi = c_gsf_deltaphi[GSF_passHEEP[0]];
+            eleHOE = c_gsf_hovere[GSF_passHEEP[0]];
+            eleSigmaIEIE = c_gsf_sigmaIetaIeta[GSF_passHEEP[0]];
+            eleEcalIso = c_gsf_ecaliso[GSF_passHEEP[0]];
+            eleHcalIso12 = c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]];
+            eleTrkIso = c_gsf_trackiso[GSF_passHEEP[0]];
+            eleLostHits = c_gsf_nLostInnerHits[GSF_passHEEP[0]];
+            muIsoCombRel = CombRelIso;
+            muEtEleOPtMu = c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]];
+            if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) muPtPlusOPtMinus = c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]];
+            if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) muPtPlusOPtMinus = c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]]/c_gsf_gsfet[GSF_passHEEP[0]];
+            muPt = c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]];
+            muEta = c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]];
+            muPhi = c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]];
+            muHitLayers = c_muon_nlayerswithhits[MU_passGOOD[MU_leadingPassGOOD]];
+            muPxlHits = c_muon_nhitspixel[MU_passGOOD[MU_leadingPassGOOD]];
+            muMuHits = c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]];
+            muDZFstPVtx = c_muon_dz_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]];
+            muDXYFstPVtx = c_muon_dxy_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]];
+            muNSeg = c_muon_nSegmentMatch[MU_passGOOD[MU_leadingPassGOOD]];
+            muTrkIso03 = c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]];
+            numOfJetsPt20 = jetsPt20;
+            numOfJetsPt30 = jetsPt30;
+
             emuTree->Fill();
 
             // fill histograms for all, LS and OS
@@ -1364,61 +1339,49 @@ void emuSpectrum()
                if (k == 1 && c_gsf_charge[GSF_passHEEP[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
                if (k == 2 && c_gsf_charge[GSF_passHEEP[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) continue;
 
-               emuMass.at(p).at(k)->Fill(invMass, weight);
-               if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) emuMassEB.at(p).at(k)->Fill(invMass, weight);
-               if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) emuMassEE.at(p).at(k)->Fill(invMass, weight);
+               h_emuMass.at(p).at(k)->Fill(invMass, weight);
+               if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) h_emuMassEB.at(p).at(k)->Fill(invMass, weight);
+               if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) h_emuMassEE.at(p).at(k)->Fill(invMass, weight);
 
-               int jetsPt20 = 0;
-               int jetsPt30 = 0;
-               for (int jetIt = 0; jetIt < c_jetColl_size; ++ jetIt) {
-                  if (c_jetPt[jetIt] > 20.) ++jetsPt20;
-                  if (c_jetPt[jetIt] > 30.) ++jetsPt30;
-               }
+               if (!passTrg) continue;
 
                // fill test histograms
-               pfMet.at(p).at(k)->Fill(c_pfmet, weight);
-               nVtx.at(p).at(k)->Fill(n_pvValid, weight);
-               rho.at(p).at(k)->Fill(c_rho, weight);
-               nJets.at(p).at(k)->Fill(c_jetColl_size, weight);
-               nJetsPt20.at(p).at(k)->Fill(jetsPt20, weight);
-               nJetsPt30.at(p).at(k)->Fill(jetsPt30, weight);
-               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi.at(p).at(k)->Fill(fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
-               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) dPhi.at(p).at(k)->Fill(6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
-               eleEt.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]], weight);
-               eleEta.at(p).at(k)->Fill(c_gsf_eta[GSF_passHEEP[0]], weight);
-               elePhi.at(p).at(k)->Fill(c_gsf_phi[GSF_passHEEP[0]], weight);
-               eleDEta.at(p).at(k)->Fill(c_gsf_deltaeta[GSF_passHEEP[0]], weight);
-               eleDPhi.at(p).at(k)->Fill(c_gsf_deltaphi[GSF_passHEEP[0]], weight);
-               eleHOE.at(p).at(k)->Fill(c_gsf_hovere[GSF_passHEEP[0]], weight);
-               eleSigmaIEIE.at(p).at(k)->Fill(c_gsf_sigmaIetaIeta[GSF_passHEEP[0]], weight);
-               eleEcalIso.at(p).at(k)->Fill(c_gsf_ecaliso[GSF_passHEEP[0]], weight);
-               eleHcalIso12.at(p).at(k)->Fill(c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]], weight);
-               eleTrkIso.at(p).at(k)->Fill(c_gsf_trackiso[GSF_passHEEP[0]], weight);
-               eleLostHits.at(p).at(k)->Fill(c_gsf_nLostInnerHits[GSF_passHEEP[0]], weight);
+               h_pfMet.at(p).at(k)->Fill(c_pfmet, weight);
+               h_nVtx.at(p).at(k)->Fill(c_pvsize, weight);
+               h_dDz.at(p).at(k)->Fill(fabs(c_gsf_dz[GSF_passHEEP[0]] - c_muon_dz_cmsCenter[MU_passGOOD[MU_leadingPassGOOD]]), weight);
+               h_dDzBeamSpot.at(p).at(k)->Fill(fabs(c_gsf_dz_beamSpot[GSF_passHEEP[0]] - c_muon_dz_beamSpot[MU_passGOOD[MU_leadingPassGOOD]]), weight); // change this
+               h_dDzFirstPVtx.at(p).at(k)->Fill(fabs(c_gsf_dz_firstPVtx[GSF_passHEEP[0]] - c_muon_dz_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]]), weight); // change this
+               h_rho.at(p).at(k)->Fill(c_rho, weight);
+               h_nJets.at(p).at(k)->Fill(c_jetColl_size, weight);
+               h_nJetsPt20.at(p).at(k)->Fill(jetsPt20, weight);
+               h_nJetsPt30.at(p).at(k)->Fill(jetsPt30, weight);
+               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) h_dPhi.at(p).at(k)->Fill(fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
+               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) h_dPhi.at(p).at(k)->Fill(6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
+               h_eleEt.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]], weight);
+               h_eleEta.at(p).at(k)->Fill(c_gsf_eta[GSF_passHEEP[0]], weight);
+               h_elePhi.at(p).at(k)->Fill(c_gsf_phi[GSF_passHEEP[0]], weight);
+               h_eleDEta.at(p).at(k)->Fill(c_gsf_deltaeta[GSF_passHEEP[0]], weight);
+               h_eleDPhi.at(p).at(k)->Fill(c_gsf_deltaphi[GSF_passHEEP[0]], weight);
+               h_eleHOE.at(p).at(k)->Fill(c_gsf_hovere[GSF_passHEEP[0]], weight);
+               h_eleSigmaIEIE.at(p).at(k)->Fill(c_gsf_sigmaIetaIeta[GSF_passHEEP[0]], weight);
+               h_eleEcalIso.at(p).at(k)->Fill(c_gsf_ecaliso[GSF_passHEEP[0]], weight);
+               h_eleHcalIso12.at(p).at(k)->Fill(c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]], weight);
+               h_eleTrkIso.at(p).at(k)->Fill(c_gsf_trackiso[GSF_passHEEP[0]], weight);
+               h_eleLostHits.at(p).at(k)->Fill(c_gsf_nLostInnerHits[GSF_passHEEP[0]], weight);
 
-               muIsoCombRel.at(p).at(k)->Fill(CombRelIso, weight);
-               muEtEleOPtMu.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) muPtPlusOPtMinus.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) muPtPlusOPtMinus.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]]/c_gsf_gsfet[GSF_passHEEP[0]], weight);
-               muPt.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muEta.at(p).at(k)->Fill(c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muPhi.at(p).at(k)->Fill(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muHitLayers.at(p).at(k)->Fill(c_muon_nlayerswithhits[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muPxlHits.at(p).at(k)->Fill(c_muon_nhitspixel[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muMuHits.at(p).at(k)->Fill(c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muDxyBeamSpot.at(p).at(k)->Fill(c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muNSeg.at(p).at(k)->Fill(c_muon_nSegmentMatch[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               muTrkIso03.at(p).at(k)->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
-
-               //if (p == DATA) {
-               ////if (p == DATA && c_HLT_Mu15_eta2p1) {
-               ////if (p == DATA && c_HLT_Mu30_eta2p1) {
-               //   // fill tree with good events
-               //   emuInvMass = invMass;
-               //   if (k == ALL) emuDataTree->Fill();
-               //   if (k == LS) emuLSDataTree->Fill();
-               //   if (k == OS) emuOSDataTree->Fill();
-               //}
+               h_muIsoCombRel.at(p).at(k)->Fill(CombRelIso, weight);
+               h_muEtEleOPtMu.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) h_muPtPlusOPtMinus.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) h_muPtPlusOPtMinus.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]]/c_gsf_gsfet[GSF_passHEEP[0]], weight);
+               h_muPt.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muEta.at(p).at(k)->Fill(c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muPhi.at(p).at(k)->Fill(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muHitLayers.at(p).at(k)->Fill(c_muon_nlayerswithhits[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muPxlHits.at(p).at(k)->Fill(c_muon_nhitspixel[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muMuHits.at(p).at(k)->Fill(c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muDxyBeamSpot.at(p).at(k)->Fill(c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muNSeg.at(p).at(k)->Fill(c_muon_nSegmentMatch[MU_passGOOD[MU_leadingPassGOOD]], weight);
+               h_muTrkIso03.at(p).at(k)->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
             }
 
             //LIKE SIGN OPPOSITE SIGN
@@ -1429,8 +1392,8 @@ void emuSpectrum()
                if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) ++nb_minus_minus;
 
                if (invMass > 600. || invMass < 1.) {
-                  if (invMass > 600.) cout << "M_emu > 600GeV/c^2 event | " << setw(6) << c_runnumber << " | " << setw(4) << c_luminosityBlock << " | " << setw(10) << c_eventnumber << " | "; 
-                  if (invMass < 1.) cout << "M_emu < 1GeV/c^2 event   | " << setw(6) << c_runnumber << " | " << setw(4) << c_luminosityBlock << " | " << setw(10) << c_eventnumber << " | "; 
+                  if (invMass > 600.) cout << "M_emu > 600GeV/c^2 event | " << c_runnumber << ":" << c_luminosityBlock << ":" << c_eventnumber << " | "; 
+                  if (invMass < 1.) cout << "M_emu < 1GeV/c^2 event   | " << c_runnumber << ":" << c_luminosityBlock << ":" << c_eventnumber << " | "; 
                        cout << setw(8) << invMass << " | " << 
                        setw(7) << c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]] << " | " <<
                        setw(8) << c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]] << " | " <<
@@ -1475,7 +1438,7 @@ void emuSpectrum()
             for (unsigned int k = 0; k < 3; ++k) {
                if (k == 1 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
                if (k == 2 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) continue;
-               emu_mass_accVSgood.at(p).at(k)->Fill(invMass, weight);
+               h_emu_mass_accVSgood.at(p).at(k)->Fill(invMass, weight);
             }
          }
 
@@ -1492,76 +1455,63 @@ void emuSpectrum()
       }
       else cout << "HLT_Mu22_Photon22_CaloIdL: " << trig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[2] << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
 
-      //if (p == DATA) {
-      //   // write root file with good emu event data
-      //   goodEvFile->Cd("");
-      //   emuDataTree->Write();
-      //   emuLSDataTree->Write();
-      //   emuOSDataTree->Write();
-      //}
-
       if (p > DATA) {
          for (unsigned int k = 0; k < 3; ++k) {
             //SCALE MC
-            emuMass.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            emuMassEB.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            emuMassEE.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            emu_mass_accVSgood.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_emuMass.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_emuMassEB.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_emuMassEE.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_emu_mass_accVSgood.at(p).at(k)->Scale(input[p].second * LumiFactor);
 
-            pfMet.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            nVtx.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            rho.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            nJets.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            nJetsPt20.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            nJetsPt30.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            dPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleEt.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            elePhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleDEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleDPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleHOE.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleSigmaIEIE.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleEcalIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleHcalIso12.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleTrkIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            eleLostHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_pfMet.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_nVtx.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_dDz.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_dDzBeamSpot.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_dDzFirstPVtx.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_rho.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_nJets.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_nJetsPt20.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_nJetsPt30.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_dPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleEt.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_elePhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleDEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleDPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleHOE.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleSigmaIEIE.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleEcalIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleHcalIso12.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleTrkIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_eleLostHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
 
-            muIsoCombRel.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muEtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muPtPlusOPtMinus.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muPt.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muHitLayers.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muPxlHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muMuHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muDxyBeamSpot.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muNSeg.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            muTrkIso03.at(p).at(k)->Scale(input[p].second * LumiFactor);
-
-            // set systematic errors
-            //for (unsigned int i = 0; i < emuMass.at(p).at(k)->GetNbinsX() + 2; ++i) emuMass.at(p).at(k)->SetBinError(i, emuMass.at(p).at(k)->GetBinContent(i) * systErrMCLuEff[p - 1]);
-            //cout << "Systematic error for file " << p << ": " << systErrMCLuEff[p - 1] << endl;
+            h_muIsoCombRel.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muEtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muPtPlusOPtMinus.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muPt.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muHitLayers.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muPxlHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muMuHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muDxyBeamSpot.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muNSeg.at(p).at(k)->Scale(input[p].second * LumiFactor);
+            h_muTrkIso03.at(p).at(k)->Scale(input[p].second * LumiFactor);
          }
       }
       output->Cd("");
+
+      TParameter<float> *mcWeight = new TParameter<float>((const char *)suffix[p], input[p].second);
+      mcWeights.Add(mcWeight);
+
       emuTree->Write();
+      puMc->Write();
+      puMcNorm->Write();
+      puWeights->Write();
    }//END FILE LOOP
-
-   // define groups of MC samples
-   vector<bool> ttLikeSamples(5, true);
-   vector<bool> contamSamples(5, false);
-   contamSamples.push_back(true); // WJets
-   contamSamples.push_back(true); // Zmm
-   contamSamples.push_back(true); // Zee
-   vector<bool> allSamples(QCD-1, true);
-
-  int bin60 = (int)60 / 1500. * nBins + 1;
-  int bin120 = (int)120 / 1500. * nBins + 1;
-  int bin200 = (int)200 / 1500. * nBins + 1;
-  int bin400 = (int)400 / 1500. * nBins + 1;
-  int bin500 = (int)500 / 1500. * nBins + 1;
+   mcWeights.Write("mcWeights", TObject::kSingleKey);
+   puData->Write();
+   puDataNorm->Write();
 
    //PRINT INTEGRAL
 
@@ -1570,165 +1520,69 @@ void emuSpectrum()
    cout << "HEEP - TIGHT MU        Lumi        = " << LumiFactor << "pb-1" << endl;
    cout << "                       e pT EB     > " << bar_et << "GeV/c" << endl;
    cout << "                       e pT EE     > " << end_et << "GeV/c" << endl;
-   cout << "                       mu pT       > " << muon_et << "GeV/c" << endl;
+   cout << "                       mu pT       > " << muon_pt << "GeV/c" << endl;
    cout << "                       mu |eta|    < " << muon_etaMax << endl;
    cout << endl;
    cout << "Systematic errors" << endl;
    cout << "(xsec errors from: https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV)" << endl;
-   cout << " Luminosity:  " << systErrLumi * 100 << "%" << endl;
-   cout << " Efficiency:  " << systErrEff * 100 << "%" << endl;
-   cout << " ttbar:      " << systErrMC[TTBAR-1] * 100 << ".0%" << endl;
-   cout << " Z->tautau:   " << systErrMC[ZTT-1] * 100 << "%" << endl;
-   cout << " WW:          " << systErrMC[WW-1] * 100 << "%" << endl;
-   cout << " WZ:          " << systErrMC[WZ-1] * 100 << "%" << endl;
-   cout << " tW, tbarW:   " << systErrMC[TW-1] * 100 << "%" << endl;
-   cout << " W+Jets:      " << systErrMC[WJET-1] * 100 << "%" << endl;
-   cout << " Z->mumu:     " << systErrMC[ZMM-1] * 100 << "%" << endl;
-   cout << " Z->ee:       " << systErrMC[ZEE-1] * 100 << "%" << endl;
-//   cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
-   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   printf("M_emu         |       >%5.0fGeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2          |        > 400GeV/c^2          |\n", minInvMass);
-   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        | %5.0f +- %-.3f (stat)        |\n", 
-          emuMass.at(DATA).at(ALL)->Integral(), sqrt(emuMass.at(DATA).at(ALL)->Integral()),         
-          emuMass.at(DATA).at(ALL)->Integral(bin120,nBins + 1), sqrt(emuMass.at(DATA).at(ALL)->Integral(bin120,nBins + 1)),
-          emuMass.at(DATA).at(ALL)->Integral(bin200,nBins + 1), sqrt(emuMass.at(DATA).at(ALL)->Integral(bin200,nBins + 1)),
-          emuMass.at(DATA).at(ALL)->Integral(bin400,nBins + 1), sqrt(emuMass.at(DATA).at(ALL)->Integral(bin400,nBins + 1)));
-   cout << "--------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   printf("nb ttbar      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(TTBAR).at(ALL)->Integral(), emuMass.at(TTBAR).at(ALL)->Integral() * systErrMCLuEff[TTBAR-1], 
-          emuMass.at(TTBAR).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(TTBAR).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[TTBAR-1], 
-          emuMass.at(TTBAR).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(TTBAR).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[TTBAR-1],
-          emuMass.at(TTBAR).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(TTBAR).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[TTBAR-1]);
-   printf("nb Ztautau    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(ZTT).at(ALL)->Integral(), emuMass.at(ZTT).at(ALL)->Integral() * systErrMCLuEff[ZTT-1], 
-          emuMass.at(ZTT).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(ZTT).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[ZTT-1], 
-          emuMass.at(ZTT).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(ZTT).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[ZTT-1],
-          emuMass.at(ZTT).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(ZTT).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[ZTT-1]);
-   printf("nb WW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(WW).at(ALL)->Integral(), emuMass.at(WW).at(ALL)->Integral() * systErrMCLuEff[WW-1], 
-          emuMass.at(WW).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(WW).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[WW-1], 
-          emuMass.at(WW).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(WW).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[WW-1],
-          emuMass.at(WW).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(WW).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[WW-1]);
-   printf("nb WZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(WZ).at(ALL)->Integral(), emuMass.at(WZ).at(ALL)->Integral() * systErrMCLuEff[WZ-1], 
-          emuMass.at(WZ).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(WZ).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[WZ-1], 
-          emuMass.at(WZ).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(WZ).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[WZ-1],
-          emuMass.at(WZ).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(WZ).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[WZ-1]);
-   printf("nb tW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(TW).at(ALL)->Integral(), emuMass.at(TW).at(ALL)->Integral() * systErrMCLuEff[TW-1], 
-          emuMass.at(TW).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(TW).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[TW-1], 
-          emuMass.at(TW).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(TW).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[TW-1],
-          emuMass.at(TW).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(TW).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[TW-1]);
-   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-   printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(WJET).at(ALL)->Integral(), emuMass.at(WJET).at(ALL)->Integral() * systErrMCLuEff[WJET-1], 
-          emuMass.at(WJET).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(WJET).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[WJET-1], 
-          emuMass.at(WJET).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(WJET).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[WJET-1],
-          emuMass.at(WJET).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(WJET).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[WJET-1]);
-   printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(ZMM).at(ALL)->Integral(), emuMass.at(ZMM).at(ALL)->Integral() * systErrMCLuEff[ZMM-1], 
-          emuMass.at(ZMM).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(ZMM).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[ZMM-1], 
-          emuMass.at(ZMM).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(ZMM).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[ZMM-1],
-          emuMass.at(ZMM).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(ZMM).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[ZMM-1]);
-   printf("nb Zee        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(ZEE).at(ALL)->Integral(), emuMass.at(ZEE).at(ALL)->Integral() * systErrMCLuEff[ZEE-1], 
-          emuMass.at(ZEE).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(ZEE).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[ZEE-1], 
-          emuMass.at(ZEE).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(ZEE).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[ZEE-1],
-          emuMass.at(ZEE).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(ZEE).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[ZEE-1]);
-//   //printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-//   //       emuMass.at(ZZ).at(ALL)->Integral(), emuMass.at(ZZ).at(ALL)->Integral() * systErrMCLuEff[ZZ-1], 
-//   //       emuMass.at(ZZ).at(ALL)->Integral(bin120,nBins + 1), emuMass.at(ZZ).at(ALL)->Integral(bin120,nBins + 1) * systErrMCLuEff[ZZ-1], 
-//   //       emuMass.at(ZZ).at(ALL)->Integral(bin200,nBins + 1), emuMass.at(ZZ).at(ALL)->Integral(bin200,nBins + 1) * systErrMCLuEff[ZZ-1],
-//   //       emuMass.at(ZZ).at(ALL)->Integral(bin400,nBins + 1), emuMass.at(ZZ).at(ALL)->Integral(bin400,nBins + 1) * systErrMCLuEff[ZZ-1]);
-   cout << "--------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+   cout << " Luminosity:  " << systErrLumi.GetVal() * 100 << "%" << endl;
+   cout << " Efficiency:  " << systErrEff.GetVal() * 100 << "%" << endl;
+   cout << " ttbar:      " <<  ((TParameter<float> *)systErrMCs.FindObject("systErrMcTtbar"))->GetVal() * 100 << "%" << endl;
+   cout << " Z->tautau:   " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcDyTauTau"))->GetVal() * 100 << "%" << endl;
+   cout << " WW:          " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcWW"))->GetVal() * 100 << "%" << endl;
+   cout << " WZ:          " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcWZ"))->GetVal() * 100 << "%" << endl;
+   cout << " tW, tbarW:   " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcTW"))->GetVal() * 100 << "%" << endl;
+   cout << " W+Jets:      " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcWJets"))->GetVal() * 100 << "%" << endl;
+   cout << " Z->mumu:     " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcDyMuMu"))->GetVal() * 100 << "%" << endl;
+   cout << " Z->ee:       " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcDyEE"))->GetVal() * 100 << "%" << endl;
+   cout << " ZZ:          " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcZZ"))->GetVal() * 100 << "%" << endl;
 
    //SUM MC
    for (int p = 1; p < nbFile; ++p) {
       for (unsigned int k = 0; k < 3; ++k) {
          for (int q = p + 1; q < nbFile; ++q) {
-            emuMass.at(p).at(k)->Add(emuMass.at(q).at(k));
-            emuMassEB.at(p).at(k)->Add(emuMassEB.at(q).at(k));
-            emuMassEE.at(p).at(k)->Add(emuMassEE.at(q).at(k));
-            emu_mass_accVSgood.at(p).at(k)->Add(emu_mass_accVSgood.at(q).at(k));
+            h_emuMass.at(p).at(k)->Add(h_emuMass.at(q).at(k));
+            h_emuMassEB.at(p).at(k)->Add(h_emuMassEB.at(q).at(k));
+            h_emuMassEE.at(p).at(k)->Add(h_emuMassEE.at(q).at(k));
+            h_emu_mass_accVSgood.at(p).at(k)->Add(h_emu_mass_accVSgood.at(q).at(k));
 
-            pfMet.at(p).at(k)->Add(pfMet.at(q).at(k));
-            nVtx.at(p).at(k)->Add(nVtx.at(q).at(k));
-            rho.at(p).at(k)->Add(rho.at(q).at(k));
-            nJets.at(p).at(k)->Add(nJets.at(q).at(k));
-            nJetsPt20.at(p).at(k)->Add(nJetsPt20.at(q).at(k));
-            nJetsPt30.at(p).at(k)->Add(nJetsPt30.at(q).at(k));
-            dPhi.at(p).at(k)->Add(dPhi.at(q).at(k));
-            eleEt.at(p).at(k)->Add(eleEt.at(q).at(k));
-            eleEta.at(p).at(k)->Add(eleEta.at(q).at(k));
-            elePhi.at(p).at(k)->Add(elePhi.at(q).at(k));
-            eleDEta.at(p).at(k)->Add(eleDEta.at(q).at(k));
-            eleDPhi.at(p).at(k)->Add(eleDPhi.at(q).at(k));
-            eleHOE.at(p).at(k)->Add(eleHOE.at(q).at(k));
-            eleSigmaIEIE.at(p).at(k)->Add(eleSigmaIEIE.at(q).at(k));
-            eleEcalIso.at(p).at(k)->Add(eleEcalIso.at(q).at(k));
-            eleHcalIso12.at(p).at(k)->Add(eleHcalIso12.at(q).at(k));
-            eleTrkIso.at(p).at(k)->Add(eleTrkIso.at(q).at(k));
-            eleLostHits.at(p).at(k)->Add(eleLostHits.at(q).at(k));
+            h_pfMet.at(p).at(k)->Add(h_pfMet.at(q).at(k));
+            h_nVtx.at(p).at(k)->Add(h_nVtx.at(q).at(k));
+            h_dDz.at(p).at(k)->Add(h_dDz.at(q).at(k));
+            h_dDzBeamSpot.at(p).at(k)->Add(h_dDzBeamSpot.at(q).at(k));
+            h_dDzFirstPVtx.at(p).at(k)->Add(h_dDzFirstPVtx.at(q).at(k));
+            h_rho.at(p).at(k)->Add(h_rho.at(q).at(k));
+            h_nJets.at(p).at(k)->Add(h_nJets.at(q).at(k));
+            h_nJetsPt20.at(p).at(k)->Add(h_nJetsPt20.at(q).at(k));
+            h_nJetsPt30.at(p).at(k)->Add(h_nJetsPt30.at(q).at(k));
+            h_dPhi.at(p).at(k)->Add(h_dPhi.at(q).at(k));
+            h_eleEt.at(p).at(k)->Add(h_eleEt.at(q).at(k));
+            h_eleEta.at(p).at(k)->Add(h_eleEta.at(q).at(k));
+            h_elePhi.at(p).at(k)->Add(h_elePhi.at(q).at(k));
+            h_eleDEta.at(p).at(k)->Add(h_eleDEta.at(q).at(k));
+            h_eleDPhi.at(p).at(k)->Add(h_eleDPhi.at(q).at(k));
+            h_eleHOE.at(p).at(k)->Add(h_eleHOE.at(q).at(k));
+            h_eleSigmaIEIE.at(p).at(k)->Add(h_eleSigmaIEIE.at(q).at(k));
+            h_eleEcalIso.at(p).at(k)->Add(h_eleEcalIso.at(q).at(k));
+            h_eleHcalIso12.at(p).at(k)->Add(h_eleHcalIso12.at(q).at(k));
+            h_eleTrkIso.at(p).at(k)->Add(h_eleTrkIso.at(q).at(k));
+            h_eleLostHits.at(p).at(k)->Add(h_eleLostHits.at(q).at(k));
  
-            muIsoCombRel.at(p).at(k)->Add(muIsoCombRel.at(q).at(k));
-            muEtEleOPtMu.at(p).at(k)->Add(muEtEleOPtMu.at(q).at(k));
-            muPtPlusOPtMinus.at(p).at(k)->Add(muPtPlusOPtMinus.at(q).at(k));
-            muPt.at(p).at(k)->Add(muPt.at(q).at(k));
-            muEta.at(p).at(k)->Add(muEta.at(q).at(k));
-            muPhi.at(p).at(k)->Add(muPhi.at(q).at(k));
-            muHitLayers.at(p).at(k)->Add(muHitLayers.at(q).at(k));
-            muPxlHits.at(p).at(k)->Add(muPxlHits.at(q).at(k));
-            muMuHits.at(p).at(k)->Add(muMuHits.at(q).at(k));
-            muDxyBeamSpot.at(p).at(k)->Add(muDxyBeamSpot.at(q).at(k));
-            muNSeg.at(p).at(k)->Add(muNSeg.at(q).at(k));
-            muTrkIso03.at(p).at(k)->Add(muTrkIso03.at(q).at(k));
+            h_muIsoCombRel.at(p).at(k)->Add(h_muIsoCombRel.at(q).at(k));
+            h_muEtEleOPtMu.at(p).at(k)->Add(h_muEtEleOPtMu.at(q).at(k));
+            h_muPtPlusOPtMinus.at(p).at(k)->Add(h_muPtPlusOPtMinus.at(q).at(k));
+            h_muPt.at(p).at(k)->Add(h_muPt.at(q).at(k));
+            h_muEta.at(p).at(k)->Add(h_muEta.at(q).at(k));
+            h_muPhi.at(p).at(k)->Add(h_muPhi.at(q).at(k));
+            h_muHitLayers.at(p).at(k)->Add(h_muHitLayers.at(q).at(k));
+            h_muPxlHits.at(p).at(k)->Add(h_muPxlHits.at(q).at(k));
+            h_muMuHits.at(p).at(k)->Add(h_muMuHits.at(q).at(k));
+            h_muDxyBeamSpot.at(p).at(k)->Add(h_muDxyBeamSpot.at(q).at(k));
+            h_muNSeg.at(p).at(k)->Add(h_muNSeg.at(q).at(k));
+            h_muTrkIso03.at(p).at(k)->Add(h_muTrkIso03.at(q).at(k));
          }
       }
    }
-   printf("TOT ttlike    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst)| %9.3f +- %8.3f (syst)  |\n", 
-          emuMass.at(TTBAR).at(ALL)->Integral() - emuMass.at(WJET).at(ALL)->Integral(), CalcSystErr(emuMass, systErrMCLuEff, ttLikeSamples, ALL, 1, nBins + 1, true),  
-          emuMass.at(TTBAR).at(ALL)->Integral(bin120,nBins + 1) - emuMass.at(WJET).at(ALL)->Integral(bin120,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, ttLikeSamples, ALL, bin120, nBins + 1, true), 
-          emuMass.at(TTBAR).at(ALL)->Integral(bin200,nBins + 1) - emuMass.at(WJET).at(ALL)->Integral(bin200,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, ttLikeSamples, ALL, bin200, nBins + 1, true),
-          emuMass.at(TTBAR).at(ALL)->Integral(bin400,nBins + 1) - emuMass.at(WJET).at(ALL)->Integral(bin400,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, ttLikeSamples, ALL, bin400, nBins + 1, true));
-   printf("TOT contam    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(WJET).at(ALL)->Integral(), CalcSystErr(emuMass, systErrMCLuEff, contamSamples, ALL, 1, nBins + 1, true), 
-          emuMass.at(WJET).at(ALL)->Integral(bin120,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, contamSamples, ALL, bin120, nBins + 1, true), 
-          emuMass.at(WJET).at(ALL)->Integral(bin200,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, contamSamples, ALL, bin200, nBins + 1, true),
-          emuMass.at(WJET).at(ALL)->Integral(bin400,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, contamSamples, ALL, bin400, nBins + 1, true));
-   cout << "--------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-
-   printf("TOT MC        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-          emuMass.at(1).at(ALL)->Integral(), CalcSystErr(emuMass, systErrMCLuEff, allSamples, ALL, 1, nBins + 1, true),
-          emuMass.at(1).at(ALL)->Integral(bin120,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, ALL, bin120, nBins + 1, true),
-          emuMass.at(1).at(ALL)->Integral(bin200,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, ALL, bin200, nBins + 1, true),
-          emuMass.at(1).at(ALL)->Integral(bin400,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, ALL, bin400, nBins + 1, true));
-   cout << "--------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   cout << endl << endl << endl;
-
-
-   cout << "--------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   printf("nb LS DATA    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        | %5.0f +- %-.3f (stat)        |\n", 
-          emuMass.at(DATA).at(LS)->Integral(), sqrt(emuMass.at(DATA).at(LS)->Integral()), 
-          emuMass.at(DATA).at(LS)->Integral(bin120,nBins + 1), sqrt(emuMass.at(DATA).at(LS)->Integral(bin120,nBins + 1)), 
-          emuMass.at(DATA).at(LS)->Integral(bin200,nBins + 1), sqrt(emuMass.at(DATA).at(LS)->Integral(bin200,nBins + 1)),
-          emuMass.at(DATA).at(LS)->Integral(bin400,nBins + 1), sqrt(emuMass.at(DATA).at(LS)->Integral(bin400,nBins + 1))); 
-   printf("nb LS MC      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(1).at(LS)->Integral(), CalcSystErr(emuMass, systErrMCLuEff, allSamples, LS, 1, nBins + 1, true), 
-          emuMass.at(1).at(LS)->Integral(bin120,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, LS, bin120, nBins + 1, true), 
-          emuMass.at(1).at(LS)->Integral(bin200,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, LS, bin200, nBins + 1, true),
-          emuMass.at(1).at(LS)->Integral(bin400,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, LS, bin400, nBins + 1, true)); 
-   cout << endl;
-   printf("nb OS DATA    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
-          emuMass.at(DATA).at(OS)->Integral(), sqrt(emuMass.at(DATA).at(OS)->Integral()), 
-          emuMass.at(DATA).at(OS)->Integral(bin120,nBins + 1), sqrt(emuMass.at(DATA).at(OS)->Integral(bin120,nBins + 1)), 
-          emuMass.at(DATA).at(OS)->Integral(bin200,nBins + 1), sqrt(emuMass.at(DATA).at(OS)->Integral(bin200,nBins + 1)),
-          emuMass.at(DATA).at(OS)->Integral(bin400,nBins + 1), sqrt(emuMass.at(DATA).at(OS)->Integral(bin400,nBins + 1))); 
-   printf("nb OS MC      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-          emuMass.at(1).at(OS)->Integral(), CalcSystErr(emuMass, systErrMCLuEff, allSamples, OS, 1, nBins + 1, true), 
-          emuMass.at(1).at(OS)->Integral(bin120,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, OS, bin120, nBins + 1, true), 
-          emuMass.at(1).at(OS)->Integral(bin200,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, OS, bin200, nBins + 1, true),
-          emuMass.at(1).at(OS)->Integral(bin400,nBins + 1), CalcSystErr(emuMass, systErrMCLuEff, allSamples, OS, bin400, nBins + 1, true)); 
    cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
    cout << "nb e+mu+     = " << nb_plus_plus << endl;
    cout << "nb e+mu-     = " << nb_plus_minus << endl;
@@ -1736,134 +1590,9 @@ void emuSpectrum()
    cout << "nb e-mu-     = " << nb_minus_minus << endl;
    cout << "-----------------------------------------------------------------------------------------------------------" << endl;
 
-   vector<TH1F *> helper;
-   for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMass_" + sign[k] + suffix[QCD], "emuMass_" + sign[k] + suffix[QCD], nBins, 0., 1500.));
-   emuMass.push_back(helper);
-
-   if (useQCDShape) {
-      TH1F *qcdBg = new TH1F("qcdBg", "qcdBg", nBins, 0., 1500.);
-      qcdBg->Add(emuMass.at(DATA).at(LS));
-      qcdBg->Add(emuMass.at(1).at(LS), -1.);
-      for (int i = 0; i < qcdBg->GetNbinsX() + 2; ++i) {
-         if (qcdBg->GetBinContent(i) < 0) qcdBg->SetBinContent(i, 0.);
-      }
-
-      //// if a bin does not contain data, sum up bg until the next bin with data
-      //float bgCumul = 0.;
-      //for (int i = 0; i < qcdBg->GetNbinsX() + 2; ++i) {
-      //   bgCumul += emuMass.at(1).at(LS)->GetBinContent(i);
-      //   float dataBin = emuMass.at(DATA).at(LS)->GetBinContent(i);
-      //   if (dataBin > bgCumul) qcdBg->SetBinContent(i, dataBin - bgCumul);
-      //   else if (dataBin > 0. && dataBin < bgCumul) qcdBg->SetBinContent(i, 0.);
-      //   else {
-      //      qcdBg->SetBinContent(i, 0.);
-      //      continue;
-      //   }
-      //   bgCumul = 0.;
-      //}
-
-      // weight qcd histo with the difference between LS data and MC
-      cout << endl;
-      cout << "expected QCD events: " << emuMass.at(DATA).at(LS)->Integral() - emuMass.at(1).at(LS)->Integral() << endl;
-      cout << "derived QCD events: " << qcdBg->Integral() << endl;
-      cout << "scale factor: " << (emuMass.at(DATA).at(LS)->Integral() - emuMass.at(1).at(LS)->Integral()) / qcdBg->Integral() << endl;
-      qcdBg->Scale((emuMass.at(DATA).at(LS)->Integral() - emuMass.at(1).at(LS)->Integral()) / qcdBg->Integral());
-
-      // add QCD histo to histogram stack
-      for (int p = 1; p < nbFile + 1; ++p) {
-         for (unsigned int k = 0; k < 3; ++k) {
-            float factor = 1.;
-            if (k == 0) factor = 2.;
-            emuMass.at(p).at(k)->Add(qcdBg, factor);
-         }
-      }
-   }
-   else {
-      // FIXME calculate qcd scale factor
-      float QCDScaleFactor = 1 + 2 * (emuMass.at(DATA).at(LS)->Integral() - emuMass.at(1).at(LS)->Integral()) / emuMass.at(1).at(ALL)->Integral();
-      cout << endl << endl << "calculated QCD scale factor from data: " << QCDScaleFactor << endl;
-      // add QCD histo to histogram stack
-      for (int p = 1; p < nbFile + 1; ++p) {
-         for (unsigned int k = 0; k < 3; ++k) {
-            TH1F *qcdBg = new TH1F("qcdBg" + sign[k] + suffix[p], "qcdBg" + sign[k] + suffix[p], nBins, 0., 1500.);
-            qcdBg->Add(emuMass.at(DATA).at(k));
-            float factor = 1.;
-            // apply QCD scale factor
-            if (calcQCDScaleFactor) factor = QCDScaleFactor;
-            else factor = QCD_ScaleFactor;
-
-            emuMass.at(p).at(k)->Add(qcdBg, factor - 1.);
-         }
-      }
-      if (!calcQCDScaleFactor) cout << "applied preset QCD scale factor:       " << QCD_ScaleFactor << endl;
-   }
-
-   systErrMC.push_back(2 * sqrt(emuMass.at(DATA).at(LS)->Integral() + pow(CalcSystErr(emuMass, systErrMCLuEff, allSamples, LS, 1, nBins + 1, true), 2)) / emuMass.at(QCD).at(ALL)->Integral());
-   systErrMCLuEff.push_back(systErrMC[QCD]);
-
-   vector<bool> onlyQCD(QCD-1, false);
-   onlyQCD.push_back(true);
-   contamSamples.push_back(true);
-   allSamples.push_back(true);
-
-   cout << endl;
-   cout << "------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   cout << "QCD events from LS spectrum:" << endl;
-   printf("nb QCD        | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) |\n",
-          emuMass.at(QCD).at(ALL)->Integral(), CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, 1, nBins + 1, true), 100 * CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, 7, nBins + 1, true) / emuMass.at(QCD).at(ALL)->Integral(), 
-          emuMass.at(QCD).at(ALL)->Integral(bin120,nBins + 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, bin120, nBins + 1, true), 100 * CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, bin120, nBins + 1, true) / emuMass.at(QCD).at(ALL)->Integral(bin120,nBins + 1),
-          emuMass.at(QCD).at(ALL)->Integral(bin200,nBins + 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, bin200, nBins + 1, true), 100 * CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, bin200, nBins + 1, true) / emuMass.at(QCD).at(ALL)->Integral(bin200,nBins + 1));
-   printf("%% of total MC |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |\n", 
-          100 * emuMass.at(QCD).at(ALL)->Integral() / (emuMass.at(1).at(ALL)->Integral() - emuMass.at(QCD).at(ALL)->Integral()), 100 * CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, 1, nBins + 1, true) / (emuMass.at(1).at(ALL)->Integral() - emuMass.at(QCD).at(ALL)->Integral()), 
-          100 * emuMass.at(QCD).at(ALL)->Integral(bin120,nBins + 1) / (emuMass.at(1).at(ALL)->Integral(bin120,nBins + 1) - emuMass.at(QCD).at(ALL)->Integral(bin120,nBins + 1)), 100 * CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, bin120, nBins + 1, true) / (emuMass.at(1).at(ALL)->Integral(bin120,nBins + 1) - emuMass.at(QCD).at(ALL)->Integral(bin120,nBins + 1)),
-          100 * emuMass.at(QCD).at(ALL)->Integral(bin200,nBins + 1) / (emuMass.at(1).at(ALL)->Integral(bin200,nBins + 1) - emuMass.at(QCD).at(ALL)->Integral(bin200,nBins + 1)), 100 * CalcSystErrWithQCD(emuMass, systErrMCLuEff, onlyQCD, ALL, bin200, nBins + 1, true) / (emuMass.at(1).at(ALL)->Integral(bin200,nBins + 1) - emuMass.at(QCD).at(ALL)->Integral(bin200,nBins + 1)));
-   cout << "------------------------------------------------------------------------------------------------------------------------------------" << endl;
-
-   cout << endl;
-   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   if (useQCDShape) cout << "AFTER ADDING QCD CONTRIBUTION:" << endl;
-   else cout << "AFTER CORRECTION WITH QCD FACTOR:" << endl;
-   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   printf("M_emu         |      >%6.0fGeV/c^2          |        > 120GeV/c^2          |         > 200GeV/c^2         |         > 500GeV/c^2         |\n", minInvMass);
-   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n", 
-           emuMass.at(DATA).at(ALL)->Integral(), sqrt(emuMass.at(DATA).at(ALL)->Integral()), 
-           emuMass.at(DATA).at(ALL)->Integral(bin120, nBins + 1), sqrt((emuMass.at(DATA).at(ALL))->Integral(bin120, nBins + 1)), 
-           emuMass.at(DATA).at(ALL)->Integral(bin200, nBins + 1), sqrt(emuMass.at(DATA).at(ALL)->Integral(bin200, nBins + 1)), 
-           emuMass.at(DATA).at(ALL)->Integral(bin500, nBins + 1), sqrt(emuMass.at(DATA).at(ALL)->Integral(bin500, nBins + 1)));
-   printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-           emuMass.at(1).at(ALL)->Integral(), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, ALL, 1, nBins + 1, true), 
-           emuMass.at(1).at(ALL)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, ALL, bin120, nBins + 1, true), 
-           emuMass.at(1).at(ALL)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, ALL, bin200, nBins + 1, true), 
-           emuMass.at(1).at(ALL)->Integral(bin500, nBins + 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, ALL, bin500, nBins + 1, true));
-   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl << endl;
-
-   cout << endl;
-   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-   printf("M_emu         |    %6.0f - 120GeV/c^2       |      120 - 200GeV/c^2        |       200 - 400GeV/c^2       |\n", minInvMass);
-   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
-           emuMass.at(DATA).at(ALL)->Integral(1, bin120 - 1), sqrt(emuMass.at(DATA).at(ALL)->Integral(1, bin120 - 1)), 
-           emuMass.at(DATA).at(ALL)->Integral(bin120, bin200 - 1), sqrt((emuMass.at(DATA).at(ALL))->Integral(bin120, bin200 - 1)), 
-           emuMass.at(DATA).at(ALL)->Integral(bin200, bin400 - 1), sqrt(emuMass.at(DATA).at(ALL)->Integral(bin200, bin400 - 1)));
-   printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-           emuMass.at(1).at(ALL)->Integral(1, bin120 - 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, ALL, 1, bin120 - 1, true), 
-           emuMass.at(1).at(ALL)->Integral(bin120, bin200 - 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, ALL, bin120, bin200 - 1, true), 
-           emuMass.at(1).at(ALL)->Integral(bin200, bin400 - 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, ALL, bin200, bin400 - 1, true)); 
-   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-   printf("nb data OS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
-           emuMass.at(DATA).at(OS)->Integral(1, bin120 - 1), sqrt(emuMass.at(DATA).at(OS)->Integral(1, bin120 - 1)), 
-           emuMass.at(DATA).at(OS)->Integral(bin120, bin200 - 1), sqrt((emuMass.at(DATA).at(OS))->Integral(bin120, bin200 - 1)), 
-           emuMass.at(DATA).at(OS)->Integral(bin200, bin400 - 1), sqrt(emuMass.at(DATA).at(OS)->Integral(bin200, bin400 - 1)));
-   printf("nb MC OS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-           emuMass.at(1).at(OS)->Integral(1, bin120 - 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, OS, 1, bin120 - 1, true), 
-           emuMass.at(1).at(OS)->Integral(bin120, bin200 - 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, OS, bin120, bin200 - 1, true), 
-           emuMass.at(1).at(OS)->Integral(bin200, bin400 - 1), CalcSystErrWithQCD(emuMass, systErrMCLuEff, allSamples, OS, bin200, bin400 - 1, true)); 
-   cout << "-----------------------------------------------------------------------------------------------------------" << endl << endl;
-
-   emu_dilepton->Add(emuMass.at(1).at(ALL));
-   //emu_ewk->Add(emuMass.at(6).at(ALL));
-   //emu_jet->Add(emuMass.at(8).at(ALL));
+   emu_dilepton->Add(h_emuMass.at(1).at(ALL));
+   //emu_ewk->Add(h_emuMass.at(6).at(ALL));
+   //emu_jet->Add(h_emuMass.at(8).at(ALL));
 
    //WRITING
    output->Cd("");
@@ -1881,82 +1610,49 @@ void emuSpectrum()
 
    for (int p = 0; p < nbFile; ++p) {
       for (unsigned int k = 0; k < 3; ++k) {
-         emuMass.at(p).at(k)->Write();
-         emuMassEB.at(p).at(k)->Write();
-         emuMassEE.at(p).at(k)->Write();
-         emu_mass_accVSgood.at(p).at(k)->Write();
+         h_emuMass.at(p).at(k)->Write();
+         h_emuMassEB.at(p).at(k)->Write();
+         h_emuMassEE.at(p).at(k)->Write();
+         h_emu_mass_accVSgood.at(p).at(k)->Write();
 
-         pfMet.at(p).at(k)->Write();
-         nVtx.at(p).at(k)->Write();
-         rho.at(p).at(k)->Write();
-         nJets.at(p).at(k)->Write();
-         nJetsPt20.at(p).at(k)->Write();
-         nJetsPt30.at(p).at(k)->Write();
-         dPhi.at(p).at(k)->Write();
-         eleEt.at(p).at(k)->Write();
-         eleEta.at(p).at(k)->Write();
-         elePhi.at(p).at(k)->Write();
-         eleDEta.at(p).at(k)->Write();
-         eleDPhi.at(p).at(k)->Write();
-         eleHOE.at(p).at(k)->Write();
-         eleSigmaIEIE.at(p).at(k)->Write();
-         eleEcalIso.at(p).at(k)->Write();
-         eleHcalIso12.at(p).at(k)->Write();
-         eleTrkIso.at(p).at(k)->Write();
-         eleLostHits.at(p).at(k)->Write();
+         h_pfMet.at(p).at(k)->Write();
+         h_nVtx.at(p).at(k)->Write();
+         h_dDz.at(p).at(k)->Write();
+         h_dDzBeamSpot.at(p).at(k)->Write();
+         h_dDzFirstPVtx.at(p).at(k)->Write();
+         h_rho.at(p).at(k)->Write();
+         h_nJets.at(p).at(k)->Write();
+         h_nJetsPt20.at(p).at(k)->Write();
+         h_nJetsPt30.at(p).at(k)->Write();
+         h_dPhi.at(p).at(k)->Write();
+         h_eleEt.at(p).at(k)->Write();
+         h_eleEta.at(p).at(k)->Write();
+         h_elePhi.at(p).at(k)->Write();
+         h_eleDEta.at(p).at(k)->Write();
+         h_eleDPhi.at(p).at(k)->Write();
+         h_eleHOE.at(p).at(k)->Write();
+         h_eleSigmaIEIE.at(p).at(k)->Write();
+         h_eleEcalIso.at(p).at(k)->Write();
+         h_eleHcalIso12.at(p).at(k)->Write();
+         h_eleTrkIso.at(p).at(k)->Write();
+         h_eleLostHits.at(p).at(k)->Write();
 
-         muIsoCombRel.at(p).at(k)->Write();
-         muEtEleOPtMu.at(p).at(k)->Write();
-         muPtPlusOPtMinus.at(p).at(k)->Write();
-         muPt.at(p).at(k)->Write();
-         muEta.at(p).at(k)->Write();
-         muPhi.at(p).at(k)->Write();
-         muHitLayers.at(p).at(k)->Write();
-         muPxlHits.at(p).at(k)->Write();
-         muMuHits.at(p).at(k)->Write();
-         muDxyBeamSpot.at(p).at(k)->Write();
-         muNSeg.at(p).at(k)->Write();
-         muTrkIso03.at(p).at(k)->Write();
+         h_muIsoCombRel.at(p).at(k)->Write();
+         h_muEtEleOPtMu.at(p).at(k)->Write();
+         h_muPtPlusOPtMinus.at(p).at(k)->Write();
+         h_muPt.at(p).at(k)->Write();
+         h_muEta.at(p).at(k)->Write();
+         h_muPhi.at(p).at(k)->Write();
+         h_muHitLayers.at(p).at(k)->Write();
+         h_muPxlHits.at(p).at(k)->Write();
+         h_muMuHits.at(p).at(k)->Write();
+         h_muDxyBeamSpot.at(p).at(k)->Write();
+         h_muNSeg.at(p).at(k)->Write();
+         h_muTrkIso03.at(p).at(k)->Write();
       }
    }
-   for (unsigned int k = 0; k < 3; ++k) emuMass.at(QCD).at(k)->Write();
 
    output->Close();
-}
-
-float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked)
-{
-   float err2 = 0.;
-
-   // for stacked histograms subtract all contributions below the current one 
-   if (stacked) {
-      for (unsigned int i = 0; i < samples.size() && i < histos.size()-1; ++i) {
-         if (samples[i]) {
-            float numEv;
-            if (i < histos.size()-2) numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin) - histos.at(i+2).at(region)->Integral(lowerBin, upperBin);
-            else numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin);
-            err2 += pow(numEv, 2) * errors[i] * errors[i];
-         }
-      }
-   } else {
-      for (unsigned int i = 0; i < samples.size(); ++i) {
-         if (samples[i])
-            err2 += histos.at(i+1).at(region)->Integral(lowerBin, upperBin) * histos.at(i+1).at(region)->Integral(lowerBin, upperBin) * errors[i] * errors[i];
-      }
-   }
- 
-   return sqrt(err2);
-}
-
-float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked)
-{
-   float qcdErr = 0.;
-   vector<bool> allButQCD(QCD-1, true);
-
-   qcdErr = 2 * sqrt(histos.at(DATA).at(LS)->Integral(lowerBin, upperBin) + pow(CalcSystErr(histos, errors, allButQCD, LS, lowerBin, upperBin, stacked), 2));
-   errors.back() = qcdErr / histos.at(QCD).at(region)->Integral(lowerBin, upperBin);
-
-   return CalcSystErr(histos, errors, samples, region, lowerBin, upperBin, stacked);
 }
 
 int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector)

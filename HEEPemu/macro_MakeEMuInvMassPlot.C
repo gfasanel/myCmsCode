@@ -1,9 +1,15 @@
-#include <stdio>
-#include <string>
+#include <stdio.h>
+#include <string.h>
+#include <iostream>
 #include <sstream>
 #include <vector>
-#include <math>
+#include <math.h>
+#include "TColor.h"
 #include "TH1F.h"
+#include "THStack.h"
+#include "TTree.h"
+#include "TGraphAsymmErrors.h"
+#include "TParameter.h"
 #include "TCanvas.h"
 
 #define DATA 0
@@ -11,99 +17,114 @@
 #define ZTT 2
 #define WW 3
 #define WZ 4
-#define TW 5
-#define WJET 6
-#define ZMM 7
-#define ZEE 8
-#define ZZ 9
-//#define QCD 10
-#define QCD 9
+#define ZZ 5
+#define TW 6
+#define WJET 7
+#define ZMM 8
+#define ZEE 9
+#define QCD 10
 
 #define ALL 0
-#define LS 1
+#define ALLCUM 1
+#define SS 1
+#define SSCUM 3
 #define OS 2
+#define OSCUM 5
 
-float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked = false);
-float CalcAllErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples,  int region, int lowerBin, int upperBin, bool stacked = false);
-float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked = false);
-float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int sample, int region, int lowerBin, int upperBin, bool stacked = false);
-TGraphAsymmErrors* makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBars);
+float CalcBgSum(vector<vector<TH1F *> > &histos, vector<bool> &samples, int region, int lowerBin, int upperBin = -1);
+float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin = -1);
+float CalcAllErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples,  int region, int lowerBin, int upperBin = -1);
+float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin = -1);
+float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int sample, int region, int lowerBin, int upperBin = -1);
+TGraphAsymmErrors * makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBars);
+TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int &signs, int &region, const char *cutVariable, float &cutLow, float &cutHigh, vector<float> &binning, unsigned int &flags, bool normToBinWidth = false, float userScale = 1.);
 
 void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
-  //TFile input("testEmuSpecHEEP32_291pb-1.root", "open");
-  //TFile input("testEmuSpecHEEP4strong_291pb-1.root", "open");
-  //TFile input("testEmuSpecHEEP4light_816pb-1.root", "open");
-  //TFile input("testEmuSpecHEEP4_920pb-1.root", "open");
-  TFile input("testEmuSpecHEEP4_3692pb-1.root", "open");
-  //TFile input("testEmuSpecHEEP4_840pb-1_noTrg.root", "open");
-  //TFile input("testHEEP4_525pb-1.root", "open");
+  TFile input("./plots_10jan2013/testEmuSpecHEEP41_19619pb-1.root", "open");
+  //TFile input("./plots_25dec2012/testEmuSpecHEEP41_19619pb-1.root", "open");
+  //TFile input("./plots_28nov2012/testEmuSpecHEEP41_14818pb-1.root", "open");
+  //TFile input("testHEEP41_14808pb-1.root", "open");
+  input.cd();
 
-  const float lumi = 3692.;
-  const float minInvMass = 0.;
+  TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
-  int nBins = 75;
+  const int nBins = 75;
+  const bool usePu = true;
+  const bool useWeight = true;
 
   bool plotSign[3];
   plotSign[0] = true;  // all
-  plotSign[1] = true;  // LS like sign
+  plotSign[1] = true;  // SS same sign
   plotSign[2] = true;  // OS opposite sign
 
   bool plotType[2];
   plotType[0] = true;  // emu spectrum
   plotType[1] = true;  // cumulative emu spectrum
 
-  bool logPlot = true;
-  bool prelim = true;
-  bool groupedPlot = false;
+  const bool plotPull = true; // plot (data-bkg)/bkg
+  const bool logPlotX = false;
+  const bool logPlotY = true;
+  const bool prelim = true;
+  const bool groupedPlot = false;
+  const bool overflowBin = true;
 
-  // systematical errors
-  vector<float> systErrMC;
-  systErrMC.push_back(0.15);  //ttbar
-  systErrMC.push_back(0.054); //z->tt
-  systErrMC.push_back(0.035); //WW
-  systErrMC.push_back(0.038); //WZ
-  systErrMC.push_back(0.075); //tW
-  systErrMC.push_back(0.05);  //WJets
-  systErrMC.push_back(0.054); //Z->mm
-  systErrMC.push_back(0.054); //Z->ee
-  //  systErrMC.push_back(0.025); //ZZ
-  float systErrLumi = 0.022;
-  float systErrEff = 0.008; // muon err & ele err
+  float xRangeMin = 60.;
+  float xRangeMax = 1200.;
+  //float xRangeMin = 0.;
+  //float xRangeMax = 1500.;
+  float yRangeMin[6] = {0.002, 0.002, 0.002, 0.2, 0.2, 0.2};
+  float yRangeMax[6] = {250, 40, 250, 30000, 4000, 30000};
+  float fitMin = xRangeMin;
+  float fitMax = 1100.; // set to highest bin with a data point
+
+  // output file formats
+  const bool saveAsPdf = 0;
+  const bool saveAsPng = 0;
+  const bool saveAsRoot = 0;
+  const char *plotDir = "./plots_10jan2013/";
 
   // plot style
   int ttbarColour = TColor::GetColor("#ff6666");
   int zttColour = TColor::GetColor("#ff4d4d");
   int wwColour = TColor::GetColor("#ff3333");
   int wzColour = TColor::GetColor("#ff0f0f");
-  int twColour = TColor::GetColor("#eb0000");
+  int zzColour = TColor::GetColor("#eb0000");
+  int twColour = TColor::GetColor("#db0000");
   int wjetColour=  TColor::GetColor("#66b3ff");
   int zmmColour=  TColor::GetColor("#80bfff");
   int zeeColour=  TColor::GetColor("#99ccff");
   int jetBkgColour = TColor::GetColor("#ffff66"); 
 
-  //int ttbarColour = kRed;
-  //int zttColour = kRed-7;
-  //int wwColour = kRed-4;
-  //int wzColour = kRed+1;
-  //int twColour = kRed+2;
-  //int wjetColour = kCyan-2;
-  //int zmmColour = kCyan-1;
-  //int zeeColour = kCyan;
-  //int jetBfgColour = kYellow;
-
   int font = 42; //62
   ////////////////////////////////////////////////////////////////////////////
+
+  // systematic errors
+  float systErrLumi = ((TParameter<float> *)input.Get("systErrLumi"))->GetVal();
+  systErrLumi = 0.; // since we normalize to the Z peak
+  float systErrEff = ((TParameter<float> *)input.Get("systErrEff"))->GetVal(); // muon err & ele err
+  THashList *systErrMCs = (THashList *)input.Get("systErrMCs");
+  vector<float> systErrMC;
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcTtbar"))->GetVal());  // NNLO ttbar
+  //systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcTtbar700to1000"))->GetVal());  // NLO ttbar700to1000
+  //systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcTtbar1000up"))->GetVal());  // NLO ttbar1000up
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcDyTauTau"))->GetVal()); //z->tt
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcWW"))->GetVal()); //WW
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcWZ"))->GetVal()); //WZ
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcZZ"))->GetVal()); //ZZ
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcTW"))->GetVal()); //tW
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcWJets"))->GetVal());  //WJets
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcDyMuMu"))->GetVal()); //Z->mm
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcDyEE"))->GetVal()); //Z->ee
 
   // to keep the histogram when the file is closed
   TH1::AddDirectory(kFALSE);
   TH1::SetDefaultSumw2(kTRUE);
 
-  TString histoSign[3] = {"", "LS_", "OS_"};
-  TString histoTitleSign[3] = {"E", "E", "E"};
+  TString histoSign[3] = {"", "SS_", "OS_"};
   TString xAxisTitle[3] = {"m(e#mu)", "m(e^{#pm}#mu^{#pm})", "m(e^{#pm}#mu^{#mp})"};
-  TString nameSuffix[2] = {"", "Cumul"};
+  TString nameSuffix[2] = {"", "cumul"};
   TString titleSuffix[2] = {"", " - Cumulative"};
 
   vector<TH1F *> emuMass_data;
@@ -111,47 +132,184 @@ void macro_MakeEMuInvMassPlot()
   vector<TH1F *> emuMass_ztautau;
   vector<TH1F *> emuMass_ww;
   vector<TH1F *> emuMass_wz;
+  vector<TH1F *> emuMass_zz;
   vector<TH1F *> emuMass_tw;
   vector<TH1F *> emuMass_wjets;
   vector<TH1F *> emuMass_zmumu;
   vector<TH1F *> emuMass_zee;
-//  //vector<TH1F *> emuMass_zz;
   vector<TH1F *> emuMass_qcd;
+  vector<TH1F *> emuMass_ttLike;
+  vector<TH1F *> emuMass_fakePairs;
 
-  // loop over full spectrum, LS and OS
-  for (unsigned int k = 0; k < 3; ++k) {
-    // loop to get nowmal and cumulated spectrum
+  // define the binning
+  vector<float> binning;
+  if (logPlotX) {
+    //for (float bin = 0.; bin < 100.; bin += 5.)
+    //  binning.push_back(bin);
+    for (float bin = 0.; bin < 200.; bin += 10.)
+      binning.push_back(bin);
+    for (float bin = 200.; bin < 400.; bin += 20.)
+      binning.push_back(bin);
+    for (float bin = 400.; bin < 500.; bin += 25.)
+      binning.push_back(bin);
+    for (float bin = 500.; bin <= 620.; bin += 40.)
+      binning.push_back(bin);
+      binning.push_back(670.);
+      binning.push_back(720.);
+      binning.push_back(780.);
+      binning.push_back(840.);
+      binning.push_back(920.);
+      binning.push_back(1000.);
+      binning.push_back(1100.);
+      binning.push_back(1220.);
+      binning.push_back(1380.);
+      binning.push_back(1500.);
+  } else {
+    //for (float bin = 0.; bin <= 1500.; bin += 20.)
+    //  binning.push_back(bin);
+    for (float bin = 0.; bin < 200.; bin += 20.)
+      binning.push_back(bin);
+    for (float bin = 200.; bin < 400.; bin += 40.)
+      binning.push_back(bin);
+    for (float bin = 400.; bin < 700.; bin += 50.)
+      binning.push_back(bin);
+    for (float bin = 700.; bin < 1000.; bin += 75.)
+      binning.push_back(bin);
+    for (float bin = 1000.; bin < 1200.; bin += 100.)
+      binning.push_back(bin);
+    for (float bin = 1200.; bin <= 1500.; bin += 150.)
+      binning.push_back(bin);
+  }
+
+  THashList *mcWeights = (THashList *)input.Get("mcWeights");
+  TParameter<float> *mcWeight = (TParameter<float> *)mcWeights->FindObject("ttbar");
+  TParameter<float> *mcWeight700to1000 = (TParameter<float> *)mcWeights->FindObject("ttbar700to1000");
+  TParameter<float> *mcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
+
+  float totMcWeight = 1.;
+  //TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "genMTtbar", 0., 700., binning, 0x1DF, true);
+  //totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
+  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "genMTtbar", 700., 1000., binning, 0x19F, true), totMcWeight);
+  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", -1, 0, "genMTtbar", 700., 1000., binning, 0x19F, true), totMcWeight);
+  //totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
+  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, true), totMcWeight);
+  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", -1, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, true), totMcWeight);
+
+  //TH1F *ttbarH = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "", 0., 0., binning, 0x1DF, true);
+  ////ttbarH->Scale(lumi->GetVal() * mcWeight->GetVal());
+  //ttbarComb->Draw();
+  //ttbarH->SetLineColor(kRed);
+  //ttbarH->Draw("sames");
+
+  // determine qcd contribution
+  TH1F *ssData = MakeHistoFromBranch(&input, "emuTree_data", "mass", SS, 0, "", 0., 0., binning, 0x100);
+  TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "genMTtbar", 0., 700., binning, 0x1DF);
+  totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", SS, 0, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+  totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "", 0., 0., binning, 0x1DF);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  TH1F *qcdContrib = (TH1F *)ssData->Clone("qcdContrib_SS");
+  qcdContrib->Add(ssBg, -1);
+  for (int i = 0; i < qcdContrib->GetNbinsX() + 2; ++i) {
+    if (qcdContrib->GetBinContent(i) < 0) qcdContrib->SetBinContent(i, 0.);
+  }
+  cout << "expected SS QCD events: " << ssData->Integral() - ssBg->Integral() << endl;
+  cout << "derived SS QCD events: " << qcdContrib->Integral() << endl;
+  cout << "scale factor: " << (ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral()<< endl;
+  qcdContrib->Scale((ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral());
+
+  // loop over full spectrum, SS and OS
+  for (int k = 0; k < 3; ++k) {
+    // loop to get normal and cumulated spectrum
     for (unsigned int j = 0; j < 2; ++j) {
-      if (!plotType[j]) continue;
       input.cd();
 
-      // get the histograms
-      emuMass_data.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "data"));
-      emuMass_ttbar.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "ttbar"));
-      emuMass_ztautau.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "ztautau"));
-      emuMass_ww.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "ww"));
-      emuMass_wz.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "wz"));
-      emuMass_tw.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "tw"));
-      emuMass_wjets.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "wjets"));
-      emuMass_zmumu.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "zmumu"));
-      emuMass_zee.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "zee"));
-//      //emuMass_zz.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "zz"));
-      emuMass_qcd.push_back((TH1F *)gDirectory->Get("emuMass_" + histoSign[k] + "qcd"));
+      bool normToBin = true;
+      if (j > 0) normToBin = false;
 
-      // set unique name
-      emuMass_data.back()->SetName(emuMass_data.back()->GetName() + nameSuffix[j]);
-      emuMass_ttbar.back()->SetName(emuMass_ttbar.back()->GetName() + nameSuffix[j]);
-      emuMass_ztautau.back()->SetName(emuMass_ztautau.back()->GetName() + nameSuffix[j]);
-      emuMass_ww.back()->SetName(emuMass_ww.back()->GetName() + nameSuffix[j]);
-      emuMass_wz.back()->SetName(emuMass_wz.back()->GetName() + nameSuffix[j]);
-      emuMass_tw.back()->SetName(emuMass_tw.back()->GetName() + nameSuffix[j]);
-      emuMass_wjets.back()->SetName(emuMass_wjets.back()->GetName() + nameSuffix[j]);
-      emuMass_zmumu.back()->SetName(emuMass_zmumu.back()->GetName() + nameSuffix[j]);
-      emuMass_zee.back()->SetName(emuMass_zee.back()->GetName() + nameSuffix[j]);
-//      //emuMass_zz.back()->SetName(emuMass_zz.back()->GetName() + nameSuffix[j]);
-      emuMass_qcd.back()->SetName(emuMass_qcd.back()->GetName() + nameSuffix[j]);
+      if (k == 2) k = -1;
+      // make the histograms
+      TH1F *dataOverBgHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_data", "mass", k, 0, "", 0., 0., binning, 0x100, normToBin);
+      emuMass_data.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, 0, "", 0., 0., binning, 0x100));
 
-      if (!plotSign[k]) continue;
+      TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "genMTtbar", 0., 700., binning, 0x1DF, normToBin);
+      totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", k, 0, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
+      totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", k, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
+      emuMass_ttbar.push_back(ttbarComb);
+      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_zz.push_back(MakeHistoFromBranch(&input, "emuTree_zz", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      if (k == -1) k = 2;
+      emuMass_data.back()->SetName("emuMass_" + histoSign[k] + "data" + nameSuffix[j]);
+      emuMass_ttbar.back()->SetName("emuMass_" + histoSign[k] + "ttbar" + nameSuffix[j]);
+      emuMass_ztautau.back()->SetName("emuMass_" + histoSign[k] + "ztautau" + nameSuffix[j]);
+      emuMass_ww.back()->SetName("emuMass_" + histoSign[k] + "ww" + nameSuffix[j]);
+      emuMass_wz.back()->SetName("emuMass_" + histoSign[k] + "wz" + nameSuffix[j]);
+      emuMass_zz.back()->SetName("emuMass_" + histoSign[k] + "zz" + nameSuffix[j]);
+      emuMass_tw.back()->SetName("emuMass_" + histoSign[k] + "tw" + nameSuffix[j]);
+      emuMass_wjets.back()->SetName("emuMass_" + histoSign[k] + "wjets" + nameSuffix[j]);
+      emuMass_zmumu.back()->SetName("emuMass_" + histoSign[k] + "zmumu" + nameSuffix[j]);
+      emuMass_zee.back()->SetName("emuMass_" + histoSign[k] + "zee" + nameSuffix[j]);
+
+      // qcd contribution
+      emuMass_qcd.push_back((TH1F *)qcdContrib->Clone("emuMass_" + histoSign[k] + "qcd"));
+      if (k == ALL) emuMass_qcd.back()->Scale(2.);
+      // normalize to bin width
+      if (j < 1) {
+        for (int i = 1; i < emuMass_qcd.back()->GetNbinsX() + 1; ++i) {
+          emuMass_qcd.back()->SetBinContent(i, emuMass_qcd.back()->GetBinContent(i) / emuMass_qcd.back()->GetBinWidth(i));
+          emuMass_qcd.back()->SetBinError(i, emuMass_qcd.back()->GetBinError(i) / emuMass_qcd.back()->GetBinWidth(i));
+        }
+      }
+
+      // add overflow in last bin
+      if (j == 0 && overflowBin) {
+        dataOverBgHist->SetBinContent(dataOverBgHist->GetNbinsX(), dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX()) + dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX() + 1));
+        emuMass_data.back()->SetBinContent(emuMass_data.back()->GetNbinsX(), emuMass_data.back()->GetBinContent(emuMass_data.back()->GetNbinsX()) + emuMass_data.back()->GetBinContent(emuMass_data.back()->GetNbinsX() + 1));
+        emuMass_ttbar.back()->SetBinContent(emuMass_ttbar.back()->GetNbinsX(), emuMass_ttbar.back()->GetBinContent(emuMass_ttbar.back()->GetNbinsX()) + emuMass_ttbar.back()->GetBinContent(emuMass_ttbar.back()->GetNbinsX() + 1));
+        emuMass_ztautau.back()->SetBinContent(emuMass_ztautau.back()->GetNbinsX(), emuMass_ztautau.back()->GetBinContent(emuMass_ztautau.back()->GetNbinsX()) + emuMass_ztautau.back()->GetBinContent(emuMass_ztautau.back()->GetNbinsX() + 1));
+        emuMass_ww.back()->SetBinContent(emuMass_ww.back()->GetNbinsX(), emuMass_ww.back()->GetBinContent(emuMass_ww.back()->GetNbinsX()) + emuMass_ww.back()->GetBinContent(emuMass_ww.back()->GetNbinsX() + 1));
+        emuMass_wz.back()->SetBinContent(emuMass_wz.back()->GetNbinsX(), emuMass_wz.back()->GetBinContent(emuMass_wz.back()->GetNbinsX()) + emuMass_wz.back()->GetBinContent(emuMass_wz.back()->GetNbinsX() + 1));
+        emuMass_zz.back()->SetBinContent(emuMass_zz.back()->GetNbinsX(), emuMass_zz.back()->GetBinContent(emuMass_zz.back()->GetNbinsX()) + emuMass_zz.back()->GetBinContent(emuMass_zz.back()->GetNbinsX() + 1));
+        emuMass_tw.back()->SetBinContent(emuMass_tw.back()->GetNbinsX(), emuMass_tw.back()->GetBinContent(emuMass_tw.back()->GetNbinsX()) + emuMass_tw.back()->GetBinContent(emuMass_tw.back()->GetNbinsX() + 1));
+        emuMass_wjets.back()->SetBinContent(emuMass_wjets.back()->GetNbinsX(), emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX()) + emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX() + 1));
+        emuMass_zmumu.back()->SetBinContent(emuMass_zmumu.back()->GetNbinsX(), emuMass_zmumu.back()->GetBinContent(emuMass_zmumu.back()->GetNbinsX()) + emuMass_zmumu.back()->GetBinContent(emuMass_zmumu.back()->GetNbinsX() + 1));
+        emuMass_zee.back()->SetBinContent(emuMass_zee.back()->GetNbinsX(), emuMass_zee.back()->GetBinContent(emuMass_zee.back()->GetNbinsX()) + emuMass_zee.back()->GetBinContent(emuMass_zee.back()->GetNbinsX() + 1));
+        emuMass_qcd.back()->SetBinContent(emuMass_qcd.back()->GetNbinsX(), emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX()) + emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX() + 1));
+      }
+
+      // make grouped histograms
+      emuMass_ttLike.push_back((TH1F *)emuMass_ttbar.back()->Clone("emuMass_" + histoSign[k] + "ttLike" + nameSuffix[j]));
+      emuMass_ttLike.back()->Add(emuMass_ztautau.back());
+      emuMass_ttLike.back()->Add(emuMass_ww.back());
+      emuMass_ttLike.back()->Add(emuMass_wz.back());
+      emuMass_ttLike.back()->Add(emuMass_zz.back());
+      emuMass_ttLike.back()->Add(emuMass_tw.back());
+      emuMass_fakePairs.push_back((TH1F *)emuMass_wjets.back()->Clone("emuMass_" + histoSign[k] + "fakePairs" + nameSuffix[j]));
+      emuMass_fakePairs.back()->Add(emuMass_zmumu.back());
+      emuMass_fakePairs.back()->Add(emuMass_zee.back());
+      emuMass_fakePairs.back()->Add(emuMass_qcd.back());
 
       // integrate from the right side
       if (j == 1) { 
@@ -168,6 +326,8 @@ void macro_MakeEMuInvMassPlot()
           emuMass_ww.back()->SetBinError(i, error);
           emuMass_wz.back()->SetBinContent(i, emuMass_wz.back()->IntegralAndError(i, nBins, error));
           emuMass_wz.back()->SetBinError(i, error);
+          emuMass_zz.back()->SetBinContent(i, emuMass_zz.back()->IntegralAndError(i, nBins, error));
+          emuMass_zz.back()->SetBinError(i, error);
           emuMass_tw.back()->SetBinContent(i, emuMass_tw.back()->IntegralAndError(i, nBins, error));
           emuMass_tw.back()->SetBinError(i, error);
           emuMass_wjets.back()->SetBinContent(i, emuMass_wjets.back()->IntegralAndError(i, nBins, error));
@@ -176,21 +336,29 @@ void macro_MakeEMuInvMassPlot()
           emuMass_zmumu.back()->SetBinError(i, error);
           emuMass_zee.back()->SetBinContent(i, emuMass_zee.back()->IntegralAndError(i, nBins, error));
           emuMass_zee.back()->SetBinError(i, error);
-//          //emuMass_zz.back()->SetBinContent(i, emuMass_zz.back()->IntegralAndError(i, nBins, error));
-//          //emuMass_zz.back()->SetBinError(i, error);
           emuMass_qcd.back()->SetBinContent(i, emuMass_qcd.back()->IntegralAndError(i, nBins, error));
           emuMass_qcd.back()->SetBinError(i, error);
+
+          // grouped histograms
+          emuMass_ttLike.back()->SetBinContent(i, emuMass_ttLike.back()->IntegralAndError(i, nBins, error));
+          emuMass_ttLike.back()->SetBinError(i, error);
+          emuMass_fakePairs.back()->SetBinContent(i, emuMass_fakePairs.back()->IntegralAndError(i, nBins, error));
+          emuMass_fakePairs.back()->SetBinError(i, error);
         }     
       }
 
-      TCanvas *emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + histoTitleSign[k] + titleSuffix[j], 100, 100, 900, 600);
+      if (!plotSign[k]) continue;
+      if (!plotType[j]) continue;
+
+      TCanvas *emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 600);
       emuPlot->cd();
       emuPlot->SetBorderMode(0);
       emuPlot->SetBorderSize(2);
       emuPlot->SetFrameBorderMode(0);
       emuPlot->SetFillColor(0);
       emuPlot->SetFrameFillColor(0);
-      if (logPlot) emuPlot->SetLogy();
+      if (logPlotX) emuPlot->SetLogx();
+      if (logPlotY) emuPlot->SetLogy();
       emuPlot->SetLeftMargin(0.11);
       emuPlot->SetRightMargin(0.09);
       emuPlot->SetBottomMargin(0.12);
@@ -209,93 +377,167 @@ void macro_MakeEMuInvMassPlot()
       }
       gPad->SetTicks(1, 1);
 
-      emuMass_ttbar.back()->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
-      emuMass_ttbar.back()->GetXaxis()->SetTitleFont(font);
-      emuMass_ttbar.back()->GetXaxis()->SetTitleSize(0.047);
-      emuMass_ttbar.back()->GetXaxis()->SetTitleOffset(0.9);
-      emuMass_ttbar.back()->GetXaxis()->SetLabelFont(font);
-      emuMass_ttbar.back()->GetXaxis()->SetMoreLogLabels();
-      emuMass_ttbar.back()->GetXaxis()->SetNoExponent();
-      //emuMass_ttbar.back()->GetXaxis()->SetRangeUser(60., 1100.); 
-      if (j == 1) emuMass_ttbar.back()->GetYaxis()->SetTitle(histoTitleSign[k] + "vents #geq " + xAxisTitle[k]);
-      else emuMass_ttbar.back()->GetYaxis()->SetTitle(histoTitleSign[k] + "vents / 20 GeV");
-      emuMass_ttbar.back()->GetYaxis()->SetTitleFont(font);
-      emuMass_ttbar.back()->GetYaxis()->SetTitleSize(0.047);
-      emuMass_ttbar.back()->GetYaxis()->SetTitleOffset(1.2);
-      emuMass_ttbar.back()->GetYaxis()->SetLabelFont(font);
-    
-      if (emuMass_data.back()->GetMaximum() > emuMass_ttbar.back()->GetMaximum()) {
-        if (!logPlot) emuMass_ttbar.back()->SetMaximum(emuMass_data.back()->GetMaximum() * 1.1);
-        else emuMass_ttbar.back()->SetMaximum(emuMass_data.back()->GetMaximum() * 1.3);
-      }
-    
+      // make a histogram stack with the bg 
+      THStack *bgStack = new THStack("bgStack" + histoSign[k] + nameSuffix[j], "Invariant Mass" + titleSuffix[j]);
+      bgStack->Add(emuMass_qcd.back());
+      bgStack->Add(emuMass_zee.back());
+      bgStack->Add(emuMass_zmumu.back());
+      bgStack->Add(emuMass_wjets.back());
+      bgStack->Add(emuMass_tw.back());
+      bgStack->Add(emuMass_zz.back());
+      bgStack->Add(emuMass_wz.back());
+      bgStack->Add(emuMass_ww.back());
+      bgStack->Add(emuMass_ztautau.back());
+      bgStack->Add(emuMass_ttbar.back());
+      //THStack *bgStack = new THStack("bgStack" + histoSign[k] + nameSuffix[j], "Invariant Mass" + titleSuffix[j]);
+      //bgStack->Add(emuMass_qcd.back());
+      //bgStack->Add(emuMass_zee.back());
+      //bgStack->Add(emuMass_zmumu.back());
+      //bgStack->Add(emuMass_wjets.back());
+      //bgStack->Add(emuMass_zz.back());
+      //bgStack->Add(emuMass_wz.back());
+      //bgStack->Add(emuMass_ztautau.back());
+      //bgStack->Add(emuMass_tw.back());
+      //bgStack->Add(emuMass_ww.back());
+      //bgStack->Add(emuMass_ttbar.back());
+
+      THStack *bgStackGrouped = new THStack("bgStackGrouped" + histoSign[k] + nameSuffix[j], "Invariant Mass" + titleSuffix[j]);
+      bgStackGrouped->Add(emuMass_fakePairs.back());
+      bgStackGrouped->Add(emuMass_ttLike.back());
+
+      // bkg histogram for (data-bkg)/bkg plot
+      TH1F *bgHist = (TH1F *)emuMass_qcd.back()->Clone();
+      bgHist->Add(emuMass_zee.back());
+      bgHist->Add(emuMass_zmumu.back());
+      bgHist->Add(emuMass_wjets.back());
+      bgHist->Add(emuMass_tw.back());
+      bgHist->Add(emuMass_zz.back());
+      bgHist->Add(emuMass_wz.back());
+      bgHist->Add(emuMass_ww.back());
+      bgHist->Add(emuMass_ztautau.back());
+      bgHist->Add(emuMass_ttbar.back());
+
       // plot spectrum
-      emuMass_ttbar.back()->SetFillColor(ttbarColour);
-      emuMass_ttbar.back()->SetLineColor(kBlack);
-      emuMass_ttbar.back()->SetLineWidth(2);
-      emuMass_ttbar.back()->DrawClone("HIST");
       if (groupedPlot) {
-        emuMass_wjets.back()->SetFillColor(jetBkgColour);
-        emuMass_wjets.back()->SetLineColor(kBlack);
-        emuMass_wjets.back()->SetLineWidth(2);
-        emuMass_wjets.back()->Draw("HISTsames");
+        emuMass_ttLike.back()->SetFillColor(ttbarColour);
+        emuMass_ttLike.back()->SetLineColor(kBlack);
+        emuMass_ttLike.back()->SetLineWidth(2);
+        //emuMass_ttLike.back()->DrawClone("HIST");
+        emuMass_fakePairs.back()->SetFillColor(jetBkgColour);
+        emuMass_fakePairs.back()->SetMarkerColor(jetBkgColour);
+        emuMass_fakePairs.back()->SetLineColor(kBlack);
+        emuMass_fakePairs.back()->SetLineWidth(2);
+        //emuMass_fakePairs.back()->Draw("HISTsames");
+        bgStackGrouped->Draw("hist");
+
+        bgStackGrouped->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+        bgStackGrouped->GetXaxis()->SetTitleFont(font);
+        bgStackGrouped->GetXaxis()->SetTitleSize(0.047);
+        bgStackGrouped->GetXaxis()->SetTitleOffset(0.9);
+        bgStackGrouped->GetXaxis()->SetLabelFont(font);
+        bgStackGrouped->GetXaxis()->SetLabelSize(0.05);
+        bgStackGrouped->GetXaxis()->SetMoreLogLabels();
+        bgStackGrouped->GetXaxis()->SetNoExponent();
+        //bgStackGrouped->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
+        bgStackGrouped->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
+        if (j == 1) bgStackGrouped->GetYaxis()->SetTitle("Events #geq " + xAxisTitle[k]);
+        else bgStackGrouped->GetYaxis()->SetTitle("Events / GeV");
+        bgStackGrouped->GetYaxis()->SetTitleFont(font);
+        bgStackGrouped->GetYaxis()->SetTitleSize(0.047);
+        bgStackGrouped->GetYaxis()->SetTitleOffset(1.1);
+        bgStackGrouped->GetYaxis()->SetLabelFont(font);
+        bgStackGrouped->GetYaxis()->SetLabelSize(0.05);
+        bgStackGrouped->SetMinimum(yRangeMin[k + j * 3]); 
+        bgStackGrouped->SetMaximum(yRangeMax[k + j * 3]); 
       } else {
+        emuMass_ttbar.back()->SetFillColor(ttbarColour);
+        emuMass_ttbar.back()->SetLineColor(kBlack);
+        emuMass_ttbar.back()->SetLineWidth(2);
+        //emuMass_ttbar.back()->DrawClone("HIST");
         emuMass_ztautau.back()->SetFillColor(zttColour);
         emuMass_ztautau.back()->SetMarkerColor(zttColour);
         emuMass_ztautau.back()->SetLineColor(kBlack);
         emuMass_ztautau.back()->SetLineWidth(2);
-        emuMass_ztautau.back()->Draw("HISTsames");
+        //emuMass_ztautau.back()->Draw("HISTsames");
         emuMass_ww.back()->SetFillColor(wwColour);
         emuMass_ww.back()->SetMarkerColor(wwColour);
         emuMass_ww.back()->SetLineColor(kBlack);
         emuMass_ww.back()->SetLineWidth(2);
-        emuMass_ww.back()->Draw("HISTsames");
+        //emuMass_ww.back()->Draw("HISTsames");
         emuMass_wz.back()->SetFillColor(wzColour);
         emuMass_wz.back()->SetMarkerColor(wzColour);
         emuMass_wz.back()->SetLineColor(kBlack);
         emuMass_wz.back()->SetLineWidth(2);
-        emuMass_wz.back()->Draw("HISTsames");
+        //emuMass_wz.back()->Draw("HISTsames");
+        emuMass_zz.back()->SetFillColor(zzColour);
+        emuMass_zz.back()->SetMarkerColor(zzColour);
+        emuMass_zz.back()->SetLineColor(kBlack);
+        emuMass_zz.back()->SetLineWidth(2);
+        //emuMass_zz.back()->Draw("HISTsames");
         emuMass_tw.back()->SetFillColor(twColour);
         emuMass_tw.back()->SetMarkerColor(twColour);
         emuMass_tw.back()->SetLineColor(kBlack);
         emuMass_tw.back()->SetLineWidth(2);
-        emuMass_tw.back()->Draw("HISTsames");
+        //emuMass_tw.back()->Draw("HISTsames");
         emuMass_wjets.back()->SetFillColor(wjetColour);
         emuMass_wjets.back()->SetMarkerColor(wjetColour);
         emuMass_wjets.back()->SetLineColor(kBlack);
         emuMass_wjets.back()->SetLineWidth(2);
-        emuMass_wjets.back()->Draw("HISTsames");
+        //emuMass_wjets.back()->Draw("HISTsames");
         emuMass_zmumu.back()->SetFillColor(zmmColour);
         emuMass_zmumu.back()->SetMarkerColor(zmmColour);
         emuMass_zmumu.back()->SetLineColor(kBlack);
         emuMass_zmumu.back()->SetLineWidth(2);
-        emuMass_zmumu.back()->Draw("HISTsames");
+        //emuMass_zmumu.back()->Draw("HISTsames");
         emuMass_zee.back()->SetFillColor(zeeColour);
         emuMass_zee.back()->SetMarkerColor(zeeColour);
         emuMass_zee.back()->SetLineColor(kBlack);
         emuMass_zee.back()->SetLineWidth(2);
-        emuMass_zee.back()->Draw("HISTsames");
+        //emuMass_zee.back()->Draw("HISTsames");
         emuMass_qcd.back()->SetFillColor(jetBkgColour);
         emuMass_qcd.back()->SetMarkerColor(jetBkgColour);
         emuMass_qcd.back()->SetLineColor(kBlack);
         emuMass_qcd.back()->SetLineWidth(2);
-        emuMass_qcd.back()->Draw("HISTsames");
+        //emuMass_qcd.back()->Draw("HISTsames");
+        bgStack->Draw("hist");
+
+        bgStack->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+        bgStack->GetXaxis()->SetTitleFont(font);
+        bgStack->GetXaxis()->SetTitleSize(0.047);
+        bgStack->GetXaxis()->SetTitleOffset(0.9);
+        bgStack->GetXaxis()->SetLabelFont(font);
+        bgStack->GetXaxis()->SetLabelSize(0.05);
+        bgStack->GetXaxis()->SetMoreLogLabels();
+        bgStack->GetXaxis()->SetNoExponent();
+        //bgStack->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
+        bgStack->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
+        if (j == 1) bgStack->GetYaxis()->SetTitle("Events #geq " + xAxisTitle[k]);
+        else bgStack->GetYaxis()->SetTitle("Events / GeV");
+        bgStack->GetYaxis()->SetTitleFont(font);
+        bgStack->GetYaxis()->SetTitleSize(0.047);
+        bgStack->GetYaxis()->SetTitleOffset(1.1);
+        bgStack->GetYaxis()->SetLabelFont(font);
+        bgStack->GetYaxis()->SetLabelSize(0.05);
+        bgStack->SetMinimum(yRangeMin[k + j * 3]); 
+        bgStack->SetMaximum(yRangeMax[k + j * 3]); 
       }
-      
+
       emuMass_data.back()->SetLineWidth(1);
       emuMass_data.back()->SetLineColor(kBlack);
       emuMass_data.back()->SetMarkerStyle(20);
       emuMass_data.back()->SetMarkerSize(1.1);
       //emuMass_data.back()->Draw("e1 sames");
 
-      TGraphAsymmErrors* dataHist = makeDataGraph(emuMass_data.back(), -1., false);      
+      float normalize = 1.;
+      if (j > 0) normalize = -1.;
+      TGraphAsymmErrors* dataHist = makeDataGraph(emuMass_data.back(), normalize, false);      
       dataHist->SetMarkerStyle(20);
       dataHist->SetMarkerSize(1.1);
       //dataHist->GetXaxis()->SetRange(5,83);
       dataHist->GetXaxis()->SetTitleSize(0.047);
       dataHist->GetXaxis()->SetTitleOffset(0.9);
       dataHist->GetYaxis()->SetTitleSize(0.047);
-      dataHist->GetYaxis()->SetTitleOffset(1.2);
+      dataHist->GetYaxis()->SetTitleOffset(1.1);
       dataHist->Draw("PZ");
 
       // redraw axis
@@ -320,26 +562,26 @@ void macro_MakeEMuInvMassPlot()
       }
       legend.AddEntry(emuMass_data.back(), "DATA");
       if (groupedPlot) {
-        legend.AddEntry(emuMass_ttbar.back(), "t#bar{t} + other prompt leptons" ,"F");
-        legend.AddEntry(emuMass_wjets.back(), "fake e#mu pairs" ,"F");
+        legend.AddEntry(emuMass_ttLike.back(), "t#bar{t} + other prompt leptons" ,"F");
+        legend.AddEntry(emuMass_fakePairs.back(), "fake e#mu pairs" ,"F");
       } else {
         legend.AddEntry(emuMass_ttbar.back(), "t#bar{t}" ,"F");
         legend.AddEntry(emuMass_ztautau.back(), "#gamma/Z#rightarrow#tau#tau" ,"F");
         legend.AddEntry(emuMass_ww.back(), "WW" ,"F");
         legend.AddEntry(emuMass_wz.back(), "WZ" ,"F");
+        legend.AddEntry(emuMass_zz.back(), "ZZ" ,"F");
         legend.AddEntry(emuMass_tw.back(), "tW" ,"F");
         legend.AddEntry(emuMass_wjets.back(), "W+jets" ,"F");
         legend.AddEntry(emuMass_zmumu.back(), "#gamma/Z#rightarrow#mu#mu" ,"F");
         legend.AddEntry(emuMass_zee.back(), "#gamma/Z#rightarrowee" ,"F");
-        //legend.AddEntry(emuMass_zz.back(), "ZZ" ,"F");
         legend.AddEntry(emuMass_qcd.back(), "jets (data)" ,"F");
       }
       legend.DrawClone("sames");
       
       stringstream sStream;
       sStream.str("");
-      //sStream << "#sqrt{s} = 8 TeV    #int L dt = " << lumi << " pb^{-1}";
-      sStream << "#sqrt{s} = 8 TeV    #int L dt = 3.7 fb^{-1}";
+      //sStream << "#sqrt{s} = 8 TeV    #int L dt = " << lumi->GetVal() << " pb^{-1}";
+      sStream << "#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}";
       TPaveLabel labelLumi(0.337, 0.698, 0.732, 0.788, sStream.str().c_str(), "brNDC");
       labelLumi.SetFillColor(0);
       labelLumi.SetFillStyle(0);
@@ -371,56 +613,122 @@ void macro_MakeEMuInvMassPlot()
       }
       labelCMS.DrawClone("sames");
 
+      // safe in various file formats
+      sStream.str("");
+      sStream << plotDir << "emuSpec";
+      if (k == 0) sStream << "_";
+      sStream << histoSign[k] << nameSuffix[j];
+      if (j > 0) sStream << "_";
+      if (groupedPlot) sStream << "grouped_";
+      if (!logPlotY) sStream << "lin_";
+      sStream << lumi->GetVal() << "pb-1";
+      TString saveFileName = sStream.str();
+      if (saveAsPdf) emuPlot->Print(saveFileName + ".pdf", "pdf");
+      if (saveAsPng) emuPlot->Print(saveFileName + ".png", "png");
+      if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
+
+      if (j > 0 || !plotPull) continue;
+      // plot a (data - bg)/bg histogram
+      dataOverBgHist->Add(bgHist, -1.);
+      dataOverBgHist->Divide(bgHist);
+
+      TCanvas *dataOverBgPlot = new TCanvas("dataOverBgPlot" + histoSign[k] + nameSuffix[j], "(data - bg) / bg" + titleSuffix[j], 100, 100, 900, 600);
+      dataOverBgPlot->cd();
+      dataOverBgPlot->SetBorderMode(0);
+      dataOverBgPlot->SetBorderSize(2);
+      dataOverBgPlot->SetFrameBorderMode(0);
+      dataOverBgPlot->SetFillColor(0);
+      dataOverBgPlot->SetFrameFillColor(0);
+      if (logPlotX) dataOverBgPlot->SetLogx();
+      dataOverBgPlot->SetLeftMargin(0.11);
+      dataOverBgPlot->SetRightMargin(0.09);
+      dataOverBgPlot->SetBottomMargin(0.12);
+      dataOverBgPlot->SetTopMargin(0.08);
+      dataOverBgPlot->SetTickx(1);
+      dataOverBgPlot->SetTicky(1);
+
+      dataOverBgHist->SetLineWidth(1);
+      dataOverBgHist->SetLineColor(kBlack);
+      dataOverBgHist->SetMarkerStyle(20);
+      dataOverBgHist->SetMarkerSize(1.1);
+
+      dataOverBgHist->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+      dataOverBgHist->GetXaxis()->SetTitleFont(font);
+      dataOverBgHist->GetXaxis()->SetTitleSize(0.047);
+      dataOverBgHist->GetXaxis()->SetTitleOffset(0.9);
+      dataOverBgHist->GetXaxis()->SetLabelFont(font);
+      dataOverBgHist->GetXaxis()->SetLabelSize(0.05);
+      dataOverBgHist->GetXaxis()->SetMoreLogLabels();
+      dataOverBgHist->GetXaxis()->SetNoExponent();
+      dataOverBgHist->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax);
+      dataOverBgHist->GetYaxis()->SetTitle("(data-bkg)/bkg");
+      dataOverBgHist->GetYaxis()->SetTitleFont(font);
+      dataOverBgHist->GetYaxis()->SetTitleSize(0.047);
+      dataOverBgHist->GetYaxis()->SetLabelFont(font);
+      dataOverBgHist->GetYaxis()->SetLabelSize(0.05);
+
+      dataOverBgHist->Draw();
+
+      gStyle->SetOptFit(1111);
+      TF1 *f0 = new TF1("f0" + histoSign[k], "[0]");
+      dataOverBgHist->Fit("f0" + histoSign[k], "", "", fitMin, fitMax);
+      //dataOverBgHist->Draw("sameaxis");
+
+      TPaveLabel *labelLumi2 = (TPaveLabel *)labelLumi.Clone();
+      labelLumi2->SetX1(0.105);
+      labelLumi2->SetY1(0.733);
+      labelLumi2->SetX2(0.511);
+      labelLumi2->SetY2(0.823);
+      TPaveLabel *labelCMS2 = (TPaveLabel *)labelCMS.Clone();
+      labelCMS2->SetX1(0.105);
+      labelCMS2->SetY1(0.823);
+      labelCMS2->SetX2(0.379);
+      labelCMS2->SetY2(0.911);
+      labelLumi2->Draw("sames");
+      labelCMS2->Draw("sames");
+
     } // end loop over normal or cumulated
-  } // end loop over full, LS and OS
+  } // end loop over full, SS and OS
 
+  // generate one object containing everything
   vector<vector<TH1F *> > emuMasses;
-
   emuMasses.push_back(emuMass_data);
   emuMasses.push_back(emuMass_ttbar);
   emuMasses.push_back(emuMass_ztautau);
   emuMasses.push_back(emuMass_ww);
   emuMasses.push_back(emuMass_wz);
+  emuMasses.push_back(emuMass_zz);
   emuMasses.push_back(emuMass_tw);
   emuMasses.push_back(emuMass_wjets);
   emuMasses.push_back(emuMass_zmumu);
   emuMasses.push_back(emuMass_zee);
-//  //emuMasses.push_back(emuMass_zz);
   emuMasses.push_back(emuMass_qcd);
-  if (plotType[1]) {
-    for (vector<vector<TH1F *> >::iterator iter = emuMasses.begin(); iter < emuMasses.end(); ++iter) {
-      iter->erase(iter->begin() + 5);
-      iter->erase(iter->begin() + 3);
-      iter->erase(iter->begin() + 1);
-    }
-  }
-
-  float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
 
   // calculate rate of syst errors
   float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
   vector<float> systErrMCLuEff;
-  for (unsigned int it = TTBAR - 1; it < ZEE; ++it) 
+  for (int it = TTBAR - 1; it < ZEE; ++it) 
      systErrMCLuEff.push_back(sqrt(systErrMC[it]*systErrMC[it] + systErrLuEff*systErrLuEff));
 
   // define groups of MC samples
-  vector<bool> ttLikeSamples(5, true);
-  vector<bool> contamSamples(5, false);
+  vector<bool> ttLikeSamples(6, true);
+  vector<bool> contamSamples(6, false);
   contamSamples.push_back(true); // WJets
   contamSamples.push_back(true); // Zmm
   contamSamples.push_back(true); // Zee
-  vector<bool> allSamples(8, true);
+  vector<bool> allSamples(9, true);
 
-  int bin60 = (int)60 / 1500. * nBins + 1;
-  int bin120 = (int)120 / 1500. * nBins + 1;
-  int bin200 = (int)200 / 1500. * nBins + 1;
-  int bin400 = (int)400 / 1500. * nBins + 1;
-  int bin500 = (int)500 / 1500. * nBins + 1;
+  // define special bins corresponding to specific masses
+  int bin60 = emuMass_data.at(ALL)->FindBin(60.);
+  int bin120 = emuMass_data.at(ALL)->FindBin(120.);
+  int bin200 = emuMass_data.at(ALL)->FindBin(200.); 
+  int bin400 = emuMass_data.at(ALL)->FindBin(400.); 
+  int bin500 = emuMass_data.at(ALL)->FindBin(500.); 
 
   // write numbers
   cout << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-  cout << "HEEP - TIGHT MU        Lumi        = " << lumi << "pb-1" << endl;
+  cout << "HEEP - TIGHT MU        Lumi        = " << lumi->GetVal() << "pb-1" << endl;
   //cout << "                       e pT EB     > " << bar_et << "GeV/c" << endl;
   //cout << "                       e pT EE     > " << end_et << "GeV/c" << endl;
   //cout << "                       mu pT       > " << muon_et << "GeV/c" << endl;
@@ -429,170 +737,170 @@ void macro_MakeEMuInvMassPlot()
   cout << "Systematic errors" << endl;
   cout << " Luminosity:  " << systErrLumi * 100 << "%" << endl;
   cout << " Efficiency:  " << systErrEff * 100 << "%" << endl;
-  cout << " ttbar:      " << systErrMC[TTBAR-1] * 100 << "%" << endl;
+  cout << " ttbar:       " << systErrMC[TTBAR-1] * 100 << "%" << endl;
   cout << " Z->tautau:   " << systErrMC[ZTT-1] * 100 << "%" << endl;
   cout << " WW:          " << systErrMC[WW-1] * 100 << "%" << endl;
   cout << " WZ:          " << systErrMC[WZ-1] * 100 << "%" << endl;
-  cout << " tW, tbarW:  " << systErrMC[TW-1] * 100 << "%" << endl;
+  cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
+  cout << " tW, tbarW:   " << systErrMC[TW-1] * 100 << "%" << endl;
   cout << " W+Jets:      " << systErrMC[WJET-1] * 100 << "%" << endl;
   cout << " Z->mumu:     " << systErrMC[ZMM-1] * 100 << "%" << endl;
   cout << " Z->ee:       " << systErrMC[ZEE-1] * 100 << "%" << endl;
-//  cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << "M_emu         |         >  60GeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2         |        > 400GeV/c^2          |" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
-         emuMass_data.at(ALL)->Integral(bin60,nBins + 1), sqrt(emuMass_data.at(ALL)->Integral(bin60,nBins + 1)),         
-         emuMass_data.at(ALL)->Integral(bin120,nBins + 1), sqrt(emuMass_data.at(ALL)->Integral(bin120,nBins + 1)),
-         emuMass_data.at(ALL)->Integral(bin200,nBins + 1), sqrt(emuMass_data.at(ALL)->Integral(bin200,nBins + 1)),
-         emuMass_data.at(ALL)->Integral(bin400,nBins + 1), sqrt(emuMass_data.at(ALL)->Integral(bin400,nBins + 1)));
+         emuMass_data.at(ALLCUM)->GetBinContent(bin60), sqrt(emuMass_data.at(ALLCUM)->GetBinContent(bin60)),         
+         emuMass_data.at(ALLCUM)->GetBinContent(bin120), sqrt(emuMass_data.at(ALLCUM)->GetBinContent(bin120)),
+         emuMass_data.at(ALLCUM)->GetBinContent(bin200), sqrt(emuMass_data.at(ALLCUM)->GetBinContent(bin200)),
+         emuMass_data.at(ALLCUM)->GetBinContent(bin400), sqrt(emuMass_data.at(ALLCUM)->GetBinContent(bin400)));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb ttbar      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ttbar.at(ALL)->Integral(bin60,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin60,nBins + 1), (emuMass_ttbar.at(ALL)->Integral(bin60,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[TTBAR-1], 
-         emuMass_ttbar.at(ALL)->Integral(bin120,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin120,nBins + 1), (emuMass_ttbar.at(ALL)->Integral(bin120,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[TTBAR-1], 
-         emuMass_ttbar.at(ALL)->Integral(bin200,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin200,nBins + 1), (emuMass_ttbar.at(ALL)->Integral(bin200,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[TTBAR-1],
-         emuMass_ttbar.at(ALL)->Integral(bin400,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin400,nBins + 1), (emuMass_ttbar.at(ALL)->Integral(bin400,nBins + 1) - emuMass_ztautau.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[TTBAR-1]);
+         emuMass_ttbar.at(ALLCUM)->GetBinContent(bin60), emuMass_ttbar.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[TTBAR-1], 
+	 emuMass_ttbar.at(ALLCUM)->GetBinContent(bin120), emuMass_ttbar.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[TTBAR-1], 
+	 emuMass_ttbar.at(ALLCUM)->GetBinContent(bin200), emuMass_ttbar.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[TTBAR-1],
+         emuMass_ttbar.at(ALLCUM)->GetBinContent(bin400), emuMass_ttbar.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[TTBAR-1]);
   printf("nb Ztautau    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ztautau.at(ALL)->Integral(bin60,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin60,nBins + 1), (emuMass_ztautau.at(ALL)->Integral(bin60,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(ALL)->Integral(bin120,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin120,nBins + 1), (emuMass_ztautau.at(ALL)->Integral(bin120,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(ALL)->Integral(bin200,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin200,nBins + 1), (emuMass_ztautau.at(ALL)->Integral(bin200,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(ALL)->Integral(bin400,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin400,nBins + 1), (emuMass_ztautau.at(ALL)->Integral(bin400,nBins + 1) - emuMass_ww.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZTT-1]); 
+         emuMass_ztautau.at(ALLCUM)->GetBinContent(bin60), emuMass_ztautau.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(ALLCUM)->GetBinContent(bin120), emuMass_ztautau.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(ALLCUM)->GetBinContent(bin200), emuMass_ztautau.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(ALLCUM)->GetBinContent(bin400), emuMass_ztautau.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[ZTT-1]); 
   printf("nb WW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ww.at(ALL)->Integral(bin60,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin60,nBins + 1), (emuMass_ww.at(ALL)->Integral(bin60,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WW-1], 
-         emuMass_ww.at(ALL)->Integral(bin120,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin120,nBins + 1), (emuMass_ww.at(ALL)->Integral(bin120,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WW-1], 
-         emuMass_ww.at(ALL)->Integral(bin200,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin200,nBins + 1), (emuMass_ww.at(ALL)->Integral(bin200,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WW-1],
-         emuMass_ww.at(ALL)->Integral(bin400,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin400,nBins + 1), (emuMass_ww.at(ALL)->Integral(bin400,nBins + 1) - emuMass_wz.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WW-1]);
+         emuMass_ww.at(ALLCUM)->GetBinContent(bin60), emuMass_ww.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(ALLCUM)->GetBinContent(bin120), emuMass_ww.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(ALLCUM)->GetBinContent(bin200), emuMass_ww.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[WW-1],
+         emuMass_ww.at(ALLCUM)->GetBinContent(bin400), emuMass_ww.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[WW-1]);
   printf("nb WZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wz.at(ALL)->Integral(bin60,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin60,nBins + 1), (emuMass_wz.at(ALL)->Integral(bin60,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WZ-1], 
-         emuMass_wz.at(ALL)->Integral(bin120,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin120,nBins + 1), (emuMass_wz.at(ALL)->Integral(bin120,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WZ-1], 
-         emuMass_wz.at(ALL)->Integral(bin200,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin200,nBins + 1), (emuMass_wz.at(ALL)->Integral(bin200,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WZ-1],
-         emuMass_wz.at(ALL)->Integral(bin400,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin400,nBins + 1), (emuMass_wz.at(ALL)->Integral(bin400,nBins + 1) - emuMass_tw.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WZ-1]);
+         emuMass_wz.at(ALLCUM)->GetBinContent(bin60), emuMass_wz.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(ALLCUM)->GetBinContent(bin120), emuMass_wz.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(ALLCUM)->GetBinContent(bin200), emuMass_wz.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[WZ-1],
+         emuMass_wz.at(ALLCUM)->GetBinContent(bin400), emuMass_wz.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[WZ-1]);
+  printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_zz.at(ALLCUM)->GetBinContent(bin60), emuMass_zz.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(ALLCUM)->GetBinContent(bin120), emuMass_zz.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(ALLCUM)->GetBinContent(bin200), emuMass_zz.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(ALLCUM)->GetBinContent(bin400), emuMass_zz.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[ZZ-1]); 
   printf("nb tW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_tw.at(ALL)->Integral(bin60,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin60,nBins + 1), (emuMass_tw.at(ALL)->Integral(bin60,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[TW-1], 
-         emuMass_tw.at(ALL)->Integral(bin120,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin120,nBins + 1), (emuMass_tw.at(ALL)->Integral(bin120,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[TW-1], 
-         emuMass_tw.at(ALL)->Integral(bin200,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin200,nBins + 1), (emuMass_tw.at(ALL)->Integral(bin200,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[TW-1],
-         emuMass_tw.at(ALL)->Integral(bin400,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin400,nBins + 1), (emuMass_tw.at(ALL)->Integral(bin400,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[TW-1]);
+         emuMass_tw.at(ALLCUM)->GetBinContent(bin60), emuMass_tw.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(ALLCUM)->GetBinContent(bin120), emuMass_tw.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(ALLCUM)->GetBinContent(bin200), emuMass_tw.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[TW-1],
+         emuMass_tw.at(ALLCUM)->GetBinContent(bin400), emuMass_tw.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[TW-1]);
   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
   printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wjets.at(ALL)->Integral(bin60,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin60,nBins + 1), (emuMass_wjets.at(ALL)->Integral(bin60,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(ALL)->Integral(bin120,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin120,nBins + 1), (emuMass_wjets.at(ALL)->Integral(bin120,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(ALL)->Integral(bin200,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin200,nBins + 1), (emuMass_wjets.at(ALL)->Integral(bin200,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WJET-1],
-         emuMass_wjets.at(ALL)->Integral(bin400,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin400,nBins + 1), (emuMass_wjets.at(ALL)->Integral(bin400,nBins + 1) - emuMass_zmumu.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WJET-1]);
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin60), emuMass_wjets.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin120), emuMass_wjets.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin200), emuMass_wjets.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin400), emuMass_wjets.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_zmumu.at(ALL)->Integral(bin60,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin60,nBins + 1), (emuMass_zmumu.at(ALL)->Integral(bin60,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZMM-1], 
-         emuMass_zmumu.at(ALL)->Integral(bin120,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin120,nBins + 1), (emuMass_zmumu.at(ALL)->Integral(bin120,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZMM-1], 
-         emuMass_zmumu.at(ALL)->Integral(bin200,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin200,nBins + 1), (emuMass_zmumu.at(ALL)->Integral(bin200,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZMM-1],
-         emuMass_zmumu.at(ALL)->Integral(bin400,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin400,nBins + 1), (emuMass_zmumu.at(ALL)->Integral(bin400,nBins + 1) - emuMass_zee.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZMM-1]);
+         emuMass_zmumu.at(ALLCUM)->GetBinContent(bin60), emuMass_zmumu.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(ALLCUM)->GetBinContent(bin120), emuMass_zmumu.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(ALLCUM)->GetBinContent(bin200), emuMass_zmumu.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[ZMM-1],
+         emuMass_zmumu.at(ALLCUM)->GetBinContent(bin400), emuMass_zmumu.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[ZMM-1]);
   printf("nb Zee        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_zee.at(ALL)->Integral(bin60,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin60,nBins + 1), (emuMass_zee.at(ALL)->Integral(bin60,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(ALL)->Integral(bin120,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin120,nBins + 1), (emuMass_zee.at(ALL)->Integral(bin120,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(ALL)->Integral(bin200,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin200,nBins + 1), (emuMass_zee.at(ALL)->Integral(bin200,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(ALL)->Integral(bin400,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin400,nBins + 1), (emuMass_zee.at(ALL)->Integral(bin400,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZEE-1]); 
-//  //printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-//  //       emuMass_zz.at(ALL)->Integral(bin60,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin60,nBins + 1), (emuMass_zz.at(ALL)->Integral(bin60,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(ALL)->Integral(bin120,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin120,nBins + 1), (emuMass_zz.at(ALL)->Integral(bin120,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(ALL)->Integral(bin200,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin200,nBins + 1), (emuMass_zz.at(ALL)->Integral(bin200,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(ALL)->Integral(bin400,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin400,nBins + 1), (emuMass_zz.at(ALL)->Integral(bin400,nBins + 1) - emuMass_qcd.at(ALL)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZZ-1]); 
+         emuMass_zee.at(ALLCUM)->GetBinContent(bin60), emuMass_zee.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(ALLCUM)->GetBinContent(bin120), emuMass_zee.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(ALLCUM)->GetBinContent(bin200), emuMass_zee.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(ALLCUM)->GetBinContent(bin400), emuMass_zee.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[ZEE-1]); 
   cout << endl;
   cout << "---Without QCD correction:--------------------------------------------------------------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("TOT ttlike    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMass_ttbar.at(ALL)->Integral(bin60,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, bin60, nBins + 1, true),
-         emuMass_ttbar.at(ALL)->Integral(bin120,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, bin120, nBins + 1, true),
-         emuMass_ttbar.at(ALL)->Integral(bin200,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, bin200, nBins + 1, true),
-         emuMass_ttbar.at(ALL)->Integral(bin400,nBins + 1) - emuMass_wjets.at(ALL)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, ttLikeSamples, ALLCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin60),
+         CalcBgSum(emuMasses, ttLikeSamples, ALLCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin120),
+         CalcBgSum(emuMasses, ttLikeSamples, ALLCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, ALLCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin400));
   printf("TOT contam    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMass_wjets.at(ALL)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALL, bin60, nBins + 1, true),
-         emuMass_wjets.at(ALL)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALL, bin120, nBins + 1, true),
-         emuMass_wjets.at(ALL)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALL, bin200, nBins + 1, true),
-         emuMass_wjets.at(ALL)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALL, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, contamSamples, ALLCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin60),
+         CalcBgSum(emuMasses, contamSamples, ALLCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin120),
+         CalcBgSum(emuMasses, contamSamples, ALLCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin200),
+         CalcBgSum(emuMasses, contamSamples, ALLCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin400));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
 
   printf("TOT MC        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMasses.at(1).at(ALL)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALL, bin60, nBins + 1, true),
-         emuMasses.at(1).at(ALL)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALL, bin120, nBins + 1, true),
-         emuMasses.at(1).at(ALL)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALL, bin200, nBins + 1, true),
-         emuMasses.at(1).at(ALL)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALL, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, allSamples, ALLCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin60),
+         CalcBgSum(emuMasses, allSamples, ALLCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin120),
+         CalcBgSum(emuMasses, allSamples, ALLCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin200),
+         CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << endl << endl;
 
-  cout << "-LS--------------------------------------------------------------------------------------------------------" << endl;
+  cout << "-SS--------------------------------------------------------------------------------------------------------" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << "M_emu         |         >  60GeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2         |        > 400GeV/c^2          |" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
-         emuMass_data.at(LS + 1)->Integral(bin60,nBins + 1), sqrt(emuMass_data.at(LS + 1)->Integral(bin60,nBins + 1)),         
-         emuMass_data.at(LS + 1)->Integral(bin120,nBins + 1), sqrt(emuMass_data.at(LS + 1)->Integral(bin120,nBins + 1)),
-         emuMass_data.at(LS + 1)->Integral(bin200,nBins + 1), sqrt(emuMass_data.at(LS + 1)->Integral(bin200,nBins + 1)),
-         emuMass_data.at(LS + 1)->Integral(bin400,nBins + 1), sqrt(emuMass_data.at(LS + 1)->Integral(bin400,nBins + 1)));
+         emuMass_data.at(SSCUM)->GetBinContent(bin60), sqrt(emuMass_data.at(SSCUM)->GetBinContent(bin60)),         
+         emuMass_data.at(SSCUM)->GetBinContent(bin120), sqrt(emuMass_data.at(SSCUM)->GetBinContent(bin120)),
+         emuMass_data.at(SSCUM)->GetBinContent(bin200), sqrt(emuMass_data.at(SSCUM)->GetBinContent(bin200)),
+         emuMass_data.at(SSCUM)->GetBinContent(bin400), sqrt(emuMass_data.at(SSCUM)->GetBinContent(bin400)));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb ttbar      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ttbar.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_ttbar.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[TTBAR-1], 
-         emuMass_ttbar.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_ttbar.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[TTBAR-1], 
-         emuMass_ttbar.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_ttbar.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[TTBAR-1],
-         emuMass_ttbar.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_ttbar.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_ztautau.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[TTBAR-1]);
+         emuMass_ttbar.at(SSCUM)->GetBinContent(bin60), emuMass_ttbar.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[TTBAR-1], 
+	 emuMass_ttbar.at(SSCUM)->GetBinContent(bin120), emuMass_ttbar.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[TTBAR-1], 
+	 emuMass_ttbar.at(SSCUM)->GetBinContent(bin200), emuMass_ttbar.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[TTBAR-1],
+         emuMass_ttbar.at(SSCUM)->GetBinContent(bin400), emuMass_ttbar.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[TTBAR-1]);
   printf("nb Ztautau    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ztautau.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_ztautau.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_ztautau.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_ztautau.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_ztautau.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_ww.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZTT-1]); 
+         emuMass_ztautau.at(SSCUM)->GetBinContent(bin60), emuMass_ztautau.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(SSCUM)->GetBinContent(bin120), emuMass_ztautau.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(SSCUM)->GetBinContent(bin200), emuMass_ztautau.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(SSCUM)->GetBinContent(bin400), emuMass_ztautau.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZTT-1]); 
   printf("nb WW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ww.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_ww.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WW-1], 
-         emuMass_ww.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_ww.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WW-1], 
-         emuMass_ww.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_ww.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WW-1],
-         emuMass_ww.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_ww.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_wz.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WW-1]);
+         emuMass_ww.at(SSCUM)->GetBinContent(bin60), emuMass_ww.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(SSCUM)->GetBinContent(bin120), emuMass_ww.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(SSCUM)->GetBinContent(bin200), emuMass_ww.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[WW-1],
+         emuMass_ww.at(SSCUM)->GetBinContent(bin400), emuMass_ww.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[WW-1]);
   printf("nb WZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wz.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_wz.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WZ-1], 
-         emuMass_wz.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_wz.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WZ-1], 
-         emuMass_wz.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_wz.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WZ-1],
-         emuMass_wz.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_wz.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_tw.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WZ-1]);
+         emuMass_wz.at(SSCUM)->GetBinContent(bin60), emuMass_wz.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(SSCUM)->GetBinContent(bin120), emuMass_wz.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(SSCUM)->GetBinContent(bin200), emuMass_wz.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[WZ-1],
+         emuMass_wz.at(SSCUM)->GetBinContent(bin400), emuMass_wz.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[WZ-1]);
+  printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_zz.at(SSCUM)->GetBinContent(bin60), emuMass_zz.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(SSCUM)->GetBinContent(bin120), emuMass_zz.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(SSCUM)->GetBinContent(bin200), emuMass_zz.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(SSCUM)->GetBinContent(bin400), emuMass_zz.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZZ-1]); 
   printf("nb tW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_tw.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_tw.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[TW-1], 
-         emuMass_tw.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_tw.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[TW-1], 
-         emuMass_tw.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_tw.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[TW-1],
-         emuMass_tw.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_tw.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[TW-1]);
+         emuMass_tw.at(SSCUM)->GetBinContent(bin60), emuMass_tw.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(SSCUM)->GetBinContent(bin120), emuMass_tw.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(SSCUM)->GetBinContent(bin200), emuMass_tw.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[TW-1],
+         emuMass_tw.at(SSCUM)->GetBinContent(bin400), emuMass_tw.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[TW-1]);
   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
   printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wjets.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_wjets.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_wjets.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_wjets.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WJET-1],
-         emuMass_wjets.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_wjets.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_zmumu.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WJET-1]);
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin60), emuMass_wjets.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin120), emuMass_wjets.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin200), emuMass_wjets.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin400), emuMass_wjets.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_zmumu.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_zmumu.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZMM-1], 
-         emuMass_zmumu.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_zmumu.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZMM-1], 
-         emuMass_zmumu.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_zmumu.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZMM-1],
-         emuMass_zmumu.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_zmumu.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_zee.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZMM-1]);
+         emuMass_zmumu.at(SSCUM)->GetBinContent(bin60), emuMass_zmumu.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(SSCUM)->GetBinContent(bin120), emuMass_zmumu.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(SSCUM)->GetBinContent(bin200), emuMass_zmumu.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZMM-1],
+         emuMass_zmumu.at(SSCUM)->GetBinContent(bin400), emuMass_zmumu.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZMM-1]);
   printf("nb Zee        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_zee.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_zee.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_zee.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_zee.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_zee.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZEE-1]); 
-//  //printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-//  //       emuMass_zz.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin60,nBins + 1), (emuMass_zz.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin120,nBins + 1), (emuMass_zz.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin200,nBins + 1), (emuMass_zz.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin400,nBins + 1), (emuMass_zz.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_qcd.at(LS + 1)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZZ-1]); 
+         emuMass_zee.at(SSCUM)->GetBinContent(bin60), emuMass_zee.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(SSCUM)->GetBinContent(bin120), emuMass_zee.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(SSCUM)->GetBinContent(bin200), emuMass_zee.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(SSCUM)->GetBinContent(bin400), emuMass_zee.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZEE-1]); 
   cout << endl;
   cout << "---Without QCD correction:--------------------------------------------------------------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("TOT ttlike    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMass_ttbar.at(LS + 1)->Integral(bin60,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, LS + 1, bin60, nBins + 1, true),
-         emuMass_ttbar.at(LS + 1)->Integral(bin120,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, LS + 1, bin120, nBins + 1, true),
-         emuMass_ttbar.at(LS + 1)->Integral(bin200,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, LS + 1, bin200, nBins + 1, true),
-         emuMass_ttbar.at(LS + 1)->Integral(bin400,nBins + 1) - emuMass_wjets.at(LS + 1)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, LS + 1, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin60),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin120),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin400));
   printf("TOT contam    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMass_wjets.at(LS + 1)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, LS, bin60, nBins + 1, true),
-         emuMass_wjets.at(LS + 1)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, LS, bin120, nBins + 1, true),
-         emuMass_wjets.at(LS + 1)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, LS, bin200, nBins + 1, true),
-         emuMass_wjets.at(LS + 1)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, LS, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, contamSamples, SSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin60),
+         CalcBgSum(emuMasses, contamSamples, SSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin120),
+         CalcBgSum(emuMasses, contamSamples, SSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin200),
+         CalcBgSum(emuMasses, contamSamples, SSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin400));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
 
   printf("TOT MC        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMasses.at(1).at(LS)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin60, nBins + 1, true),
-         emuMasses.at(1).at(LS)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin120, nBins + 1, true),
-         emuMasses.at(1).at(LS)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin200, nBins + 1, true),
-         emuMasses.at(1).at(LS)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin60),
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin120),
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin200),
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin400));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << endl << endl;
 
@@ -601,127 +909,132 @@ void macro_MakeEMuInvMassPlot()
   cout << "M_emu         |         >  60GeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2         |        > 400GeV/c^2          |" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
-         emuMass_data.at(OS + 2)->Integral(bin60,nBins + 1), sqrt(emuMass_data.at(OS + 2)->Integral(bin60,nBins + 1)),         
-         emuMass_data.at(OS + 2)->Integral(bin120,nBins + 1), sqrt(emuMass_data.at(OS + 2)->Integral(bin120,nBins + 1)),
-         emuMass_data.at(OS + 2)->Integral(bin200,nBins + 1), sqrt(emuMass_data.at(OS + 2)->Integral(bin200,nBins + 1)),
-         emuMass_data.at(OS + 2)->Integral(bin400,nBins + 1), sqrt(emuMass_data.at(OS + 2)->Integral(bin400,nBins + 1)));
+         emuMass_data.at(OSCUM)->GetBinContent(bin60), sqrt(emuMass_data.at(OSCUM)->GetBinContent(bin60)),         
+         emuMass_data.at(OSCUM)->GetBinContent(bin120), sqrt(emuMass_data.at(OSCUM)->GetBinContent(bin120)),
+         emuMass_data.at(OSCUM)->GetBinContent(bin200), sqrt(emuMass_data.at(OSCUM)->GetBinContent(bin200)),
+         emuMass_data.at(OSCUM)->GetBinContent(bin400), sqrt(emuMass_data.at(OSCUM)->GetBinContent(bin400)));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb ttbar      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ttbar.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_ttbar.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[TTBAR-1], 
-         emuMass_ttbar.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_ttbar.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[TTBAR-1], 
-         emuMass_ttbar.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_ttbar.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[TTBAR-1],
-         emuMass_ttbar.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_ttbar.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_ztautau.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[TTBAR-1]);
+         emuMass_ttbar.at(OSCUM)->GetBinContent(bin60), emuMass_ttbar.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[TTBAR-1], 
+	 emuMass_ttbar.at(OSCUM)->GetBinContent(bin120), emuMass_ttbar.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[TTBAR-1], 
+	 emuMass_ttbar.at(OSCUM)->GetBinContent(bin200), emuMass_ttbar.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[TTBAR-1],
+         emuMass_ttbar.at(OSCUM)->GetBinContent(bin400), emuMass_ttbar.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[TTBAR-1]);
   printf("nb Ztautau    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ztautau.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_ztautau.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_ztautau.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_ztautau.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZTT-1], 
-         emuMass_ztautau.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_ztautau.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_ww.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZTT-1]); 
+         emuMass_ztautau.at(OSCUM)->GetBinContent(bin60), emuMass_ztautau.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(OSCUM)->GetBinContent(bin120), emuMass_ztautau.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(OSCUM)->GetBinContent(bin200), emuMass_ztautau.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZTT-1], 
+         emuMass_ztautau.at(OSCUM)->GetBinContent(bin400), emuMass_ztautau.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZTT-1]); 
   printf("nb WW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_ww.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_ww.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WW-1], 
-         emuMass_ww.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_ww.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WW-1], 
-         emuMass_ww.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_ww.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WW-1],
-         emuMass_ww.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_ww.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_wz.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WW-1]);
+         emuMass_ww.at(OSCUM)->GetBinContent(bin60), emuMass_ww.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(OSCUM)->GetBinContent(bin120), emuMass_ww.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[WW-1], 
+         emuMass_ww.at(OSCUM)->GetBinContent(bin200), emuMass_ww.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[WW-1],
+         emuMass_ww.at(OSCUM)->GetBinContent(bin400), emuMass_ww.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[WW-1]);
   printf("nb WZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wz.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_wz.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WZ-1], 
-         emuMass_wz.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_wz.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WZ-1], 
-         emuMass_wz.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_wz.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WZ-1],
-         emuMass_wz.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_wz.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_tw.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WZ-1]);
+         emuMass_wz.at(OSCUM)->GetBinContent(bin60), emuMass_wz.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(OSCUM)->GetBinContent(bin120), emuMass_wz.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[WZ-1], 
+         emuMass_wz.at(OSCUM)->GetBinContent(bin200), emuMass_wz.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[WZ-1],
+         emuMass_wz.at(OSCUM)->GetBinContent(bin400), emuMass_wz.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[WZ-1]);
+  printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_zz.at(OSCUM)->GetBinContent(bin60), emuMass_zz.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(OSCUM)->GetBinContent(bin120), emuMass_zz.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(OSCUM)->GetBinContent(bin200), emuMass_zz.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZZ-1], 
+         emuMass_zz.at(OSCUM)->GetBinContent(bin400), emuMass_zz.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZZ-1]); 
   printf("nb tW         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_tw.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_tw.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[TW-1], 
-         emuMass_tw.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_tw.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[TW-1], 
-         emuMass_tw.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_tw.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[TW-1],
-         emuMass_tw.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_tw.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[TW-1]);
+         emuMass_tw.at(OSCUM)->GetBinContent(bin60), emuMass_tw.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(OSCUM)->GetBinContent(bin120), emuMass_tw.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[TW-1], 
+         emuMass_tw.at(OSCUM)->GetBinContent(bin200), emuMass_tw.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[TW-1],
+         emuMass_tw.at(OSCUM)->GetBinContent(bin400), emuMass_tw.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[TW-1]);
   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
   printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wjets.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_wjets.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_wjets.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_wjets.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[WJET-1],
-         emuMass_wjets.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_wjets.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_zmumu.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[WJET-1]);
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin60), emuMass_wjets.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin120), emuMass_wjets.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin200), emuMass_wjets.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin400), emuMass_wjets.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_zmumu.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_zmumu.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZMM-1], 
-         emuMass_zmumu.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_zmumu.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZMM-1], 
-         emuMass_zmumu.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_zmumu.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZMM-1],
-         emuMass_zmumu.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_zmumu.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_zee.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZMM-1]);
+         emuMass_zmumu.at(OSCUM)->GetBinContent(bin60), emuMass_zmumu.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(OSCUM)->GetBinContent(bin120), emuMass_zmumu.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZMM-1], 
+         emuMass_zmumu.at(OSCUM)->GetBinContent(bin200), emuMass_zmumu.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZMM-1],
+         emuMass_zmumu.at(OSCUM)->GetBinContent(bin400), emuMass_zmumu.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZMM-1]);
   printf("nb Zee        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_zee.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_zee.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_zee.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_zee.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZEE-1], 
-         emuMass_zee.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_zee.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZEE-1]); 
-//  //printf("nb ZZ         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-//  //       emuMass_zz.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin60,nBins + 1), (emuMass_zz.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin60,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin120,nBins + 1), (emuMass_zz.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin120,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin200,nBins + 1), (emuMass_zz.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin200,nBins + 1)) * systErrMCLuEff[ZZ-1], 
-//  //       emuMass_zz.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin400,nBins + 1), (emuMass_zz.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_qcd.at(OS + 2)->Integral(bin400,nBins + 1)) * systErrMCLuEff[ZZ-1]); 
+         emuMass_zee.at(OSCUM)->GetBinContent(bin60), emuMass_zee.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(OSCUM)->GetBinContent(bin120), emuMass_zee.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(OSCUM)->GetBinContent(bin200), emuMass_zee.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZEE-1], 
+         emuMass_zee.at(OSCUM)->GetBinContent(bin400), emuMass_zee.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZEE-1]); 
   cout << endl;
   cout << "---Without QCD correction:--------------------------------------------------------------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("TOT ttlike    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMass_ttbar.at(OS + 2)->Integral(bin60,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OS, bin60, nBins + 1, true),
-         emuMass_ttbar.at(OS + 2)->Integral(bin120,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OS, bin120, nBins + 1, true),
-         emuMass_ttbar.at(OS + 2)->Integral(bin200,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OS, bin200, nBins + 1, true),
-         emuMass_ttbar.at(OS + 2)->Integral(bin400,nBins + 1) - emuMass_wjets.at(OS + 2)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OS, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin60),
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin120),
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin400));
   printf("TOT contam    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMass_wjets.at(OS + 2)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OS, bin60, nBins + 1, true),
-         emuMass_wjets.at(OS + 2)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OS, bin120, nBins + 1, true),
-         emuMass_wjets.at(OS + 2)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OS, bin200, nBins + 1, true),
-         emuMass_wjets.at(OS + 2)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OS, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, contamSamples, OSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin60),
+         CalcBgSum(emuMasses, contamSamples, OSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin120),
+         CalcBgSum(emuMasses, contamSamples, OSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin200),
+         CalcBgSum(emuMasses, contamSamples, OSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin400));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
 
   printf("TOT MC        | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMasses.at(1).at(OS)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin60, nBins + 1, true),
-         emuMasses.at(1).at(OS)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin120, nBins + 1, true),
-         emuMasses.at(1).at(OS)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin200, nBins + 1, true),
-         emuMasses.at(1).at(OS)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin60),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin120),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin200),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin400));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << endl << endl << endl;
 
 
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-  printf("nb LS DATA    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        | %5.0f +- %-.3f (stat)        |\n",
-         emuMasses.at(DATA).at(LS)->Integral(bin60,nBins + 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin60,nBins + 1)),
-         emuMasses.at(DATA).at(LS)->Integral(bin120,nBins + 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin120,nBins + 1)),
-         emuMasses.at(DATA).at(LS)->Integral(bin200,nBins + 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin200,nBins + 1)),
-         emuMasses.at(DATA).at(LS)->Integral(bin400,nBins + 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin400,nBins + 1)));
-  printf("nb LS MC      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMasses.at(1).at(LS)->Integral(bin60,nBins + 1) - emuMasses.back().at(LS)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin60, nBins + 1, true),
-         emuMasses.at(1).at(LS)->Integral(bin120,nBins + 1) - emuMasses.back().at(LS)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin120, nBins + 1, true),
-         emuMasses.at(1).at(LS)->Integral(bin200,nBins + 1) - emuMasses.back().at(LS)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin200, nBins + 1, true),
-         emuMasses.at(1).at(LS)->Integral(bin400,nBins + 1) - emuMasses.back().at(LS)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, bin400, nBins + 1, true));
+  printf("nb SS DATA    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        | %5.0f +- %-.3f (stat)        |\n",
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60)),
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120)),
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200)),
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400)));
+  printf("nb SS MC      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin60),
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin120),
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin200),
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin400));
   cout << endl;
   printf("nb OS DATA    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
-         emuMasses.at(DATA).at(OS)->Integral(bin60,nBins + 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin60,nBins + 1)),
-         emuMasses.at(DATA).at(OS)->Integral(bin120,nBins + 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin120,nBins + 1)),
-         emuMasses.at(DATA).at(OS)->Integral(bin200,nBins + 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin200,nBins + 1)),
-         emuMasses.at(DATA).at(OS)->Integral(bin400,nBins + 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin400,nBins + 1)));
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60)),
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120)),
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200)),
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400)));
   printf("nb OS MC      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-         emuMasses.at(1).at(OS)->Integral(bin60,nBins + 1) - emuMasses.back().at(OS)->Integral(bin60,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin60, nBins + 1, true),
-         emuMasses.at(1).at(OS)->Integral(bin120,nBins + 1) - emuMasses.back().at(OS)->Integral(bin120,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin120, nBins + 1, true),
-         emuMasses.at(1).at(OS)->Integral(bin200,nBins + 1) - emuMasses.back().at(OS)->Integral(bin200,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin200, nBins + 1, true),
-         emuMasses.at(1).at(OS)->Integral(bin400,nBins + 1) - emuMasses.back().at(OS)->Integral(bin400,nBins + 1), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OS, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin60), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin60),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin120), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin120),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin200), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin200),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin400), CalcSystErr(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin400));
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
 
-  systErrMC.push_back(2 * sqrt(emuMasses.at(DATA).at(LS)->Integral() + pow(CalcSystErr(emuMasses, systErrMCLuEff, allSamples, LS, 1, nBins + 1, true), 2)) / emuMasses.at(QCD).at(ALL)->Integral());
+  systErrMC.push_back(2 * sqrt(emuMasses.at(DATA).at(SS)->Integral() + pow(CalcSystErr(emuMasses, systErrMCLuEff, allSamples, SS, 1), 2)) / emuMasses.at(QCD).at(ALL)->Integral());
   systErrMCLuEff.push_back(systErrMC[QCD]);
 
-  vector<bool> onlyQCD(8, false);
+  // define samples group for qcd
+  vector<bool> onlyQCD(9, false);
   onlyQCD.push_back(true);
-  contamSamples.push_back(true);
-  allSamples.push_back(true);
 
   cout << endl;
-  cout << "---QCD events from LS spectrum:----------------------------------------------------------------------------------------------------------------------------------" << endl;
+  cout << "---QCD events from SS spectrum:----------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-  printf("nb QCD LS+OS  | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) |\n",
-         emuMasses.at(QCD).at(ALL)->Integral(bin60,nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin60, nBins + 1, true), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin60, nBins + 1, true) / emuMasses.at(QCD).at(ALL)->Integral(bin60,nBins + 1),
-         emuMasses.at(QCD).at(ALL)->Integral(bin120,nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin120, nBins + 1, true), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin120, nBins + 1, true) / emuMasses.at(QCD).at(ALL)->Integral(bin120,nBins + 1),
-         emuMasses.at(QCD).at(ALL)->Integral(bin200,nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin200, nBins + 1, true), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin200, nBins + 1, true) / emuMasses.at(QCD).at(ALL)->Integral(bin200,nBins + 1),
-         emuMasses.at(QCD).at(ALL)->Integral(bin400,nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin400, nBins + 1, true), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin400, nBins + 1, true) / emuMasses.at(QCD).at(ALL)->Integral(bin400,nBins + 1));
+  printf("nb QCD SS+OS  | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) |\n",
+         CalcBgSum(emuMasses, onlyQCD, ALLCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin60), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin60) / emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin60),
+         CalcBgSum(emuMasses, onlyQCD, ALLCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin120), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin120) / emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin120),
+         CalcBgSum(emuMasses, onlyQCD, ALLCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin200), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin200) / emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin200),
+         CalcBgSum(emuMasses, onlyQCD, ALLCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin400), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin400) / emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin400));
   printf("%% of total MC |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |\n",
-         100 * emuMasses.at(QCD).at(ALL)->Integral(bin60,nBins + 1) / (emuMasses.at(1).at(ALL)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin60,nBins + 1)), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin60, nBins + 1, true) / (emuMasses.at(1).at(ALL)->Integral(bin60,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin60,nBins + 1)),
-         100 * emuMasses.at(QCD).at(ALL)->Integral(bin120,nBins + 1) / (emuMasses.at(1).at(ALL)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin120,nBins + 1)), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin120, nBins + 1, true) / (emuMasses.at(1).at(ALL)->Integral(bin120,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin120,nBins + 1)),
-         100 * emuMasses.at(QCD).at(ALL)->Integral(bin200,nBins + 1) / (emuMasses.at(1).at(ALL)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin200,nBins + 1)), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin200, nBins + 1, true) / (emuMasses.at(1).at(ALL)->Integral(bin200,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin200,nBins + 1)),
-         100 * emuMasses.at(QCD).at(ALL)->Integral(bin400,nBins + 1) / (emuMasses.at(1).at(ALL)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin400,nBins + 1)), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALL, bin400, nBins + 1, true) / (emuMasses.at(1).at(ALL)->Integral(bin400,nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin400,nBins + 1)));
+         100 * emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin60) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin60), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin60) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin60),
+         100 * emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin120) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin120), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin120) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin120),
+         100 * emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin200) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin200), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin200) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin200),
+         100 * emuMasses.at(QCD).at(ALLCUM)->GetBinContent(bin400) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), 100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin400) / CalcBgSum(emuMasses, allSamples, ALLCUM, bin400));
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+  // top up bg contribution with qcd
+  vector<bool> contamSamplesNoQcd(contamSamples);
+  vector<bool> allSamplesNoQcd(allSamples);
+  contamSamples.push_back(true);
+  allSamples.push_back(true);
 
   cout << endl;
   cout << "--After adding QCD contribution:----------------------------------------------------------------------------------------------------------" << endl;
@@ -729,39 +1042,38 @@ void macro_MakeEMuInvMassPlot()
   cout << "M_emu         |         > 60GeV/c^2          |        > 120GeV/c^2          |         > 200GeV/c^2         |         > 400GeV/c^2         |" << endl;
   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
-          emuMasses.at(DATA).at(ALL)->Integral(bin60, nBins + 1), sqrt(emuMasses.at(DATA).at(ALL)->Integral(bin60, nBins + 1)),
-          emuMasses.at(DATA).at(ALL)->Integral(bin120, nBins + 1), sqrt((emuMasses.at(DATA).at(ALL))->Integral(bin120, nBins + 1)),
-          emuMasses.at(DATA).at(ALL)->Integral(bin200, nBins + 1), sqrt(emuMasses.at(DATA).at(ALL)->Integral(bin200, nBins + 1)),
-          emuMasses.at(DATA).at(ALL)->Integral(bin400, nBins + 1), sqrt(emuMasses.at(DATA).at(ALL)->Integral(bin400, nBins + 1)));
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin60), sqrt(emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin60)),
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120), sqrt((emuMasses.at(DATA).at(ALLCUM))->GetBinContent(bin120)),
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200)),
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400)));
   printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-          emuMasses.at(1).at(ALL)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin60, nBins + 1, true),
-          emuMasses.at(1).at(ALL)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin120, nBins + 1, true),
-          emuMasses.at(1).at(ALL)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin200, nBins + 1, true),
-          emuMasses.at(1).at(ALL)->Integral(bin400, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin400, nBins + 1, true));
+          CalcBgSum(emuMasses, allSamples, ALLCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin60),
+          CalcBgSum(emuMasses, allSamples, ALLCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin120),
+          CalcBgSum(emuMasses, allSamples, ALLCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin200),
+          CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400));
   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-  printf("nb data LS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
-          emuMasses.at(DATA).at(LS)->Integral(bin60, nBins + 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin60, nBins + 1)),
-          emuMasses.at(DATA).at(LS)->Integral(bin120, nBins + 1), sqrt((emuMasses.at(DATA).at(LS))->Integral(bin120, nBins + 1)),
-          emuMasses.at(DATA).at(LS)->Integral(bin200, nBins + 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin200, nBins + 1)),
-          emuMasses.at(DATA).at(LS)->Integral(bin400, nBins + 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin400, nBins + 1)));
-  printf("nb MC LS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-          emuMasses.at(1).at(LS)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin60, nBins + 1, true),
-          emuMasses.at(1).at(LS)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin120, nBins + 1, true),
-          emuMasses.at(1).at(LS)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin200, nBins + 1, true),
-          emuMasses.at(1).at(LS)->Integral(bin400, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin400, nBins + 1, true));
+  printf("nb data SS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60)),
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120), sqrt((emuMasses.at(DATA).at(SSCUM))->GetBinContent(bin120)),
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200)),
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400)));
+  printf("nb MC SS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+          CalcBgSum(emuMasses, allSamples, SSCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin60),
+          CalcBgSum(emuMasses, allSamples, SSCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin120),
+          CalcBgSum(emuMasses, allSamples, SSCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin200),
+          CalcBgSum(emuMasses, allSamples, SSCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin400));
   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
   printf("nb data OS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
-          emuMasses.at(DATA).at(OS)->Integral(bin60, nBins + 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin60, nBins + 1)),
-          emuMasses.at(DATA).at(OS)->Integral(bin120, nBins + 1), sqrt((emuMasses.at(DATA).at(OS))->Integral(bin120, nBins + 1)),
-          emuMasses.at(DATA).at(OS)->Integral(bin200, nBins + 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin200, nBins + 1)),
-          emuMasses.at(DATA).at(OS)->Integral(bin400, nBins + 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin400, nBins + 1)));
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60)),
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120), sqrt((emuMasses.at(DATA).at(OSCUM))->GetBinContent(bin120)),
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200)),
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400)));
   printf("nb MC OS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-          emuMasses.at(1).at(OS)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin60, nBins + 1, true),
-          emuMasses.at(1).at(OS)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin120, nBins + 1, true),
-          emuMasses.at(1).at(OS)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin200, nBins + 1, true),
-          emuMasses.at(1).at(OS)->Integral(bin400, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin400, nBins + 1, true));
+          CalcBgSum(emuMasses, allSamples, OSCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin60),
+          CalcBgSum(emuMasses, allSamples, OSCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin120),
+          CalcBgSum(emuMasses, allSamples, OSCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin200),
+          CalcBgSum(emuMasses, allSamples, OSCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin400));
   cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl << endl;
-
 
 
   cout << endl;
@@ -769,31 +1081,31 @@ void macro_MakeEMuInvMassPlot()
   cout << "M_emu         |        60 - 120GeV/c^2       |      120 - 200GeV/c^2        |       200 - 400GeV/c^2       |" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
-          emuMasses.at(DATA).at(ALL)->Integral(bin60, bin120 - 1), sqrt(emuMasses.at(DATA).at(ALL)->Integral(bin60, bin120 - 1)),
-          emuMasses.at(DATA).at(ALL)->Integral(bin120, bin200 - 1), sqrt((emuMasses.at(DATA).at(ALL))->Integral(bin120, bin200 - 1)),
-          emuMasses.at(DATA).at(ALL)->Integral(bin200, bin400 - 1), sqrt(emuMasses.at(DATA).at(ALL)->Integral(bin200, bin400 - 1)));
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin60) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120), sqrt(emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin60) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120)),
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200)),
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400)));
   printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-          emuMasses.at(1).at(ALL)->Integral(bin60, bin120 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin60, bin120 - 1, true),
-          emuMasses.at(1).at(ALL)->Integral(bin120, bin200 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin120, bin200 - 1, true),
-          emuMasses.at(1).at(ALL)->Integral(bin200, bin400 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin200, bin400 - 1, true));
+          CalcBgSum(emuMasses, allSamples, ALLCUM, bin60, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin60, bin120),
+          CalcBgSum(emuMasses, allSamples, ALLCUM, bin120, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin120, bin200),
+          CalcBgSum(emuMasses, allSamples, ALLCUM, bin200, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin200, bin400));
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-  printf("nb data LS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
-          emuMasses.at(DATA).at(LS)->Integral(bin60, bin120 - 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin60, bin120 - 1)),
-          emuMasses.at(DATA).at(LS)->Integral(bin120, bin200 - 1), sqrt((emuMasses.at(DATA).at(LS))->Integral(bin120, bin200 - 1)),
-          emuMasses.at(DATA).at(LS)->Integral(bin200, bin400 - 1), sqrt(emuMasses.at(DATA).at(LS)->Integral(bin200, bin400 - 1)));
-  printf("nb MC LS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-          emuMasses.at(1).at(LS)->Integral(bin60, bin120 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin60, bin120 - 1, true),
-          emuMasses.at(1).at(LS)->Integral(bin120, bin200 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin120, bin200 - 1, true),
-          emuMasses.at(1).at(LS)->Integral(bin200, bin400 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin200, bin400 - 1, true));
+  printf("nb data SS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120)),
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200)),
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400)));
+  printf("nb MC SS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
+          CalcBgSum(emuMasses, allSamples, SSCUM, bin60, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin60, bin120),
+          CalcBgSum(emuMasses, allSamples, SSCUM, bin120, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin120, bin200),
+          CalcBgSum(emuMasses, allSamples, SSCUM, bin200, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin200, bin400));
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   printf("nb data OS    | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
-          emuMasses.at(DATA).at(OS)->Integral(bin60, bin120 - 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin60, bin120 - 1)),
-          emuMasses.at(DATA).at(OS)->Integral(bin120, bin200 - 1), sqrt((emuMasses.at(DATA).at(OS))->Integral(bin120, bin200 - 1)),
-          emuMasses.at(DATA).at(OS)->Integral(bin200, bin400 - 1), sqrt(emuMasses.at(DATA).at(OS)->Integral(bin200, bin400 - 1)));
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120)),
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200)),
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400)));
   printf("nb MC OS      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-          emuMasses.at(1).at(OS)->Integral(bin60, bin120 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin60, bin120 - 1, true),
-          emuMasses.at(1).at(OS)->Integral(bin120, bin200 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin120, bin200 - 1, true),
-          emuMasses.at(1).at(OS)->Integral(bin200, bin400 - 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin200, bin400 - 1, true));
+          CalcBgSum(emuMasses, allSamples, OSCUM, bin60, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin60, bin120),
+          CalcBgSum(emuMasses, allSamples, OSCUM, bin120, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin120, bin200),
+          CalcBgSum(emuMasses, allSamples, OSCUM, bin200, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin200, bin400));
   cout << "-----------------------------------------------------------------------------------------------------------" << endl << endl;
 
   cout << endl;
@@ -805,21 +1117,25 @@ void macro_MakeEMuInvMassPlot()
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
-  cout << "$m_{e\\mu}$ &  \\multicolumn{2}{c|}{like-sign}  & \\multicolumn{2}{c|}{opposite-sign} & \\multicolumn{2}{c|}{combined}  \\\\" << endl;
+  cout << "$m_{e\\mu}$ &  \\multicolumn{2}{c|}{same-sign}  & \\multicolumn{2}{c|}{opposite-sign} & \\multicolumn{2}{c|}{combined}  \\\\" << endl;
   cout << " &  data & MC & data & MC & data & MC \\\\" << endl;
   cout << "\\hline" << endl;
   printf("$>$ 60~$\\gevsq$   & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-          emuMasses.at(DATA).at(LS)->Integral(bin60, nBins + 1), emuMasses.at(1).at(LS)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin60, nBins + 1, true), 
-          emuMasses.at(DATA).at(OS)->Integral(bin60, nBins + 1), emuMasses.at(1).at(OS)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin60, nBins + 1, true), 
-          emuMasses.at(DATA).at(ALL)->Integral(bin60, nBins + 1), emuMasses.at(1).at(ALL)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin60, nBins + 1, true));
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60), CalcBgSum(emuMasses, allSamples, SSCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin60), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60), CalcBgSum(emuMasses, allSamples, OSCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin60), 
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin60), CalcBgSum(emuMasses, allSamples, ALLCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin60));
   printf("$>$ 120~$\\gevsq$  & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-          emuMasses.at(DATA).at(LS)->Integral(bin120, nBins + 1), emuMasses.at(1).at(LS)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin120, nBins + 1, true), 
-          emuMasses.at(DATA).at(OS)->Integral(bin120, nBins + 1), emuMasses.at(1).at(OS)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin120, nBins + 1, true), 
-          emuMasses.at(DATA).at(ALL)->Integral(bin120, nBins + 1), emuMasses.at(1).at(ALL)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin120, nBins + 1, true));
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120), CalcBgSum(emuMasses, allSamples, SSCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin120), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120), CalcBgSum(emuMasses, allSamples, OSCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin120), 
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120), CalcBgSum(emuMasses, allSamples, ALLCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin120));
   printf("$>$ 200~$\\gevsq$  & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-          emuMasses.at(DATA).at(LS)->Integral(bin200, nBins + 1), emuMasses.at(1).at(LS)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin200, nBins + 1, true), 
-          emuMasses.at(DATA).at(OS)->Integral(bin200, nBins + 1), emuMasses.at(1).at(OS)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin200, nBins + 1, true), 
-          emuMasses.at(DATA).at(ALL)->Integral(bin200, nBins + 1), emuMasses.at(1).at(ALL)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin200, nBins + 1, true));
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), CalcBgSum(emuMasses, allSamples, SSCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin200), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), CalcBgSum(emuMasses, allSamples, OSCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin200), 
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200), CalcBgSum(emuMasses, allSamples, ALLCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin200));
+  printf("$>$ 400~$\\gevsq$  & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, SSCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin400), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, OSCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin400), 
+          emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
   cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
@@ -828,34 +1144,40 @@ void macro_MakeEMuInvMassPlot()
 
   cout << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-  cout << "|Event yield table with combined = LS + OS                                                                |" << endl;
+  cout << "|Event yield table with combined = SS + OS                                                                |" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "\\begin{table}[tbh]" << endl;
   cout << "\\centering" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
-  cout << "$m_{e\\mu}$ &  \\multicolumn{2}{c|}{like-sign}  & \\multicolumn{2}{c|}{opposite-sign} & \\multicolumn{2}{c|}{combined}  \\\\" << endl;
+  cout << "$m_{e\\mu}$ &  \\multicolumn{2}{c|}{same-sign}  & \\multicolumn{2}{c|}{opposite-sign} & \\multicolumn{2}{c|}{combined}  \\\\" << endl;
   cout << " &  data & MC & data & MC & data & MC \\\\" << endl;
   cout << "\\hline" << endl;
   printf("$>$ 60~$\\gevsq$   & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-          emuMasses.at(DATA).at(LS)->Integral(bin60, nBins + 1), emuMasses.at(1).at(LS)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin60, nBins + 1, true), 
-          emuMasses.at(DATA).at(OS)->Integral(bin60, nBins + 1), emuMasses.at(1).at(OS)->Integral(bin60, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin60, nBins + 1, true), 
-          floor(0.5 + emuMasses.at(DATA).at(LS)->Integral(bin60, nBins + 1)) + floor(0.5 + emuMasses.at(DATA).at(OS)->Integral(bin60, nBins + 1)), 
-          floor(0.5 + emuMasses.at(1).at(LS)->Integral(bin60, nBins + 1)) + floor(0.5 + emuMasses.at(1).at(OS)->Integral(bin60, nBins + 1)), 
-          CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin60, nBins + 1, true)); 
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60), CalcBgSum(emuMasses, allSamples, SSCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin60), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60), CalcBgSum(emuMasses, allSamples, OSCUM, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin60), 
+          floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin60)) + floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin60)), 
+          floor(0.5 + CalcBgSum(emuMasses, allSamples, SSCUM, bin60)) + floor(0.5 + CalcBgSum(emuMasses, allSamples, OSCUM, bin60)), 
+          CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin60)); 
   printf("$>$ 120~$\\gevsq$  & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-          emuMasses.at(DATA).at(LS)->Integral(bin120, nBins + 1), emuMasses.at(1).at(LS)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin120, nBins + 1, true), 
-          emuMasses.at(DATA).at(OS)->Integral(bin120, nBins + 1), emuMasses.at(1).at(OS)->Integral(bin120, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin120, nBins + 1, true), 
-          floor(0.5 + emuMasses.at(DATA).at(LS)->Integral(bin120, nBins + 1)) + floor(0.5 + emuMasses.at(DATA).at(OS)->Integral(bin120, nBins + 1)), 
-          floor(0.5 + emuMasses.at(1).at(LS)->Integral(bin120, nBins + 1)) + floor(0.5 + emuMasses.at(1).at(OS)->Integral(bin120, nBins + 1)), 
-          CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin120, nBins + 1, true)); 
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120), CalcBgSum(emuMasses, allSamples, SSCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin120), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120), CalcBgSum(emuMasses, allSamples, OSCUM, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin120), 
+          floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120)) + floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120)), 
+          floor(0.5 + CalcBgSum(emuMasses, allSamples, SSCUM, bin120)) + floor(0.5 + CalcBgSum(emuMasses, allSamples, OSCUM, bin120)), 
+          CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin120)); 
   printf("$>$ 200~$\\gevsq$  & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-          emuMasses.at(DATA).at(LS)->Integral(bin200, nBins + 1), emuMasses.at(1).at(LS)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, LS, bin200, nBins + 1, true), 
-          emuMasses.at(DATA).at(OS)->Integral(bin200, nBins + 1), emuMasses.at(1).at(OS)->Integral(bin200, nBins + 1), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OS, bin200, nBins + 1, true), 
-          floor(0.5 + emuMasses.at(DATA).at(LS)->Integral(bin200, nBins + 1)) + floor(0.5 + emuMasses.at(DATA).at(OS)->Integral(bin200, nBins + 1)), 
-          floor(0.5 + emuMasses.at(1).at(LS)->Integral(bin200, nBins + 1)) + floor(0.5 + emuMasses.at(1).at(OS)->Integral(bin200, nBins + 1)), 
-          CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALL, bin200, nBins + 1, true));
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), CalcBgSum(emuMasses, allSamples, SSCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin200), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), CalcBgSum(emuMasses, allSamples, OSCUM, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin200), 
+          floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200)) + floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200)), 
+          floor(0.5 + CalcBgSum(emuMasses, allSamples, SSCUM, bin200)) + floor(0.5 + CalcBgSum(emuMasses, allSamples, OSCUM, bin200)), 
+          CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin200));
+  printf("$>$ 400~$\\gevsq$  & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f & %.0f & %.0f $\\pm$ %.0f \\\\\n", 
+          emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, SSCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, SSCUM, bin400), 
+          emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, OSCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, OSCUM, bin400), 
+          floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400)) + floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400)), 
+          floor(0.5 + CalcBgSum(emuMasses, allSamples, SSCUM, bin400)) + floor(0.5 + CalcBgSum(emuMasses, allSamples, OSCUM, bin400)), 
+          CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
   cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
@@ -872,55 +1194,55 @@ void macro_MakeEMuInvMassPlot()
   cout << "\\hline\\hline" << endl;
   cout << "Source & \\multicolumn{9}{c|}{number of events} \\\\" << endl;
   cout << " &  \\multicolumn{3}{c|}{[$120-200$]~GeV/c$^2$}  & \\multicolumn{3}{c|}{[$200-400$]~GeV/c$^2$} & \\multicolumn{3}{|c|}{$>$ 400~GeV/c$^2$}  \\\\" << endl;
-  cout << " &  OS & LS & Combined & OS & LS & Combined & OS & LS & Combined \\\\\\hline" << endl;
+  cout << " &  OS & SS & Combined & OS & SS & Combined & OS & SS & Combined \\\\\\hline" << endl;
 
   printf("CMS data  & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f \\\\\n", 
-emuMasses.at(DATA).at(OS)->Integral(bin120, bin200 - 1), emuMasses.at(DATA).at(LS)->Integral(bin120, bin200 - 1), emuMasses.at(DATA).at(ALL)->Integral(bin120, bin200 - 1), 
-emuMasses.at(DATA).at(OS)->Integral(bin200, bin400 - 1), emuMasses.at(DATA).at(LS)->Integral(bin200, bin400 - 1), emuMasses.at(DATA).at(ALL)->Integral(bin200, bin400 - 1), 
-emuMasses.at(DATA).at(OS)->Integral(bin400, nBins + 1), emuMasses.at(DATA).at(LS)->Integral(bin400, nBins + 1), emuMasses.at(DATA).at(ALL)->Integral(bin400, nBins + 1));
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200), 
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400));
   printf("Total Bkg & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-         emuMasses.at(1).at(OS)->Integral(bin120, bin200 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OS, bin120, bin200 - 1, true), 
-         emuMasses.at(1).at(LS)->Integral(bin120, bin200 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, LS, bin120, bin200 - 1, true), 
-         emuMasses.at(1).at(ALL)->Integral(bin120, bin200 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALL, bin120, bin200 - 1, true), 
-         emuMasses.at(1).at(OS)->Integral(bin200, bin400 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OS, bin200, bin400 - 1, true), 
-         emuMasses.at(1).at(LS)->Integral(bin200, bin400 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, LS, bin200, bin400 - 1, true), 
-         emuMasses.at(1).at(ALL)->Integral(bin200, bin400 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALL, bin200, bin400 - 1, true),
-         emuMasses.at(1).at(OS)->Integral(bin400, nBins + 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OS, bin400, nBins + 1, true), 
-         emuMasses.at(1).at(LS)->Integral(bin400, nBins + 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, LS, bin400, nBins + 1, true), 
-         emuMasses.at(1).at(ALL)->Integral(bin400, nBins + 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALL, bin400, nBins + 1, true)); 
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OSCUM, bin120, bin200), 
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, SSCUM, bin120, bin200), 
+         CalcBgSum(emuMasses, allSamples, ALLCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALLCUM, bin120, bin200),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OSCUM, bin200, bin400), 
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, SSCUM, bin200, bin400), 
+         CalcBgSum(emuMasses, allSamples, ALLCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALLCUM, bin200, bin400),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OSCUM, bin400), 
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, SSCUM, bin400), 
+         CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALLCUM, bin400)); 
   cout << "\\hline\\hline" << endl;
   printf("\\ttbar +  \\ttbar-like & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-         emuMasses.at(TTBAR).at(OS)->Integral(bin120, bin200 - 1) - emuMasses.at(WJET).at(OS)->Integral(bin120, bin200 - 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OS, bin120, bin200 - 1, true),
-         emuMasses.at(TTBAR).at(LS)->Integral(bin120, bin200 - 1) - emuMasses.at(WJET).at(LS)->Integral(bin120, bin200 - 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, LS, bin120, bin200 - 1, true),
-         emuMasses.at(TTBAR).at(ALL)->Integral(bin120, bin200 - 1) - emuMasses.at(WJET).at(ALL)->Integral(bin120, bin200 - 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, bin120, bin200 - 1, true),
-         emuMasses.at(TTBAR).at(OS)->Integral(bin200, bin400 - 1) - emuMasses.at(WJET).at(OS)->Integral(bin200, bin400 - 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OS, bin200, bin400 - 1, true),
-         emuMasses.at(TTBAR).at(LS)->Integral(bin200, bin400 - 1) - emuMasses.at(WJET).at(LS)->Integral(bin200, bin400 - 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, LS, bin200, bin400 - 1, true),
-         emuMasses.at(TTBAR).at(ALL)->Integral(bin200, bin400 - 1) - emuMasses.at(WJET).at(ALL)->Integral(bin200, bin400 - 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, bin200, bin400 - 1, true),
-         emuMasses.at(TTBAR).at(OS)->Integral(bin400, nBins + 1) - emuMasses.at(WJET).at(OS)->Integral(bin400, nBins + 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OS, bin400, nBins + 1, true),
-         emuMasses.at(TTBAR).at(LS)->Integral(bin400, nBins + 1) - emuMasses.at(WJET).at(LS)->Integral(bin400, nBins + 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, LS, bin400, nBins + 1, true),
-         emuMasses.at(TTBAR).at(ALL)->Integral(bin400, nBins + 1) - emuMasses.at(WJET).at(ALL)->Integral(bin400, nBins + 1), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALL, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, ALLCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin120, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, ALLCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin200, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, ALLCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin400));
 
   printf("contaminations        & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-         emuMasses.at(WJET).at(OS)->Integral(bin120, bin200 - 1) - emuMasses.at(QCD).at(OS)->Integral(bin120, bin200 - 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OS, bin120, bin200 - 1, true),
-         emuMasses.at(WJET).at(LS)->Integral(bin120, bin200 - 1) - emuMasses.at(QCD).at(LS)->Integral(bin120, bin200 - 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, LS, bin120, bin200 - 1, true),
-         emuMasses.at(WJET).at(ALL)->Integral(bin120, bin200 - 1) - emuMasses.at(QCD).at(ALL)->Integral(bin120, bin200 - 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALL, bin120, bin200 - 1, true),
-         emuMasses.at(WJET).at(OS)->Integral(bin200, bin400 - 1) - emuMasses.at(QCD).at(OS)->Integral(bin200, bin400 - 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OS, bin200, bin400 - 1, true),
-         emuMasses.at(WJET).at(LS)->Integral(bin200, bin400 - 1) - emuMasses.at(QCD).at(LS)->Integral(bin200, bin400 - 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, LS, bin200, bin400 - 1, true),
-         emuMasses.at(WJET).at(ALL)->Integral(bin200, bin400 - 1) - emuMasses.at(QCD).at(ALL)->Integral(bin200, bin400 - 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALL, bin200, bin400 - 1, true),
-         emuMasses.at(WJET).at(OS)->Integral(bin400, nBins + 1) - emuMasses.at(QCD).at(OS)->Integral(bin400, nBins + 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OS, bin400, nBins + 1, true),
-         emuMasses.at(WJET).at(LS)->Integral(bin400, nBins + 1) - emuMasses.at(QCD).at(LS)->Integral(bin400, nBins + 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, LS, bin400, nBins + 1, true),
-         emuMasses.at(WJET).at(ALL)->Integral(bin400, nBins + 1) - emuMasses.at(QCD).at(ALL)->Integral(bin400, nBins + 1), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALL, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, ALLCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin120, bin200),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, ALLCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin200, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, ALLCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin400));
 
   printf("multi-jet             & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
-         emuMasses.at(QCD).at(OS)->Integral(bin120, bin200 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, OS, bin120, bin200 - 1, true),
-         emuMasses.at(QCD).at(LS)->Integral(bin120, bin200 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, LS, bin120, bin200 - 1, true),
-         emuMasses.at(QCD).at(ALL)->Integral(bin120, bin200 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, ALL, bin120, bin200 - 1, true),
-         emuMasses.at(QCD).at(OS)->Integral(bin200, bin400 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, OS, bin200, bin400 - 1, true),
-         emuMasses.at(QCD).at(LS)->Integral(bin200, bin400 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, LS, bin200, bin400 - 1, true),
-         emuMasses.at(QCD).at(ALL)->Integral(bin200, bin400 - 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, ALL, bin200, bin400 - 1, true),
-         emuMasses.at(QCD).at(OS)->Integral(bin400, nBins + 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, OS, bin400, nBins + 1, true),
-         emuMasses.at(QCD).at(LS)->Integral(bin400, nBins + 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, LS, bin400, nBins + 1, true),
-         emuMasses.at(QCD).at(ALL)->Integral(bin400, nBins + 1), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, ALL, bin400, nBins + 1, true));
+         CalcBgSum(emuMasses, onlyQCD, OSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, OSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, onlyQCD, SSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, SSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, onlyQCD, ALLCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, ALLCUM, bin120, bin200),
+         CalcBgSum(emuMasses, onlyQCD, OSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, OSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, onlyQCD, SSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, SSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, onlyQCD, ALLCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, ALLCUM, bin200, bin400),
+         CalcBgSum(emuMasses, onlyQCD, OSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, OSCUM, bin400),
+         CalcBgSum(emuMasses, onlyQCD, SSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, SSCUM, bin400),
+         CalcBgSum(emuMasses, onlyQCD, ALLCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, QCD, ALLCUM, bin400));
 
   cout << "\\hline\\hline" << endl;
   cout << "\\end{tabular}" << endl;
@@ -929,70 +1251,68 @@ emuMasses.at(DATA).at(OS)->Integral(bin400, nBins + 1), emuMasses.at(DATA).at(LS
   cout << "\\end{table}" << endl;
 }
 
-float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked)
+// calculate the sum of several cumulated background histograms
+float CalcBgSum(vector<vector<TH1F *> > &histos, vector<bool> &samples, int region, int lowerBin, int upperBin)
+{
+   float sumLow = 0.;
+   float sumUp = 0.;
+
+   for (unsigned int i = 0; i < samples.size(); ++i ) {
+      if (samples[i]) {
+         sumLow += histos.at(i+1).at(region)->GetBinContent(lowerBin);
+         if (upperBin > -1) sumUp += histos.at(i+1).at(region)->GetBinContent(upperBin);
+      }
+   }
+   return sumLow - sumUp;
+}
+
+float CalcSystErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin)
 {
    float err2 = 0.;
 
-   // for stacked histograms subtract all contributions below the current one 
-   if (stacked) {
-      for (unsigned int i = 0; i < samples.size() && i < histos.size()-1; ++i) {
-         if (samples[i]) {
-            float numEv;
-            if (i < histos.size()-2) numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin) - histos.at(i+2).at(region)->Integral(lowerBin, upperBin);
-            else numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin);
-            err2 += pow(numEv, 2) * errors[i] * errors[i];
-         }
-      }
-   } else {
-      for (unsigned int i = 0; i < samples.size(); ++i) {
-         if (samples[i])
-            err2 += histos.at(i+1).at(region)->Integral(lowerBin, upperBin) * histos.at(i+1).at(region)->Integral(lowerBin, upperBin) * errors[i] * errors[i];
+   for (unsigned int i = 0; i < samples.size(); ++i) {
+      if (samples[i]) {
+         float contLow = histos.at(i+1).at(region)->GetBinContent(lowerBin);
+         float contUp = 0.;
+         if (upperBin > -1) contUp = histos.at(i+1).at(region)->GetBinContent(upperBin);
+         err2 += (contLow - contUp) * (contLow - contUp) * errors[i] * errors[i];
       }
    }
-
    return sqrt(err2);
 }
 
-float CalcAllErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked)
+float CalcAllErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin)
 {
    float numEv;
 
-   // for stacked histograms subtract all contributions below the current one 
-   if (stacked) {
-      for (unsigned int i = 0; i < samples.size() && i < histos.size()-1; ++i) {
-         if (samples[i]) {
-            if (i < histos.size()-2) numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin) - histos.at(i+2).at(region)->Integral(lowerBin, upperBin);
-            else numEv = histos.at(i+1).at(region)->Integral(lowerBin, upperBin);
-         }
-      }
-   } else {
-      for (unsigned int i = 0; i < samples.size(); ++i) {
-         if (samples[i])
-            numEv += histos.at(i+1).at(region)->Integral(lowerBin, upperBin);
-      }
+   for (unsigned int i = 0; i < samples.size(); ++i) {
+      if (samples[i])
+         numEv += histos.at(i+1).at(region)->Integral(lowerBin, upperBin);
    }
 
-   float systErr = CalcSystErr(histos, errors, samples, region, lowerBin, upperBin, stacked);
+   float systErr = CalcSystErr(histos, errors, samples, region, lowerBin, upperBin);
 
    //return sqrt(numEv + systErr * systErr);
    return sqrt(systErr * systErr);
 }
 
-float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin, bool stacked)
+float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin)
 {
    float qcdErr = 0.;
-   vector<bool> allButQCD(8, true);
+   vector<bool> allButQCD(9, true);
 
-   qcdErr = 2 * sqrt(histos.at(DATA).at(LS)->Integral(lowerBin, upperBin) + pow(CalcSystErr(histos, errors, allButQCD, LS, lowerBin, upperBin, stacked), 2));
-   errors.back() = qcdErr / histos.at(QCD).at(region)->Integral(lowerBin, upperBin);
+   float ssDataCont = histos.at(DATA).at(SSCUM)->GetBinContent(lowerBin) - histos.at(DATA).at(SSCUM)->GetBinContent(upperBin);
+   float qcdCont = histos.at(QCD).at(region)->GetBinContent(lowerBin) - histos.at(QCD).at(region)->GetBinContent(upperBin);
+   qcdErr = 2 * sqrt(ssDataCont + pow(CalcSystErr(histos, errors, allButQCD, SSCUM, lowerBin, upperBin), 2));
+   errors.back() = qcdErr / qcdCont;
 
-   return CalcSystErr(histos, errors, samples, region, lowerBin, upperBin, stacked);
+   return CalcSystErr(histos, errors, samples, region, lowerBin, upperBin);
 }
 
-float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int sample, int region, int lowerBin, int upperBin, bool stacked)
+float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int sample, int region, int lowerBin, int upperBin)
 {
    float statErr = sqrt(histos.at(sample).at(region)->Integral(lowerBin, upperBin));
-   float systErr = CalcSystErrWithQCD(histos, errors, samples, region, lowerBin, upperBin, stacked);
+   float systErr = CalcSystErrWithQCD(histos, errors, samples, region, lowerBin, upperBin);
 
    //return sqrt(statErr * statErr + systErr * systErr);
    return sqrt(systErr * systErr);
@@ -1002,7 +1322,7 @@ TGraphAsymmErrors* makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBar
 {
   std::vector<double> xPoint,yPoint,xErrLow,xErrHigh,yErrLow,yErrHigh;
   for(int binNr=1;binNr<=dataHist->GetNbinsX();binNr++){
-    int nrData = dataHist->GetBinContent(binNr);
+    double nrData = dataHist->GetBinContent(binNr);
 
     float scale = 1;
     if(normToBinWidth>0) scale= normToBinWidth/dataHist->GetBinWidth(binNr);
@@ -1032,3 +1352,96 @@ TGraphAsymmErrors* makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBar
   TGraphAsymmErrors* resultGraph = new TGraphAsymmErrors(xPoint.size(),&xPoint[0],&yPoint[0],&xErrLow[0],&xErrHigh[0],&yErrLow[0],&yErrHigh[0]);
    return resultGraph;
 }
+
+// flags: [pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF|ele SF | mu SF | PU reweight]
+TH1F *
+MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int &signs, int &region, const char *cutVariable, float &cutLow, float &cutHigh, vector<float> &binning, unsigned int &flags, bool normToBinWidth, float userScale)
+{
+  input->cd();
+  // prepare the histogram
+  TH1F *histo = new TH1F("dummy", "dummy", 150, 0., 1500.);
+  histo->Sumw2();
+  histo->SetName(brName);
+  histo->SetTitle(brName);
+  float *bins = &binning[0];
+  histo->GetXaxis()->Set(binning.size() - 1, bins);
+
+  if (flags & 1<<7) userScale *= ((TParameter<float> *)input->Get("lumi"))->GetVal();
+  if (flags & 1<<6) {
+    THashList *mcWeights = (THashList *)input->Get("mcWeights");
+    userScale *= ((TParameter<float> *)mcWeights->FindObject(treeName + 8))->GetVal();
+  }
+  if (flags & 1<<5) userScale *= ((TParameter<float> *)input->Get("trgEff"))->GetVal();
+  if (flags & 1<<4) userScale *= ((TParameter<float> *)input->Get("trgDataMcScaleFactor"))->GetVal();
+  if (flags & 1<<1) userScale *= ((TParameter<float> *)input->Get("muScaleFactor"))->GetVal();
+  float eleScaleFactorEB = ((TParameter<float> *)input->Get("eleScaleFactorEB"))->GetVal();
+  float eleScaleFactorEE = ((TParameter<float> *)input->Get("eleScaleFactorEE"))->GetVal();
+  float lumiScaleFactorEB = ((TParameter<float> *)input->Get("lumiScaleFactorEB"))->GetVal();
+  float lumiScaleFactorEE = ((TParameter<float> *)input->Get("lumiScaleFactorEE"))->GetVal();
+
+  //cout << "Scalefactor = " << userScale << endl;
+
+  // get the tree
+  TTree *tree;
+  tree = (TTree *)input->Get(treeName);
+
+  // get the branch
+  float var;
+  TBranch *bVar;
+  tree->SetBranchAddress(brName, &var, &bVar);
+
+  // get auxillary branches
+  bool passTrg;
+  float puWeight;
+  int eCharge;
+  int muCharge;
+  int evtRegion;
+  float cutVar = 0.;
+  TBranch *bPassTrg;
+  TBranch *bPuWeight;
+  TBranch *bECharge;
+  TBranch *bMuCharge;
+  TBranch *bEvtRegion;
+  TBranch *bCutVar;
+  tree->SetBranchAddress("passTrg", &passTrg, &bPassTrg);
+  tree->SetBranchAddress("puWeight", &puWeight, &bPuWeight);
+  tree->SetBranchAddress("eCharge", &eCharge, &bECharge);
+  tree->SetBranchAddress("muCharge", &muCharge, &bMuCharge);
+  tree->SetBranchAddress("evtRegion", &evtRegion, &bEvtRegion);
+  if (cutVariable[0] != '\0') tree->SetBranchAddress(cutVariable, &cutVar, &bCutVar);
+
+  Long64_t nEntries = (*tree).GetEntries();
+  for (unsigned int i = 0; i < nEntries; ++i) {
+    tree->GetEntry(i);
+
+    // trigger fired?
+    if ((flags & 1<<8) && passTrg == false) continue;
+
+    float scaleFactor = userScale;
+    // set lumi and electron scalefactor according to detector region
+    if (evtRegion == 0 && flags & 1<<2) scaleFactor *= eleScaleFactorEB;
+    if (evtRegion == 1 && flags & 1<<2) scaleFactor *= eleScaleFactorEE;
+    if (evtRegion == 0 && flags & 1<<3) scaleFactor *= lumiScaleFactorEB;
+    if (evtRegion == 1 && flags & 1<<3) scaleFactor *= lumiScaleFactorEE;
+
+    // PU reweight
+    if (flags & 1) scaleFactor *= puWeight;
+
+    // get only the desired charge combination. Scheme emu -3 to +3: -+, +-, OS, ALL, SS, ++, --
+    if (signs < 0 && (eCharge * muCharge) > 0) continue; // OS
+    if (signs > 0 && (eCharge * muCharge) < 0) continue; // SS
+    if (abs(signs) == 3 && eCharge > 0) continue; // e-mu+ or e-mu-
+    if (abs(signs) == 2 && eCharge < 0) continue; // e+mu- or e+mu+
+
+    // user defined cut
+    if (cutVariable[0] != '\0')
+      if (cutVar < cutLow || cutVar >= cutHigh) continue;
+
+    if (normToBinWidth) scaleFactor /= histo->GetBinWidth(histo->FindBin(var));
+    histo->Fill(var, scaleFactor);
+  }
+
+  //cout << "integral: " << histo->Integral() << "       overflow: " << histo->GetBinContent(histo->GetNbinsX() + 1) << endl;
+  return histo;
+}
+
