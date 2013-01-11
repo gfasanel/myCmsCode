@@ -18,7 +18,7 @@ void macro_MakeFRClosureTest()
 {
   // parameters //////////////////////////////////////////////////////////////
   // luminosity of data
-  const float lumi = 4679;
+  const float lumi = 10445;
 
   string inputFilePrefix = "invMassHistos";  // lumi and .root will be added
   //string inputFilePrefix = "test";
@@ -40,13 +40,15 @@ void macro_MakeFRClosureTest()
   plotHisto[1] = true;  // EB-EB
   plotHisto[2] = true;  // EB-EE
   plotHisto[3] = true;  // EE-EE
+
+  int font = 42;
   ////////////////////////////////////////////////////////////////////////////
 
   const double yAxisMin = 0.001;
 //  const int rebin = 10;
   float massMin = 50;
-  float massMax = 1550;
-  int nBins = 1500;
+  float massMax = 2050;
+  int nBins = 2000;
   vector<pair<float, float> > binning;
   // VARIABLE BINNING
 //  binning.push_back(make_pair(100, 1));
@@ -69,7 +71,7 @@ void macro_MakeFRClosureTest()
     binArray[i] = (Double_t)bins.at(i);
 
   stringstream sStream;
-  sStream << "Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6+Run2011B-PromptReco-v1-AOD-Cert_160404-180252_7TeV_Collisions11_JSON_" << lumi << "pb-1";
+  sStream << "Photon_Run2012A-13Jul2012_06Aug2012+DoublePhotonHighPt_Run2012B-13Jul2012+DoublePhotonHighPt_Run2012C-PromptReco-v1+v2_Cert_190456-202016_8TeV_PromptReco_gct1_35_" << lumi << "pb-1";
   //sStream << lumi << "pb-1";
   TString folderDataHisto = sStream.str().c_str();
   // select histograms dynamically depending on state of correction //////////
@@ -157,7 +159,10 @@ void macro_MakeFRClosureTest()
       c0->SetFillColor(0);
       c0->SetFrameFillColor(0);
       c0->SetLogy();
+      gStyle->SetTitleFont(font);
+      gStyle->SetLabelFont(font);
       gStyle->SetOptStat(0);
+      gStyle->SetPadTickX(1);
       gStyle->SetPadTickY(1);
   
       // get the histograms 
@@ -175,18 +180,27 @@ void macro_MakeFRClosureTest()
       histoGsfGsfRebinned->SetLineColor(4);
       histoGsfGsfRebinned->SetMarkerColor(4);
       histoGsfGsfRebinned->SetMarkerStyle(20);
+      histoGsfGsfRebinned->SetTitleFont(font);
       histoHeepGsfRebinned->SetLineColor(2);
       histoHeepGsfRebinned->SetMarkerColor(2);
       histoHeepGsfRebinned->SetMarkerStyle(21);
+      histoHeepGsfRebinned->SetTitleFont(font);
+      histoHeepGsfRebinned->GetYaxis()->SetTitleFont(font);
+      histoHeepGsfRebinned->GetYaxis()->SetLabelFont(font);
+      histoHeepGsfRebinned->GetXaxis()->SetLabelFont(font);
       histoDataRebinned->SetLineColor(1);
       histoDataRebinned->SetMarkerColor(1);
       histoDataRebinned->SetMarkerStyle(20);
+      histoDataRebinned->SetTitleFont(font);
+      histoDataRebinned->GetYaxis()->SetTitleFont(font);
+      histoDataRebinned->GetYaxis()->SetLabelFont(font);
+      histoDataRebinned->GetXaxis()->SetLabelFont(font);
  
       sStream.str("");
       if (binning.size() > 1)
         sStream << "# of events / bin";
       else
-        sStream << "# of events / " << binning.begin()->second << "GeV/c^{2}";
+        sStream << "# of events / " << binning.begin()->second << "GeV";
 
       if (plotData) { 
         histoDataRebinned->SetMinimum(yAxisMin);
@@ -203,23 +217,26 @@ void macro_MakeFRClosureTest()
       histoGsfGsfRebinned->Draw("sames");
   
       sStream.str("");
-      sStream << "#sqrt{s} = 7TeV,  #int L dt = " << lumi << "pb^{-1}";
+      sStream << "#sqrt{s} = 8TeV,  #int L dt = " << lumi << "pb^{-1}";
       TPaveLabel *label0 = new TPaveLabel(0.6, 0.79, 0.9, 0.89, sStream.str().c_str(), "brNDC");
       label0->SetFillColor(0);
       label0->SetFillStyle(0);
       label0->SetBorderSize(0);
       label0->SetTextSize(0.30);
+      label0->SetTextFont(font);
       label0->Draw("sames");
       TPaveLabel *label1 = new TPaveLabel(0.7, 0.89, 0.91, 0.98, "CMS preliminary", "brNDC");
       label1->SetFillColor(0);
       label1->SetFillStyle(0);
       label1->SetBorderSize(0);
       label1->SetTextSize(0.40);
+      label1->SetTextFont(font);
       label1->Draw("sames");
   
       TLegend *legend = new TLegend(0.38, 0.6, 0.53, 0.9);
       if (!plotData) legend->SetY2(0.8);
       legend->SetTextSize(0.03);
+      legend->SetTextFont(font);
       legend->SetBorderSize(0);
       legend->SetFillStyle(0);
       if (plotData) legend->AddEntry(histoDataRebinned, "Data", "lep");

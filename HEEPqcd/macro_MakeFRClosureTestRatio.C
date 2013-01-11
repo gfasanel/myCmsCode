@@ -18,7 +18,7 @@ void macro_MakeFRClosureTestRatio()
 {
   // parameters //////////////////////////////////////////////////////////////
   // luminosity of data
-  const float lumi = 4679;
+  const float lumi = 3694;
 
   string inputFilePrefix = "invMassHistos";  // lumi and .root will be added
   //string inputFilePrefix = "test";
@@ -36,6 +36,8 @@ void macro_MakeFRClosureTestRatio()
   plotHisto[1] = true;  // EB-EB
   plotHisto[2] = true;  // EB-EE
   plotHisto[3] = true;  // EE-EE
+
+  int font = 42;
   ////////////////////////////////////////////////////////////////////////////
 
 //  const int rebin = 10;
@@ -64,7 +66,7 @@ void macro_MakeFRClosureTestRatio()
     binArray[i] = (Double_t)bins.at(i);
 
   stringstream sStream;
-  sStream << "Photon-Run2011A-May10ReReco-v1+05Aug2011-v1+Run2011A-PromptReco-v4+PromptReco-v6-AOD-Cert_160404-190252_7TeV_Collisions11_JSON_" << lumi << "pb-1";
+  sStream << "Photon_Run2012A-PromptReco-v1+23May2012-v2+DoublePhotonHighPt_Run2012B_AOD_Cert_190456-195775_8TeV_PromptReco+May23ReReco_Collisions12_JSON_gct1_32_" << lumi << "pb-1";
   //sStream << lumi << "pb-1";
   TString folderDataHisto = sStream.str().c_str();
   // select histograms dynamically depending on state of correction //////////
@@ -168,16 +170,19 @@ void macro_MakeFRClosureTestRatio()
       label0->SetFillStyle(0);
       label0->SetBorderSize(0);
       label0->SetTextSize(0.30);
+      label0->SetTextFont(font);
       label0->Draw("sames");
       TPaveLabel *label1 = new TPaveLabel(0.6, 0.8, 0.9, 0.9, "CMS preliminary", "brNDC");
       label1->SetFillColor(0);
       label1->SetFillStyle(0);
       label1->SetBorderSize(0);
       label1->SetTextSize(0.40);
+      label1->SetTextFont(font);
       label1->Draw("sames");
   
       //TLegend *legend = new TLegend(0.38, 0.6, 0.53, 0.9);
       //legend->SetTextSize(0.03);
+      //legend->SetTextFont(font);
       //legend->SetBorderSize(0);
       //legend->SetFillStyle(0);
       //legend->AddEntry(ratioHisto, "Ratio GSF-GSF / HEEP-GSF (non HEEP)", "lep");
