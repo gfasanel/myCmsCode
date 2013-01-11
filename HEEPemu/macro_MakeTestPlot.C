@@ -7,37 +7,29 @@
 void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
-  TFile input("testEmuSpecHEEP4_3692pb-1.root", "open");
+  //TFile input("testEmuSpecHEEP4_3692pb-1.root", "open");
+  TFile input("./plots_25dec2012/testEmuSpecHEEP41_19619pb-1.root", "open");
 
-  const float lumi = 3692.;
+  const float lumi = 19619.;
 
   bool plotType[2];
   plotType[0] = true;  // normal plot
   plotType[1] = false;  // cumulative plot
 
   bool logPlot = false;
-  const unsigned int numVars = 32;
+  const unsigned int numVars = 35;
 
   // plot style
   int ttbarColour = TColor::GetColor("#ff6666");
   int zttColour = TColor::GetColor("#ff4d4d");
   int wwColour = TColor::GetColor("#ff3333");
   int wzColour = TColor::GetColor("#ff0f0f");
-  int twColour = TColor::GetColor("#eb0000");
+  int zzColour = TColor::GetColor("#eb0000");
+  int twColour = TColor::GetColor("#db0000");
   int wjetColour=  TColor::GetColor("#66b3ff");
   int zmmColour=  TColor::GetColor("#80bfff");
   int zeeColour=  TColor::GetColor("#99ccff");
   int jetBkgColour = TColor::GetColor("#ffff66");
-  
-  //int ttbarColour = kRed;
-  //int zttColour = kRed-7;
-  //int wwColour = kRed-4;
-  //int wzColour = kRed+1;
-  //int twColour = kRed+2;
-  //int wjetColour = kCyan-2;
-  //int zmmColour = kCyan-1;
-  //int zeeColour = kCyan;
-  //int jetBfgColour = kYellow;
   
   int font = 42; //62
   ////////////////////////////////////////////////////////////////////////////
@@ -46,10 +38,13 @@ void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
   TH1::AddDirectory(kFALSE);
   TH1::SetDefaultSumw2(kTRUE);
 
-  TString testVar[32] = {"emuMassEB",
+  TString testVar[35] = {"emuMassEB",
                          "emuMassEE",
                          "PFMET",
                          "nVtx",
+                         "dDz",
+                         "dDzBeamSpot",
+                         "dDzFirstPVtx",
                          "rho",
                          "numOfJets",
                          "numOfJetsPt20",
@@ -79,10 +74,13 @@ void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
                          "muNSeg",
                          "muTrkIso03"
                         };
-  TString histoTitleTestVar[32] = {"emuMassEB",
+  TString histoTitleTestVar[35] = {"emuMassEB",
                                    "emuMassEE",
                                    "PFMET",
                                    "nVtx",
+                                   "dDz",
+                                   "dDzBeamSpot",
+                                   "dDzFirstPVtx",
                                    "rho",
                                    "nJets",
                                    "nJetsPt20",
@@ -143,7 +141,7 @@ void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
   std::vector<TH1F *> emuTest_wjets;
   std::vector<TH1F *> emuTest_zmumu;
   std::vector<TH1F *> emuTest_zee;
-  //std::vector<TH1F *> emuTest_zz;
+  std::vector<TH1F *> emuTest_zz;
   //std::vector<TH1F *> emuTest_qcd;
 
   input.cd();
@@ -158,7 +156,7 @@ void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
   emuTest_wjets.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_wjets"));
   emuTest_zmumu.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_zmumu"));
   emuTest_zee.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_zee"));
-  //emuTest_zz.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_zz"));
+  emuTest_zz.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_zz"));
   //emuTest_qcd.push_back((TH1F *)gDirectory->Get(testVar[k] + sign[l] + "_qcd"));
 
   TCanvas *emuPlot = new TCanvas("emuPlot" + testVar[k] + sign[l], "emu Spectrum " + histoTitleTestVar[k] + nameSign[l], 100, 100, 800, 600);
@@ -225,6 +223,11 @@ void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
   emuTest_wz.back()->SetLineColor(kBlack);
   emuTest_wz.back()->SetLineWidth(2);
   emuTest_wz.back()->Draw("HISTsames");
+  emuTest_zz.back()->SetFillColor(zzColour);
+  emuTest_zz.back()->SetMarkerColor(zzColour);
+  emuTest_zz.back()->SetLineColor(kBlack);
+  emuTest_zz.back()->SetLineWidth(2);
+  emuTest_zz.back()->Draw("HISTsames");
   emuTest_tw.back()->SetFillColor(twColour);
   emuTest_tw.back()->SetMarkerColor(twColour);
   emuTest_tw.back()->SetLineColor(kBlack);
@@ -270,11 +273,11 @@ void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
   legend.AddEntry(emuTest_ztautau.back(), "#gamma/Z#rightarrow#tau#tau", "F");
   legend.AddEntry(emuTest_ww.back(), "WW", "F");
   legend.AddEntry(emuTest_wz.back(), "WZ", "F");
+  legend.AddEntry(emuTest_zz.back(), "ZZ", "F");
   legend.AddEntry(emuTest_tw.back(), "tW", "F");
   legend.AddEntry(emuTest_wjets.back(), "W+jets", "F");
   legend.AddEntry(emuTest_zmumu.back(), "#gamma/Z#rightarrow#mu#mu", "F");
   legend.AddEntry(emuTest_zee.back(), "#gamma/Z #rightarrow ee", "F");
-  //legend.AddEntry(emuTest_zz.back(), "ZZ", "F");
   //legend.AddEntry(emuTest_qcd.back(), "QCD", "F");
   legend.SetBorderSize(0);
   legend.DrawClone("sames");
@@ -301,10 +304,11 @@ void macro_MakeTestPlot(unsigned int k = 0, unsigned int l = 0)
   cout << histoTitleTestVar[k].Data() << nameSign[l].Data() << " plotted" << endl;
 }
 
-void PlotRange(unsigned int sign = 0, unsigned int from = 1, unsigned int to = 32)
+void PlotRange(unsigned int sign = 0, unsigned int from = 1, unsigned int to = 35)
 {
-  if (to == 0 || to > 32) to = 32;
+  if (to == 0 || to > 35) to = 35;
   if (from == 0 || from > to) from = 1;
   for (unsigned int i = from; i <= to; ++i)
     macro_MakeTestPlot(i, sign);
 }
+
