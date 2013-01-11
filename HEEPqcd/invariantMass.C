@@ -28,8 +28,7 @@ void InvariantMass::Loop()
   // parameters //////////////////////////////////////////////////////////////
   const int ptcut = 35;
   const float massCut = 0.;
-  const float lumiCorrFactor = 1.07895; // from 60GeV to 120GeV with 2177pb-1
-                                     // not used if calcLumiCorrFactor=true
+  const float lumiCorrFactor = 1.;   // not used if calcLumiCorrFactor=true
   bool calcLumiCorrFactor = true;    // first run over events once to
                                      // calculate correction and the second 
                                      // time with the factor applied
@@ -42,7 +41,7 @@ void InvariantMass::Loop()
   //string fileNamePrefix = "test";
 
   const int massMin = 50;            // minimum Mass
-  const int massMax = 1550;          // maximum Mass
+  const int massMax = 2050;          // maximum Mass
 
   // define binning for histograms (variable or constant): 
   // [first]=max. Mass (in GeV) up to which [second] (in GeV) binning is used
@@ -56,6 +55,12 @@ void InvariantMass::Loop()
 
   const int ratioRebin = 50;      // rebinning for FR ratio histograms
                                   // should be chosen compatible with binning
+
+  bool usePUInfo = true;
+  TString puFile = "file:////user/treis/data2012/pileup/pileup_runA+B+C-ReReco+D-Prompt_puJSON-190389-208686_Photon+DoublePhotonHighPt.root";
+  float bar_et = 35.;
+  float end_et = 35.;
+  
   ////////////////////////////////////////////////////////////////////////////
 
   vector<float> bins;
@@ -83,97 +88,176 @@ void InvariantMass::Loop()
   vector<vector<TH1F *> > histosSectionDYCombinedGGNHFR;
 
   stringstream sStream;
-  sStream << "# of events / " << ((massMax - massMin) / nBins) << "GeV/c^{2}";
+  sStream << "# of events / " << ((massMax - massMin) / nBins) << "GeV";
 
   /////////////////////////////////////////////////////////////////////////
   // input files
   /////////////////////////////////////////////////////////////////////////
   vector<pair<TFile *, double> > input;
-  vector<string> datasetTitle;
+  vector<TString> inFileTag;
   vector<float> minPtDY;
   vector<float> minPtG;
-  //float lumi = 204;
-  //input.push_back(make_pair(new TFile("/user/treis/data2011/gsfcheckertree203_6pb-1.root","read"), 1 / lumi));
-  //float lumi = 216;
-  //input.push_back(make_pair(new TFile("/user/treis/data2011/Photon-Run2011A-May10ReReco-v1-AOD-Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v3_gct1_10_215_6pb-1.root","read"), 1 / lumi));
-  float lumi = 291.;
-  input.push_back(make_pair(new TFile("/user/treis/data2012/Photon_Run2012A-PromptReco-v1_AOD_Cert_190456-191276_8TeV_PromptReco_Collisions12_JSON_gct1_24_291pb-1.root","read"), 1 / lumi));
-  datasetTitle.push_back("Data");
+  float lumi = 19619.;
+  TFile *inData = TFile::Open("file:////user/treis/data2012/Photon_Run2012A+DoublePhotonHighPt_Run2012B+C+D_13Jul2012+06Aug2012+24Aug2012+11Dec2012+PromptReco-Cv2+Dv1_Cert_190456-208686_gct1_45+46_19619pb-1.root");
+  input.push_back(make_pair(inData, 1 / lumi));
+  inFileTag.push_back("Data");
   const unsigned int DATA = 0;
 
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M_20_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START50_V15-v1_AODSIM_gct1_24.root","read"), 8.35870E-4));
-  datasetTitle.push_back("DY > 20GeV");
+  TFile *inDY20 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3297045ev.root");
+  input.push_back(make_pair(inDY20, 1915. / 3297045.));
+  inFileTag.push_back("DY20");
   minPtDY.push_back(20);
   const unsigned int DY20 = 1;
 
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-120_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 1.80678E-4));
-//  datasetTitle.push_back("DY > 120GeV");
-//  minPtDY.push_back(120);
-//  const unsigned int DY120 = 2;
-//
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-200_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 2.18298E-5));
-//  datasetTitle.push_back("DY > 200GeV");
-//  minPtDY.push_back(200);
-//  const unsigned int DY200 = 3;
-//
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-500_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 6.17792E-7));
-//  datasetTitle.push_back("DY > 500GeV");
-//  minPtDY.push_back(500);
-//  const unsigned int DY500 = 4;
-//
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/DYToEE_M-800_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2_GEN-SIM-RECO_HEEPSkim2ElePt30_gct1_6.root","read"), 7.47055E-8));
-//  datasetTitle.push_back("DY > 800GeV");
-//  minPtDY.push_back(800);
-//  const unsigned int DY800 = 5;
-  const unsigned int DY800 = 1;
+  TFile *inDY120 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-120_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99987ev.root");
+  input.push_back(make_pair(inDY120, 11.89 / 99987. * 1915./1871.));
+  inFileTag.push_back("DY120");
+  minPtDY.push_back(120);
+  const unsigned int DY120 = 2;
 
-  //input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2_7TeV-madgraph-tauola_Fall11-PU_S6_START42_V14B-v1_AODSIM_gct1_12.root","read"), 4.40309E-5));
-  input.push_back(make_pair(new TFile("/user/treis/mcsamples/TTJets_TuneZ2star_8TeV-madgraph-tauola_Summer12-PU_S7_START52_V5-v1_AODSIM_gct1_24.root","read"), 1.36348E-4));
-  datasetTitle.push_back("ttbar");
-//  const unsigned int TTBAR = 6;
-  const unsigned int TTBAR = 2;
+  TFile *inDY200 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-200_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99991ev.root");
+  input.push_back(make_pair(inDY200, 1.483 / 99991. * 1915./1871.));
+  inFileTag.push_back("DY200");
+  minPtDY.push_back(200);
+  const unsigned int DY200 = 3;
 
-  input.push_back(make_pair(new TFile("/user/lathomas/mcsamples/WToENu_TuneZ2star_8TeV_pythia6_Summer12-PU_S7_START50_V15-v1_AODSIM.root","read"), 1.85602E-2));
-  datasetTitle.push_back("W+jets");
-//  const unsigned int WJETS = 7;
-  const unsigned int WJETS = 3;
-//  
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-30to50_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 7.6306E-3));
-//  datasetTitle.push_back("Gamma 30to50GeV");
-//  minPtG.push_back(30);
-//  const unsigned int G30T50 = 8;
-  const unsigned int G30T50 = 8;
-//  
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-50to80_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 1.3365E-3));
-//  datasetTitle.push_back("Gamma 50to80GeV");
-//  minPtG.push_back(50);
-//  const unsigned int G50T80 = 9;
-//  
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-80to120_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 2.1850E-4));
-//  datasetTitle.push_back("Gamma 80to120GeV");
-//  minPtG.push_back(80);
-//  const unsigned int G80T120 = 10;
-//  
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-120to170_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 4.0307E-5));
-//  datasetTitle.push_back("Gamma 120to170GeV");
-//  minPtG.push_back(120);
-//  const unsigned int G120T170 = 11;
-//  
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-170to300_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 1.0942E-5));
-//  datasetTitle.push_back("Gamma 170to300GeV");
-//  minPtG.push_back(170);
-//  const unsigned int G170T300 = 12;
-//  
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-300to470_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 7.1887E-7));
-//  datasetTitle.push_back("Gamma 300to470GeV");
-//  minPtG.push_back(300);
-//  const unsigned int G300T470 = 13;
-//  
-//  input.push_back(make_pair(new TFile("/user/treis/mcsamples/G_Pt-470to800_TuneZ2_7TeV_pythia6_Summer11-PU_S4_START42_V11-v1_AODSIM_2gsfpt30skim_gct1_6.root","read"), 6.3386E-8));
-//  datasetTitle.push_back("Gamma 470to800GeV");
-//  minPtG.push_back(470);
-//  const unsigned int G470T800 = 14;
-  const unsigned int G470T800 = 1;
+  TFile *inDY400 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-400_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99991ev.root");
+  input.push_back(make_pair(inDY400, 0.1085 / 99991. * 1915./1871.));
+  inFileTag.push_back("DY400");
+  minPtDY.push_back(400);
+  const unsigned int DY400 = 4;
+
+  TFile *inDY500 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-500_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99986ev.root");
+  input.push_back(make_pair(inDY500, 0.04409 / 99986. * 1915./1871.));
+  inFileTag.push_back("DY500");
+  minPtDY.push_back(500);
+  const unsigned int DY500 = 5;
+
+  TFile *inDY700 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-700_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99990ev.root");
+  input.push_back(make_pair(inDY700, 0.01025 / 99990. * 1915./1871.));
+  inFileTag.push_back("DY700");
+  minPtDY.push_back(700);
+  const unsigned int DY700 = 6;
+
+  TFile *inDY800 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-800_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99990ev.root");
+  input.push_back(make_pair(inDY800, 0.005491 / 99990. * 1915./1871.));
+  inFileTag.push_back("DY800");
+  minPtDY.push_back(800);
+  const unsigned int DY800 = 7;
+
+  TFile *inDY1000 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-1000_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99992ev.root");
+  input.push_back(make_pair(inDY1000, 0.001796 / 99992. * 1915./1871.));
+  inFileTag.push_back("DY1000");
+  minPtDY.push_back(1000);
+  const unsigned int DY1000 = 8;
+
+  TFile *inDY1500 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-1500_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99999ev.root");
+  input.push_back(make_pair(inDY1500, 1.705E-4 / 99999. * 1915./1871.));
+  inFileTag.push_back("DY1500");
+  minPtDY.push_back(1500);
+  const unsigned int DY1500 = 9;
+
+  TFile *inDY2000 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-2000_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99993ev.root");
+  input.push_back(make_pair(inDY2000, 2.208E-5 / 99993. * 1915./1871.));
+  inFileTag.push_back("DY2000");
+  minPtDY.push_back(2000);
+  const unsigned int DY2000 = 10;
+
+  TFile *inTTBar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root");
+  //input.push_back(make_pair(inTTBar, 225.197 / 28150723.));
+  input.push_back(make_pair(inTTBar, 234 / 28150723.));
+  inFileTag.push_back("ttbar");
+  const unsigned int TTBAR = 11;
+
+  TFile *inDYToTT = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3295238ev.root");
+  input.push_back(make_pair(inDYToTT, 1915.1 / 3295238.));
+  inFileTag.push_back("DYToTauTau");
+  const unsigned int DYTT = 12;
+
+  TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000431ev.root");
+  input.push_back(make_pair(inWW, 54.838 / 10000431.));
+  inFileTag.push_back("WW");
+  const unsigned int WW = 13;
+
+  TFile *inWZ = TFile::Open("file:////user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000283ev.root");
+  input.push_back(make_pair(inWZ, 33.21 / 10000283.));
+  inFileTag.push_back("WZ");
+  const unsigned int WZ = 14;
+
+  TFile *inZZ = TFile::Open("file:////user/treis/mcsamples/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_9799908ev.root");
+  input.push_back(make_pair(inZZ, 17.654 / 9799908.));
+  inFileTag.push_back("ZZ");
+  const unsigned int ZZ = 15;
+
+  TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_991118ev.root");
+  input.push_back(make_pair(inTW, 22.2 / 991118.));
+  inFileTag.push_back("tW");
+  const unsigned int TW = 16;
+
+  TFile *inWJets = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_76102995ev.root");
+  input.push_back(make_pair(inWJets, 36257.2 / 76102995.));
+  inFileTag.push_back("W+jets");
+  const unsigned int WJETS = 17;
+  
+  TFile *inG30T50 = TFile::Open("file:////user/treis/mcsamples/G_Pt-30to50_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_1985352ev.root");
+  input.push_back(make_pair(inG30T50, 19931.62 / 1985352. * 1.3));
+  inFileTag.push_back("G30to50");
+  minPtG.push_back(30);
+  const unsigned int G30T50 = 18;
+  
+  TFile *inG50T80 = TFile::Open("file:////user/treis/mcsamples/G_Pt-50to80_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_1995062ev.root");
+  input.push_back(make_pair(inG50T80, 3322.309 / 1995062. * 1.3));
+  inFileTag.push_back("G50to80");
+  minPtG.push_back(50);
+  const unsigned int G50T80 = 19;
+  
+  TFile *inG80T120 = TFile::Open("file:////user/treis/mcsamples/G_Pt-80to120_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_1976687ev.root");
+  input.push_back(make_pair(inG80T120, 558.2865 / 1976687. * 1.3));
+  inFileTag.push_back("G80to120");
+  minPtG.push_back(80);
+  const unsigned int G80T120 = 20;
+  
+  TFile *inG120T170 = TFile::Open("file:////user/treis/mcsamples/G_Pt-120to170_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_2000043ev.root");
+  input.push_back(make_pair(inG120T170, 108.0068 / 2000043. * 1.3));
+  inFileTag.push_back("G120to170");
+  minPtG.push_back(120);
+  const unsigned int G120T170 = 21;
+  
+  TFile *inG170T300 = TFile::Open("file:////user/treis/mcsamples/G_Pt-170to300_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_2000069ev.root");
+  input.push_back(make_pair(inG170T300, 30.12207 / 2000069. * 1.3));
+  inFileTag.push_back("G170to300");
+  minPtG.push_back(170);
+  const unsigned int G170T300 = 22;
+  
+  TFile *inG300T470 = TFile::Open("file:////user/treis/mcsamples/G_Pt-300to470_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_2000130ev.root");
+  input.push_back(make_pair(inG300T470, 2.138632 / 2000130. * 1.3));
+  inFileTag.push_back("G300to470");
+  minPtG.push_back(300);
+  const unsigned int G300T470 = 23;
+  
+  TFile *inG470T800 = TFile::Open("file:////user/treis/mcsamples/G_Pt-470to800_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_1975231ev.root");
+  input.push_back(make_pair(inG470T800, 0.2119244 / 1975231. * 1.3));
+  inFileTag.push_back("G470to800");
+  minPtG.push_back(470);
+  const unsigned int G470T800 = 24;
+  
+  TFile *inG800T1400 = TFile::Open("file:////user/treis/mcsamples/G_Pt-800to1400_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_1973504ev.root");
+  input.push_back(make_pair(inG800T1400, 0.007077847 / 1973504. * 1.3));
+  inFileTag.push_back("G800to1400");
+  minPtG.push_back(800);
+  const unsigned int G800T1400 = 25;
+  
+  TFile *inG1400T1800 = TFile::Open("file:////user/treis/mcsamples/G_Pt-1400to1800_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_1984890ev.root");
+  input.push_back(make_pair(inG1400T1800, 4.510327E-5 / 1984890. * 1.3));
+  inFileTag.push_back("G1400to1800");
+  minPtG.push_back(1400);
+  const unsigned int G1400T1800 = 26;
+  
+  TFile *inG1800 = TFile::Open("file:////user/treis/mcsamples/G_Pt-1800_TuneZ2star_8TeV_pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_1939122ev.root");
+  input.push_back(make_pair(inG1800, 1.867141E-6 / 1939122. * 1.3));
+  inFileTag.push_back("G1800");
+  minPtG.push_back(1800);
+  const unsigned int G1800 = 27;
   ////////////////////////////////////////////////////////////////////////////
   
   minPtDY.push_back(100000); // set ridiculously high to catch the tail of the last DY sample
@@ -194,21 +278,34 @@ void InvariantMass::Loop()
   suffix.push_back(" same EE-EE");
   suffix.push_back(" opposite EE-EE");
 
+  // data pileup histogram
+  TFile *dataPuInfile = TFile::Open(puFile);
+  dataPuInfile->Cd("");
+  TH1F *puData = (TH1F *)gDirectory->Get("pileup");
+  puData->SetDirectory(0);
+  puData->SetName("puData");
+  dataPuInfile->Close();
+  TH1F *puDataNorm = (TH1F *)puData->DrawNormalized()->Clone("puDataNorm"); 
+
   stringstream ssGoodHeepFileName;
   ssGoodHeepFileName << "goodHeepEvents" << lumi << "pb-1.root";
   TFile *goodEvFile = new TFile(ssGoodHeepFileName.str().c_str(), "recreate");
   goodEvFile->cd();
   TTree *eleDataTree = new TTree("eleDataTree", "eleDataTree");
   int evtRegion = -1;
+  float evtWeight = 1.;
   float hHMass = 0.;
-  eleDataTree->Branch("runnr", &runnumber, "runnr/i");
+  eleDataTree->Branch("runnr", &runnumber, "runnr/I");
   eleDataTree->Branch("eventnr", &eventnumber, "eventnr/i");
-  eleDataTree->Branch("lumiSec", &luminosityBlock, "lumiSec/i");
+  eleDataTree->Branch("lumiSec", &luminosityBlock, "lumiSec/I");
   eleDataTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
-  eleDataTree->Branch("weight", &weight, "weight/F");
+  eleDataTree->Branch("weight", &evtWeight, "weight/F");
   eleDataTree->Branch("mass", &hHMass, "mass/F");
 
   vector<string> folders; // folder names in output root file
+
+  // percentage of data before run 191718 (no online ECAL laser correction)
+  float ratioNoOnlineLaser = 0.;
 
   stringstream ssOutfile;
   ssOutfile << fileNamePrefix << lumi << "pb-1.root";
@@ -234,6 +331,17 @@ void InvariantMass::Loop()
     // normalize bg
     if (p == 1 && !calcLumiCorrFactor) lumi *= lumiCorrFactor;
 
+    // get the histogram with the true number of vertices
+    TH1F *puMc = new TH1F("puMc" + inFileTag[p], "puMc" + inFileTag[p], 100, 0., 100.);
+    thetree->Draw("trueNVtx>>puMc" + inFileTag[p]);
+    TH1F *puMcNorm = new TH1F("dummy" + inFileTag[p], "dummy" + inFileTag[p], 100, 0., 100.);
+    if (p > DATA) puMcNorm = (TH1F *)puMc->DrawNormalized();
+    puMcNorm->SetName("puMc" + inFileTag[p] + "Norm");
+    puMcNorm->SetTitle("puMc" + inFileTag[p] + "Norm");
+    // calculate the pu weights
+    TH1F *puWeights = new TH1F("puWeight" + inFileTag[p], "puWeight" + inFileTag[p], 100, 0., 100.);
+    if (p > DATA) puWeights->Divide(puDataNorm, puMcNorm);
+
     /////////////////////////////////////////////////////////////////////////
     // set up histograms
     /////////////////////////////////////////////////////////////////////////
@@ -255,68 +363,68 @@ void InvariantMass::Loop()
     vector<TH1F *> histoTAndPHeepGsfMassNoHeepFR;
     for (unsigned int i = BBBE; i <= EEO; ++i) {
       // setup HEEP-HEEP histograms
-      histoHeepHeepMass.push_back(new TH1F("histoHeepHeepMass" + acroSuffix.at(i), "Dielectron invariant mass" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoHeepHeepMass.push_back(new TH1F("histoHeepHeepMass" + acroSuffix.at(i), "Dielectron invariant mass" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoHeepHeepMass.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
       // setup GSF-GSF histograms
-      histoGsfGsfMass.push_back(new TH1F("histoGsfGsfMass" + acroSuffix.at(i), "GSF invariant mass" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoGsfGsfMass.push_back(new TH1F("histoGsfGsfMass" + acroSuffix.at(i), "GSF invariant mass" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoGsfGsfMass.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
       // setup GSF-GSF non HEEP histograms
-      histoGsfGsfMassNoHeep.push_back(new TH1F("histoGsfGsfMassNoHeep" + acroSuffix.at(i), "GSF(non HEEP) invariant mass" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoGsfGsfMassNoHeep.push_back(new TH1F("histoGsfGsfMassNoHeep" + acroSuffix.at(i), "GSF(non HEEP) invariant mass" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoGsfGsfMassNoHeep.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
       // setup HEEP-GSF histograms
-      histoHeepGsfMass.push_back(new TH1F("histoHeepGsfMass" + acroSuffix.at(i), "Heep-GSF invariant mass" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoHeepGsfMass.push_back(new TH1F("histoHeepGsfMass" + acroSuffix.at(i), "Heep-GSF invariant mass" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoHeepGsfMass.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
       // setup HEEP-GSF(non HEEP) histograms
-      histoHeepGsfMassNoHeep.push_back(new TH1F("histoHeepGsfMassNoHeep" + acroSuffix.at(i), "GSF(non HEEP) invariant mass" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoHeepGsfMassNoHeep.push_back(new TH1F("histoHeepGsfMassNoHeep" + acroSuffix.at(i), "GSF(non HEEP) invariant mass" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoHeepGsfMassNoHeep.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
       // setup histogram sections for combined DY histograms
-      if (p >= DY20 && p <= DY800) {
-        histoSectionDYCombinedHH.push_back(new TH1F("histoSectionDYCombinedHH" + acroSuffix.at(i), "Section for DY combined HEEP-HEEP" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      if (p >= DY20 && p <= DY2000) {
+        histoSectionDYCombinedHH.push_back(new TH1F("histoSectionDYCombinedHH" + acroSuffix.at(i), "Section for DY combined HEEP-HEEP" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
         histoSectionDYCombinedHH.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
-        histoSectionDYCombinedHGNH.push_back(new TH1F("histoSectionDYCombinedHGNH" + acroSuffix.at(i), "Section for DY combined HEEP-GSF non HEEP" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+        histoSectionDYCombinedHGNH.push_back(new TH1F("histoSectionDYCombinedHGNH" + acroSuffix.at(i), "Section for DY combined HEEP-GSF non HEEP" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
         histoSectionDYCombinedHGNH.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
 
-        histoSectionDYCombinedGGNH.push_back(new TH1F("histoSectionDYCombinedGGNH" + acroSuffix.at(i), "Section for DY combined GSF-GSF non HEEP" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+        histoSectionDYCombinedGGNH.push_back(new TH1F("histoSectionDYCombinedGGNH" + acroSuffix.at(i), "Section for DY combined GSF-GSF non HEEP" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
         histoSectionDYCombinedGGNH.back()->GetYaxis()->SetTitle(sStream.str().c_str());
       }
 
       // set up fake rate histograms
       if (i > EE) continue;
 
-      histoGsfGsfMassFR.push_back(new TH1F("histoGsfGsfMassFR" + acroSuffix.at(i), "GSF invariant mass with fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoGsfGsfMassFR.push_back(new TH1F("histoGsfGsfMassFR" + acroSuffix.at(i), "GSF invariant mass with fake rate" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoGsfGsfMassFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
-      histoGsfGsfMassNoHeepFR.push_back(new TH1F("histoGsfGsfMassNoHeepFR" + acroSuffix.at(i), "GSF(non HEEP) invariant mass with fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoGsfGsfMassNoHeepFR.push_back(new TH1F("histoGsfGsfMassNoHeepFR" + acroSuffix.at(i), "GSF(non HEEP) invariant mass with fake rate" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoGsfGsfMassNoHeepFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
-      histoHeepGsfMassFR.push_back(new TH1F("histoHeepGsfMassFR" + acroSuffix.at(i), "Heep-GSF invariant mass with fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoHeepGsfMassFR.push_back(new TH1F("histoHeepGsfMassFR" + acroSuffix.at(i), "Heep-GSF invariant mass with fake rate" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoHeepGsfMassFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
-      histoHeepGsfMassNoHeepFR.push_back(new TH1F("histoHeepGsfMassNoHeepFR" + acroSuffix.at(i), "GSF(non HEEP) invariant mass with fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoHeepGsfMassNoHeepFR.push_back(new TH1F("histoHeepGsfMassNoHeepFR" + acroSuffix.at(i), "GSF(non HEEP) invariant mass with fake rate" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoHeepGsfMassNoHeepFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
-      if (p >= DY20 && p <= DY800) {
-        histoSectionDYCombinedHGNHFR.push_back(new TH1F("histoSectionDYCombinedHGNHFR" + acroSuffix.at(i), "Section for DY combined GSF-GSF non HEEP with fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      if (p >= DY20 && p <= DY2000) {
+        histoSectionDYCombinedHGNHFR.push_back(new TH1F("histoSectionDYCombinedHGNHFR" + acroSuffix.at(i), "Section for DY combined GSF-GSF non HEEP with fake rate" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
         histoSectionDYCombinedHGNHFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
-        histoSectionDYCombinedGGNHFR.push_back(new TH1F("histoSectionDYCombinedGGNHFR" + acroSuffix.at(i), "Section for DY combined GSF-GSF non HEEP with fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+        histoSectionDYCombinedGGNHFR.push_back(new TH1F("histoSectionDYCombinedGGNHFR" + acroSuffix.at(i), "Section for DY combined GSF-GSF non HEEP with fake rate" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
         histoSectionDYCombinedGGNHFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
       }
 
       if (i > BE) continue;
 
       // setup HEEP-GSF(non HEEP) histograms for tag and probe studies for Laurent
-      histoHeepGsfMassNoHeepNoHOverEFR.push_back(new TH1F("histoHeepGsfMassNoHeepNoHOverEFR" + acroSuffix.at(i), "HEEP-GSF (non HEEP) with fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoHeepGsfMassNoHeepNoHOverEFR.push_back(new TH1F("histoHeepGsfMassNoHeepNoHOverEFR" + acroSuffix.at(i), "HEEP-GSF (non HEEP) with fake rate" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoHeepGsfMassNoHeepNoHOverEFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
 
-      histoTAndPHeepGsfMassNoHeepFR.push_back(new TH1F("histoTAndPHeepGsfMassNoHeepFR" + acroSuffix.at(i), "Invariant mass for tag and probe with additional cuts" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+      histoTAndPHeepGsfMassNoHeepFR.push_back(new TH1F("histoTAndPHeepGsfMassNoHeepFR" + acroSuffix.at(i), "Invariant mass for tag and probe with additional cuts" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
       histoTAndPHeepGsfMassNoHeepFR.back()->GetYaxis()->SetTitle(sStream.str().c_str());
     }
 
@@ -337,6 +445,8 @@ void InvariantMass::Loop()
     }
     sStream.str("");
 
+    unsigned int heepCounter = 0;
+    unsigned int heepCounterNoOnlineLaser = 0;
     //Long64_t nbytes = 0, nb = 0;
     /////////////////////////////////////////////////////////////////////////
     // loop over events
@@ -349,12 +459,23 @@ void InvariantMass::Loop()
       thetree->GetEntry(jentry);
       if (jentry % 50000 == 0 ) cout << "entry " << jentry << endl;
 
+      // use trigger turn on without online laser correction for a percentage of MC events
+      bool useSecondTurnOn = false;
+      if (p > DATA && jentry < (ratioNoOnlineLaser * nentries)) useSecondTurnOn = true;
+
+      // first correct the energy
+      //CorrectEnergy(); 
+
       // trigger fired?
       int prescale = 0;
       if (p == DATA && Trigger(prescale) < 1) continue;
-    
+
       // at least two gsf electrons
       if (gsf_size < 2) continue;
+
+      // set the PU weight
+      float puWeight = 1.;
+      if (usePUInfo && p > DATA) puWeight = puWeights->GetBinContent(puWeights->FindBin(trueNVtx));
 
       ////////////////////////////////////////////////////////////////////////
       // find the two highest pt GSF and HEEP electrons
@@ -400,6 +521,8 @@ void InvariantMass::Loop()
         }
       }
 
+      double trgTurnOnWeight = 1.;
+
       if (iGsf2 < 0 || iGsf1 < 0) continue; // not enough good GSF electrons found 
 
       ////////////////////////////////////////////////////////////////////////
@@ -407,31 +530,32 @@ void InvariantMass::Loop()
       ////////////////////////////////////////////////////////////////////////
       // fill the GSF-GSF cases
       double gsfGsfMass = CalcInvariantMass(iGsf1, iGsf2, etShift);
+      if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iGsf1, useSecondTurnOn) * TriggerTurnOn(iGsf2, useSecondTurnOn);
       if (gsfGsfMass > massCut) {
         if (fabs(gsfsc_eta[iGsf1]) < 2.5 && fabs(gsfsc_eta[iGsf2]) < 2.5) {
           double fakeRate1 = FakeRate(gsf_gsfet[iGsf1], gsfsc_eta[iGsf1]);
           double fakeRate2 = FakeRate(gsf_gsfet[iGsf2], gsfsc_eta[iGsf2]);
           if (fabs(gsfsc_eta[iGsf1]) > 1.56 && fabs(gsfsc_eta[iGsf2]) > 1.56) {
-            histoGsfGsfMass.at(EE)->Fill(gsfGsfMass, input.at(p).second * lumi);
+            histoGsfGsfMass.at(EE)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
             // fill the pz of the initial particle for EE-EE events
             double gsfGsfPZ = CalcPz(iGsf1, iGsf2, etShift);
             if (gsfsc_eta[iGsf1] * gsfsc_eta[iGsf2] > 0) {
-              histoGsfGsfMass.at(EES)->Fill(gsfGsfMass, input.at(p).second * lumi);
-              histoPZ.at(1)->Fill(gsfGsfPZ, input.at(p).second * lumi);
+              histoGsfGsfMass.at(EES)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+              histoPZ.at(1)->Fill(gsfGsfPZ, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
             } else {
-              histoGsfGsfMass.at(EEO)->Fill(gsfGsfMass, input.at(p).second * lumi);
-              histoPZ.at(2)->Fill(gsfGsfPZ, input.at(p).second * lumi);
+              histoGsfGsfMass.at(EEO)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+              histoPZ.at(2)->Fill(gsfGsfPZ, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
             }
             if (PassFRPreSel(iGsf1, gsfsc_eta[iGsf1]) && PassFRPreSel(iGsf2, gsfsc_eta[iGsf2]))
-              histoGsfGsfMassFR.at(EE)->Fill(gsfGsfMass, input.at(p).second * lumi * fakeRate1 * fakeRate2);
+              histoGsfGsfMassFR.at(EE)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 * fakeRate2);
           } else if ((fabs(gsfsc_eta[iGsf1]) < 1.442 && fabs(gsfsc_eta[iGsf2]) > 1.56) || (fabs(gsfsc_eta[iGsf1]) > 1.56 && fabs(gsfsc_eta[iGsf2]) < 1.442)) {
-            histoGsfGsfMass.at(BE)->Fill(gsfGsfMass, input.at(p).second * lumi);
+            histoGsfGsfMass.at(BE)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
             if (PassFRPreSel(iGsf1, gsfsc_eta[iGsf1]) && PassFRPreSel(iGsf2, gsfsc_eta[iGsf2]))
-              histoGsfGsfMassFR.at(BE)->Fill(gsfGsfMass, input.at(p).second * lumi * fakeRate1 * fakeRate2);
+              histoGsfGsfMassFR.at(BE)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 * fakeRate2);
           } else if (fabs(gsfsc_eta[iGsf1]) < 1.442 && fabs(gsfsc_eta[iGsf2]) < 1.442) {
-            histoGsfGsfMass.at(BB)->Fill(gsfGsfMass, input.at(p).second * lumi);
+            histoGsfGsfMass.at(BB)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
             if (PassFRPreSel(iGsf1, gsfsc_eta[iGsf1]) && PassFRPreSel(iGsf2, gsfsc_eta[iGsf2]))
-              histoGsfGsfMassFR.at(BB)->Fill(gsfGsfMass, input.at(p).second * lumi * fakeRate1 * fakeRate2);
+              histoGsfGsfMassFR.at(BB)->Fill(gsfGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 * fakeRate2);
           }
         }
       }
@@ -439,60 +563,61 @@ void InvariantMass::Loop()
       if (iGsfNoHeep2 >= 0 && iGsfNoHeep1 >= 0 && iHeep1 < 0 && iHeep2 < 0) {
         // fill the GSF-GSF cases that do not pass the HEEP selection
         double gsfGsfMassNoHeep = CalcInvariantMass(iGsfNoHeep1, iGsfNoHeep2, etShift);
+        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iGsfNoHeep1, useSecondTurnOn) * TriggerTurnOn(iGsfNoHeep2, useSecondTurnOn);
         if (gsfGsfMassNoHeep > massCut) {
           if (fabs(gsfsc_eta[iGsfNoHeep1]) < 2.5 && fabs(gsfsc_eta[iGsfNoHeep2]) < 2.5) {
             double fakeRate1 = FakeRate(gsf_gsfet[iGsfNoHeep1], gsfsc_eta[iGsfNoHeep1]);
             double fakeRate2 = FakeRate(gsf_gsfet[iGsfNoHeep2], gsfsc_eta[iGsfNoHeep2]);
             if (fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep2]) > 1.56) {
-              histoGsfGsfMassNoHeep.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
-              if (p >= DY20 && p <= DY800) {
+              histoGsfGsfMassNoHeep.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+              if (p >= DY20 && p <= DY2000) {
                 if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                  histoSectionDYCombinedGGNH.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
+                  histoSectionDYCombinedGGNH.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               }
               if (gsfsc_eta[iGsfNoHeep1] * gsfsc_eta[iGsfNoHeep2] > 0) {
-                histoGsfGsfMassNoHeep.at(EES)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
-                if (p >= DY20 && p <= DY800) {
+                histoGsfGsfMassNoHeep.at(EES)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedGGNH.at(EES)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
+                    histoSectionDYCombinedGGNH.at(EES)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
               } else {
-                histoGsfGsfMassNoHeep.at(EEO)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
-                if (p >= DY20 && p <= DY800) {
+                histoGsfGsfMassNoHeep.at(EEO)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedGGNH.at(EEO)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
+                    histoSectionDYCombinedGGNH.at(EEO)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
               }
               if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1]) && PassFRPreSel(iGsfNoHeep2, gsfsc_eta[iGsfNoHeep2])) {
-                histoGsfGsfMassNoHeepFR.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
-                if (p >= DY20 && p <= DY800) {
+                histoGsfGsfMassNoHeepFR.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedGGNHFR.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
+                    histoSectionDYCombinedGGNHFR.at(EE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 }
               }
             } else if ((fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep2]) > 1.56) || (fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep2]) < 1.442)) {
-              histoGsfGsfMassNoHeep.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
-              if (p >= DY20 && p <= DY800) {
+              histoGsfGsfMassNoHeep.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+              if (p >= DY20 && p <= DY2000) {
                 if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                  histoSectionDYCombinedGGNH.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
+                  histoSectionDYCombinedGGNH.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               }
               if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1]) && PassFRPreSel(iGsfNoHeep2, gsfsc_eta[iGsfNoHeep2])) {
-                histoGsfGsfMassNoHeepFR.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
-                if (p >= DY20 && p <= DY800) {
+                histoGsfGsfMassNoHeepFR.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedGGNHFR.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
+                    histoSectionDYCombinedGGNHFR.at(BE)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 }
               }
             } else if (fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep2]) < 1.442) {
-              histoGsfGsfMassNoHeep.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
-              if (p >= DY20 && p <= DY800) {
+              histoGsfGsfMassNoHeep.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+              if (p >= DY20 && p <= DY2000) {
                 if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                  histoSectionDYCombinedGGNH.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi);
+                  histoSectionDYCombinedGGNH.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               }
               if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1]) && PassFRPreSel(iGsfNoHeep2, gsfsc_eta[iGsfNoHeep2])) {
-                histoGsfGsfMassNoHeepFR.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
-                if (p >= DY20 && p <= DY800) {
+                histoGsfGsfMassNoHeepFR.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedGGNHFR.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
+                    histoSectionDYCombinedGGNHFR.at(BB)->Fill(gsfGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate1 / (1 - fakeRate1) * fakeRate2 / (1 - fakeRate2));
                 }
               }
             }
@@ -504,28 +629,29 @@ void InvariantMass::Loop()
         // fill the HEEP-GSF and GSF-HEEP cases
         int iGsf = (iHeep1 == iGsf1) ? iGsf2 : iGsf1;
         float heepGsfMass = CalcInvariantMass(iHeep1, iGsf, etShift);
+        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1, useSecondTurnOn) * TriggerTurnOn(iGsf, useSecondTurnOn);
         if (heepGsfMass > massCut) {
           if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iGsf]) < 2.5) {
             double fakeRate = FakeRate(gsf_gsfet[iGsf], gsfsc_eta[iGsf]);
             if (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iGsf]) > 1.56) {
-              histoHeepGsfMass.at(EE)->Fill(heepGsfMass, input.at(p).second * lumi);
+              histoHeepGsfMass.at(EE)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               if (gsfsc_eta[iHeep1] * gsfsc_eta[iGsf] > 0) {
-                histoHeepGsfMass.at(EES)->Fill(heepGsfMass, input.at(p).second * lumi);
+                histoHeepGsfMass.at(EES)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               } else {
-                histoHeepGsfMass.at(EEO)->Fill(heepGsfMass, input.at(p).second * lumi);
+                histoHeepGsfMass.at(EEO)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               }
               if (PassFRPreSel(iGsf, gsfsc_eta[iGsf])) {
-                histoHeepGsfMassFR.at(EE)->Fill(heepGsfMass, input.at(p).second * lumi * fakeRate);
+                histoHeepGsfMassFR.at(EE)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate);
               }
             } else if ((fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iGsf]) > 1.56) || (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iGsf]) < 1.442)) {
-              histoHeepGsfMass.at(BE)->Fill(heepGsfMass, input.at(p).second * lumi);
+              histoHeepGsfMass.at(BE)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               if (PassFRPreSel(iGsf, gsfsc_eta[iGsf])) {
-                histoHeepGsfMassFR.at(BE)->Fill(heepGsfMass, input.at(p).second * lumi * fakeRate);
+                histoHeepGsfMassFR.at(BE)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate);
               }
             } else if (fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iGsf]) < 1.442) {
-              histoHeepGsfMass.at(BB)->Fill(heepGsfMass, input.at(p).second * lumi);
+              histoHeepGsfMass.at(BB)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               if (PassFRPreSel(iGsf, gsfsc_eta[iGsf])) {
-                histoHeepGsfMassFR.at(BB)->Fill(heepGsfMass, input.at(p).second * lumi * fakeRate);
+                histoHeepGsfMassFR.at(BB)->Fill(heepGsfMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate);
               }
             }
           }
@@ -534,70 +660,71 @@ void InvariantMass::Loop()
         // fill the HEEP-GSF and GSF-HEEP cases where the GSF does not pass the HEEP selection
         if (iGsfNoHeep1 >= 0 && iHeep2 < 0) {
           float heepGsfMassNoHeep = CalcInvariantMass(iHeep1, iGsfNoHeep1, etShift);
+          if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1, useSecondTurnOn) * TriggerTurnOn(iGsfNoHeep1, useSecondTurnOn);
           if (heepGsfMassNoHeep > massCut) {
             if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iGsfNoHeep1]) < 2.5) {
               double fakeRate = FakeRate(gsf_gsfet[iGsfNoHeep1], gsfsc_eta[iGsfNoHeep1]);
               if (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56) {
-                histoHeepGsfMassNoHeep.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
-                if (p >= DY20 && p <= DY800) {
+                histoHeepGsfMassNoHeep.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedHGNH.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
+                    histoSectionDYCombinedHGNH.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
                 if (gsfsc_eta[iHeep1] * gsfsc_eta[iGsfNoHeep1] > 0) {
-                  histoHeepGsfMassNoHeep.at(EES)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
-                  if (p >= DY20 && p <= DY800) {
+                  histoHeepGsfMassNoHeep.at(EES)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+                  if (p >= DY20 && p <= DY2000) {
                     if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                      histoSectionDYCombinedHGNH.at(EES)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
+                      histoSectionDYCombinedHGNH.at(EES)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                   }
                 } else {
-                  histoHeepGsfMassNoHeep.at(EEO)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
-                  if (p >= DY20 && p <= DY800) {
+                  histoHeepGsfMassNoHeep.at(EEO)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+                  if (p >= DY20 && p <= DY2000) {
                     if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                      histoSectionDYCombinedHGNH.at(EEO)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
+                      histoSectionDYCombinedHGNH.at(EEO)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                   }
                 }
                 if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1])) {
-                  histoHeepGsfMassNoHeepFR.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
-                  if (p >= DY20 && p <= DY800) {
+                  histoHeepGsfMassNoHeepFR.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
+                  if (p >= DY20 && p <= DY2000) {
                     if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                      histoSectionDYCombinedHGNHFR.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
+                      histoSectionDYCombinedHGNHFR.at(EE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
                   }
                 }
               } else if ((fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep1]) > 1.56) || (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442)) {
-                histoHeepGsfMassNoHeep.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
-                if (p >= DY20 && p <= DY800) {
+                histoHeepGsfMassNoHeep.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedHGNH.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
+                    histoSectionDYCombinedHGNH.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
                 if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1])) {
-                  histoHeepGsfMassNoHeepFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
-                  if (p >= DY20 && p <= DY800) {
+                  histoHeepGsfMassNoHeepFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
+                  if (p >= DY20 && p <= DY2000) {
                     if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                      histoSectionDYCombinedHGNHFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
+                      histoSectionDYCombinedHGNHFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
                   }
                 }
                 // special cuts for Laurent
-                histoHeepGsfMassNoHeepNoHOverEFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
+                histoHeepGsfMassNoHeepNoHOverEFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
                 if (gsf_trackiso[iHeep1] < 1 && gsf_hovere[iHeep1] < 0.02 && fabs(gsf_deltaphi[iHeep1]) < 0.01 && calomet < 40) {
-                  histoTAndPHeepGsfMassNoHeepFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
+                  histoTAndPHeepGsfMassNoHeepFR.at(BE)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
                 }
               } else if (fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iGsfNoHeep1]) < 1.442) {
-                histoHeepGsfMassNoHeep.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
-                if (p >= DY20 && p <= DY800) {
+                histoHeepGsfMassNoHeep.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedHGNH.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi);
+                    histoSectionDYCombinedHGNH.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
                 if (PassFRPreSel(iGsfNoHeep1, gsfsc_eta[iGsfNoHeep1])) {
-                  histoHeepGsfMassNoHeepFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
-                  if (p >= DY20 && p <= DY800) {
+                  histoHeepGsfMassNoHeepFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
+                  if (p >= DY20 && p <= DY2000) {
                     if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                      histoSectionDYCombinedHGNHFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
+                      histoSectionDYCombinedHGNHFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
                   }
                 }
                 // special cuts for Laurent
-                histoHeepGsfMassNoHeepNoHOverEFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
+                histoHeepGsfMassNoHeepNoHOverEFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
                 if (gsf_trackiso[iHeep1] < 1 && gsf_hovere[iHeep1] < 0.02 && fabs(gsf_deltaphi[iHeep1]) < 0.01 && calomet < 40) {
-                  histoTAndPHeepGsfMassNoHeepFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * fakeRate / (1 - fakeRate));
+                  histoTAndPHeepGsfMassNoHeepFR.at(BB)->Fill(heepGsfMassNoHeep, input.at(p).second * lumi * puWeight * trgTurnOnWeight * fakeRate / (1 - fakeRate));
                 }
               }
             }
@@ -608,28 +735,29 @@ void InvariantMass::Loop()
       if (iHeep1 >= 0 && iHeep2 >= 0) {
         // fill the HEEP-HEEP cases
         float heepHeepMass = CalcInvariantMass(iHeep1, iHeep2, etShift);
+        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1, useSecondTurnOn) * TriggerTurnOn(iHeep2, useSecondTurnOn);
         if (heepHeepMass > massCut) {
           if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iHeep2]) < 2.5) {
             if (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iHeep2]) > 1.56) {
-              histoHeepHeepMass.at(EE)->Fill(heepHeepMass, input.at(p).second * lumi);
+              histoHeepHeepMass.at(EE)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               // fill the correct sector of the DY sample
-              if (p >= DY20 && p <= DY800) {
+              if (p >= DY20 && p <= DY2000) {
                 if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                  histoSectionDYCombinedHH.at(EE)->Fill(heepHeepMass, input.at(p).second * lumi);
+                  histoSectionDYCombinedHH.at(EE)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
               }
               if (gsfsc_eta[iHeep1] * gsfsc_eta[iHeep2] > 0) {
-                histoHeepHeepMass.at(EES)->Fill(heepHeepMass, input.at(p).second * lumi);
+                histoHeepHeepMass.at(EES)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 // fill the correct sector of the DY sample
-                if (p >= DY20 && p <= DY800) {
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedHH.at(EES)->Fill(heepHeepMass, input.at(p).second * lumi);
+                    histoSectionDYCombinedHH.at(EES)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
               } else {
-                histoHeepHeepMass.at(EEO)->Fill(heepHeepMass, input.at(p).second * lumi);
+                histoHeepHeepMass.at(EEO)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 // fill the correct sector of the DY sample
-                if (p >= DY20 && p <= DY800) {
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedHH.at(EEO)->Fill(heepHeepMass, input.at(p).second * lumi);
+                    histoSectionDYCombinedHH.at(EEO)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
               }
             }
@@ -637,28 +765,34 @@ void InvariantMass::Loop()
               evtRegion = -1;
               if ((fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iHeep2]) > 1.56) || (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iHeep2]) < 1.442)) {
                 evtRegion = 1;
-                if (p == DATA && heepHeepMass > 800.) cout << "High mass EB-EE event (M>800GeV):";
-                histoHeepHeepMass.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
+                ++heepCounter;
+                if (p == DATA) {
+                  if (runnumber < 191718) ++heepCounterNoOnlineLaser;
+                  if (heepHeepMass > 800.) cout << "High mass EB-EE event (M>800GeV):";
+                }
+                histoHeepHeepMass.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 // fill the correct sector of the DY sample
-                if (p >= DY20 && p <= DY800) {
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedHH.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi);
+                    histoSectionDYCombinedHH.at(BE)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
               } else if (fabs(gsfsc_eta[iHeep1]) < 1.442 && fabs(gsfsc_eta[iHeep2]) < 1.442) {
                 evtRegion = 0;
-                if (p == DATA && heepHeepMass > 800.) cout << "High mass EB-EB event (M>800GeV):";
-                histoHeepHeepMass.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
+                ++heepCounter;
+                if (p == DATA) {
+                  if (runnumber < 191718) ++heepCounterNoOnlineLaser;
+                  if (heepHeepMass > 800.) cout << "High mass EB-EB event (M>800GeV):";
+                }
+                histoHeepHeepMass.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 // fill the correct sector of the DY sample
-                if (p >= DY20 && p <= DY800) {
+                if (p >= DY20 && p <= DY2000) {
                   if (genelemom_mass[0] >= minPtDY.at(p - DY20) && genelemom_mass[0] < minPtDY.at(p))
-                    histoSectionDYCombinedHH.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi);
+                    histoSectionDYCombinedHH.at(BB)->Fill(heepHeepMass, input.at(p).second * lumi * puWeight * trgTurnOnWeight);
                 }
               }
               if (p == DATA) {
                 if (heepHeepMass > 800.)
-                  cout << " run number=" << runnumber 
-                       << " , lumi block=" << luminosityBlock 
-                       << " , event number=" << eventnumber 
+                  cout << " event=" << runnumber << ":" << luminosityBlock << ":" << eventnumber 
                        << " , mass=" << heepHeepMass << "GeV/c^2" 
                        << " , ele1 et=" << gsf_gsfet[iHeep1] << "GeV" 
                        << " , ele1 eta = " << gsf_eta[iHeep1] 
@@ -684,6 +818,12 @@ void InvariantMass::Loop()
         }
       }
     } // end of loop over events
+
+    cout << "Number of HEEP-HEEP events: " << heepCounter << endl;
+    if (p == DATA) {
+      ratioNoOnlineLaser = (float) heepCounterNoOnlineLaser / (float) heepCounter;
+      cout << "Percentage of HEEP-HEEP events with no online ECAL laser correction: " << ratioNoOnlineLaser << endl;
+    }
 
     // write root file with good HEEP-HEEP event data
     if (p == DATA) {
@@ -724,7 +864,7 @@ void InvariantMass::Loop()
     histoHeepGsfMassNoHeepFR.at(BBBE)->SetName("histoHeepGsfMassNoHeepFR");
     histoHeepGsfMassNoHeepFR.at(BBBE)->SetTitle("GSF(non HEEP) invariant mass with fake rate");
   
-    if (p >= DY20 && p <= DY800) {
+    if (p >= DY20 && p <= DY2000) {
       (*histoSectionDYCombinedHH.at(BBBE)) = (*histoSectionDYCombinedHH.at(BB)) + (*histoSectionDYCombinedHH.at(BE));
       histoSectionDYCombinedHH.at(BBBE)->SetName("histoSectionDYCombinedHH");
       histoSectionDYCombinedHH.at(BBBE)->SetTitle("Section for DY combined");
@@ -752,7 +892,7 @@ void InvariantMass::Loop()
       TH1F *ratioHisto = (TH1F *)numHisto->Clone("ratioHistoUncorr" + acroSuffix.at(i)); // just to have a histogram with the same binning to write the ratio to
       ratioHisto->Divide(numHisto, denomHisto);
       histoRatioMassFR.push_back((TH1F *)ratioHisto->Clone("histoRatioMassFR" + acroSuffix.at(i)));
-      histoRatioMassFR.back()->SetTitle("Ratio between GSF-GSF and HEEP-GSF" + suffix.at(i) + ";M_{ee} (GeV/c^{2});GSF-GSF / HEEP-GSF");
+      histoRatioMassFR.back()->SetTitle("Ratio between GSF-GSF and HEEP-GSF" + suffix.at(i) + ";m_(ee) (GeV);GSF-GSF / HEEP-GSF");
       histoRatioMassFR.back()->Write();
     }
     vector<TH1F *> histoRatioMassNoHeepFR;
@@ -764,7 +904,7 @@ void InvariantMass::Loop()
       TH1F *ratioHisto = (TH1F *)numHisto->Clone("ratioHistoNoHeep" + acroSuffix.at(i)); // just to have a histogram with the same binning to write the ratio to
       ratioHisto->Divide(numHisto, denomHisto);
       histoRatioMassNoHeepFR.push_back((TH1F *)ratioHisto->Clone("histoRatioMassNoHeepFR" + acroSuffix.at(i)));
-      histoRatioMassNoHeepFR.back()->SetTitle("Ratio between GSF-GSF non HEEP and HEEP-GSF non HEEP" + suffix.at(i) + ";M_{ee} (GeV/c^{2});GSF-GSF / HEEP-GSF");
+      histoRatioMassNoHeepFR.back()->SetTitle("Ratio between GSF-GSF non HEEP and HEEP-GSF non HEEP" + suffix.at(i) + ";m_(ee) (GeV);GSF-GSF / HEEP-GSF");
       histoRatioMassNoHeepFR.back()->Write();
     }
 
@@ -785,7 +925,7 @@ void InvariantMass::Loop()
     histosGsfGsfMassFR.push_back(histoGsfGsfMassFR);
     histosGsfGsfMassNoHeepFR.push_back(histoGsfGsfMassNoHeepFR);
     histosHeepGsfMassNoHeepFR.push_back(histoHeepGsfMassNoHeepFR);
-    if (p >= DY20 && p <= DY800) {
+    if (p >= DY20 && p <= DY2000) {
       histosSectionDYCombinedHH.push_back(histoSectionDYCombinedHH);
       //histosSectionDYCombinedHGNH.push_back(histoSectionDYCombinedHGNH);
       //histosSectionDYCombinedGGNH.push_back(histoSectionDYCombinedGGNH);
@@ -799,7 +939,7 @@ void InvariantMass::Loop()
       histoGsfGsfMassNoHeep.at(i)->Write();
       histoHeepGsfMass.at(i)->Write();
       histoHeepGsfMassNoHeep.at(i)->Write();
-      if (p >= DY20 && p <= DY800) {
+      if (p >= DY20 && p <= DY2000) {
         histoSectionDYCombinedHH.at(i)->Write();
         histoSectionDYCombinedHGNH.at(i)->Write();
         histoSectionDYCombinedGGNH.at(i)->Write();
@@ -809,7 +949,7 @@ void InvariantMass::Loop()
       histoGsfGsfMassNoHeepFR.at(i)->Write();
       histoHeepGsfMassFR.at(i)->Write();
       histoHeepGsfMassNoHeepFR.at(i)->Write();
-      if (p >= DY20 && p <= DY800) {
+      if (p >= DY20 && p <= DY2000) {
         histoSectionDYCombinedHGNHFR.at(i)->Write();
         histoSectionDYCombinedGGNHFR.at(i)->Write();
       }
@@ -819,18 +959,24 @@ void InvariantMass::Loop()
     }
     for (vector<TH1F *>::iterator it = histoPZ.begin(); it < histoPZ.end(); ++it)
       (*it)->Write();
+
+    if (p > DATA) {
+      puMc->Write();
+      puMcNorm->Write();
+      puWeights->Write();
+    }
   } // end of loop over input files
-
-cout << "end loop over files" << endl;
-
   outFile->cd();
+  puData->Write();
+  puDataNorm->Write();
+
   outFile->mkdir("combinations");  // WORKAROUND - should be in cd() but there seems to be a bug in root 4.27 that gives "R__unzip: error in header" in the rescaling process when histograms are in the base directory
   outFile->cd("combinations");
 
   vector<TH1F *> histoDYCombined;
-  sStream << "# of events / pb^{-1} " << ((massMax - massMin) / nBins) << "GeV/c^{2}"; 
+  sStream << "# of events / pb^{-1} " << ((massMax - massMin) / nBins) << "GeV"; 
   for (unsigned int i = BBBE; i <= EEO; ++i) {
-    histoDYCombined.push_back(new TH1F("histoDYCombined" + acroSuffix.at(i), "Combined Mass for DY samples" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+    histoDYCombined.push_back(new TH1F("histoDYCombined" + acroSuffix.at(i), "Combined Mass for DY samples" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
     histoDYCombined.back()->GetYaxis()->SetTitle(sStream.str().c_str());
     for (vector<vector<TH1F *> >::iterator it = histosSectionDYCombinedHH.begin(); it < histosSectionDYCombinedHH.end(); ++it) {
       it->at(i)->GetYaxis()->SetTitle(sStream.str().c_str());
@@ -840,17 +986,15 @@ cout << "end loop over files" << endl;
   }
   sStream.str("");
 
-cout << "DY combined done" << endl;
-
   // combined DY and gamma MC HEEP GSF fake rate
   vector<TH1F *> histosHGNHFRDYCombined;
   vector<TH1F *> histosHGNHFRGammaCombined;
-  sStream << "# of events * fake rate/ pb^{-1} " << ((massMax - massMin) / nBins) << "GeV/c^{2}"; 
+  sStream << "# of events * fake rate/ pb^{-1} " << ((massMax - massMin) / nBins) << "GeV"; 
   // recalculate fake rate with corrections
   vector<TH1F *> histosHeepGsfCorr;
   vector<TH1F *> histosGsfGsfCorr;
   for (unsigned int i = BBBE; i <= EE; ++i) {
-    histosHGNHFRDYCombined.push_back(new TH1F("histoHGNHFRDYCombined" + acroSuffix.at(i), "Combined HEEP-GSF(no HEEP) with fake rate from DY samples" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray));
+    histosHGNHFRDYCombined.push_back(new TH1F("histoHGNHFRDYCombined" + acroSuffix.at(i), "Combined HEEP-GSF(no HEEP) with fake rate from DY samples" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray));
     histosHGNHFRDYCombined.back()->GetYaxis()->SetTitle(sStream.str().c_str());
     for (vector<vector<TH1F *> >::iterator it = histosSectionDYCombinedHGNHFR.begin(); it < histosSectionDYCombinedHGNHFR.end(); ++it) {
       it->at(i)->GetYaxis()->SetTitle(sStream.str().c_str());
@@ -859,18 +1003,18 @@ cout << "DY combined done" << endl;
 
     histosHeepGsfCorr.push_back(new TH1F((*histosHeepGsfMassNoHeepFR.at(DATA).at(i)) - (*histosHGNHFRDYCombined.back())));
     histosHeepGsfCorr.back()->SetName("histoHeepGsfCorr" + acroSuffix.at(i));
-    histosHeepGsfCorr.back()->SetTitle("Corrected HEEP-GSF(no HEEP) fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})");
+    histosHeepGsfCorr.back()->SetTitle("Corrected HEEP-GSF(no HEEP) fake rate" + suffix.at(i) + ";m_(ee) (GeV)");
 
     //generate combined gamma HEEP-GSF non HEEP fake rate histogram
-    TH1F *histoHGNHFRGammaCombined = new TH1F("histoHGNHFRGammaCombined" + acroSuffix.at(i), "Combined HEEP-GSF(no HEEP) with fake rate from gamma samples" + suffix.at(i) + ";M_{ee} (GeV/c^{2})", nBins, binArray);
-    for (unsigned int j = G30T50; j <= G470T800; ++j) {
+    TH1F *histoHGNHFRGammaCombined = new TH1F("histoHGNHFRGammaCombined" + acroSuffix.at(i), "Combined HEEP-GSF(no HEEP) with fake rate from gamma samples" + suffix.at(i) + ";m_(ee) (GeV)", nBins, binArray);
+    for (unsigned int j = G30T50; j <= G1800; ++j) {
       histoHGNHFRGammaCombined->Add(histosHeepGsfMassNoHeepFR.at(j).at(i));
     }
     histosHGNHFRGammaCombined.push_back(new TH1F(*histoHGNHFRGammaCombined));
 
     histosGsfGsfCorr.push_back(new TH1F((*histosGsfGsfMassNoHeepFR.at(DATA).at(i)) + (*histosHeepGsfMassNoHeepFR.at(WJETS).at(i)) + (*histoHGNHFRGammaCombined)));
     histosGsfGsfCorr.back()->SetName("histoGsfGsfCorr" + acroSuffix.at(i));
-    histosGsfGsfCorr.back()->SetTitle("Corrected GSF-GSF(no HEEP) fake rate" + suffix.at(i) + ";M_{ee} (GeV/c^{2})");
+    histosGsfGsfCorr.back()->SetTitle("Corrected GSF-GSF(no HEEP) fake rate" + suffix.at(i) + ";m_(ee) (GeV)");
 
     histosHGNHFRDYCombined.back()->Write();
     histosHGNHFRGammaCombined.back()->Write();
@@ -878,8 +1022,6 @@ cout << "DY combined done" << endl;
     histosGsfGsfCorr.back()->Write();
   }
   sStream.str("");
-
-cout << "fake rate correction done" << endl;
 
   vector<TH1F *> histoRatioMassCorrFR;
   for (unsigned int i = 0; i < histosGsfGsfCorr.size(); ++i) {
@@ -891,11 +1033,9 @@ cout << "fake rate correction done" << endl;
     ratioHisto->Divide(numHisto, denomHisto);
     histoRatioMassCorrFR.push_back((TH1F *)ratioHisto->Clone("histoRatioMassCorrFR" + acroSuffix.at(i)));
 
-    histoRatioMassCorrFR.back()->SetTitle("Ratio between corrected GSF-GSF and corrected HEEP-GSF" + suffix.at(i) + ";M_{ee} (GeV/c^{2});GSF-GSF / HEEP-GSF");
+    histoRatioMassCorrFR.back()->SetTitle("Ratio between corrected GSF-GSF and corrected HEEP-GSF" + suffix.at(i) + ";m_(ee) (GeV);GSF-GSF / HEEP-GSF");
     histoRatioMassCorrFR.back()->Write();
   }
-
-cout << "writing out done" << endl;
 
   outFile->Close();
 
@@ -910,14 +1050,17 @@ cout << "writing out done" << endl;
 } //end of method
 
 int
-InvariantMass::NormalizeToZPeak(const float& lowMass, const float& highMass, const char* inputFile, vector<string> folders, int ratioRebin)
+InvariantMass::NormalizeToZPeak(const float& lowMass, float highMass, const char* inputFile, vector<string> folders, int ratioRebin)
 {
   float factor = 1.;
   const unsigned int DATA = 0;
-  //const unsigned int TTBAR = 6;
-  const unsigned int TTBAR = 2;
-  //const unsigned int WJETS = 7;
-  const unsigned int WJETS = 3;
+  const unsigned int TTBAR = 11;
+  const unsigned int DYTT = 12;
+  const unsigned int WW = 13;
+  const unsigned int WZ = 14;
+  const unsigned int ZZ = 15;
+  const unsigned int TW = 16;
+  const unsigned int WJETS = 17;
 
   vector<TString> acroSuffix;
   acroSuffix.push_back("");
@@ -929,8 +1072,9 @@ InvariantMass::NormalizeToZPeak(const float& lowMass, const float& highMass, con
   noHeepStr.push_back("");
   noHeepStr.push_back("NoHeep");
 
-  if (highMass == lowMass) {
-    cout << endl << "Normalization to Z peak range is zero. Will apply no correction factor." << endl << endl;
+  highMass -= 0.001; // to exclude the bin with highMass if it starts there
+  if (highMass <= lowMass) {
+    cout << endl << "Normalization to Z peak range is zero or negative. Will apply no correction factor." << endl << endl;
     return 1;
   }
 
@@ -940,37 +1084,132 @@ InvariantMass::NormalizeToZPeak(const float& lowMass, const float& highMass, con
 
   // get the necessary histograms
   file->cd(folders.at(DATA).c_str());
-  TH1F *dataHisto = (TH1F *)gDirectory->Get("histoHeepHeepMass");
+  TH1F *dataHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *dataHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
   file->cd(folders.at(TTBAR).c_str());
-  TH1F *ttbarBgHisto = (TH1F *)gDirectory->Get("histoHeepHeepMass");
+  TH1F *ttbarBgHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *ttbarBgHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
+  file->cd(folders.at(DYTT).c_str());
+  TH1F *dyttBgHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *dyttBgHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
+  file->cd(folders.at(WW).c_str());
+  TH1F *wwBgHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *wwBgHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
+  file->cd(folders.at(WZ).c_str());
+  TH1F *wzBgHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *wzBgHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
+  file->cd(folders.at(ZZ).c_str());
+  TH1F *zzBgHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *zzBgHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
+  file->cd(folders.at(TW).c_str());
+  TH1F *twBgHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *twBgHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
   file->cd(folders.at(WJETS).c_str());
-  TH1F *wjetBgHisto = (TH1F *)gDirectory->Get("histoHeepHeepMass");
+  TH1F *wjetBgHistoBB = (TH1F *)gDirectory->Get("histoHeepHeepMassBB");
+  TH1F *wjetBgHistoBE = (TH1F *)gDirectory->Get("histoHeepHeepMassBE");
   file->cd("combinations");
-  TH1F *dyBgHisto = (TH1F *)gDirectory->Get("histoDYCombined");
-  TH1F *qcdBgHisto = (TH1F *)gDirectory->Get("histoGsfGsfCorr");
+  TH1F *dyBgHistoBB = (TH1F *)gDirectory->Get("histoDYCombinedBB");
+  TH1F *dyBgHistoBE = (TH1F *)gDirectory->Get("histoDYCombinedBE");
+  TH1F *qcdBgHistoBB = (TH1F *)gDirectory->Get("histoGsfGsfCorrBB");
+  TH1F *qcdBgHistoBE = (TH1F *)gDirectory->Get("histoGsfGsfCorrBE");
 
   double intData = 0;
+  double intDataBB = 0;
+  double intDataBE = 0;
   double intBg = 0;
+  double intBgBB = 0;
+  double intBgBE = 0;
+  double intDyBB = 0;
+  double intDyBE = 0;
+  double intTtbarBB = 0;
+  double intTtbarBE = 0;
+  double intDyttBB = 0;
+  double intDyttBE = 0;
+  double intWwBB = 0;
+  double intWwBE = 0;
+  double intWzBB = 0;
+  double intWzBE = 0;
+  double intZzBB = 0;
+  double intZzBE = 0;
+  double intTwBB = 0;
+  double intTwBE = 0;
+  double intWjetBB = 0;
+  double intWjetBE = 0;
+  double intQcdBB = 0;
+  double intQcdBE = 0;
 
   // integrate over range
-  intData = dataHisto->Integral(dataHisto->FindBin(lowMass), dataHisto->FindBin(highMass));
-  intBg = dyBgHisto->Integral(dyBgHisto->FindBin(lowMass), dyBgHisto->FindBin(highMass));
-  intBg += ttbarBgHisto->Integral(ttbarBgHisto->FindBin(lowMass), ttbarBgHisto->FindBin(highMass));
-  intBg += wjetBgHisto->Integral(wjetBgHisto->FindBin(lowMass), wjetBgHisto->FindBin(highMass));
-  intBg += qcdBgHisto->Integral(qcdBgHisto->FindBin(lowMass), qcdBgHisto->FindBin(highMass));
+  intDataBB = dataHistoBB->Integral(dataHistoBB->FindBin(lowMass), dataHistoBB->FindBin(highMass));
+  intDyBB = dyBgHistoBB->Integral(dyBgHistoBB->FindBin(lowMass), dyBgHistoBB->FindBin(highMass));
+  intTtbarBB = ttbarBgHistoBB->Integral(ttbarBgHistoBB->FindBin(lowMass), ttbarBgHistoBB->FindBin(highMass));
+  intDyttBB = dyttBgHistoBB->Integral(dyttBgHistoBB->FindBin(lowMass), dyttBgHistoBB->FindBin(highMass));
+  intWwBB = wwBgHistoBB->Integral(wwBgHistoBB->FindBin(lowMass), wwBgHistoBB->FindBin(highMass));
+  intWzBB = wzBgHistoBB->Integral(wzBgHistoBB->FindBin(lowMass), wzBgHistoBB->FindBin(highMass));
+  intZzBB = zzBgHistoBB->Integral(zzBgHistoBB->FindBin(lowMass), zzBgHistoBB->FindBin(highMass));
+  intTwBB = twBgHistoBB->Integral(twBgHistoBB->FindBin(lowMass), twBgHistoBB->FindBin(highMass));
+  intWjetBB = wjetBgHistoBB->Integral(wjetBgHistoBB->FindBin(lowMass), wjetBgHistoBB->FindBin(highMass));
+  intQcdBB = qcdBgHistoBB->Integral(qcdBgHistoBB->FindBin(lowMass), qcdBgHistoBB->FindBin(highMass));
 
-  cout << endl;
-  cout << "-------------------------------------------------------------------------" << endl;
-  cout << "# of events (weighted) in the Z peak from " << lowMass << "GeV to " << highMass << "GeV" << endl;
-  cout << " Data     " << intData << endl;
-  cout << " DY       " << dyBgHisto->Integral(dyBgHisto->FindBin(lowMass), dyBgHisto->FindBin(highMass)) << endl;
-  cout << " ttbar    " << ttbarBgHisto->Integral(ttbarBgHisto->FindBin(lowMass), ttbarBgHisto->FindBin(highMass)) << endl;
-  cout << " W+jets   " << wjetBgHisto->Integral(wjetBgHisto->FindBin(lowMass), wjetBgHisto->FindBin(highMass)) << endl;
-  cout << " QCD      " << qcdBgHisto->Integral(qcdBgHisto->FindBin(lowMass), qcdBgHisto->FindBin(highMass)) << endl << endl;
+  intDataBE = dataHistoBE->Integral(dataHistoBE->FindBin(lowMass), dataHistoBE->FindBin(highMass));
+  intDyBE = dyBgHistoBE->Integral(dyBgHistoBE->FindBin(lowMass), dyBgHistoBE->FindBin(highMass));
+  intTtbarBE = ttbarBgHistoBE->Integral(ttbarBgHistoBE->FindBin(lowMass), ttbarBgHistoBE->FindBin(highMass));
+  intDyttBE = dyttBgHistoBE->Integral(dyttBgHistoBE->FindBin(lowMass), dyttBgHistoBE->FindBin(highMass));
+  intWwBE = wwBgHistoBE->Integral(wwBgHistoBE->FindBin(lowMass), wwBgHistoBE->FindBin(highMass));
+  intWzBE = wzBgHistoBE->Integral(wzBgHistoBE->FindBin(lowMass), wzBgHistoBE->FindBin(highMass));
+  intZzBE = zzBgHistoBE->Integral(zzBgHistoBE->FindBin(lowMass), zzBgHistoBE->FindBin(highMass));
+  intTwBE = twBgHistoBE->Integral(twBgHistoBE->FindBin(lowMass), twBgHistoBE->FindBin(highMass));
+  intWjetBE = wjetBgHistoBE->Integral(wjetBgHistoBE->FindBin(lowMass), wjetBgHistoBE->FindBin(highMass));
+  intQcdBE = qcdBgHistoBE->Integral(qcdBgHistoBE->FindBin(lowMass), qcdBgHistoBE->FindBin(highMass));
+
+  intData = intDataBB + intDataBE;
+  intBgBB = intDyBB + intTtbarBB + intDyttBB + intWwBB + intWzBB + intZzBB + intTwBB + intWjetBB + intQcdBB;
+  intBgBE = intDyBE + intTtbarBE + intDyttBE + intWwBE + intWzBE + intZzBE + intTwBE + intWjetBE + intQcdBE;
+  intBg = intBgBB + intBgBE;
 
   // calculate the noramlization factor
   factor = intData / intBg;
 
+  cout << endl;
+  cout << "-------------------------------------------------------------------------" << endl;
+  cout << "# of events (weighted) in the Z peak from " << lowMass << "GeV to " << highMass + 0.001 << "GeV" << endl;
+  cout << " Data       " << intData << endl;
+  cout << " DY         " << intDyBB + intDyBE << endl;
+  cout << " ttbar      " << intTtbarBB + intTtbarBE  << endl;
+  cout << " DY->TauTau " << intDyttBB + intDyttBE  << endl;
+  cout << " WW         " << intWwBB + intWwBE  << endl;
+  cout << " WZ         " << intWzBB + intWzBE  << endl;
+  cout << " ZZ         " << intZzBB + intZzBE  << endl;
+  cout << " TW         " << intTwBB + intTwBE  << endl;
+  cout << " W+jets     " << intWjetBB + intWjetBE  << endl;
+  cout << " QCD        " << intQcdBB + intQcdBE  << endl << endl;;
+  cout << "Applied correction factor for MC: " << factor << endl;
+  cout << "-------------------------------------------------------------------------" << endl;
+  cout << "# of EB-EB events (weighted) in the Z peak from " << lowMass << "GeV to " << highMass + 0.001 << "GeV" << endl;
+  cout << " Data       " << intDataBB << endl;
+  cout << " DY         " << intDyBB << endl;
+  cout << " ttbar      " << intTtbarBB << endl;
+  cout << " DY->TauTau " << intDyttBB << endl;
+  cout << " WW         " << intWwBB << endl;
+  cout << " WZ         " << intWzBB << endl;
+  cout << " ZZ         " << intZzBB << endl;
+  cout << " TW         " << intTwBB << endl;
+  cout << " W+jets     " << intWjetBB << endl;
+  cout << " QCD        " << intQcdBB << endl << endl;
+  cout << "EB-EB correction factor for MC: " << intDataBB / intBgBB << endl;
+  cout << "-------------------------------------------------------------------------" << endl;
+  cout << "# of EB-EE events (weighted) in the Z peak from " << lowMass << "GeV to " << highMass + 0.001 << "GeV" << endl;
+  cout << " Data       " << intDataBE << endl;
+  cout << " DY         " << intDyBE << endl;
+  cout << " ttbar      " << intTtbarBE << endl;
+  cout << " DY->TauTau " << intDyttBE << endl;
+  cout << " WW         " << intWwBE << endl;
+  cout << " WZ         " << intWzBE << endl;
+  cout << " ZZ         " << intZzBE << endl;
+  cout << " TW         " << intTwBE << endl;
+  cout << " W+jets     " << intWjetBE << endl;
+  cout << " QCD        " << intQcdBE << endl << endl;
+  cout << "EB-EE correction factor for MC: " << intDataBE / intBgBE << endl;
+  cout << endl;
   cout << "Applied correction factor for MC: " << factor << endl;
   cout << "-------------------------------------------------------------------------" << endl << endl;
 
@@ -1111,52 +1350,18 @@ InvariantMass::CalcPz (const int& iEle1, const int& iEle2, bool &etShift)
 double
 InvariantMass::FakeRate (const float& et, const float& eta)
 {
-  // constants 13/07/2011
-  vector<pair<double, double> > fakeRateFitLowPtEB;
-  fakeRateFitLowPtEB.push_back(make_pair(0.024, 0.00315));
-  fakeRateFitLowPtEB.push_back(make_pair(-0.0001, 0.0000581));
-  const pair<double, double> fakeRateFitHighPtEB(0.009, 0.);
-
-  const pair<double, double> fakeRateFitLowPtEELow(0.081, -0.0006);
-  const pair<double, double> fakeRateFitHighPtEELow(0.036, 0.);
-
-  const pair<double, double> fakeRateFitLowPtEEHigh(0.114, -0.0006);
-  const pair<double, double> fakeRateFitHighPtEEHigh(0.067, 0.);
-
-  const float fitSelectPtEB = 150;
-  const float fitSelectPtEELow = 75;
-  const float fitSelectPtEEHigh = 78.3;
-  const float etaDivideEE = 2.0;
-
-  double fakeRate = 0;
-
-  if (fabs(eta) < 2.5) {
-    if (fabs(eta) > etaDivideEE) {
-      // EE high eta
-      if (et > fitSelectPtEEHigh)
-        fakeRate = fakeRateFitHighPtEEHigh.first + fakeRateFitHighPtEEHigh.second * et;
-      else
-        fakeRate = fakeRateFitLowPtEEHigh.first + fakeRateFitLowPtEEHigh.second * et;
-    }
-    else if (fabs(eta) > 1.56) {
-      // EE low eta
-      if (et > fitSelectPtEELow)
-        fakeRate = fakeRateFitHighPtEELow.first + fakeRateFitHighPtEELow.second * et;
-      else
-        fakeRate = fakeRateFitLowPtEELow.first + fakeRateFitLowPtEELow.second * et;
-    }
-    else if (fabs(eta) < 1.442) {
-      // EB
-      if (et > fitSelectPtEB)
-        fakeRate = fakeRateFitHighPtEB.first + fakeRateFitHighPtEB.second * et;
-      else {
-        for (vector<pair<double, double> >::iterator it = fakeRateFitLowPtEB.begin(); it < fakeRateFitLowPtEB.end(); ++it)
-          fakeRate += it->first * pow(et, distance(fakeRateFitLowPtEB.begin(), it));
-      }
-    }
-  }
-
-  return fakeRate;
+  // fake rate 19.3/fb
+  if (fabs(eta) < 1.5) {
+    if (et < 189.3) return 0.0179 - 0.000056 * et;
+    return 0.0073;
+  } else if (abs(eta) < 2.0) {
+    if (et < 96.6) return exp(-2.31 - 0.011 * et);
+    else if (et < 178.0) return 0.040 - 0.000059 * et;
+    return 0.0295;
+  } else if (abs(eta) < 2.5) {
+    if(et < 115.4) return 0.099 - 0.00035 * et;
+    else return 0.0586;
+  } else return 0; 
 }
 
 bool
@@ -1167,18 +1372,22 @@ InvariantMass::PassFRPreSel(const int &n, const float &eta)
   const float hOverECutEE = 0.1;
   const float sieieCutEB = 0.013;
   const float sieieCutEE = 0.034;
-  const int missHitsCutEB = 0;
-  const int missHitsCutEE = 0;
+  const float dxyCutEB = 0.02;
+  const float dxyCutEE = 0.05;
+  const int missHitsCutEB = 1;
+  const int missHitsCutEE = 1;
 
   if (fabs(eta) < 1.442) {
     if (gsf_hovere[n] > hOverECutEB) return false;
     if (gsf_nLostInnerHits[n] > missHitsCutEB) return false;
     if (gsf_sigmaIetaIeta[n] > sieieCutEB) return false;
+    if (fabs(gsf_dxy_firstPVtx[n]) > dxyCutEB) return false;
   }
   else if (fabs(eta) > 1.56) {
     if (gsf_hovere[n] > hOverECutEE) return false;
     if (gsf_nLostInnerHits[n] > missHitsCutEE) return false;
     if (gsf_sigmaIetaIeta[n] > sieieCutEE) return false;
+    if (fabs(gsf_dxy_firstPVtx[n]) > dxyCutEE) return false;
   }
 
   return true;
@@ -1187,7 +1396,10 @@ InvariantMass::PassFRPreSel(const int &n, const float &eta)
 bool
 InvariantMass::PassHEEP(const int &n)
 {
-  // HEEP selection v3.2
+  //int selection = 0;  // HEEP v4.0
+  int selection = 1;  // HEEP v4.1
+
+// HEEP selection v3.2
 //  // barrel
 //  float bar_et = 35.;
 //  float bar_hoE = 0.05;
@@ -1225,6 +1437,7 @@ InvariantMass::PassHEEP(const int &n)
   float bar_isoEcalHcal1_2 = 0.03;
   float bar_isoEcalHcalRho = 0.28;
   float bar_isoTrack = 5.;
+  float bar_dxy = 0.02;  // only for HEEP v4.1
   int bar_missInnerHits = 0;
 
   // endcap
@@ -1238,7 +1451,13 @@ InvariantMass::PassHEEP(const int &n)
   float end_isoEcalHcal1_2 = 0.03;
   float end_isoEcalHcalRho = 0.28;
   float end_isoTrack = 5.;
+  float end_dxy = 0.05;  // only for HEEP v4.1
   int end_missInnerHits = 0;
+
+  if (selection == 1) {
+    bar_missInnerHits = 1;
+    end_missInnerHits = 1;
+  }
 
 //  HEEP v3.2
 //  // barrel
@@ -1282,7 +1501,7 @@ InvariantMass::PassHEEP(const int &n)
       && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * gsf_gsfet[n] + bar_isoEcalHcalRho * rho)
       && gsf_trackiso[n] < bar_isoTrack
       && gsf_nLostInnerHits[n] <= bar_missInnerHits
-     ) return true;
+     ) if ((selection == 1 && fabs(gsf_dxy_firstPVtx[n]) <= bar_dxy) || selection != 1) return true;
   
   // endcap
   if ((fabs(gsfsc_eta[n]) > 1.56 && fabs(gsfsc_eta[n]) < 2.5)
@@ -1296,7 +1515,7 @@ InvariantMass::PassHEEP(const int &n)
          || (gsf_gsfet[n] >= 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (end_isoEcalHcal1_1_2 + end_isoEcalHcal1_2 * gsf_gsfet[n] + end_isoEcalHcalRho * rho)))
       && gsf_trackiso[n] < end_isoTrack
       && gsf_nLostInnerHits[n] <= end_missInnerHits
-     ) return true;
+     ) if ((selection == 1 && fabs(gsf_dxy_firstPVtx[n]) <= end_dxy) || selection != 1) return true;
   return false;
 }
 
@@ -1305,53 +1524,44 @@ InvariantMass::Trigger(int &prescale)
 {
   // trigger selection 2012
   int triggerBit = 0;
-  if (prescale_HLT_DoubleEle33_CaloIdL == 1 && HLT_DoubleEle33_CaloIdL == 1) {
+  if (0 && prescale_HLT_DoubleEle33_CaloIdL == 1 && HLT_DoubleEle33_CaloIdL == 1) {  // switched off
     prescale = prescale_HLT_DoubleEle33_CaloIdL;
     triggerBit = HLT_DoubleEle33_CaloIdL;
   } else if (prescale_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL == 1 && HLT_DoubleEle33_CaloIdL_GsfTrkIdVL == 1) {
     prescale = prescale_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
     triggerBit = HLT_DoubleEle33_CaloIdL_GsfTrkIdVL;
-  } else if (prescale_HLT_DoubleEle33_CaloIdT == 1 && HLT_DoubleEle33_CaloIdT == 1) {
+  } else if (0 && prescale_HLT_DoubleEle33_CaloIdT == 1 && HLT_DoubleEle33_CaloIdT == 1) { // switched off
     prescale = prescale_HLT_DoubleEle33_CaloIdT;
     triggerBit = HLT_DoubleEle33_CaloIdT;
   }
   return triggerBit;
 
-//  // Sams trigger selection 2011
-//  if (runnumber < 165000 && prescale_HLT_DoublePhoton33 == 1) {
-//    prescale = prescale_HLT_DoublePhoton33;
-//    return HLT_DoublePhoton33;
-//  } else if (runnumber >= 165000) {
-//    int triggerBit = 0;
-//    if (prescale_HLT_DoubleEle33_CaloIdL == 1 && HLT_DoubleEle33_CaloIdL == 1) {
-//      prescale = prescale_HLT_DoubleEle33_CaloIdL;
-//      triggerBit = HLT_DoubleEle33_CaloIdL;
-//    } else if (prescale_HLT_DoubleEle33_CaloIdT == 1 && HLT_DoubleEle33_CaloIdT == 1) {
-//      prescale = prescale_HLT_DoubleEle33_CaloIdT;
-//      triggerBit = HLT_DoubleEle33_CaloIdT;
-//    } else if (prescale_HLT_DoubleEle45_CaloIdL == 1 && HLT_DoubleEle45_CaloIdL == 1) {
-//      prescale = prescale_HLT_DoubleEle45_CaloIdL;
-//      triggerBit = HLT_DoubleEle45_CaloIdL;
-//    }
-//    return triggerBit;
-//  }
-
-//  if (runnumber < 163870 && prescale_HLT_DoublePhoton33 == 1) {
-//    prescale = prescale_HLT_DoublePhoton33;
-//    return HLT_DoublePhoton33;
-//  } else if (runnumber > 163869) {
-//    if (prescale_HLT_DoubleEle33_CaloIdL == 1) {
-//      prescale = prescale_HLT_DoubleEle33_CaloIdL;
-//      return HLT_DoubleEle33_CaloIdL;
-//    } else if (prescale_HLT_DoubleEle33_CaloIdT == 1) {
-//      //cout << "HLT_DoubleEle33_CaloIdT" << endl;
-//      prescale = prescale_HLT_DoubleEle33_CaloIdT;
-//      return HLT_DoubleEle33_CaloIdT;
-//    }
-//  }
-
   cout << "Prescale alert! No unprescaled trigger found. Dropping this event." << endl;
   prescale = 0;
   return 0;
+}
+
+double 
+InvariantMass::TriggerTurnOn(const int &n, const bool &useSecond)
+{
+  float et = gsf_gsfet[n] * cosh(gsf_eta[n]) / cosh(gsfsc_eta[n]);
+  float a0 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.996 : 0.9948;
+  float a1 = (fabs(gsfsc_eta[n]) < 1.5) ? 34.76 : 32.74;
+  float a2 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.85 : 2.36;
+
+  if (useSecond) {
+    a0 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.996 : 0.979;
+    a1 = (fabs(gsfsc_eta[n]) < 1.5) ? 34.76 : 37.2;
+    a2 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.85 : 2.3;
+  }
+
+  return 0.5 * a0 * (1 + erf((et - a1) / (sqrt(2) * a2)));
+}
+
+void
+InvariantMass::CorrectEnergy() 
+{
+  for (int n = 0; n < gsf_size; ++n)
+     gsf_gsfet[n] = gsfsc_e[n] * sin(gsf_theta[n]);
 }
 
