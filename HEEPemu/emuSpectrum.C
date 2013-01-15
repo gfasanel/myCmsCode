@@ -362,13 +362,13 @@ void emuSpectrum()
    storeGenMTtbar.push_back(0);
 
    TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_16365457ev.root");
-   input.push_back(make_pair(inTTbar22l, 13.43 / 16365457.)); //TT to 2l
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.));
+   input.push_back(make_pair(inTTbar22l, 13.43 / 16365457. * 234./(13.43+53.2+53.4))); //TT to 2l
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.067));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A_ext-v1_AODSIM_gct1_46_25424818ev.root");
-   input.push_back(make_pair(inTTbar21l, 53.2 / 25424818.)); //TT to 1l1jet
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.));
+   input.push_back(make_pair(inTTbar21l, 53.2 / 25424818. * 234./(13.43+53.2+53.4))); //TT to 1l1jet
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.067));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_196046ev.root");
@@ -881,6 +881,7 @@ void emuSpectrum()
       emuTree->Branch("puWeight", &puWeight, "puWeight/F");
       if (storeGenMTtbar[p]) emuTree->Branch("genMTtbar", &c_genPair_mass, "genMTtbar/F");
       // control variables
+      float nVtx = 0.;
       float dZFstPVtx = 0.;
       float dXYFstPVtx = 0.;
       float dPhi = 0.;
@@ -909,10 +910,11 @@ void emuSpectrum()
       float muDXYFstPVtx = 0.;
       float muNSeg = 0.;
       float muTrkIso03 = 0.;
+      float numOfJets = 0.;
       float numOfJetsPt20 = 0.;
       float numOfJetsPt30 = 0.;
       emuTree->Branch("pfMet", &c_pfmet, "pfMet/F");
-      emuTree->Branch("nVtx", &c_pvsize, "nVtx/F");
+      emuTree->Branch("nVtx", &nVtx, "nVtx/F");
       emuTree->Branch("dZFstPVtx", &dZFstPVtx, "dZFstPVtx/F");
       emuTree->Branch("dXYFstPVtx", &dXYFstPVtx, "dXYFstPVtx/F");
       emuTree->Branch("rho", &c_rho, "rho/F");
@@ -920,7 +922,7 @@ void emuSpectrum()
       emuTree->Branch("dEta", &dEta, "dEta/F");
       emuTree->Branch("eleEt", &eleEt, "eleEt/F");
       emuTree->Branch("eleEta", &eleEta, "eleEta/F");
-      emuTree->Branch("elePhi", &elePhi, "eleDPhi/F");
+      emuTree->Branch("elePhi", &elePhi, "elePhi/F");
       emuTree->Branch("eleDEta", &eleDEta, "eleDEta/F");
       emuTree->Branch("eleDPhi", &eleDPhi, "eleDPhi/F");
       emuTree->Branch("eleHOE", &eleHOE, "eleHOE/F");
@@ -942,7 +944,7 @@ void emuSpectrum()
       emuTree->Branch("muDXYFstPVtx", &muDXYFstPVtx, "muDXYFstPVtx/F");
       emuTree->Branch("muNSeg", &muNSeg, "muNSeg/F");
       emuTree->Branch("muTrkIso03", &muTrkIso03, "muTrkIso03/F");
-      emuTree->Branch("numOfJets", &c_jetColl_size, "numOfJets/F");
+      emuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
       emuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
       emuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
 
@@ -1299,6 +1301,7 @@ void emuSpectrum()
             else if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) evtRegion = 1;
             else evtRegion = -1;
             // fill control variables
+            nVtx = c_pvsize;
             dZFstPVtx = fabs(c_gsf_dz_firstPVtx[GSF_passHEEP[0]] - c_muon_dz_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]]);
             dXYFstPVtx = fabs(c_gsf_dxy_firstPVtx[GSF_passHEEP[0]] - c_muon_dxy_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]]);
             if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi = fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]);
@@ -1329,6 +1332,7 @@ void emuSpectrum()
             muDXYFstPVtx = c_muon_dxy_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]];
             muNSeg = c_muon_nSegmentMatch[MU_passGOOD[MU_leadingPassGOOD]];
             muTrkIso03 = c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]];
+            numOfJets = c_jetColl_size;
             numOfJetsPt20 = jetsPt20;
             numOfJetsPt30 = jetsPt30;
 
