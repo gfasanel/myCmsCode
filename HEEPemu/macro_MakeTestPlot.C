@@ -423,6 +423,15 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   tree->SetBranchAddress("evtRegion", &evtRegion, &bEvtRegion);
   if (cutVariable[0] != '\0') tree->SetBranchAddress(cutVariable, &cutVar, &bCutVar);
 
+  tree->SetBranchStatus("*",0); //disable all branches
+  tree->SetBranchStatus(brName,1);
+  tree->SetBranchStatus("passTrg",1);
+  tree->SetBranchStatus("puWeight",1);
+  tree->SetBranchStatus("eCharge",1);
+  tree->SetBranchStatus("muCharge",1);
+  tree->SetBranchStatus("evtRegion",1);
+  if (cutVariable[0] != '\0') tree->SetBranchStatus(cutVariable,1);
+
   Long64_t nEntries = (*tree).GetEntries();
   for (unsigned int i = 0; i < nEntries; ++i) {
     tree->GetEntry(i);

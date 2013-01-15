@@ -76,13 +76,19 @@ void macro_MakeEMuInvMassPlot()
   //float xRangeMax = 1500.;
   float yRangeMin[6] = {0.002, 0.002, 0.002, 0.2, 0.2, 0.2};
   float yRangeMax[6] = {250, 40, 250, 30000, 4000, 30000};
+  float yRangeMinRatio[3] = {-0.7, -0.7, -0.7};
+  float yRangeMaxRatio[3] = {0.7, 0.7, 0.7};
   float fitMin = xRangeMin;
   float fitMax = 1100.; // set to highest bin with a data point
+  float xRangeMinRatio = fitMin;
+  float xRangeMaxRatio = fitMax;
 
   // output file formats
   const bool saveAsPdf = 0;
   const bool saveAsPng = 0;
   const bool saveAsRoot = 0;
+  const char *fileNameExtra = "";
+  //const char *fileNameExtra = "madgraphTTbar_";
   const char *plotDir = "./plots_10jan2013/";
 
   // plot style
@@ -211,6 +217,7 @@ void macro_MakeEMuInvMassPlot()
   ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
   ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
   //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "", 0., 0., binning, 0x1DF);
+  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", SS, 0, "", 0., 0., binning, 0x1DF);
   ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
   ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
   ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
@@ -252,6 +259,7 @@ void macro_MakeEMuInvMassPlot()
       ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", k, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
       emuMass_ttbar.push_back(ttbarComb);
       //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
       emuMass_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
       emuMass_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
       emuMass_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
@@ -617,7 +625,7 @@ void macro_MakeEMuInvMassPlot()
       sStream.str("");
       sStream << plotDir << "emuSpec";
       if (k == 0) sStream << "_";
-      sStream << histoSign[k] << nameSuffix[j];
+      sStream << histoSign[k] << fileNameExtra << nameSuffix[j];
       if (j > 0) sStream << "_";
       if (groupedPlot) sStream << "grouped_";
       if (!logPlotY) sStream << "lin_";
@@ -660,12 +668,13 @@ void macro_MakeEMuInvMassPlot()
       dataOverBgHist->GetXaxis()->SetLabelSize(0.05);
       dataOverBgHist->GetXaxis()->SetMoreLogLabels();
       dataOverBgHist->GetXaxis()->SetNoExponent();
-      dataOverBgHist->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax);
+      dataOverBgHist->GetXaxis()->SetRangeUser(xRangeMinRatio, xRangeMaxRatio);
       dataOverBgHist->GetYaxis()->SetTitle("(data-bkg)/bkg");
       dataOverBgHist->GetYaxis()->SetTitleFont(font);
       dataOverBgHist->GetYaxis()->SetTitleSize(0.047);
       dataOverBgHist->GetYaxis()->SetLabelFont(font);
       dataOverBgHist->GetYaxis()->SetLabelSize(0.05);
+      dataOverBgHist->GetYaxis()->SetRangeUser(yRangeMinRatio[k], yRangeMaxRatio[k]);
 
       dataOverBgHist->Draw();
 
@@ -1409,6 +1418,15 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   tree->SetBranchAddress("muCharge", &muCharge, &bMuCharge);
   tree->SetBranchAddress("evtRegion", &evtRegion, &bEvtRegion);
   if (cutVariable[0] != '\0') tree->SetBranchAddress(cutVariable, &cutVar, &bCutVar);
+
+  tree->SetBranchStatus("*",0); //disable all branches
+  tree->SetBranchStatus(brName,1);
+  tree->SetBranchStatus("passTrg",1);
+  tree->SetBranchStatus("puWeight",1);
+  tree->SetBranchStatus("eCharge",1);
+  tree->SetBranchStatus("muCharge",1);
+  tree->SetBranchStatus("evtRegion",1);
+  if (cutVariable[0] != '\0') tree->SetBranchStatus(cutVariable,1);
 
   Long64_t nEntries = (*tree).GetEntries();
   for (unsigned int i = 0; i < nEntries; ++i) {
