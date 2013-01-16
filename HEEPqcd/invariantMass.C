@@ -22,9 +22,12 @@
 #include "THashList.h"
 #include "THStack.h"
 #include "TPaveLabel.h"
+#include "TStopwatch.h"
 
 void InvariantMass::Loop()
 {
+  TStopwatch timer;
+  timer.Start();
   // parameters //////////////////////////////////////////////////////////////
   const int ptcut = 35;
   const float massCut = 0.;
@@ -1047,6 +1050,8 @@ void InvariantMass::Loop()
     cout << "-------------------------------------------------------------------------" << endl << endl;
   }
 
+  timer.Stop();
+  timer.Print();
 } //end of method
 
 int

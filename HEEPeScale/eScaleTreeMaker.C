@@ -13,9 +13,12 @@
 
 #include "TLorentzVector.h"
 #include "TString.h"
+#include "TStopwatch.h"
 
 void EScaleTreeMaker::Loop()
 {
+  TStopwatch timer;
+  timer.Start();
   // parameters //////////////////////////////////////////////////////////////
   const int ptcut = 0.;
   const float massCut = 0.;
@@ -456,6 +459,9 @@ void EScaleTreeMaker::Loop()
   } // end of loop over input files
    puData->Write();
    puDataNorm->Write();
+
+   timer.Stop();
+   timer.Print();
 } //end of method
 
 
