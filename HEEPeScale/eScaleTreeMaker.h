@@ -38,29 +38,16 @@ public :
    UInt_t          runnumber;
    UInt_t          eventnumber;
    UInt_t          luminosityBlock;
-   UInt_t          eventcounter;
-   Int_t           processid;
-   Float_t         pthat;
-   Float_t         qscale;
-   Float_t         weight;
-   Int_t           hltCount;
-   Int_t           PhysDecl_bool;
-   Int_t           nWasRun_;
-   Int_t           nAccept_;
-   Int_t           nErrors_;
    Int_t           HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           prescale_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           trueNVtx;
    Float_t         rho;
    Int_t           pvsize;
-   Bool_t          pv_isValid[80];   //[pvsize]
    Int_t           gsf_size;
    Float_t         gsf_eta[150];   //[gsf_size]
    Float_t         gsf_phi[150];   //[gsf_size]
    Float_t         gsf_theta[150];   //[gsf_size]
    Float_t         gsf_sigmaIetaIeta[150];   //[gsf_size]
-   Float_t         gsf_ecalEnergy[150];   //[gsf_size]
-   Float_t         gsf_eOVERp[150];   //[gsf_size]
    Float_t         gsf_dxy_firstPVtx[150];   //[gsf_size]
    Int_t           gsf_nLostInnerHits[150];   //[gsf_size]
    Float_t         gsf_deltaeta[150];   //[gsf_size]
@@ -69,7 +56,6 @@ public :
    Float_t         gsf_trackiso[150];   //[gsf_size]
    Float_t         gsf_ecaliso[150];   //[gsf_size]
    Float_t         gsf_hcaliso1[150];   //[gsf_size]
-   Float_t         gsf_hcaliso2[150];   //[gsf_size]
    Bool_t          gsf_isecaldriven[150];   //[gsf_size]
    Float_t         gsfsc_e[150];   //[gsf_size]
    Float_t         gsfsc_eta[150];   //[gsf_size]
@@ -87,29 +73,16 @@ public :
    TBranch        *b_runnumber;   //!
    TBranch        *b_eventnumber;   //!
    TBranch        *b_luminosityBlock;   //!
-   TBranch        *b_eventcounter;   //!
-   TBranch        *b_processid;   //!
-   TBranch        *b_pthat;   //!
-   TBranch        *b_qscale;   //!
-   TBranch        *b_weight;   //!
-   TBranch        *b_hltCount;   //!
-   TBranch        *b_PhysDecl_bool;   //!
-   TBranch        *b_nWasRun_;   //!
-   TBranch        *b_nAccept_;   //!
-   TBranch        *b_nErrors_;   //!
    TBranch        *b_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_prescale_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_trueNVtx;   //!
    TBranch        *b_rho;   //!
    TBranch        *b_pvsize;   //!
-   TBranch        *b_pv_isValid;   //!
    TBranch        *b_gsf_size;   //!
    TBranch        *b_gsf_eta;   //!
    TBranch        *b_gsf_phi;   //!
    TBranch        *b_gsf_theta;   //!
    TBranch        *b_gsf_sigmaIetaIeta;   //!
-   TBranch        *b_gsf_ecalEnergy;   //!
-   TBranch        *b_gsf_eOVERp;   //!
    TBranch        *b_gsf_dxy_firstPVtx;   //!
    TBranch        *b_gsf_nLostInnerHits;   //!
    TBranch        *b_gsf_deltaeta;   //!
@@ -118,7 +91,6 @@ public :
    TBranch        *b_gsf_trackiso;   //!
    TBranch        *b_gsf_ecaliso;   //!
    TBranch        *b_gsf_hcaliso1;   //!
-   TBranch        *b_gsf_hcaliso2;   //!
    TBranch        *b_gsf_isecaldriven;   //!
    TBranch        *b_gsfsc_e;   //!
    TBranch        *b_gsfsc_eta;   //!
@@ -210,29 +182,16 @@ void EScaleTreeMaker::Init(TTree *tree)
    fChain->SetBranchAddress("runnumber", &runnumber, &b_runnumber);
    fChain->SetBranchAddress("eventnumber", &eventnumber, &b_eventnumber);
    fChain->SetBranchAddress("luminosityBlock", &luminosityBlock, &b_luminosityBlock);
-   fChain->SetBranchAddress("eventcounter", &eventcounter, &b_eventcounter);
-   fChain->SetBranchAddress("processid", &processid, &b_processid);
-   fChain->SetBranchAddress("pthat", &pthat, &b_pthat);
-   fChain->SetBranchAddress("qscale", &qscale, &b_qscale);
-   fChain->SetBranchAddress("weight", &weight, &b_weight);
-   fChain->SetBranchAddress("hltCount", &hltCount, &b_hltCount);
-   fChain->SetBranchAddress("PhysDecl_bool", &PhysDecl_bool, &b_PhysDecl_bool);
-   fChain->SetBranchAddress("nWasRun_", &nWasRun_, &b_nWasRun_);
-   fChain->SetBranchAddress("nAccept_", &nAccept_, &b_nAccept_);
-   fChain->SetBranchAddress("nErrors_", &nErrors_, &b_nErrors_);
    fChain->SetBranchAddress("HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("prescale_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &prescale_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
    fChain->SetBranchAddress("rho", &rho, &b_rho);
    fChain->SetBranchAddress("pvsize", &pvsize, &b_pvsize);
-   fChain->SetBranchAddress("pv_isValid", pv_isValid, &b_pv_isValid);
    fChain->SetBranchAddress("gsf_size", &gsf_size, &b_gsf_size);
    fChain->SetBranchAddress("gsf_eta", gsf_eta, &b_gsf_eta);
    fChain->SetBranchAddress("gsf_phi", gsf_phi, &b_gsf_phi);
    fChain->SetBranchAddress("gsf_theta", gsf_theta, &b_gsf_theta);
    fChain->SetBranchAddress("gsf_sigmaIetaIeta", gsf_sigmaIetaIeta, &b_gsf_sigmaIetaIeta);
-   fChain->SetBranchAddress("gsf_ecalEnergy", gsf_ecalEnergy, &b_gsf_ecalEnergy);
-   fChain->SetBranchAddress("gsf_eOVERp", gsf_eOVERp, &b_gsf_eOVERp);
    fChain->SetBranchAddress("gsf_dxy_firstPVtx", gsf_dxy_firstPVtx, &b_gsf_dxy_firstPVtx);
    fChain->SetBranchAddress("gsf_nLostInnerHits", gsf_nLostInnerHits, &b_gsf_nLostInnerHits);
    fChain->SetBranchAddress("gsf_deltaeta", gsf_deltaeta, &b_gsf_deltaeta);
@@ -241,7 +200,6 @@ void EScaleTreeMaker::Init(TTree *tree)
    fChain->SetBranchAddress("gsf_trackiso", gsf_trackiso, &b_gsf_trackiso);
    fChain->SetBranchAddress("gsf_ecaliso", gsf_ecaliso, &b_gsf_ecaliso);
    fChain->SetBranchAddress("gsf_hcaliso1", gsf_hcaliso1, &b_gsf_hcaliso1);
-   fChain->SetBranchAddress("gsf_hcaliso2", gsf_hcaliso2, &b_gsf_hcaliso2);
    fChain->SetBranchAddress("gsf_isecaldriven", gsf_isecaldriven, &b_gsf_isecaldriven);
    fChain->SetBranchAddress("gsfsc_e", gsfsc_e, &b_gsfsc_e);
    fChain->SetBranchAddress("gsfsc_eta", gsfsc_eta, &b_gsfsc_eta);
@@ -254,6 +212,42 @@ void EScaleTreeMaker::Init(TTree *tree)
    fChain->SetBranchAddress("genele_phi", genele_phi, &b_genele_phi);
    fChain->SetBranchAddress("genelemom_mass", genelemom_mass, &b_genelemom_mass);
    fChain->SetBranchAddress("unstableGenEle_e", unstableGenEle_e, &b_unstableGenEle_e);
+
+   // activate only used branches
+   fChain->SetBranchStatus("*", 0);
+   fChain->SetBranchStatus("runnumber", 1);
+   fChain->SetBranchStatus("eventnumber", 1);
+   fChain->SetBranchStatus("luminosityBlock", 1);
+   fChain->SetBranchStatus("HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
+   fChain->SetBranchStatus("prescale_HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
+   fChain->SetBranchStatus("trueNVtx", 1);
+   fChain->SetBranchStatus("rho", 1);
+   fChain->SetBranchStatus("pvsize", 1);
+   fChain->SetBranchStatus("gsf_size", 1);
+   fChain->SetBranchStatus("gsf_eta", 1);
+   fChain->SetBranchStatus("gsf_phi", 1);
+   fChain->SetBranchStatus("gsf_theta", 1);
+   fChain->SetBranchStatus("gsf_sigmaIetaIeta", 1);
+   fChain->SetBranchStatus("gsf_dxy_firstPVtx", 1);
+   fChain->SetBranchStatus("gsf_nLostInnerHits", 1);
+   fChain->SetBranchStatus("gsf_deltaeta", 1);
+   fChain->SetBranchStatus("gsf_deltaphi", 1);
+   fChain->SetBranchStatus("gsf_hovere", 1);
+   fChain->SetBranchStatus("gsf_trackiso", 1);
+   fChain->SetBranchStatus("gsf_ecaliso", 1);
+   fChain->SetBranchStatus("gsf_hcaliso1", 1);
+   fChain->SetBranchStatus("gsf_isecaldriven", 1);
+   fChain->SetBranchStatus("gsfsc_e", 1);
+   fChain->SetBranchStatus("gsfsc_eta", 1);
+   fChain->SetBranchStatus("gsf_e2x5overe5x5", 1);
+   fChain->SetBranchStatus("gsf_e1x5overe5x5", 1);
+   fChain->SetBranchStatus("gsf_gsfet", 1);
+   fChain->SetBranchStatus("genele_e", 1);
+   fChain->SetBranchStatus("genele_pt", 1);
+   fChain->SetBranchStatus("genele_eta", 1);
+   fChain->SetBranchStatus("genele_phi", 1);
+   fChain->SetBranchStatus("genelemom_mass", 1);
+   fChain->SetBranchStatus("unstableGenEle_e", 1);
 
    Notify();
 }
