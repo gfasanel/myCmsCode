@@ -13,6 +13,7 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TStyle.h"
+#include "TStopwatch.h"
 
 #include <vector>
 #include <iostream>
@@ -57,6 +58,8 @@ unsigned int c_luminosityBlock;
 
 void emuSpectrum()
 {
+   TStopwatch timer;
+   timer.Start();
    // parameters /////////////////////////////////////////////////////////////
    float LumiFactor = 19619.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    TParameter<float> lumi("lumi", LumiFactor);
@@ -74,8 +77,6 @@ void emuSpectrum()
    //unsigned selection = 1;   // HEEP v4.0strong
    //unsigned selection = 2;   // HEEP v4.0
    unsigned selection = 3;   // HEEP v4.1
-
-   int nPVtxMax = 60; // maximum number of primary vertices
 
    // scale factors
    // muon factors  https://indico.cern.ch/getFile.py/access?contribId=3&resId=0&materialId=slides&confId=214870
@@ -105,8 +106,6 @@ void emuSpectrum()
    bool usePUInfo = true;
    bool lowMassPuOnly = false;
    float puMassCut = 120.;
-
-   int nBins = 75;
    // selection cuts /////////////////////////////////////////////////////////
    float minInvMass = 0.;
 
@@ -119,22 +118,17 @@ void emuSpectrum()
    int muon_nHitsMinMuon = 1;
    int muon_nLayersMin = 6; 
    float muon_impactParamMaxXY = 0.2;   // in cm
-   float muon_impactParamMaxZ = 0.5;   // in cm , not used
+   //float muon_impactParamMaxZ = 0.5;   // in cm , not used
    int muon_nSegMatchMin = 2;
    float muon_relIsoCutMax = 0.1;
 
    //BARREL
    float bar_et = 0.;
    float bar_hoE = 0.;
-   float bar_coshFactor = 0.;
-   float bar_coshOffset = 0.;
-   float bar_etaFactor = 0.;
    float bar_DEta = 0.;
    float bar_DPhi = 0.;
    float bar_e2x5e5x5 = 0.;
-   float bar_e2x5e5x5Rho = 0.;
    float bar_e1x5e5x5 = 0.;
-   float bar_e1x5e5x5Rho = 0.;
    float bar_isoEcalHcal1_1 = 0.;
    float bar_isoEcalHcal1_2 = 0.;
    float bar_isoEcalHcalRho = 0.;
@@ -145,9 +139,6 @@ void emuSpectrum()
    //ENDCAP
    float end_et = 0.;
    float end_hoE = 0.;
-   float end_coshFactor = 0.;
-   float end_coshOffset = 0.;
-   float end_etaFactor = 0.;
    float end_DEta = 0.;
    float end_DPhi = 0.;
    float end_sigmaietaieta = 0.;
@@ -192,15 +183,10 @@ void emuSpectrum()
          //BARREL
          bar_et = 35.;
          bar_hoE = 0.05;
-         bar_coshFactor = 0.13;
-         bar_coshOffset = 0.085;
-         bar_etaFactor = 0.41;
          bar_DEta = 0.005;
          bar_DPhi = 0.06;
          bar_e2x5e5x5 = 0.94;
-         bar_e2x5e5x5Rho = 0.0054;
          bar_e1x5e5x5 = 0.83;
-         bar_e1x5e5x5Rho = 0.0045;
          bar_isoEcalHcal1_1 = 2.;
          bar_isoEcalHcal1_2 = 0.03;
          bar_isoEcalHcalRho = 0.28;
@@ -210,9 +196,6 @@ void emuSpectrum()
          //ENDCAP
          end_et = 35.;
          end_hoE = 0.05;
-         end_coshFactor = 0.13;
-         end_coshOffset = 0.085;
-         end_etaFactor = 0.41;
          end_DEta = 0.007 ;
          end_DPhi = 0.06;
          end_sigmaietaieta = 0.03;
@@ -411,64 +394,16 @@ void emuSpectrum()
    suffix.push_back("ttbarw");
    suffix.push_back("ttbarww");
 
-   TString sign[3] = {"", "LS_", "OS_"};
-
    // counting variables
    int nb_plus_plus = 0;
    int nb_plus_minus = 0;
    int nb_minus_plus = 0;
    int nb_minus_minus = 0;
 
-   // histogram containers
-   vector<vector<TH1F *> > h_emuMass;
-   vector<vector<TH1F *> > h_emuMassEB;
-   vector<vector<TH1F *> > h_emuMassEE;
-   vector<vector<TH1F *> > h_emu_mass_accVSgood;
-
-   vector<vector<TH1F *> > h_pfMet;
-   vector<vector<TH1F *> > h_nVtx;
-   vector<vector<TH1F *> > h_dDz;
-   vector<vector<TH1F *> > h_dDzBeamSpot;
-   vector<vector<TH1F *> > h_dDzFirstPVtx;
-   vector<vector<TH1F *> > h_rho;
-   vector<vector<TH1F *> > h_nJets;
-   vector<vector<TH1F *> > h_nJetsPt20;
-   vector<vector<TH1F *> > h_nJetsPt30;
-   vector<vector<TH1F *> > h_dPhi;
-   vector<vector<TH1F *> > h_eleEt;
-   vector<vector<TH1F *> > h_eleEta;
-   vector<vector<TH1F *> > h_elePhi;
-   vector<vector<TH1F *> > h_eleDEta;
-   vector<vector<TH1F *> > h_eleDPhi;
-   vector<vector<TH1F *> > h_eleHOE;
-   vector<vector<TH1F *> > h_eleSigmaIEIE;
-   vector<vector<TH1F *> > h_eleEcalIso;
-   vector<vector<TH1F *> > h_eleHcalIso12;
-   vector<vector<TH1F *> > h_eleTrkIso;
-   vector<vector<TH1F *> > h_eleLostHits;
-
-   vector<vector<TH1F *> > h_muIsoCombRel;
-   vector<vector<TH1F *> > h_muEtEleOPtMu;
-   vector<vector<TH1F *> > h_muPtPlusOPtMinus;
-   vector<vector<TH1F *> > h_muPt;
-   vector<vector<TH1F *> > h_muEta;
-   vector<vector<TH1F *> > h_muPhi;
-   vector<vector<TH1F *> > h_muHitLayers;
-   vector<vector<TH1F *> > h_muPxlHits;
-   vector<vector<TH1F *> > h_muMuHits;
-   vector<vector<TH1F *> > h_muDxyBeamSpot;
-   vector<vector<TH1F *> > h_muNSeg;
-   vector<vector<TH1F *> > h_muTrkIso03;
-
    //vector<TH1F *> emu_plus_plus;
    //vector<TH1F *> emu_plus_minus;
    //vector<TH1F *> emu_minus_plus;
    //vector<TH1F *> emu_minus_minus;
-
-   //
-   TH1F *emu_dilepton = new TH1F("emu_dilepton", "emu_dilepton", nBins, 0., 1500.);
-   TH1F *emu_ewk = new TH1F("emu_ewk", "emu_ewk", nBins, 0., 1500.);
-   TH1F *emu_jet = new TH1F("emu_jet", "emu_jet", nBins, 0., 1500.);
 
    // data pileup histogram
    TFile *dataPuInfile = TFile::Open(puFile);
@@ -480,24 +415,12 @@ void emuSpectrum()
    TH1F *puDataNorm = (TH1F *)puData->DrawNormalized()->Clone("puDataNorm");
 
    //GLOBAL
-   float c_calomet;
-   float c_met;
    float c_pfmet;
-   float c_pthat;
-   float c_bsposx;
-   float c_bsposy;
-   float c_bsposz;
    int c_jetColl_size;
    float c_jetPt[100];
 
    //PRIM VTX
    int c_pvsize;
-   int c_pvz[100];
-   bool c_pv_isValid[100];
-   int c_pv_ndof[100];
-   int c_pv_nTracks[100];
-   float c_pv_normChi2[100];
-   int c_pv_totTrackSize[100];
 
    float c_rho;
    int c_trueNVtx;
@@ -505,30 +428,21 @@ void emuSpectrum()
    //GSF
    int c_gsf_size;
    float c_gsf_gsfet[100];
-   float c_gsf_px[100];
-   float c_gsf_py[100];
-   float c_gsf_pz[100];
-   float c_gsf_pt[100];
    float c_gsf_eta[100];
    float c_gsf_theta[100];
    float c_gsf_phi[100];
-   float c_gsf_dxy[100];
-   float c_gsf_dxy_beamSpot[100];
    float c_gsf_dxy_firstPVtx[100];
-   float c_gsf_dz[100];
    float c_gsf_dz_beamSpot[100];
    float c_gsf_dz_firstPVtx[100];
    bool c_gsf_isecaldriven[100];
    int c_gsf_charge[100];
    float c_gsf_deltaeta[100];
    float c_gsf_deltaphi[100];
-   float c_gsf_e5x5[100];
    float c_gsf_e1x5overe5x5[100];
    float c_gsf_e2x5overe5x5[100];
    float c_gsf_sigmaetaeta[100];
    float c_gsf_sigmaIetaIeta[100];
    float c_gsf_hovere[100];
-   int c_gsf_nHits[100];
    int c_gsf_nLostInnerHits[100];
    float c_gsf_ecaliso[100];
    float c_gsf_hcaliso1[100];
@@ -539,37 +453,20 @@ void emuSpectrum()
    float c_gsfsc_eta[100];
    float c_gsfsc_phi[100];
 
-   bool c_gsfpass_HEEP[100];
-
    //MUONS
    int c_muon_size;
    float c_muon_pt[100];
    float c_muon_eta[100];
    float c_muon_phi[100];
-   float c_muon_theta[100];
    float c_muon_ptError[100];
-   float c_muon_etaError[100];
-   float c_muon_phiError[100];
-   float c_muon_thetaError[100];
-   float c_muon_outerPt[100];
-   float c_muon_outerEta[100];
-   float c_muon_outerPhi[100];
-   float c_muon_outerTheta[100];
-   float c_muon_px[100];
-   float c_muon_py[100];
-   float c_muon_pz[100];
    int c_muon_charge[100];
    int c_muon_nhitstrack[100];
    int c_muon_nhitspixel[100];
-   int c_muon_nhitstotal[100];
    int c_muon_nhitsmuons[100];
    int c_muon_nlayerswithhits[100];
    int c_muon_nSegmentMatch[100];
    bool c_muon_isTrackerMuon[100];
    float c_muon_normChi2[100];
-   float c_muon_dzError[100];
-   float c_muon_dxyError[100];
-   float c_muon_dz_cmsCenter[100];
    float c_muon_dz_beamSpot[100];
    float c_muon_dz_firstPVtx[100];
    float c_muon_dxy_cmsCenter[100];
@@ -578,9 +475,6 @@ void emuSpectrum()
    float c_muon_trackIso03[100];
    float c_muon_emIso03[100];
    float c_muon_hadIso03[100];
-   float c_muon_trackIso03_ptInVeto[100];
-   float c_muon_emIso03_ptInVeto[100];
-   float c_muon_hadIso03_ptInVeto[100];
 
    float c_genPair_mass;
 
@@ -590,24 +484,12 @@ void emuSpectrum()
    TBranch *b_luminosityBlock;
 
    //GLOBAL
-   TBranch *b_calomet;
-   TBranch *b_met;
    TBranch *b_pfmet;
-   TBranch *b_pthat;
-   TBranch *b_bsposx;
-   TBranch *b_bsposy;
-   TBranch *b_bsposz;
    TBranch *b_jetColl_size;
    TBranch *b_jetPt;
 
    //PRIM VTX
    TBranch *b_pvsize;
-   TBranch *b_pvz;
-   TBranch *b_pv_isValid;
-   TBranch *b_pv_ndof;
-   TBranch *b_pv_nTracks;
-   TBranch *b_pv_normChi2;
-   TBranch *b_pv_totTrackSize;
 
    TBranch *b_rho;
    TBranch *b_trueNVtx;
@@ -615,30 +497,21 @@ void emuSpectrum()
    //GSF
    TBranch *b_gsf_size;
    TBranch *b_gsf_gsfet;
-   TBranch *b_gsf_px;
-   TBranch *b_gsf_py;
-   TBranch *b_gsf_pz;
-   TBranch *b_gsf_pt;
    TBranch *b_gsf_eta;
    TBranch *b_gsf_theta;
    TBranch *b_gsf_phi;
-   TBranch *b_gsf_dxy;
-   TBranch *b_gsf_dxy_beamSpot;
    TBranch *b_gsf_dxy_firstPVtx;
-   TBranch *b_gsf_dz;
    TBranch *b_gsf_dz_beamSpot;
    TBranch *b_gsf_dz_firstPVtx;
    TBranch *b_gsf_isecaldriven;
    TBranch *b_gsf_charge;
    TBranch *b_gsf_deltaeta;
    TBranch *b_gsf_deltaphi;
-   TBranch *b_gsf_e5x5;
    TBranch *b_gsf_e1x5overe5x5;
    TBranch *b_gsf_e2x5overe5x5;
    TBranch *b_gsf_sigmaetaeta;
    TBranch *b_gsf_sigmaIetaIeta;
    TBranch *b_gsf_hovere;
-   TBranch *b_gsf_nHits;
    TBranch *b_gsf_nLostInnerHits;
    TBranch *b_gsf_ecaliso;
    TBranch *b_gsf_hcaliso1;
@@ -649,48 +522,28 @@ void emuSpectrum()
    TBranch *b_gsfsc_eta;
    TBranch *b_gsfsc_phi;
 
-   TBranch *b_gsfpass_HEEP;
-
    //MUONS
    TBranch *b_muon_size;
    TBranch *b_muon_pt;
    TBranch *b_muon_eta;
    TBranch *b_muon_phi;
-   TBranch *b_muon_theta;
    TBranch *b_muon_ptError;
-   TBranch *b_muon_etaError;
-   TBranch *b_muon_phiError;
-   TBranch *b_muon_thetaError;
-   TBranch *b_muon_outerPt;
-   TBranch *b_muon_outerEta;
-   TBranch *b_muon_outerPhi;
-   TBranch *b_muon_outerTheta;
-   TBranch *b_muon_px;
-   TBranch *b_muon_py;
-   TBranch *b_muon_pz;
    TBranch *b_muon_charge;
    TBranch *b_muon_nhitstrack;
    TBranch *b_muon_nhitspixel;
-   TBranch *b_muon_nhitstotal;
    TBranch *b_muon_nhitsmuons;
    TBranch *b_muon_nlayerswithhits;
    TBranch *b_muon_nSegmentMatch;
    TBranch *b_muon_isTrackerMuon;
    TBranch *b_muon_normChi2;
-   TBranch *b_muon_dz_cmsCenter;
    TBranch *b_muon_dz_beamSpot;
    TBranch *b_muon_dz_firstPVtx;
    TBranch *b_muon_dxy_cmsCenter;
    TBranch *b_muon_dxy_beamSpot;
    TBranch *b_muon_dxy_firstPVtx;
-   TBranch *b_muon_dzError;
-   TBranch *b_muon_dxyError;
    TBranch *b_muon_trackIso03;
    TBranch *b_muon_emIso03;
    TBranch *b_muon_hadIso03;
-   TBranch *b_muon_trackIso03_ptInVeto;
-   TBranch *b_muon_emIso03_ptInVeto;
-   TBranch *b_muon_hadIso03_ptInVeto;
 
    TBranch *b_genPair_mass;
 
@@ -747,24 +600,12 @@ void emuSpectrum()
       thetree->SetBranchAddress("luminosityBlock", &c_luminosityBlock, &b_luminosityBlock);
 
       //GLOBAL
-      thetree->SetBranchAddress("calomet", &c_calomet, &b_calomet);
-      thetree->SetBranchAddress("met", &c_met, &b_met);
       thetree->SetBranchAddress("pfmet", &c_pfmet, &b_pfmet);
-      thetree->SetBranchAddress("pthat", &c_pthat, &b_pthat);
-      thetree->SetBranchAddress("bsposx", &c_bsposx, &b_bsposx);
-      thetree->SetBranchAddress("bsposy", &c_bsposy, &b_bsposy);
-      thetree->SetBranchAddress("bsposz", &c_bsposz, &b_bsposz);
       thetree->SetBranchAddress("JetColl_size", &c_jetColl_size, &b_jetColl_size);
       thetree->SetBranchAddress("Jet_pt", &c_jetPt, &b_jetPt);
 
       //PRIM VTX
       thetree->SetBranchAddress("pvsize", &c_pvsize, &b_pvsize);
-      thetree->SetBranchAddress("pvz", &c_pvz, &b_pvz);
-      thetree->SetBranchAddress("pv_isValid", &c_pv_isValid, &b_pv_isValid);
-      thetree->SetBranchAddress("pv_ndof", &c_pv_ndof, &b_pv_ndof);
-      thetree->SetBranchAddress("pv_nTracks", &c_pv_nTracks, &b_pv_nTracks);
-      thetree->SetBranchAddress("pv_normChi2", &c_pv_normChi2, &b_pv_normChi2);
-      thetree->SetBranchAddress("pv_totTrackSize", &c_pv_totTrackSize, &b_pv_totTrackSize);
 
       thetree->SetBranchAddress("rho", &c_rho, &b_rho);
       thetree->SetBranchAddress("trueNVtx", &c_trueNVtx, &b_trueNVtx);
@@ -772,30 +613,21 @@ void emuSpectrum()
       //GSF
       thetree->SetBranchAddress("gsf_size", &c_gsf_size, &b_gsf_size);
       thetree->SetBranchAddress("gsf_gsfet", &c_gsf_gsfet, &b_gsf_gsfet);
-      thetree->SetBranchAddress("gsf_px", &c_gsf_px, &b_gsf_px);
-      thetree->SetBranchAddress("gsf_py", &c_gsf_py, &b_gsf_py);
-      thetree->SetBranchAddress("gsf_pz", &c_gsf_pz, &b_gsf_pz);
-      thetree->SetBranchAddress("gsf_pt", &c_gsf_pt, &b_gsf_pt);
       thetree->SetBranchAddress("gsf_eta", &c_gsf_eta, &b_gsf_eta);
       thetree->SetBranchAddress("gsf_theta", &c_gsf_theta, &b_gsf_theta);
       thetree->SetBranchAddress("gsf_phi", &c_gsf_phi, &b_gsf_phi);
-      thetree->SetBranchAddress("gsf_dxy", &c_gsf_dxy, &b_gsf_dxy);
-      thetree->SetBranchAddress("gsf_dxy_beamSpot", &c_gsf_dxy_beamSpot, &b_gsf_dxy_beamSpot);
       thetree->SetBranchAddress("gsf_dxy_firstPVtx", &c_gsf_dxy_firstPVtx, &b_gsf_dxy_firstPVtx);
-      thetree->SetBranchAddress("gsf_dz", &c_gsf_dz, &b_gsf_dz);
       thetree->SetBranchAddress("gsf_dz_beamSpot", &c_gsf_dz_beamSpot, &b_gsf_dz_beamSpot);
       thetree->SetBranchAddress("gsf_dz_firstPVtx", &c_gsf_dz_firstPVtx, &b_gsf_dz_firstPVtx);
       thetree->SetBranchAddress("gsf_isecaldriven", &c_gsf_isecaldriven, &b_gsf_isecaldriven);
       thetree->SetBranchAddress("gsf_charge", &c_gsf_charge, &b_gsf_charge);
       thetree->SetBranchAddress("gsf_deltaeta", &c_gsf_deltaeta, &b_gsf_deltaeta);
       thetree->SetBranchAddress("gsf_deltaphi", &c_gsf_deltaphi, &b_gsf_deltaphi);
-      thetree->SetBranchAddress("gsf_e5x5", &c_gsf_e5x5, &b_gsf_e5x5);
       thetree->SetBranchAddress("gsf_e1x5overe5x5", &c_gsf_e1x5overe5x5, &b_gsf_e1x5overe5x5);
       thetree->SetBranchAddress("gsf_e2x5overe5x5", &c_gsf_e2x5overe5x5, &b_gsf_e2x5overe5x5);
       thetree->SetBranchAddress("gsf_sigmaetaeta", &c_gsf_sigmaetaeta, &b_gsf_sigmaetaeta);
       thetree->SetBranchAddress("gsf_sigmaIetaIeta", &c_gsf_sigmaIetaIeta, &b_gsf_sigmaIetaIeta);
       thetree->SetBranchAddress("gsf_hovere", &c_gsf_hovere, &b_gsf_hovere);
-      thetree->SetBranchAddress("gsf_nHits", &c_gsf_nHits, &b_gsf_nHits);
       thetree->SetBranchAddress("gsf_nLostInnerHits", &c_gsf_nLostInnerHits, &b_gsf_nLostInnerHits);
       thetree->SetBranchAddress("gsf_ecaliso", &c_gsf_ecaliso, &b_gsf_ecaliso);
       thetree->SetBranchAddress("gsf_hcaliso1", &c_gsf_hcaliso1, &b_gsf_hcaliso1);
@@ -804,52 +636,96 @@ void emuSpectrum()
       thetree->SetBranchAddress("gsfsc_e", &c_gsfsc_e, &b_gsfsc_e);
       thetree->SetBranchAddress("gsfsc_eta", &c_gsfsc_eta, &b_gsfsc_eta);
       thetree->SetBranchAddress("gsfsc_phi", &c_gsfsc_phi, &b_gsfsc_phi);
-      thetree->SetBranchAddress("gsfpass_HEEP", &c_gsfpass_HEEP, &b_gsfpass_HEEP);
 
       //MUONS
       thetree->SetBranchAddress("muon_size", &c_muon_size, &b_muon_size);
       thetree->SetBranchAddress("muon_pt", &c_muon_pt, &b_muon_pt);
       thetree->SetBranchAddress("muon_eta", &c_muon_eta, &b_muon_eta);
       thetree->SetBranchAddress("muon_phi", &c_muon_phi, &b_muon_phi);
-      thetree->SetBranchAddress("muon_theta", &c_muon_theta, &b_muon_theta);
       thetree->SetBranchAddress("muon_ptError", &c_muon_ptError, &b_muon_ptError);
-      thetree->SetBranchAddress("muon_etaError", &c_muon_etaError, &b_muon_etaError);
-      thetree->SetBranchAddress("muon_phiError", &c_muon_phiError, &b_muon_phiError);
-      thetree->SetBranchAddress("muon_thetaError", &c_muon_thetaError, &b_muon_thetaError);
-      thetree->SetBranchAddress("muon_outerPt", &c_muon_outerPt, &b_muon_outerPt);
-      thetree->SetBranchAddress("muon_outerEta", &c_muon_outerEta, &b_muon_outerEta);
-      thetree->SetBranchAddress("muon_outerPhi", &c_muon_outerPhi, &b_muon_outerPhi);
-      thetree->SetBranchAddress("muon_outerTheta", &c_muon_outerTheta, &b_muon_outerTheta);
-      thetree->SetBranchAddress("muon_px", &c_muon_px, &b_muon_px);
-      thetree->SetBranchAddress("muon_py", &c_muon_py, &b_muon_py);
-      thetree->SetBranchAddress("muon_pz", &c_muon_pz, &b_muon_pz);
       thetree->SetBranchAddress("muon_charge", &c_muon_charge, &b_muon_charge);
       thetree->SetBranchAddress("muon_nhitstrack", &c_muon_nhitstrack, &b_muon_nhitstrack);
       thetree->SetBranchAddress("muon_nhitspixel", &c_muon_nhitspixel, &b_muon_nhitspixel);
-      thetree->SetBranchAddress("muon_nhitstotal", &c_muon_nhitstotal, &b_muon_nhitstotal);
       thetree->SetBranchAddress("muon_nhitsmuons", &c_muon_nhitsmuons, &b_muon_nhitsmuons);
       thetree->SetBranchAddress("muon_nlayerswithhits", &c_muon_nlayerswithhits, &b_muon_nlayerswithhits);
       thetree->SetBranchAddress("muon_nSegmentMatch", &c_muon_nSegmentMatch, &b_muon_nSegmentMatch);
       thetree->SetBranchAddress("muon_isTrackerMuon", &c_muon_isTrackerMuon, &b_muon_isTrackerMuon);
       thetree->SetBranchAddress("muon_normChi2", &c_muon_normChi2, &b_muon_normChi2);
-      thetree->SetBranchAddress("muon_dz_cmsCenter", &c_muon_dz_cmsCenter, &b_muon_dz_cmsCenter);
       thetree->SetBranchAddress("muon_dz_beamSpot", &c_muon_dz_beamSpot, &b_muon_dz_beamSpot);
       thetree->SetBranchAddress("muon_dz_firstPVtx", &c_muon_dz_firstPVtx, &b_muon_dz_firstPVtx);
       thetree->SetBranchAddress("muon_dxy_cmsCenter", &c_muon_dxy_cmsCenter, &b_muon_dxy_cmsCenter);
       thetree->SetBranchAddress("muon_dxy_beamSpot", &c_muon_dxy_beamSpot, &b_muon_dxy_beamSpot);
       thetree->SetBranchAddress("muon_dxy_firstPVtx", &c_muon_dxy_firstPVtx, &b_muon_dxy_firstPVtx);
-      thetree->SetBranchAddress("muon_dzError", &c_muon_dzError, &b_muon_dzError);
-      thetree->SetBranchAddress("muon_dxyError", &c_muon_dxyError, &b_muon_dxyError);
       thetree->SetBranchAddress("muon_trackIso03", &c_muon_trackIso03, &b_muon_trackIso03);
       thetree->SetBranchAddress("muon_emIso03", &c_muon_emIso03, &b_muon_emIso03);
       thetree->SetBranchAddress("muon_hadIso03", &c_muon_hadIso03, &b_muon_hadIso03);
-      thetree->SetBranchAddress("muon_trackIso03_ptInVeto", &c_muon_trackIso03_ptInVeto, &b_muon_trackIso03_ptInVeto);
-      thetree->SetBranchAddress("muon_emIso03_ptInVeto", &c_muon_emIso03_ptInVeto, &b_muon_emIso03_ptInVeto);
-      thetree->SetBranchAddress("muon_hadIso03_ptInVeto", &c_muon_hadIso03_ptInVeto, &b_muon_hadIso03_ptInVeto);
       
       if (storeGenMTtbar[p]) thetree->SetBranchAddress("genPair_mass", &c_genPair_mass, &b_genPair_mass);
 
-      // get the histogram with the true number of vertices
+      // enable only used branches
+      thetree->SetBranchStatus("*", 0);
+      thetree->SetBranchStatus("runnumber", 1);
+      thetree->SetBranchStatus("eventnumber", 1);
+      thetree->SetBranchStatus("luminosityBlock", 1);
+      thetree->SetBranchStatus("HLT_Mu22_Photon22_CaloIdL", 1);
+      thetree->SetBranchStatus("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
+      thetree->SetBranchStatus("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
+      thetree->SetBranchStatus("prescale_HLT_Mu22_Photon22_CaloIdL", 1);
+      thetree->SetBranchStatus("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
+      thetree->SetBranchStatus("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
+      thetree->SetBranchStatus("pfmet", 1);
+      thetree->SetBranchStatus("JetColl_size", 1);
+      thetree->SetBranchStatus("Jet_pt", 1);
+      thetree->SetBranchStatus("pvsize", 1);
+      thetree->SetBranchStatus("rho", 1);
+      thetree->SetBranchStatus("trueNVtx", 1);
+      thetree->SetBranchStatus("gsf_size", 1);
+      thetree->SetBranchStatus("gsf_gsfet", 1);
+      thetree->SetBranchStatus("gsf_eta", 1);
+      thetree->SetBranchStatus("gsf_theta", 1);
+      thetree->SetBranchStatus("gsf_phi", 1);
+      thetree->SetBranchStatus("gsf_dxy_firstPVtx", 1);
+      thetree->SetBranchStatus("gsf_dz_beamSpot", 1);
+      thetree->SetBranchStatus("gsf_dz_firstPVtx", 1);
+      thetree->SetBranchStatus("gsf_isecaldriven", 1);
+      thetree->SetBranchStatus("gsf_charge", 1);
+      thetree->SetBranchStatus("gsf_deltaeta", 1);
+      thetree->SetBranchStatus("gsf_deltaphi", 1);
+      thetree->SetBranchStatus("gsf_e1x5overe5x5", 1);
+      thetree->SetBranchStatus("gsf_e2x5overe5x5", 1);
+      thetree->SetBranchStatus("gsf_sigmaetaeta", 1);
+      thetree->SetBranchStatus("gsf_sigmaIetaIeta", 1);
+      thetree->SetBranchStatus("gsf_hovere", 1);
+      thetree->SetBranchStatus("gsf_nLostInnerHits", 1);
+      thetree->SetBranchStatus("gsf_ecaliso", 1);
+      thetree->SetBranchStatus("gsf_hcaliso1", 1);
+      thetree->SetBranchStatus("gsf_hcaliso2", 1);
+      thetree->SetBranchStatus("gsf_trackiso", 1);
+      thetree->SetBranchStatus("gsfsc_e", 1);
+      thetree->SetBranchStatus("gsfsc_eta", 1);
+      thetree->SetBranchStatus("gsfsc_phi", 1);
+      thetree->SetBranchStatus("muon_size", 1);  
+      thetree->SetBranchStatus("muon_pt", 1);
+      thetree->SetBranchStatus("muon_eta", 1);
+      thetree->SetBranchStatus("muon_phi", 1);
+      thetree->SetBranchStatus("muon_ptError", 1); 
+      thetree->SetBranchStatus("muon_charge", 1);
+      thetree->SetBranchStatus("muon_nhitstrack", 1);
+      thetree->SetBranchStatus("muon_nhitspixel", 1);
+      thetree->SetBranchStatus("muon_nhitsmuons", 1);
+      thetree->SetBranchStatus("muon_nlayerswithhits", 1);
+      thetree->SetBranchStatus("muon_nSegmentMatch", 1);
+      thetree->SetBranchStatus("muon_isTrackerMuon", 1);
+      thetree->SetBranchStatus("muon_normChi2", 1);
+      thetree->SetBranchStatus("muon_dz_beamSpot", 1);
+      thetree->SetBranchStatus("muon_dz_firstPVtx", 1);
+      thetree->SetBranchStatus("muon_dxy_beamSpot", 1);
+      thetree->SetBranchStatus("muon_dxy_firstPVtx", 1);
+      thetree->SetBranchStatus("muon_trackIso03", 1);
+      thetree->SetBranchStatus("muon_emIso03", 1);
+      thetree->SetBranchStatus("muon_hadIso03", 1);
+      if (storeGenMTtbar[p]) thetree->SetBranchStatus("genPair_mass", 1);      // get the histogram with the true number of vertices
+
       TH1F *puMc = new TH1F("puMc" + suffix[p], "puMc" + suffix[p], 100, 0., 100.);
       thetree->Draw("trueNVtx>>puMc" + suffix[p]);
       TH1F *puMcNorm = new TH1F("dummy" + suffix[p], "dummy" + suffix[p], 100, 0., 100.);
@@ -947,119 +823,6 @@ void emuSpectrum()
       emuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
       emuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
       emuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
-
-      // set up histograms
-      vector<TH1F *> helper;
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMass_" + sign[k] + suffix[p], "emuMass_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      h_emuMass.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMassEB_" + sign[k] + suffix[p], "emuMassEB_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      h_emuMassEB.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emuMassEE_" + sign[k] + suffix[p], "emuMassEE_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      h_emuMassEE.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("emu_mass_accVSgood_" + sign[k] + suffix[p], "emu_mass_accVSgood_" + sign[k] + suffix[p], nBins, 0., 1500.));
-      h_emu_mass_accVSgood.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("PFMET_" + sign[k] + suffix[p], "PFMET_" + sign[k] + suffix[p], 50, 0., 500.));
-      h_pfMet.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("nVtx_" + sign[k] + suffix[p], "nVtx_" + sign[k] + suffix[p], nPVtxMax, 0., nPVtxMax));
-      h_nVtx.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dDz_" + sign[k] + suffix[p], "dDz_" + sign[k] + suffix[p], 50, 0., 2.));
-      h_dDz.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dDzBeamSpot_" + sign[k] + suffix[p], "dDzBeamSpot_" + sign[k] + suffix[p], 100, 0., 0.2));
-      h_dDzBeamSpot.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dDzFirstPVtx_" + sign[k] + suffix[p], "dDzFirstPVtx_" + sign[k] + suffix[p], 100, 0., 0.2));
-      h_dDzFirstPVtx.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("rho_" + sign[k] + suffix[p], "rho_" + sign[k] + suffix[p], 50, 0., 50.));
-      h_rho.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("dPhi_" + sign[k] + suffix[p], "dPhi_" + sign[k] + suffix[p], 64, 0., 3.2));
-      h_dPhi.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEt_" + sign[k] + suffix[p], "eleEt_" + sign[k] + suffix[p], 50, 0., 500.));
-      h_eleEt.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEta_" + sign[k] + suffix[p], "eleEta_" + sign[k] + suffix[p], 25, -2.5, 2.5));
-      h_eleEta.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("elePhi_" + sign[k] + suffix[p], "elePhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
-      h_elePhi.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleDEta_" + sign[k] + suffix[p], "eleDEta_" + sign[k] + suffix[p], 50, -0.008, 0.008));
-      h_eleDEta.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleDPhi_" + sign[k] + suffix[p], "eleDPhi_" + sign[k] + suffix[p], 50, -0.06, 0.06));
-      h_eleDPhi.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleHOE_" + sign[k] + suffix[p], "eleHOE_" + sign[k] + suffix[p], 100, 0., 0.06));
-      h_eleHOE.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleSigmaIEIE_" + sign[k] + suffix[p], "eleSigmaIEIE_" + sign[k] + suffix[p], 50, 0., 0.04));
-      h_eleSigmaIEIE.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleEcalIso_" + sign[k] + suffix[p], "eleEcalIso_" + sign[k] + suffix[p], 45, -10., 35.));
-      h_eleEcalIso.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleHcalIso12_" + sign[k] + suffix[p], "eleHcalIso12_" + sign[k] + suffix[p], 20, 0., 20.));
-      h_eleHcalIso12.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleTrkIso_" + sign[k] + suffix[p], "eleTrkIso_" + sign[k] + suffix[p], 50, 0., 5.));
-      h_eleTrkIso.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("eleLostHits_" + sign[k] + suffix[p], "eleLostHits_" + sign[k] + suffix[p], 3, 0., 3.));
-      h_eleLostHits.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muIsoCombRel_" + sign[k] + suffix[p], "muIsoCombRel_" + sign[k] + suffix[p], 50, 0., 0.2));
-      h_muIsoCombRel.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muEtEleOPtMu_" + sign[k] + suffix[p], "muEtEleOPtMu_" + sign[k] + suffix[p], 50, 0., 4.0));
-      h_muEtEleOPtMu.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPtPlusOPtMinus_" + sign[k] + suffix[p], "muPtPlusOPtMinus_" + sign[k] + suffix[p], 50, 0., 4.0));
-      h_muPtPlusOPtMinus.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPt_" + sign[k] + suffix[p], "muPt_" + sign[k] + suffix[p], 50, 0., 500.));
-      h_muPt.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muEta_" + sign[k] + suffix[p], "muEta_" + sign[k] + suffix[p], 25, -2.5, 2.5));
-      h_muEta.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPhi_" + sign[k] + suffix[p], "muPhi_" + sign[k] + suffix[p], 25, -3.14, 3.14));
-      h_muPhi.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muHitLayers_" + sign[k] + suffix[p], "muHitLayers_" + sign[k] + suffix[p], 20, 0., 20.));
-      h_muHitLayers.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muPxlHits_" + sign[k] + suffix[p], "muPxlHits_" + sign[k] + suffix[p], 10, 0., 10));
-      h_muPxlHits.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muMuHits_" + sign[k] + suffix[p], "muMuHits_" + sign[k] + suffix[p], 12, 0., 12));
-      h_muMuHits.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muDxyBeamSpot_" + sign[k] + suffix[p], "muDxyBeamSpot_" + sign[k] + suffix[p], 200, -0.2, 0.2));
-      h_muDxyBeamSpot.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muNSeg_" + sign[k] + suffix[p], "muNSeg_" + sign[k] + suffix[p], 10, 0., 10.));
-      h_muNSeg.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("muTrkIso03_" + sign[k] + suffix[p], "muTrkIso03_" + sign[k] + suffix[p], 50, 0., 20.));
-      h_muTrkIso03.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJets_" + sign[k] + suffix[p], "numOfJets_" + sign[k] + suffix[p], 30, 0., 30.));
-      h_nJets.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJetsPt20_" + sign[k] + suffix[p], "numOfJetsPt20_" + sign[k] + suffix[p], 30, 0., 30.));
-      h_nJetsPt20.push_back(helper);
-      helper.clear();
-      for (unsigned int k = 0; k < 3; ++k) helper.push_back(new TH1F("numOfJetsPt30_" + sign[k] + suffix[p], "numOfJetsPt30_" + sign[k] + suffix[p], 30, 0., 30.));
-      h_nJetsPt30.push_back(helper);
 
       Long64_t nentries = (*thetree).GetEntries();
       cout << nentries << " events" << endl;
@@ -1174,11 +937,10 @@ void emuSpectrum()
                if (fabs(c_gsfsc_eta[j]) < 1.442
                    && c_gsf_gsfet[j] > bar_et
                    && c_gsf_isecaldriven[j]
-                   && (c_gsf_hovere[j] * c_gsf_gsfet[j]) < (bar_hoE * c_gsf_gsfet[j] + (bar_coshFactor * cosh(bar_etaFactor * c_gsfsc_eta[j]) - bar_coshOffset) * c_rho)
+                   && c_gsf_hovere[j] < bar_hoE
                    && fabs(c_gsf_deltaeta[j]) < bar_DEta
                    && fabs(c_gsf_deltaphi[j]) < bar_DPhi
-                   && ((c_gsf_e2x5overe5x5[j] * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j])) > (bar_e2x5e5x5 * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j]) - bar_e2x5e5x5Rho * c_rho) 
-                      || (c_gsf_e1x5overe5x5[j] * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j])) > (bar_e1x5e5x5 * c_gsf_e5x5[j] / cosh(c_gsfsc_eta[j]) - bar_e1x5e5x5Rho * c_rho))
+                   && ((c_gsf_e2x5overe5x5[j] > bar_e2x5e5x5) || (c_gsf_e1x5overe5x5[j] > bar_e1x5e5x5))
                    && (c_gsf_ecaliso[j] + c_gsf_hcaliso1[j]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * c_gsf_gsfet[j] + bar_isoEcalHcalRho * c_rho)
                    && c_gsf_trackiso[j] < bar_isoTrack
                    && c_gsf_nLostInnerHits[j] <= bar_missInnerHits
@@ -1188,7 +950,7 @@ void emuSpectrum()
                if ((fabs(c_gsfsc_eta[j]) > 1.56 && fabs(c_gsfsc_eta[j]) < 2.5)
                    && c_gsf_gsfet[j] > end_et
                    && c_gsf_isecaldriven[j]
-                   && (c_gsf_hovere[j] * c_gsf_gsfet[j]) < (end_hoE * c_gsf_gsfet[j] + (end_coshFactor * cosh(end_etaFactor * c_gsfsc_eta[j]) - end_coshOffset) * c_rho)
+                   && c_gsf_hovere[j] < end_hoE
                    && fabs(c_gsf_deltaeta[j]) < end_DEta
                    && fabs(c_gsf_deltaphi[j]) < end_DPhi
                    && c_gsf_sigmaIetaIeta[j] < end_sigmaietaieta
@@ -1338,56 +1100,6 @@ void emuSpectrum()
 
             emuTree->Fill();
 
-            // fill histograms for all, LS and OS
-            for (unsigned int k = 0; k< 3; ++k) {
-               if (k == 1 && c_gsf_charge[GSF_passHEEP[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
-               if (k == 2 && c_gsf_charge[GSF_passHEEP[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) continue;
-
-               h_emuMass.at(p).at(k)->Fill(invMass, weight);
-               if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 1.442) h_emuMassEB.at(p).at(k)->Fill(invMass, weight);
-               if (fabs(c_gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(c_gsfsc_eta[GSF_passHEEP[0]]) < 2.5) h_emuMassEE.at(p).at(k)->Fill(invMass, weight);
-
-               if (!passTrg) continue;
-
-               // fill test histograms
-               h_pfMet.at(p).at(k)->Fill(c_pfmet, weight);
-               h_nVtx.at(p).at(k)->Fill(c_pvsize, weight);
-               h_dDz.at(p).at(k)->Fill(fabs(c_gsf_dz[GSF_passHEEP[0]] - c_muon_dz_cmsCenter[MU_passGOOD[MU_leadingPassGOOD]]), weight);
-               h_dDzBeamSpot.at(p).at(k)->Fill(fabs(c_gsf_dz_beamSpot[GSF_passHEEP[0]] - c_muon_dz_beamSpot[MU_passGOOD[MU_leadingPassGOOD]]), weight); // change this
-               h_dDzFirstPVtx.at(p).at(k)->Fill(fabs(c_gsf_dz_firstPVtx[GSF_passHEEP[0]] - c_muon_dz_firstPVtx[MU_passGOOD[MU_leadingPassGOOD]]), weight); // change this
-               h_rho.at(p).at(k)->Fill(c_rho, weight);
-               h_nJets.at(p).at(k)->Fill(c_jetColl_size, weight);
-               h_nJetsPt20.at(p).at(k)->Fill(jetsPt20, weight);
-               h_nJetsPt30.at(p).at(k)->Fill(jetsPt30, weight);
-               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) < 3.14) h_dPhi.at(p).at(k)->Fill(fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
-               if (fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]) > 3.14) h_dPhi.at(p).at(k)->Fill(6.28 - fabs(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]] - c_gsf_phi[GSF_passHEEP[0]]), weight);
-               h_eleEt.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]], weight);
-               h_eleEta.at(p).at(k)->Fill(c_gsf_eta[GSF_passHEEP[0]], weight);
-               h_elePhi.at(p).at(k)->Fill(c_gsf_phi[GSF_passHEEP[0]], weight);
-               h_eleDEta.at(p).at(k)->Fill(c_gsf_deltaeta[GSF_passHEEP[0]], weight);
-               h_eleDPhi.at(p).at(k)->Fill(c_gsf_deltaphi[GSF_passHEEP[0]], weight);
-               h_eleHOE.at(p).at(k)->Fill(c_gsf_hovere[GSF_passHEEP[0]], weight);
-               h_eleSigmaIEIE.at(p).at(k)->Fill(c_gsf_sigmaIetaIeta[GSF_passHEEP[0]], weight);
-               h_eleEcalIso.at(p).at(k)->Fill(c_gsf_ecaliso[GSF_passHEEP[0]], weight);
-               h_eleHcalIso12.at(p).at(k)->Fill(c_gsf_hcaliso1[GSF_passHEEP[0]] + c_gsf_hcaliso2[GSF_passHEEP[0]], weight);
-               h_eleTrkIso.at(p).at(k)->Fill(c_gsf_trackiso[GSF_passHEEP[0]], weight);
-               h_eleLostHits.at(p).at(k)->Fill(c_gsf_nLostInnerHits[GSF_passHEEP[0]], weight);
-
-               h_muIsoCombRel.at(p).at(k)->Fill(CombRelIso, weight);
-               h_muEtEleOPtMu.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) h_muPtPlusOPtMinus.at(p).at(k)->Fill(c_gsf_gsfet[GSF_passHEEP[0]]/c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               if (c_gsf_charge[GSF_passHEEP[0]] < 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) h_muPtPlusOPtMinus.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]]/c_gsf_gsfet[GSF_passHEEP[0]], weight);
-               h_muPt.at(p).at(k)->Fill(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muEta.at(p).at(k)->Fill(c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muPhi.at(p).at(k)->Fill(c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muHitLayers.at(p).at(k)->Fill(c_muon_nlayerswithhits[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muPxlHits.at(p).at(k)->Fill(c_muon_nhitspixel[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muMuHits.at(p).at(k)->Fill(c_muon_nhitsmuons[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muDxyBeamSpot.at(p).at(k)->Fill(c_muon_dxy_beamSpot[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muNSeg.at(p).at(k)->Fill(c_muon_nSegmentMatch[MU_passGOOD[MU_leadingPassGOOD]], weight);
-               h_muTrkIso03.at(p).at(k)->Fill(c_muon_trackIso03[MU_passGOOD[MU_leadingPassGOOD]], weight);
-            }
-
             //LIKE SIGN OPPOSITE SIGN
             if (p == DATA) {
                if (c_gsf_charge[GSF_passHEEP[0]] > 0 && c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) ++nb_plus_plus;
@@ -1424,84 +1136,30 @@ void emuSpectrum()
                }
             }
          }
-
-         //GSF ACC - MU_GOOD
-         if (GSF_passACC.size() > 0 && MU_passGOOD.size() > 0) {
-
-            //REMOVE DUPLICATES
-            //if (fabs(c_gsf_phi[GSF_passACC[0]] - c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]]) < 0.1) continue;
-
-            TLorentzVector ele1;
-            TLorentzVector mu1;
-
-            ele1.SetPtEtaPhiM(c_gsf_gsfet[GSF_passACC[0]], c_gsf_eta[GSF_passACC[0]], c_gsf_phi[GSF_passACC[0]], 0.000511);
-            mu1.SetPtEtaPhiM(c_muon_pt[MU_passGOOD[MU_leadingPassGOOD]], c_muon_eta[MU_passGOOD[MU_leadingPassGOOD]], c_muon_phi[MU_passGOOD[MU_leadingPassGOOD]], 0.10566);
-
-            double invMass = (ele1 + mu1).M();
-
-            for (unsigned int k = 0; k < 3; ++k) {
-               if (k == 1 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] < 0) continue;
-               if (k == 2 && c_gsf_charge[GSF_passACC[0]] * c_muon_charge[MU_passGOOD[MU_leadingPassGOOD]] > 0) continue;
-               h_emu_mass_accVSgood.at(p).at(k)->Fill(invMass, weight);
-            }
-         }
-
       } // END LOOP OVER ENTRIES
 
       cout << "Number of selected events: " << evCounter << endl;
 
       if (p == DATA) {
          dataEntries = dataTrig[0] + dataTrig[1] + dataTrig[2];
-         cout << "HLT_Mu22_Photon22_CaloIdL: " << dataTrig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[2] << " , sum: " << dataTrig[0]+dataTrig[1]+dataTrig[2] << endl;
-         cout << "Runrange HLT_Mu22_Photon22_CaloIdL: " << runs_HLT_Mu22_Photon22_CaloIdL.first << " - " << runs_HLT_Mu22_Photon22_CaloIdL.second << endl;
-         cout << "Runrange HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
-         cout << "Runrange HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
+         cout << "HLT_Mu22_Photon22_CaloIdL: " << dataTrig[0] 
+              << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[1] 
+              << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[2] 
+              << " , sum: " << dataTrig[0]+dataTrig[1]+dataTrig[2] << endl;
+         cout << "Runrange HLT_Mu22_Photon22_CaloIdL: " << runs_HLT_Mu22_Photon22_CaloIdL.first 
+              << " - " << runs_HLT_Mu22_Photon22_CaloIdL.second << endl;
+         cout << "Runrange HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " 
+              << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " 
+              << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
+         cout << "Runrange HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " 
+              << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " 
+              << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
       }
-      else cout << "HLT_Mu22_Photon22_CaloIdL: " << trig[0] << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[1] << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[2] << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
-
-      if (p > DATA) {
-         for (unsigned int k = 0; k < 3; ++k) {
-            //SCALE MC
-            h_emuMass.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_emuMassEB.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_emuMassEE.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_emu_mass_accVSgood.at(p).at(k)->Scale(input[p].second * LumiFactor);
-
-            h_pfMet.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_nVtx.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_dDz.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_dDzBeamSpot.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_dDzFirstPVtx.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_rho.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_nJets.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_nJetsPt20.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_nJetsPt30.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_dPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleEt.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_elePhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleDEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleDPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleHOE.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleSigmaIEIE.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleEcalIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleHcalIso12.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleTrkIso.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_eleLostHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
-
-            h_muIsoCombRel.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muEtEleOPtMu.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muPtPlusOPtMinus.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muPt.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muEta.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muPhi.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muHitLayers.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muPxlHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muMuHits.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muDxyBeamSpot.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muNSeg.at(p).at(k)->Scale(input[p].second * LumiFactor);
-            h_muTrkIso03.at(p).at(k)->Scale(input[p].second * LumiFactor);
-         }
+      else {
+         cout << "HLT_Mu22_Photon22_CaloIdL: " << trig[0] 
+                << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[1] 
+                << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[2] 
+                << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
       }
       output->Cd("");
 
@@ -1541,52 +1199,6 @@ void emuSpectrum()
    cout << " Z->ee:       " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcDyEE"))->GetVal() * 100 << "%" << endl;
    cout << " ZZ:          " << ((TParameter<float> *)systErrMCs.FindObject("systErrMcZZ"))->GetVal() * 100 << "%" << endl;
 
-   //SUM MC
-   for (int p = 1; p < nbFile; ++p) {
-      for (unsigned int k = 0; k < 3; ++k) {
-         for (int q = p + 1; q < nbFile; ++q) {
-            h_emuMass.at(p).at(k)->Add(h_emuMass.at(q).at(k));
-            h_emuMassEB.at(p).at(k)->Add(h_emuMassEB.at(q).at(k));
-            h_emuMassEE.at(p).at(k)->Add(h_emuMassEE.at(q).at(k));
-            h_emu_mass_accVSgood.at(p).at(k)->Add(h_emu_mass_accVSgood.at(q).at(k));
-
-            h_pfMet.at(p).at(k)->Add(h_pfMet.at(q).at(k));
-            h_nVtx.at(p).at(k)->Add(h_nVtx.at(q).at(k));
-            h_dDz.at(p).at(k)->Add(h_dDz.at(q).at(k));
-            h_dDzBeamSpot.at(p).at(k)->Add(h_dDzBeamSpot.at(q).at(k));
-            h_dDzFirstPVtx.at(p).at(k)->Add(h_dDzFirstPVtx.at(q).at(k));
-            h_rho.at(p).at(k)->Add(h_rho.at(q).at(k));
-            h_nJets.at(p).at(k)->Add(h_nJets.at(q).at(k));
-            h_nJetsPt20.at(p).at(k)->Add(h_nJetsPt20.at(q).at(k));
-            h_nJetsPt30.at(p).at(k)->Add(h_nJetsPt30.at(q).at(k));
-            h_dPhi.at(p).at(k)->Add(h_dPhi.at(q).at(k));
-            h_eleEt.at(p).at(k)->Add(h_eleEt.at(q).at(k));
-            h_eleEta.at(p).at(k)->Add(h_eleEta.at(q).at(k));
-            h_elePhi.at(p).at(k)->Add(h_elePhi.at(q).at(k));
-            h_eleDEta.at(p).at(k)->Add(h_eleDEta.at(q).at(k));
-            h_eleDPhi.at(p).at(k)->Add(h_eleDPhi.at(q).at(k));
-            h_eleHOE.at(p).at(k)->Add(h_eleHOE.at(q).at(k));
-            h_eleSigmaIEIE.at(p).at(k)->Add(h_eleSigmaIEIE.at(q).at(k));
-            h_eleEcalIso.at(p).at(k)->Add(h_eleEcalIso.at(q).at(k));
-            h_eleHcalIso12.at(p).at(k)->Add(h_eleHcalIso12.at(q).at(k));
-            h_eleTrkIso.at(p).at(k)->Add(h_eleTrkIso.at(q).at(k));
-            h_eleLostHits.at(p).at(k)->Add(h_eleLostHits.at(q).at(k));
- 
-            h_muIsoCombRel.at(p).at(k)->Add(h_muIsoCombRel.at(q).at(k));
-            h_muEtEleOPtMu.at(p).at(k)->Add(h_muEtEleOPtMu.at(q).at(k));
-            h_muPtPlusOPtMinus.at(p).at(k)->Add(h_muPtPlusOPtMinus.at(q).at(k));
-            h_muPt.at(p).at(k)->Add(h_muPt.at(q).at(k));
-            h_muEta.at(p).at(k)->Add(h_muEta.at(q).at(k));
-            h_muPhi.at(p).at(k)->Add(h_muPhi.at(q).at(k));
-            h_muHitLayers.at(p).at(k)->Add(h_muHitLayers.at(q).at(k));
-            h_muPxlHits.at(p).at(k)->Add(h_muPxlHits.at(q).at(k));
-            h_muMuHits.at(p).at(k)->Add(h_muMuHits.at(q).at(k));
-            h_muDxyBeamSpot.at(p).at(k)->Add(h_muDxyBeamSpot.at(q).at(k));
-            h_muNSeg.at(p).at(k)->Add(h_muNSeg.at(q).at(k));
-            h_muTrkIso03.at(p).at(k)->Add(h_muTrkIso03.at(q).at(k));
-         }
-      }
-   }
    cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
    cout << "nb e+mu+     = " << nb_plus_plus << endl;
    cout << "nb e+mu-     = " << nb_plus_minus << endl;
@@ -1594,69 +1206,9 @@ void emuSpectrum()
    cout << "nb e-mu-     = " << nb_minus_minus << endl;
    cout << "-----------------------------------------------------------------------------------------------------------" << endl;
 
-   emu_dilepton->Add(h_emuMass.at(1).at(ALL));
-   //emu_ewk->Add(h_emuMass.at(6).at(ALL));
-   //emu_jet->Add(h_emuMass.at(8).at(ALL));
-
-   //WRITING
-   output->Cd("");
-
-   emu_dilepton->Write();
-   //emu_ewk->Write();
-   //emu_jet->Write();
-
-   //emuLoose_data_nValidPv->Write();
-   //emuLoose_ttbar_nValidPv->Write();
-   //emuLoose_ztautau_nValidPv->Write();
-
-   //emuLoose_dataOverTtbar_nValidPv->Write();
-   //emuLoose_dataOverZtautau_nValidPv->Write();
-
-   for (int p = 0; p < nbFile; ++p) {
-      for (unsigned int k = 0; k < 3; ++k) {
-         h_emuMass.at(p).at(k)->Write();
-         h_emuMassEB.at(p).at(k)->Write();
-         h_emuMassEE.at(p).at(k)->Write();
-         h_emu_mass_accVSgood.at(p).at(k)->Write();
-
-         h_pfMet.at(p).at(k)->Write();
-         h_nVtx.at(p).at(k)->Write();
-         h_dDz.at(p).at(k)->Write();
-         h_dDzBeamSpot.at(p).at(k)->Write();
-         h_dDzFirstPVtx.at(p).at(k)->Write();
-         h_rho.at(p).at(k)->Write();
-         h_nJets.at(p).at(k)->Write();
-         h_nJetsPt20.at(p).at(k)->Write();
-         h_nJetsPt30.at(p).at(k)->Write();
-         h_dPhi.at(p).at(k)->Write();
-         h_eleEt.at(p).at(k)->Write();
-         h_eleEta.at(p).at(k)->Write();
-         h_elePhi.at(p).at(k)->Write();
-         h_eleDEta.at(p).at(k)->Write();
-         h_eleDPhi.at(p).at(k)->Write();
-         h_eleHOE.at(p).at(k)->Write();
-         h_eleSigmaIEIE.at(p).at(k)->Write();
-         h_eleEcalIso.at(p).at(k)->Write();
-         h_eleHcalIso12.at(p).at(k)->Write();
-         h_eleTrkIso.at(p).at(k)->Write();
-         h_eleLostHits.at(p).at(k)->Write();
-
-         h_muIsoCombRel.at(p).at(k)->Write();
-         h_muEtEleOPtMu.at(p).at(k)->Write();
-         h_muPtPlusOPtMinus.at(p).at(k)->Write();
-         h_muPt.at(p).at(k)->Write();
-         h_muEta.at(p).at(k)->Write();
-         h_muPhi.at(p).at(k)->Write();
-         h_muHitLayers.at(p).at(k)->Write();
-         h_muPxlHits.at(p).at(k)->Write();
-         h_muMuHits.at(p).at(k)->Write();
-         h_muDxyBeamSpot.at(p).at(k)->Write();
-         h_muNSeg.at(p).at(k)->Write();
-         h_muTrkIso03.at(p).at(k)->Write();
-      }
-   }
-
    output->Close();
+   timer.Stop();
+   timer.Print();
 }
 
 int Trigger(TFile *inFile, unsigned int &entry, int &prescale, unsigned int *trig, const int &selector)
