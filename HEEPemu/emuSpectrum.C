@@ -34,10 +34,11 @@ void EmuSpectrum::Loop()
    // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
    TParameter<float> eleScaleFactorEB("eleScaleFactorEB", 0.995 * 1.007); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak)
    TParameter<float> eleScaleFactorEE("eleScaleFactorEE", 0.994 * 1.004); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak)
-   TParameter<float> muScaleFactor("muScaleFactor", 0.982);
-   TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.979); // for |eta|<0.9
-   TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.967); // for 0.9<|eta|<1.2
-   TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.993); // for 1.2<|eta|
+   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=3&resId=0&materialId=slides&confId=214870
+   TParameter<float> muScaleFactor("muScaleFactor", 0.994);
+   TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.993); // for |eta|<0.9
+   TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.991); // for 0.9<|eta|<1.2
+   TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.998); // for 1.2<|eta|<2.1
    TParameter<float> lumiScaleFactor("lumiScaleFactor", 0.980);  // not used // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
    TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.993);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
    TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.948);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
