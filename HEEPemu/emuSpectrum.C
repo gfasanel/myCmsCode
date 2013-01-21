@@ -32,8 +32,8 @@ void EmuSpectrum::Loop()
    TParameter<float> trgDataMcScaleFactorMidEta("trgDataMcScaleFactorMidEta", 0.962); // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
    TParameter<float> trgDataMcScaleFactorHighEta("trgDataMcScaleFactorHighEta", 0.990); // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
    // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
-   TParameter<float> eleScaleFactorEB("eleScaleFactorEB", 0.995 * 1.007); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak)
-   TParameter<float> eleScaleFactorEE("eleScaleFactorEE", 0.994 * 1.004); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak)
+   TParameter<float> eleScaleFactorEB("eleScaleFactorEB", 0.995 * 1.001); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak, pt>35 GeV)
+   TParameter<float> eleScaleFactorEE("eleScaleFactorEE", 0.994 * 1.000); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak, pt>35 GeV)
    // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=3&resId=0&materialId=slides&confId=214870
    TParameter<float> muScaleFactor("muScaleFactor", 0.994);
    TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.993); // for |eta|<0.9
