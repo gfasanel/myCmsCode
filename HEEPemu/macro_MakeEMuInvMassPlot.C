@@ -19,9 +19,9 @@
 #define WZ 4
 #define ZZ 5
 #define TW 6
-#define WJET 7
-#define ZMM 8
-#define ZEE 9
+#define ZMM 7
+#define ZEE 8
+#define WJET 9
 #define QCD 10
 
 #define ALL 0
@@ -42,33 +42,34 @@ TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brNam
 void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
-  TFile input("./plots_10jan2013/testEmuSpecHEEP41_19619pb-1.root", "open");
-  //TFile input("./plots_25dec2012/testEmuSpecHEEP41_19619pb-1.root", "open");
-  //TFile input("./plots_28nov2012/testEmuSpecHEEP41_14818pb-1.root", "open");
-  //TFile input("testHEEP41_14808pb-1.root", "open");
+  TFile input("./emuSpec_19619pb-1.root", "open");
+  //TFile input("test19619pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
   const int nBins = 75;
-  const bool usePu = true;
-  const bool useWeight = true;
+  const bool usePu = 1;
+  const bool useWeight = 1;
+
+  int eRegion = 2; // electron region EB(0), EE(1), EB+EE(2)
 
   bool plotSign[3];
-  plotSign[0] = true;  // all
-  plotSign[1] = true;  // SS same sign
-  plotSign[2] = true;  // OS opposite sign
+  plotSign[0] = 1;  // all
+  plotSign[1] = 1;  // SS same sign
+  plotSign[2] = 1;  // OS opposite sign
 
   bool plotType[2];
-  plotType[0] = true;  // emu spectrum
-  plotType[1] = true;  // cumulative emu spectrum
+  plotType[0] = 1;  // emu spectrum
+  plotType[1] = 1;  // cumulative emu spectrum
 
-  const bool plotPull = true; // plot (data-bkg)/bkg
-  const bool logPlotX = false;
-  const bool logPlotY = true;
-  const bool prelim = true;
-  const bool groupedPlot = false;
-  const bool overflowBin = true;
+  const bool plotPull = 1; // plot (data-bkg)/bkg
+  const bool plotPullBelowSpec = 1; // plot (data-bkg)/bkg below spectrum
+  const bool logPlotX = 0;
+  const bool logPlotY = 1;
+  const bool prelim = 1;
+  const bool groupedPlot = 0;
+  const bool overflowBin = 1;
 
   float xRangeMin = 60.;
   float xRangeMax = 1200.;
@@ -84,12 +85,15 @@ void macro_MakeEMuInvMassPlot()
   float xRangeMaxRatio = fitMax;
 
   // output file formats
-  const bool saveAsPdf = 0;
-  const bool saveAsPng = 0;
-  const bool saveAsRoot = 0;
+  const bool savePull = 0;
+  const bool saveSpec = 0;
+  const bool saveCumSpec = 0;
+  const bool saveAsPdf = 1;
+  const bool saveAsPng = 1;
+  const bool saveAsRoot = 1;
   const char *fileNameExtra = "";
   //const char *fileNameExtra = "madgraphTTbar_";
-  const char *plotDir = "./plots_10jan2013/";
+  const char *plotDir = "./plottest/";
 
   // plot style
   int ttbarColour = TColor::GetColor("#ff6666");
@@ -98,9 +102,9 @@ void macro_MakeEMuInvMassPlot()
   int wzColour = TColor::GetColor("#ff0f0f");
   int zzColour = TColor::GetColor("#eb0000");
   int twColour = TColor::GetColor("#db0000");
-  int wjetColour=  TColor::GetColor("#66b3ff");
-  int zmmColour=  TColor::GetColor("#80bfff");
+  int zmmColour=  TColor::GetColor("#66b3ff");
   int zeeColour=  TColor::GetColor("#99ccff");
+  int wjetColour=  TColor::GetColor("#ffd324");
   int jetBkgColour = TColor::GetColor("#ffff66"); 
 
   int font = 42; //62
@@ -120,9 +124,9 @@ void macro_MakeEMuInvMassPlot()
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcWZ"))->GetVal()); //WZ
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcZZ"))->GetVal()); //ZZ
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcTW"))->GetVal()); //tW
-  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcWJets"))->GetVal());  //WJets
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcDyMuMu"))->GetVal()); //Z->mm
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcDyEE"))->GetVal()); //Z->ee
+  systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcWJets"))->GetVal());  //WJets
 
   // to keep the histogram when the file is closed
   TH1::AddDirectory(kFALSE);
@@ -140,9 +144,9 @@ void macro_MakeEMuInvMassPlot()
   vector<TH1F *> emuMass_wz;
   vector<TH1F *> emuMass_zz;
   vector<TH1F *> emuMass_tw;
-  vector<TH1F *> emuMass_wjets;
   vector<TH1F *> emuMass_zmumu;
   vector<TH1F *> emuMass_zee;
+  vector<TH1F *> emuMass_wjets;
   vector<TH1F *> emuMass_qcd;
   vector<TH1F *> emuMass_ttLike;
   vector<TH1F *> emuMass_fakePairs;
@@ -193,39 +197,25 @@ void macro_MakeEMuInvMassPlot()
   TParameter<float> *mcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
 
   float totMcWeight = 1.;
-  //TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "genMTtbar", 0., 700., binning, 0x1DF, true);
-  //totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "genMTtbar", 700., 1000., binning, 0x19F, true), totMcWeight);
-  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", -1, 0, "genMTtbar", 700., 1000., binning, 0x19F, true), totMcWeight);
-  //totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, true), totMcWeight);
-  //ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", -1, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, true), totMcWeight);
-
-  //TH1F *ttbarH = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", -1, 0, "", 0., 0., binning, 0x1DF, true);
-  ////ttbarH->Scale(lumi->GetVal() * mcWeight->GetVal());
-  //ttbarComb->Draw();
-  //ttbarH->SetLineColor(kRed);
-  //ttbarH->Draw("sames");
-
   // determine qcd contribution
-  TH1F *ssData = MakeHistoFromBranch(&input, "emuTree_data", "mass", SS, 0, "", 0., 0., binning, 0x100);
-  TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "genMTtbar", 0., 700., binning, 0x1DF);
+  TH1F *ssData = MakeHistoFromBranch(&input, "emuTree_data", "mass", SS, eRegion, "", 0., 0., binning, 0x100);
+  TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 0., 700., binning, 0x1DF);
   totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", SS, 0, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", SS, eRegion, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
   totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, 0, "", 0., 0., binning, 0x1DF);
-  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", SS, 0, "", 0., 0., binning, 0x1DF);
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", "mass", SS, 0, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF);
+  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
   TH1F *qcdContrib = (TH1F *)ssData->Clone("qcdContrib_SS");
   qcdContrib->Add(ssBg, -1);
   for (int i = 0; i < qcdContrib->GetNbinsX() + 2; ++i) {
@@ -247,27 +237,27 @@ void macro_MakeEMuInvMassPlot()
 
       if (k == 2) k = -1;
       // make the histograms
-      TH1F *dataOverBgHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_data", "mass", k, 0, "", 0., 0., binning, 0x100, normToBin);
-      emuMass_data.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, 0, "", 0., 0., binning, 0x100));
+      TH1F *dataOverBgHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x100, normToBin);
+      emuMass_data.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x100));
 
-      TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "genMTtbar", 0., 700., binning, 0x1DF, normToBin);
+      TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "genMTtbar", 0., 700., binning, 0x1DF, normToBin);
       totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", k, 0, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", k, eRegion, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
       totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", k, 0, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", k, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
       emuMass_ttbar.push_back(ttbarComb);
-      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_zz.push_back(MakeHistoFromBranch(&input, "emuTree_zz", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee", "mass", k, 0, "", 0., 0., binning, 0x1DF, normToBin));
+      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_zz.push_back(MakeHistoFromBranch(&input, "emuTree_zz", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
       if (k == -1) k = 2;
       emuMass_data.back()->SetName("emuMass_" + histoSign[k] + "data" + nameSuffix[j]);
       emuMass_ttbar.back()->SetName("emuMass_" + histoSign[k] + "ttbar" + nameSuffix[j]);
@@ -276,9 +266,9 @@ void macro_MakeEMuInvMassPlot()
       emuMass_wz.back()->SetName("emuMass_" + histoSign[k] + "wz" + nameSuffix[j]);
       emuMass_zz.back()->SetName("emuMass_" + histoSign[k] + "zz" + nameSuffix[j]);
       emuMass_tw.back()->SetName("emuMass_" + histoSign[k] + "tw" + nameSuffix[j]);
-      emuMass_wjets.back()->SetName("emuMass_" + histoSign[k] + "wjets" + nameSuffix[j]);
       emuMass_zmumu.back()->SetName("emuMass_" + histoSign[k] + "zmumu" + nameSuffix[j]);
       emuMass_zee.back()->SetName("emuMass_" + histoSign[k] + "zee" + nameSuffix[j]);
+      emuMass_wjets.back()->SetName("emuMass_" + histoSign[k] + "wjets" + nameSuffix[j]);
 
       // qcd contribution
       emuMass_qcd.push_back((TH1F *)qcdContrib->Clone("emuMass_" + histoSign[k] + "qcd"));
@@ -301,9 +291,9 @@ void macro_MakeEMuInvMassPlot()
         emuMass_wz.back()->SetBinContent(emuMass_wz.back()->GetNbinsX(), emuMass_wz.back()->GetBinContent(emuMass_wz.back()->GetNbinsX()) + emuMass_wz.back()->GetBinContent(emuMass_wz.back()->GetNbinsX() + 1));
         emuMass_zz.back()->SetBinContent(emuMass_zz.back()->GetNbinsX(), emuMass_zz.back()->GetBinContent(emuMass_zz.back()->GetNbinsX()) + emuMass_zz.back()->GetBinContent(emuMass_zz.back()->GetNbinsX() + 1));
         emuMass_tw.back()->SetBinContent(emuMass_tw.back()->GetNbinsX(), emuMass_tw.back()->GetBinContent(emuMass_tw.back()->GetNbinsX()) + emuMass_tw.back()->GetBinContent(emuMass_tw.back()->GetNbinsX() + 1));
-        emuMass_wjets.back()->SetBinContent(emuMass_wjets.back()->GetNbinsX(), emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX()) + emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX() + 1));
         emuMass_zmumu.back()->SetBinContent(emuMass_zmumu.back()->GetNbinsX(), emuMass_zmumu.back()->GetBinContent(emuMass_zmumu.back()->GetNbinsX()) + emuMass_zmumu.back()->GetBinContent(emuMass_zmumu.back()->GetNbinsX() + 1));
         emuMass_zee.back()->SetBinContent(emuMass_zee.back()->GetNbinsX(), emuMass_zee.back()->GetBinContent(emuMass_zee.back()->GetNbinsX()) + emuMass_zee.back()->GetBinContent(emuMass_zee.back()->GetNbinsX() + 1));
+        emuMass_wjets.back()->SetBinContent(emuMass_wjets.back()->GetNbinsX(), emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX()) + emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX() + 1));
         emuMass_qcd.back()->SetBinContent(emuMass_qcd.back()->GetNbinsX(), emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX()) + emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX() + 1));
       }
 
@@ -314,9 +304,9 @@ void macro_MakeEMuInvMassPlot()
       emuMass_ttLike.back()->Add(emuMass_wz.back());
       emuMass_ttLike.back()->Add(emuMass_zz.back());
       emuMass_ttLike.back()->Add(emuMass_tw.back());
-      emuMass_fakePairs.push_back((TH1F *)emuMass_wjets.back()->Clone("emuMass_" + histoSign[k] + "fakePairs" + nameSuffix[j]));
-      emuMass_fakePairs.back()->Add(emuMass_zmumu.back());
+      emuMass_fakePairs.push_back((TH1F *)emuMass_zmumu.back()->Clone("emuMass_" + histoSign[k] + "fakePairs" + nameSuffix[j]));
       emuMass_fakePairs.back()->Add(emuMass_zee.back());
+      emuMass_fakePairs.back()->Add(emuMass_wjets.back());
       emuMass_fakePairs.back()->Add(emuMass_qcd.back());
 
       // integrate from the right side
@@ -338,12 +328,12 @@ void macro_MakeEMuInvMassPlot()
           emuMass_zz.back()->SetBinError(i, error);
           emuMass_tw.back()->SetBinContent(i, emuMass_tw.back()->IntegralAndError(i, nBins, error));
           emuMass_tw.back()->SetBinError(i, error);
-          emuMass_wjets.back()->SetBinContent(i, emuMass_wjets.back()->IntegralAndError(i, nBins, error));
-          emuMass_wjets.back()->SetBinError(i, error);
           emuMass_zmumu.back()->SetBinContent(i, emuMass_zmumu.back()->IntegralAndError(i, nBins, error));
           emuMass_zmumu.back()->SetBinError(i, error);
           emuMass_zee.back()->SetBinContent(i, emuMass_zee.back()->IntegralAndError(i, nBins, error));
           emuMass_zee.back()->SetBinError(i, error);
+          emuMass_wjets.back()->SetBinContent(i, emuMass_wjets.back()->IntegralAndError(i, nBins, error));
+          emuMass_wjets.back()->SetBinError(i, error);
           emuMass_qcd.back()->SetBinContent(i, emuMass_qcd.back()->IntegralAndError(i, nBins, error));
           emuMass_qcd.back()->SetBinError(i, error);
 
@@ -358,21 +348,44 @@ void macro_MakeEMuInvMassPlot()
       if (!plotSign[k]) continue;
       if (!plotType[j]) continue;
 
-      TCanvas *emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 600);
-      emuPlot->cd();
-      emuPlot->SetBorderMode(0);
-      emuPlot->SetBorderSize(2);
-      emuPlot->SetFrameBorderMode(0);
-      emuPlot->SetFillColor(0);
-      emuPlot->SetFrameFillColor(0);
-      if (logPlotX) emuPlot->SetLogx();
-      if (logPlotY) emuPlot->SetLogy();
-      emuPlot->SetLeftMargin(0.11);
-      emuPlot->SetRightMargin(0.09);
-      emuPlot->SetBottomMargin(0.12);
-      emuPlot->SetTopMargin(0.08);
-      emuPlot->SetTickx(1);
-      emuPlot->SetTicky(1);
+      TCanvas *emuPlot;
+      TPad *specPad;
+      if (plotPullBelowSpec && j == 0) {
+        emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 900);
+        specPad = new TPad("specPad" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 0., 0.33, 1., 1.);
+        specPad->SetBottomMargin(0.06);
+      } else {
+        emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 600);
+        specPad = new TPad("specPad" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 0., 0., 1., 1.);
+        specPad->SetBottomMargin(0.12);
+      }
+      specPad->SetBorderMode(0);
+      specPad->SetBorderSize(2);
+      specPad->SetFrameBorderMode(0);
+      specPad->SetFillColor(0);
+      specPad->SetFrameFillColor(0);
+      if (logPlotX) specPad->SetLogx();
+      if (logPlotY) specPad->SetLogy();
+      specPad->SetLeftMargin(0.11);
+      specPad->SetRightMargin(0.09);
+      specPad->SetTopMargin(0.08);
+      specPad->SetTickx(1);
+      specPad->SetTicky(1);
+      specPad->Draw();
+      specPad->cd();
+      //emuPlot->SetBorderMode(0);
+      //emuPlot->SetBorderSize(2);
+      //emuPlot->SetFrameBorderMode(0);
+      //emuPlot->SetFillColor(0);
+      //emuPlot->SetFrameFillColor(0);
+      //if (logPlotX) emuPlot->SetLogx();
+      //if (logPlotY) emuPlot->SetLogy();
+      //emuPlot->SetLeftMargin(0.11);
+      //emuPlot->SetRightMargin(0.09);
+      //emuPlot->SetBottomMargin(0.12);
+      //emuPlot->SetTopMargin(0.08);
+      //emuPlot->SetTickx(1);
+      //emuPlot->SetTicky(1);
  
       gStyle->SetTitleFont(font);
       gStyle->SetLabelFont(font);
@@ -388,9 +401,9 @@ void macro_MakeEMuInvMassPlot()
       // make a histogram stack with the bg 
       THStack *bgStack = new THStack("bgStack" + histoSign[k] + nameSuffix[j], "Invariant Mass" + titleSuffix[j]);
       bgStack->Add(emuMass_qcd.back());
+      bgStack->Add(emuMass_wjets.back());
       bgStack->Add(emuMass_zee.back());
       bgStack->Add(emuMass_zmumu.back());
-      bgStack->Add(emuMass_wjets.back());
       bgStack->Add(emuMass_tw.back());
       bgStack->Add(emuMass_zz.back());
       bgStack->Add(emuMass_wz.back());
@@ -399,9 +412,9 @@ void macro_MakeEMuInvMassPlot()
       bgStack->Add(emuMass_ttbar.back());
       //THStack *bgStack = new THStack("bgStack" + histoSign[k] + nameSuffix[j], "Invariant Mass" + titleSuffix[j]);
       //bgStack->Add(emuMass_qcd.back());
+      //bgStack->Add(emuMass_wjets.back());
       //bgStack->Add(emuMass_zee.back());
       //bgStack->Add(emuMass_zmumu.back());
-      //bgStack->Add(emuMass_wjets.back());
       //bgStack->Add(emuMass_zz.back());
       //bgStack->Add(emuMass_wz.back());
       //bgStack->Add(emuMass_ztautau.back());
@@ -415,9 +428,9 @@ void macro_MakeEMuInvMassPlot()
 
       // bkg histogram for (data-bkg)/bkg plot
       TH1F *bgHist = (TH1F *)emuMass_qcd.back()->Clone();
+      bgHist->Add(emuMass_wjets.back());
       bgHist->Add(emuMass_zee.back());
       bgHist->Add(emuMass_zmumu.back());
-      bgHist->Add(emuMass_wjets.back());
       bgHist->Add(emuMass_tw.back());
       bgHist->Add(emuMass_zz.back());
       bgHist->Add(emuMass_wz.back());
@@ -438,7 +451,11 @@ void macro_MakeEMuInvMassPlot()
         //emuMass_fakePairs.back()->Draw("HISTsames");
         bgStackGrouped->Draw("hist");
 
-        bgStackGrouped->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+        if (plotPullBelowSpec && j == 0) {
+          bgStackGrouped->GetXaxis()->SetTitle("");
+        } else {
+          bgStackGrouped->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+        }
         bgStackGrouped->GetXaxis()->SetTitleFont(font);
         bgStackGrouped->GetXaxis()->SetTitleSize(0.047);
         bgStackGrouped->GetXaxis()->SetTitleOffset(0.9);
@@ -487,11 +504,6 @@ void macro_MakeEMuInvMassPlot()
         emuMass_tw.back()->SetLineColor(kBlack);
         emuMass_tw.back()->SetLineWidth(2);
         //emuMass_tw.back()->Draw("HISTsames");
-        emuMass_wjets.back()->SetFillColor(wjetColour);
-        emuMass_wjets.back()->SetMarkerColor(wjetColour);
-        emuMass_wjets.back()->SetLineColor(kBlack);
-        emuMass_wjets.back()->SetLineWidth(2);
-        //emuMass_wjets.back()->Draw("HISTsames");
         emuMass_zmumu.back()->SetFillColor(zmmColour);
         emuMass_zmumu.back()->SetMarkerColor(zmmColour);
         emuMass_zmumu.back()->SetLineColor(kBlack);
@@ -502,6 +514,11 @@ void macro_MakeEMuInvMassPlot()
         emuMass_zee.back()->SetLineColor(kBlack);
         emuMass_zee.back()->SetLineWidth(2);
         //emuMass_zee.back()->Draw("HISTsames");
+        emuMass_wjets.back()->SetFillColor(wjetColour);
+        emuMass_wjets.back()->SetMarkerColor(wjetColour);
+        emuMass_wjets.back()->SetLineColor(kBlack);
+        emuMass_wjets.back()->SetLineWidth(2);
+        //emuMass_wjets.back()->Draw("HISTsames");
         emuMass_qcd.back()->SetFillColor(jetBkgColour);
         emuMass_qcd.back()->SetMarkerColor(jetBkgColour);
         emuMass_qcd.back()->SetLineColor(kBlack);
@@ -509,7 +526,11 @@ void macro_MakeEMuInvMassPlot()
         //emuMass_qcd.back()->Draw("HISTsames");
         bgStack->Draw("hist");
 
-        bgStack->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+        if (plotPullBelowSpec && j == 0) {
+          bgStack->GetXaxis()->SetTitle("");
+        } else {
+          bgStack->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+        }
         bgStack->GetXaxis()->SetTitleFont(font);
         bgStack->GetXaxis()->SetTitleSize(0.047);
         bgStack->GetXaxis()->SetTitleOffset(0.9);
@@ -541,18 +562,13 @@ void macro_MakeEMuInvMassPlot()
       TGraphAsymmErrors* dataHist = makeDataGraph(emuMass_data.back(), normalize, false);      
       dataHist->SetMarkerStyle(20);
       dataHist->SetMarkerSize(1.1);
-      //dataHist->GetXaxis()->SetRange(5,83);
-      dataHist->GetXaxis()->SetTitleSize(0.047);
-      dataHist->GetXaxis()->SetTitleOffset(0.9);
-      dataHist->GetYaxis()->SetTitleSize(0.047);
-      dataHist->GetYaxis()->SetTitleOffset(1.1);
       dataHist->Draw("PZ");
 
       // redraw axis
       emuMass_ttbar.back()->Draw("sameaxis");
 
       // legend and labels
-      TLegend legend(0.731, 0.460, 0.921, 0.90);
+      TLegend legend(0.731, 0.446, 0.921, 0.885);
       legend.SetTextFont(font);
       legend.SetTextSize(0.03);
       legend.SetBorderSize(0);
@@ -562,10 +578,15 @@ void macro_MakeEMuInvMassPlot()
       legend.SetFillColor(19);
       legend.SetFillStyle(0);
       if (groupedPlot) {
-        legend.SetX1(0.528);
-        legend.SetY1(0.712);
-        legend.SetX2(0.788);
-        legend.SetY2(0.9);
+        if (prelim) {
+          legend.SetX1(0.460);
+          legend.SetX2(0.720);
+        } else {
+          legend.SetX1(0.511);
+          legend.SetX2(0.771);
+        }
+        legend.SetY1(0.643);
+        legend.SetY2(0.830);
         legend.SetTextSize(0.047);
       }
       legend.AddEntry(emuMass_data.back(), "DATA");
@@ -579,81 +600,83 @@ void macro_MakeEMuInvMassPlot()
         legend.AddEntry(emuMass_wz.back(), "WZ" ,"F");
         legend.AddEntry(emuMass_zz.back(), "ZZ" ,"F");
         legend.AddEntry(emuMass_tw.back(), "tW" ,"F");
-        legend.AddEntry(emuMass_wjets.back(), "W+jets" ,"F");
         legend.AddEntry(emuMass_zmumu.back(), "#gamma/Z#rightarrow#mu#mu" ,"F");
         legend.AddEntry(emuMass_zee.back(), "#gamma/Z#rightarrowee" ,"F");
+        legend.AddEntry(emuMass_wjets.back(), "W+jets" ,"F");
         legend.AddEntry(emuMass_qcd.back(), "jets (data)" ,"F");
       }
       legend.DrawClone("sames");
       
-      stringstream sStream;
-      sStream.str("");
-      //sStream << "#sqrt{s} = 8 TeV    #int L dt = " << lumi->GetVal() << " pb^{-1}";
-      sStream << "#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}";
-      TPaveLabel labelLumi(0.337, 0.698, 0.732, 0.788, sStream.str().c_str(), "brNDC");
-      labelLumi.SetFillColor(0);
-      labelLumi.SetFillStyle(0);
-      labelLumi.SetBorderSize(0);
-      labelLumi.SetTextFont(font);
-      labelLumi.SetTextSize(0.4);
+      TLatex *tex = new TLatex();
+      tex->SetNDC();
+      tex->SetTextFont(font);
+      tex->SetLineWidth(2);
       if (groupedPlot) {
-        labelLumi.SetX1(0.506);
-        labelLumi.SetY1(0.565);
-        labelLumi.SetX2(0.901);
-        labelLumi.SetY2(0.656);
-        labelLumi.SetTextSize(0.5);
+        tex->SetTextSize(0.047);
+        if (prelim) tex->DrawLatex(0.467, 0.846, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
+        else tex->DrawLatex(0.518, 0.846, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (eRegion == 0) tex->DrawLatex(0.275, 0.846, "e in barrel");
+        if (eRegion == 1) tex->DrawLatex(0.275, 0.846, "e in endcap");
+      } else {
+        tex->SetTextSize(0.042);
+        if (prelim) tex->DrawLatex(0.325, 0.853, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
+        else tex->DrawLatex(0.405, 0.853, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (eRegion == 0) tex->DrawLatex(0.325, 0.775, "e in barrel");
+        if (eRegion == 1) tex->DrawLatex(0.325, 0.775, "e in endcap");
       }
-      labelLumi.DrawClone("sames");
-
-      TPaveLabel labelCMS(0.346, 0.795, 0.621, 0.883, "CMS", "brNDC");
-      if (prelim) labelCMS.SetLabel("CMS Preliminary");
-      labelCMS.SetFillColor(0);
-      labelCMS.SetFillStyle(0);
-      labelCMS.SetBorderSize(0);
-      labelCMS.SetTextFont(font);
-      labelCMS.SetTextSize(0.4);
-      if (groupedPlot) {
-        labelCMS.SetX1(0.234);
-        labelCMS.SetY1(0.806);
-        labelCMS.SetX2(0.508);
-        labelCMS.SetY2(0.895);
-        labelCMS.SetTextSize(0.5);
-      }
-      labelCMS.DrawClone("sames");
 
       // safe in various file formats
-      sStream.str("");
-      sStream << plotDir << "emuSpec";
-      if (k == 0) sStream << "_";
-      sStream << histoSign[k] << fileNameExtra << nameSuffix[j];
-      if (j > 0) sStream << "_";
-      if (groupedPlot) sStream << "grouped_";
-      if (!logPlotY) sStream << "lin_";
-      sStream << lumi->GetVal() << "pb-1";
-      TString saveFileName = sStream.str();
-      if (saveAsPdf) emuPlot->Print(saveFileName + ".pdf", "pdf");
-      if (saveAsPng) emuPlot->Print(saveFileName + ".png", "png");
-      if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
+      stringstream sStream;
+      if (!plotPullBelowSpec || j > 0) {
+        sStream << plotDir << "emuSpec";
+        if (k == 0) sStream << "_";
+        sStream << histoSign[k];
+        if (eRegion == 0) sStream << "EB_";
+        if (eRegion == 1) sStream << "EE_";
+        sStream << fileNameExtra << nameSuffix[j];
+        if (j > 0) sStream << "_";
+        if (groupedPlot) sStream << "grouped_";
+        if (!logPlotY) sStream << "lin_";
+        sStream << lumi->GetVal() << "pb-1";
+        TString saveFileName = sStream.str();
+        if ((j == 0 && saveSpec) || (j > 0 && saveCumSpec)) {
+          if (saveAsPdf) emuPlot->Print(saveFileName + ".pdf", "pdf");
+          if (saveAsPng) emuPlot->Print(saveFileName + ".png", "png");
+          if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
+        }
+      }
 
       if (j > 0 || !plotPull) continue;
       // plot a (data - bg)/bg histogram
       dataOverBgHist->Add(bgHist, -1.);
       dataOverBgHist->Divide(bgHist);
 
-      TCanvas *dataOverBgPlot = new TCanvas("dataOverBgPlot" + histoSign[k] + nameSuffix[j], "(data - bg) / bg" + titleSuffix[j], 100, 100, 900, 600);
-      dataOverBgPlot->cd();
-      dataOverBgPlot->SetBorderMode(0);
-      dataOverBgPlot->SetBorderSize(2);
-      dataOverBgPlot->SetFrameBorderMode(0);
-      dataOverBgPlot->SetFillColor(0);
-      dataOverBgPlot->SetFrameFillColor(0);
-      if (logPlotX) dataOverBgPlot->SetLogx();
-      dataOverBgPlot->SetLeftMargin(0.11);
-      dataOverBgPlot->SetRightMargin(0.09);
-      dataOverBgPlot->SetBottomMargin(0.12);
-      dataOverBgPlot->SetTopMargin(0.08);
-      dataOverBgPlot->SetTickx(1);
-      dataOverBgPlot->SetTicky(1);
+      float fontScaleBot = 1.;
+      TPad *pullPad = new TPad("pullPad" + histoSign[k] + nameSuffix[j], "(data - bg) / bg" + titleSuffix[j], 0., 0., 1., 1.);
+      TCanvas *dataOverBgPlot;
+      if (plotPullBelowSpec) {
+        emuPlot->cd();
+        pullPad->SetPad(0., 0., 1., 0.33);
+        pullPad->SetBottomMargin(0.22);
+        pullPad->SetTopMargin(0.);
+        fontScaleBot = specPad->GetHNDC() / pullPad->GetHNDC();
+      } else {
+        dataOverBgPlot = new TCanvas("dataOverBgPlot" + histoSign[k] + nameSuffix[j], "(data - bg) / bg" + titleSuffix[j], 100, 100, 900, 600);
+        pullPad->SetBottomMargin(0.12);
+        pullPad->SetTopMargin(0.08);
+      }
+      pullPad->Draw();
+      pullPad->cd();
+      pullPad->SetBorderMode(0);
+      pullPad->SetBorderSize(2);
+      pullPad->SetFrameBorderMode(0);
+      pullPad->SetFillColor(0);
+      pullPad->SetFrameFillColor(0);
+      if (logPlotX) pullPad->SetLogx();
+      pullPad->SetLeftMargin(0.11);
+      pullPad->SetRightMargin(0.09);
+      pullPad->SetTickx(1);
+      pullPad->SetTicky(1);
 
       dataOverBgHist->SetLineWidth(1);
       dataOverBgHist->SetLineColor(kBlack);
@@ -662,40 +685,76 @@ void macro_MakeEMuInvMassPlot()
 
       dataOverBgHist->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
       dataOverBgHist->GetXaxis()->SetTitleFont(font);
-      dataOverBgHist->GetXaxis()->SetTitleSize(0.047);
+      dataOverBgHist->GetXaxis()->SetTitleSize(0.047 * fontScaleBot);
       dataOverBgHist->GetXaxis()->SetTitleOffset(0.9);
       dataOverBgHist->GetXaxis()->SetLabelFont(font);
-      dataOverBgHist->GetXaxis()->SetLabelSize(0.05);
+      dataOverBgHist->GetXaxis()->SetLabelSize(0.05 * fontScaleBot);
       dataOverBgHist->GetXaxis()->SetMoreLogLabels();
       dataOverBgHist->GetXaxis()->SetNoExponent();
       dataOverBgHist->GetXaxis()->SetRangeUser(xRangeMinRatio, xRangeMaxRatio);
       dataOverBgHist->GetYaxis()->SetTitle("(data-bkg)/bkg");
       dataOverBgHist->GetYaxis()->SetTitleFont(font);
-      dataOverBgHist->GetYaxis()->SetTitleSize(0.047);
+      dataOverBgHist->GetYaxis()->SetTitleSize(0.047 * fontScaleBot);
+      dataOverBgHist->GetYaxis()->SetTitleOffset(1.1 / fontScaleBot);
       dataOverBgHist->GetYaxis()->SetLabelFont(font);
-      dataOverBgHist->GetYaxis()->SetLabelSize(0.05);
+      dataOverBgHist->GetYaxis()->SetLabelSize(0.05 * fontScaleBot);
       dataOverBgHist->GetYaxis()->SetRangeUser(yRangeMinRatio[k], yRangeMaxRatio[k]);
 
       dataOverBgHist->Draw();
 
-      gStyle->SetOptFit(1111);
       TF1 *f0 = new TF1("f0" + histoSign[k], "[0]");
       dataOverBgHist->Fit("f0" + histoSign[k], "", "", fitMin, fitMax);
       //dataOverBgHist->Draw("sameaxis");
 
-      TPaveLabel *labelLumi2 = (TPaveLabel *)labelLumi.Clone();
-      labelLumi2->SetX1(0.105);
-      labelLumi2->SetY1(0.733);
-      labelLumi2->SetX2(0.511);
-      labelLumi2->SetY2(0.823);
-      TPaveLabel *labelCMS2 = (TPaveLabel *)labelCMS.Clone();
-      labelCMS2->SetX1(0.105);
-      labelCMS2->SetY1(0.823);
-      labelCMS2->SetX2(0.379);
-      labelCMS2->SetY2(0.911);
-      labelLumi2->Draw("sames");
-      labelCMS2->Draw("sames");
+      if (!plotPullBelowSpec) {
+        if (groupedPlot) tex->SetTextSize(0.047 * fontScaleBot);
+        else tex->SetTextSize(0.042 * fontScaleBot);
+        if (prelim) tex->DrawLatex(0.150, 0.853, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
+        else tex->DrawLatex(0.150, 0.853, "CMS, 8 TeV, 19.6 fb^{-1}");
+        tex->SetTextSize(0.042 * fontScaleBot);
+        tex->DrawLatex(0.150, 0.764, Form("#chi^{2} / ndf: %.2f / %i", f0->GetChisquare(), f0->GetNDF()));
+        tex->DrawLatex(0.150, 0.720, Form("p0: %.4f #pm %0.4f", f0->GetParameter(0), f0->GetParError(0)));
+        if (eRegion == 0) tex->DrawLatex(0.708, 0.853, "e in barrel");
+        if (eRegion == 1) tex->DrawLatex(0.708, 0.853, "e in endcap");
+      } else {
+        tex->SetTextSize(0.042 * fontScaleBot);
+        tex->DrawLatex(0.150, 0.875, Form("#chi^{2} / ndf: %.2f / %i", f0->GetChisquare(), f0->GetNDF()));
+        tex->DrawLatex(0.150, 0.775, Form("p0: %.4f #pm %0.4f", f0->GetParameter(0), f0->GetParError(0)));
+      }
 
+      // safe in various file formats
+      if (savePull && !plotPullBelowSpec) {
+        sStream.str("");
+        sStream << plotDir << "emuDataOverBkg";
+        if (k == 0) sStream << "_";
+        sStream << histoSign[k];
+        if (eRegion == 0) sStream << "EB_";
+        if (eRegion == 1) sStream << "EE_";
+        sStream << fileNameExtra << lumi->GetVal() << "pb-1";
+        TString saveFileName = sStream.str();
+        if (saveAsPdf) dataOverBgPlot->Print(saveFileName + ".pdf", "pdf");
+        if (saveAsPng) dataOverBgPlot->Print(saveFileName + ".png", "png");
+        if (saveAsRoot) dataOverBgPlot->Print(saveFileName + ".root", "root");
+      }
+      if ((saveSpec || savePull) && plotPullBelowSpec) {
+        sStream.str("");
+        sStream << plotDir << "emuSpec";
+        if (k == 0) sStream << "_";
+        sStream << histoSign[k];
+        if (eRegion == 0) sStream << "EB_";
+        if (eRegion == 1) sStream << "EE_";
+        sStream << fileNameExtra << nameSuffix[j];
+        if (j > 0) sStream << "_";
+        if (groupedPlot) sStream << "grouped_";
+        if (!logPlotY) sStream << "lin_";
+        sStream << lumi->GetVal() << "pb-1";
+        TString saveFileName = sStream.str();
+        if ((j == 0 && saveSpec) || (j > 0 && saveCumSpec)) {
+          if (saveAsPdf) emuPlot->Print(saveFileName + ".pdf", "pdf");
+          if (saveAsPng) emuPlot->Print(saveFileName + ".png", "png");
+          if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
+        }
+      }
     } // end loop over normal or cumulated
   } // end loop over full, SS and OS
 
@@ -708,23 +767,23 @@ void macro_MakeEMuInvMassPlot()
   emuMasses.push_back(emuMass_wz);
   emuMasses.push_back(emuMass_zz);
   emuMasses.push_back(emuMass_tw);
-  emuMasses.push_back(emuMass_wjets);
   emuMasses.push_back(emuMass_zmumu);
   emuMasses.push_back(emuMass_zee);
+  emuMasses.push_back(emuMass_wjets);
   emuMasses.push_back(emuMass_qcd);
 
   // calculate rate of syst errors
   float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
   vector<float> systErrMCLuEff;
-  for (int it = TTBAR - 1; it < ZEE; ++it) 
+  for (int it = TTBAR - 1; it < WJET; ++it) 
      systErrMCLuEff.push_back(sqrt(systErrMC[it]*systErrMC[it] + systErrLuEff*systErrLuEff));
 
   // define groups of MC samples
   vector<bool> ttLikeSamples(6, true);
   vector<bool> contamSamples(6, false);
-  contamSamples.push_back(true); // WJets
   contamSamples.push_back(true); // Zmm
   contamSamples.push_back(true); // Zee
+  contamSamples.push_back(true); // WJets
   vector<bool> allSamples(9, true);
 
   // define special bins corresponding to specific masses
@@ -752,9 +811,9 @@ void macro_MakeEMuInvMassPlot()
   cout << " WZ:          " << systErrMC[WZ-1] * 100 << "%" << endl;
   cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
   cout << " tW, tbarW:   " << systErrMC[TW-1] * 100 << "%" << endl;
-  cout << " W+Jets:      " << systErrMC[WJET-1] * 100 << "%" << endl;
   cout << " Z->mumu:     " << systErrMC[ZMM-1] * 100 << "%" << endl;
   cout << " Z->ee:       " << systErrMC[ZEE-1] * 100 << "%" << endl;
+  cout << " W+Jets:      " << systErrMC[WJET-1] * 100 << "%" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << "M_emu         |         >  60GeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2         |        > 400GeV/c^2          |" << endl;
@@ -796,11 +855,6 @@ void macro_MakeEMuInvMassPlot()
          emuMass_tw.at(ALLCUM)->GetBinContent(bin200), emuMass_tw.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[TW-1],
          emuMass_tw.at(ALLCUM)->GetBinContent(bin400), emuMass_tw.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[TW-1]);
   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-  printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wjets.at(ALLCUM)->GetBinContent(bin60), emuMass_wjets.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(ALLCUM)->GetBinContent(bin120), emuMass_wjets.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(ALLCUM)->GetBinContent(bin200), emuMass_wjets.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
-         emuMass_wjets.at(ALLCUM)->GetBinContent(bin400), emuMass_wjets.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
          emuMass_zmumu.at(ALLCUM)->GetBinContent(bin60), emuMass_zmumu.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[ZMM-1], 
          emuMass_zmumu.at(ALLCUM)->GetBinContent(bin120), emuMass_zmumu.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[ZMM-1], 
@@ -811,6 +865,11 @@ void macro_MakeEMuInvMassPlot()
          emuMass_zee.at(ALLCUM)->GetBinContent(bin120), emuMass_zee.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[ZEE-1], 
          emuMass_zee.at(ALLCUM)->GetBinContent(bin200), emuMass_zee.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[ZEE-1], 
          emuMass_zee.at(ALLCUM)->GetBinContent(bin400), emuMass_zee.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[ZEE-1]); 
+  printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin60), emuMass_wjets.at(ALLCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin120), emuMass_wjets.at(ALLCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin200), emuMass_wjets.at(ALLCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
+         emuMass_wjets.at(ALLCUM)->GetBinContent(bin400), emuMass_wjets.at(ALLCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   cout << endl;
   cout << "---Without QCD correction:--------------------------------------------------------------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
@@ -875,11 +934,6 @@ void macro_MakeEMuInvMassPlot()
          emuMass_tw.at(SSCUM)->GetBinContent(bin200), emuMass_tw.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[TW-1],
          emuMass_tw.at(SSCUM)->GetBinContent(bin400), emuMass_tw.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[TW-1]);
   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-  printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wjets.at(SSCUM)->GetBinContent(bin60), emuMass_wjets.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(SSCUM)->GetBinContent(bin120), emuMass_wjets.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(SSCUM)->GetBinContent(bin200), emuMass_wjets.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
-         emuMass_wjets.at(SSCUM)->GetBinContent(bin400), emuMass_wjets.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
          emuMass_zmumu.at(SSCUM)->GetBinContent(bin60), emuMass_zmumu.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZMM-1], 
          emuMass_zmumu.at(SSCUM)->GetBinContent(bin120), emuMass_zmumu.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZMM-1], 
@@ -890,6 +944,11 @@ void macro_MakeEMuInvMassPlot()
          emuMass_zee.at(SSCUM)->GetBinContent(bin120), emuMass_zee.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZEE-1], 
          emuMass_zee.at(SSCUM)->GetBinContent(bin200), emuMass_zee.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZEE-1], 
          emuMass_zee.at(SSCUM)->GetBinContent(bin400), emuMass_zee.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZEE-1]); 
+  printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin60), emuMass_wjets.at(SSCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin120), emuMass_wjets.at(SSCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin200), emuMass_wjets.at(SSCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
+         emuMass_wjets.at(SSCUM)->GetBinContent(bin400), emuMass_wjets.at(SSCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   cout << endl;
   cout << "---Without QCD correction:--------------------------------------------------------------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
@@ -954,11 +1013,6 @@ void macro_MakeEMuInvMassPlot()
          emuMass_tw.at(OSCUM)->GetBinContent(bin200), emuMass_tw.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[TW-1],
          emuMass_tw.at(OSCUM)->GetBinContent(bin400), emuMass_tw.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[TW-1]);
   cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-  printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
-         emuMass_wjets.at(OSCUM)->GetBinContent(bin60), emuMass_wjets.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(OSCUM)->GetBinContent(bin120), emuMass_wjets.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
-         emuMass_wjets.at(OSCUM)->GetBinContent(bin200), emuMass_wjets.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
-         emuMass_wjets.at(OSCUM)->GetBinContent(bin400), emuMass_wjets.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   printf("nb Zmumu      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
          emuMass_zmumu.at(OSCUM)->GetBinContent(bin60), emuMass_zmumu.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[ZMM-1], 
          emuMass_zmumu.at(OSCUM)->GetBinContent(bin120), emuMass_zmumu.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZMM-1], 
@@ -969,6 +1023,11 @@ void macro_MakeEMuInvMassPlot()
          emuMass_zee.at(OSCUM)->GetBinContent(bin120), emuMass_zee.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[ZEE-1], 
          emuMass_zee.at(OSCUM)->GetBinContent(bin200), emuMass_zee.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[ZEE-1], 
          emuMass_zee.at(OSCUM)->GetBinContent(bin400), emuMass_zee.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[ZEE-1]); 
+  printf("nb WJets      | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", 
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin60), emuMass_wjets.at(OSCUM)->GetBinContent(bin60) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin120), emuMass_wjets.at(OSCUM)->GetBinContent(bin120) * systErrMCLuEff[WJET-1], 
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin200), emuMass_wjets.at(OSCUM)->GetBinContent(bin200) * systErrMCLuEff[WJET-1],
+         emuMass_wjets.at(OSCUM)->GetBinContent(bin400), emuMass_wjets.at(OSCUM)->GetBinContent(bin400) * systErrMCLuEff[WJET-1]);
   cout << endl;
   cout << "---Without QCD correction:--------------------------------------------------------------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
@@ -1434,6 +1493,10 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
 
     // trigger fired?
     if ((flags & 1<<8) && passTrg == false) continue;
+
+    // select electron region
+    if (evtRegion == 0 && region == 1) continue;
+    if (evtRegion == 1 && region == 0) continue;
 
     float scaleFactor = userScale;
     // set lumi and electron scalefactor according to detector region
