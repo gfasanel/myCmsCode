@@ -7,10 +7,17 @@
 #include "TColor.h"
 #include "TH1F.h"
 #include "THStack.h"
+#include "TF1.h"
+#include "TFile.h"
 #include "TTree.h"
 #include "TGraphAsymmErrors.h"
 #include "TParameter.h"
 #include "TCanvas.h"
+#include "THashList.h"
+#include "TLegend.h"
+#include "TStyle.h"
+#include "TLatex.h"
+#include "Math/QuantFuncMathCore.h"
 
 #define DATA 0
 #define TTBAR 1
@@ -37,7 +44,7 @@ float CalcAllErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<
 float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin = -1);
 float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int sample, int region, int lowerBin, int upperBin = -1);
 TGraphAsymmErrors * makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBars);
-TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int &signs, int &region, const char *cutVariable, float &cutLow, float &cutHigh, vector<float> &binning, unsigned int &flags, bool normToBinWidth = false, float userScale = 1.);
+TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int signs, int &region, const char *cutVariable, float cutLow, float cutHigh, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.);
 
 void macro_MakeEMuInvMassPlot()
 {
@@ -1423,7 +1430,7 @@ TGraphAsymmErrors* makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBar
 
 // flags: [pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF|ele SF | mu SF | PU reweight]
 TH1F *
-MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int &signs, int &region, const char *cutVariable, float &cutLow, float &cutHigh, vector<float> &binning, unsigned int &flags, bool normToBinWidth, float userScale)
+MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int signs, int &region, const char *cutVariable, float cutLow, float cutHigh, vector<float> &binning, unsigned int flags, bool normToBinWidth, float userScale)
 {
   input->cd();
   // prepare the histogram
