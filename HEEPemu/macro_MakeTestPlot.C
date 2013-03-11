@@ -80,38 +80,40 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TH1::SetDefaultSumw2(kTRUE);
 
   std::vector<ContVarPlot> testPlots;
-  testPlots.reserve(33);
+  testPlots.reserve(34);
+  // flags: plotQCD | logPlot | underflow in first bin | overflow in last bin
   testPlots.push_back(ContVarPlot("mass", "e-mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 75, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("pfMet", "PF MET", "E^{T}_{miss} [GeV]", 0., 500., 50, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("nVtx", "Number of primary vertices", "# PV", 0., 50., 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("dXYFstPVtx", "dXY of first PV", "dXY 1^{st} PV", 0., 0.06, 40, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("dZFstPVtx", "dZ of first PV", "dZ 1^{st} PV", 0., 0.5, 40, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("dXYFstPVtx", "|Dxy_e - Dxy_mu|", "|#Deltaxy_{e}-#Deltaxy_{#mu}|", 0., 0.06, 40, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("dZFstPVtx", "|Dz_e - Dz_mu|", "|#Deltaz_{e}-#Deltaz_{#mu}|", 0., 0.5, 40, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("rho", "rho", "#rho", 0., 50., 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("numOfJets", "Number of jets", "# jets", 0., 20., 20, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("numOfJetsPt20", "Number of jets > 20 GeV", "# jets_{p_{T}>20}", 0., 20., 20, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("numOfJetsPt30", "Number of jets > 30 GeV", "# jets_{p_{T}>30}", 0., 15., 15, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("dPhi", "dPhi", "#Delta #phi", 0., 3.2, 64, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("eleEt", "Electron Et", "E_{T} [GeV]", 0., 500., 50, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eleEta", "Electron eta", "#eta", -2.5, 2.5, 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("elePhi", "Electron phi", "#phi", -3.2, 3.2, 64, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("eleDEta", "Electron dEta", "#Delta #eta", -0.007, 0.007, 29, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eleDPhi", "Electron dPhi", "#Delta #phi", -0.06, 0.06, 50, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("dEta", "|eta_e - eta_mu|", "|#eta_{e}-#eta_{#mu}|", 0., 5., 50, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("dPhi", "|phi_e - phi_mu|", "|#varphi_{e}-#varphi_{#mu}|", 0., 3.2, 64, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("eleEt", "Electron Et", "E_{T}^{e} [GeV]", 0., 500., 50, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleEta", "Electron eta", "#eta_{e}", -2.5, 2.5, 50, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("elePhi", "Electron phi", "#phi_{e}", -3.2, 3.2, 64, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("eleDEta", "Electron dEta", "#Delta#eta", -0.007, 0.007, 29, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleDPhi", "Electron dPhi", "#Delta#varphi", -0.06, 0.06, 50, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("eleHOE", "Electron H/E", "H/E", 0., 0.051, 51, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("eleSigmaIEIE", "Electron #sigma_i#etai#eta", "", 0., 0.04, 40, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("eleEcalIso", "Electron ECAL iso", "ECAL iso", 0., 15., 30, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("eleHcalIso12", "Electron HCAL iso12", "HCAL iso", 0., 15., 30, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("eleTrkIso", "Electron track iso", "trk_{iso}", 0., 5.1, 51, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("eleLostHits", "Electron number of lost hits", "", 0., 2., 2, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muIsoCombRel", "Muon iso comb rel", "#mu iso comb rel", 0., 3.5, 35, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muIsoCombRel", "Muon combined iso / pt", "#mu (iso_{em}+iso_{had}+iso_{trk})/p_{T}", 0., 3.5, 35, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("muEtEleOPtMu", "Electron Et over muon pt", "E^{e}_{T} / p^{#mu}_{T}", 0., 13., 26, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muPtPlusOPtMinus", "Muon pt plus over pt minus", "p^{+}_{T}/p^{-}_{T}", 0., 10., 20, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muPt", "Muon pt", "p_{T} [GeV]", 0., 500., 50, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muEta", "Muon eta", "#eta", -2.5, 2.5, 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muPhi", "Muon phi", "#phi", -3.2, 3.2, 64, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("muPtPlusOPtMinus", "lepton pt+ / pt-", "p^{+}_{T}/p^{-}_{T}", 0., 10., 20, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muPt", "Muon pt", "p_{T}^{#mu} [GeV]", 0., 500., 50, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muEta", "Muon eta", "#eta_{#mu}", -2.5, 2.5, 50, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("muPhi", "Muon phi", "#varphi_{#mu}", -3.2, 3.2, 64, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("muHitLayers", "Muon layers with hits", "# layers hits", 4., 20., 16, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("muPxlHits", "Muon pixel hits", "# pixel hits", 0., 10., 10, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("muMuHits", "Muon system hits", "# #mu system hits", 0., 55., 55, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muDZFstPVtx", "Muon dZ of first PV", "#mu dZ 1^{st} PV", -0.1, 0.1, 40, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muDXYFstPVtx", "Muon Dxy at first PV", "#Deltaxy_{#mu}", -0.2, 0.2, 80, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muDZFstPVtx", "Muon Dz at first PV", "#Deltaz_{#mu}", -0.1, 0.1, 40, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("muNSeg", "Muon number of segments", "# segments", 0., 7., 7, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("muTrkIso03", "Muon track iso 03", "#mu trk iso", 0., 20., 40, 1, 1, 1, 1));
 
@@ -508,7 +510,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
     dataOverBgHist->GetXaxis()->SetTitle(testPlots[var].fXaxisTitle);
     dataOverBgHist->GetXaxis()->SetTitleFont(font);
     dataOverBgHist->GetXaxis()->SetTitleSize(0.047 * fontScaleBot);
-    dataOverBgHist->GetXaxis()->SetTitleOffset(0.9);
+    dataOverBgHist->GetXaxis()->SetTitleOffset(1.);
     dataOverBgHist->GetXaxis()->SetLabelFont(font);
     dataOverBgHist->GetXaxis()->SetLabelSize(0.05 * fontScaleBot);
     dataOverBgHist->GetXaxis()->SetMoreLogLabels();
@@ -539,9 +541,9 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 }
 
 // plot a range of control variables
-void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, unsigned int to = 33)
+void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, unsigned int to = 34)
 {
-  if (to == 0 || to > 33) to = 33;
+  if (to == 0 || to > 34) to = 34;
   if (from == 0 || from > to) from = 1;
   for (unsigned int i = from; i <= to; ++i)
     macro_MakeTestPlot(i, sign, region);
