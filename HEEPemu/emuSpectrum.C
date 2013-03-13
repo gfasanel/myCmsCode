@@ -44,7 +44,7 @@ void EmuSpectrum::Loop()
    TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.948);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
    // global systematic errors
-   TParameter<float> systErrLumi("systErrLumi", 0.022);
+   TParameter<float> systErrLumi("systErrLumi", 0.044);
    TParameter<float> systErrEff("systErrEff", 0.007); // muon err (0.002) & ele err (0.007)
 
    bool usePUInfo = true;
@@ -124,6 +124,11 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.025));
    storeGenMTtbar.push_back(0);
 
+   TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_8288533ev.root");
+   input.push_back(make_pair(inTTbarMg, 234./ 8288533.)); //TTjets from MadGraph
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.067));
+   storeGenMTtbar.push_back(1);
+
    TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_16365457ev.root");
    input.push_back(make_pair(inTTbar22l, 13.43 / 16365457. * 234./(13.43+53.2+53.4))); //TT to 2l
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.067));
@@ -175,7 +180,7 @@ void EmuSpectrum::Loop()
 
    // output file
    stringstream ssOutfile;
-   ssOutfile << outfileName << " " << LumiFactor << "pb-1.root";
+   ssOutfile << outfileName << "_" << LumiFactor << "pb-1.root";
    TFile *output = new TFile(ssOutfile.str().c_str(), "recreate");
 
    // write parameters
@@ -252,8 +257,8 @@ void EmuSpectrum::Loop()
       if (storeGenMTtbar[p]) emuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
       // control variables
       float nVtx = 0.;
-      float dZFstPVtx = 0.;
-      float dXYFstPVtx = 0.;
+      float eDzMinusMuDz = 0.;
+      float eDxyMinusMuDxy = 0.;
       float dPhi = 0.;
       float dEta = 0.;
       float eleEt = 0.;
@@ -262,31 +267,39 @@ void EmuSpectrum::Loop()
       float eleDEta = 0.;
       float eleDPhi = 0.;
       float eleHOE = 0.;
+      float eleE1x5overE5x5 = 0.;
+      float eleE2x5overE5x5 = 0.;
       float eleSigmaIEIE = 0.;
       float eleEcalIso = 0.;
-      float eleHcalIso12 = 0.;
+      float eleHcalIso1 = 0.;
+      float eleHcalIso2 = 0.;
       float eleTrkIso = 0.;
       float eleLostHits = 0.;
-      float muIsoCombRel = 0.;
-      float muEtEleOPtMu = 0.;
-      float muPtPlusOPtMinus = 0.;
+      float eleDZFstPVtx = 0.;
+      float eleDXYFstPVtx = 0.;
+      float etEleOPtMu = 0.;
+      float lepPtPlusOPtMinus = 0.;
+      float eChTimesMuCh = 0;
       float muPt = 0.;
+      float muPtErr = 0.;
       float muEta = 0.;
       float muPhi = 0.;
       float muHitLayers = 0.;
+      float muTrkHits = 0.;
       float muPxlHits = 0.;
       float muMuHits = 0.;
       float muDZFstPVtx = 0.;
       float muDXYFstPVtx = 0.;
       float muNSeg = 0.;
+      float muIsoCombRel = 0.;
       float muTrkIso03 = 0.;
       float numOfJets = 0.;
       float numOfJetsPt20 = 0.;
       float numOfJetsPt30 = 0.;
       emuTree->Branch("pfMet", &pfmet, "pfMet/F");
       emuTree->Branch("nVtx", &nVtx, "nVtx/F");
-      emuTree->Branch("dZFstPVtx", &dZFstPVtx, "dZFstPVtx/F");
-      emuTree->Branch("dXYFstPVtx", &dXYFstPVtx, "dXYFstPVtx/F");
+      emuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
+      emuTree->Branch("eDxyMinusMuDxy", &eDxyMinusMuDxy, "eDxyMinusMuDxy/F");
       emuTree->Branch("rho", &rho, "rho/F");
       emuTree->Branch("dPhi", &dPhi, "dPhi/F");
       emuTree->Branch("dEta", &dEta, "dEta/F");
@@ -296,24 +309,32 @@ void EmuSpectrum::Loop()
       emuTree->Branch("eleDEta", &eleDEta, "eleDEta/F");
       emuTree->Branch("eleDPhi", &eleDPhi, "eleDPhi/F");
       emuTree->Branch("eleHOE", &eleHOE, "eleHOE/F");
+      emuTree->Branch("eleE1x5overE5x5", &eleE1x5overE5x5, "eleE1x5overE5x5/F");
+      emuTree->Branch("eleE2x5overE5x5", &eleE2x5overE5x5, "eleE2x5overE5x5/F");
       emuTree->Branch("eleSigmaIEIE", &eleSigmaIEIE, "eleSigmaIEIE/F");
       emuTree->Branch("eleEcalIso", &eleEcalIso, "eleEcalIso/F");
-      emuTree->Branch("eleHcalIso12", &eleHcalIso12, "eleHcalIso12/F");
+      emuTree->Branch("eleHcalIso1", &eleHcalIso1, "eleHcalIso1/F");
+      emuTree->Branch("eleHcalIso2", &eleHcalIso2, "eleHcalIso2/F");
       emuTree->Branch("eleTrkIso", &eleTrkIso, "eleTrkIso/F");
       emuTree->Branch("eleLostHits", &eleLostHits, "eleLostHits/F");
-      emuTree->Branch("muIsoCombRel", &muIsoCombRel, "muIsoCombRel/F");
-      emuTree->Branch("muEtEleOPtMu", &muEtEleOPtMu, "muEtEleOPtMu/F");
-      emuTree->Branch("muPtPlusOPtMinus", &muPtPlusOPtMinus, "muPtPlusOPtMinus/F");
+      emuTree->Branch("eleDZFstPVtx", &eleDZFstPVtx, "eleDZFstPVtx/F");
+      emuTree->Branch("eleDXYFstPVtx", &eleDXYFstPVtx, "eleDXYFstPVtx/F");
+      emuTree->Branch("etEleOPtMu", &etEleOPtMu, "etEleOPtMu/F");
+      emuTree->Branch("lepPtPlusOPtMinus", &lepPtPlusOPtMinus, "lepPtPlusOPtMinus/F");
+      emuTree->Branch("eChTimesMuCh", &eChTimesMuCh, "eChTimesMuCh/F");
       emuTree->Branch("muPt", &muPt, "muPt/F");
+      emuTree->Branch("muPtErr", &muPtErr, "muPtErr/F");
       emuTree->Branch("muEta", &muEta, "muEta/F");
       emuTree->Branch("muPhi", &muPhi, "muPhi/F");
       emuTree->Branch("muHitLayers", &muHitLayers, "muHitLayers/F");
+      emuTree->Branch("muTrkHits", &muTrkHits, "muTrkHits/F");
       emuTree->Branch("muPxlHits", &muPxlHits, "muPxlHits/F");
       emuTree->Branch("muMuHits", &muMuHits, "muMuHits/F");
       emuTree->Branch("muDZFstPVtx", &muDZFstPVtx, "muDZFstPVtx/F");
       emuTree->Branch("muDXYFstPVtx", &muDXYFstPVtx, "muDXYFstPVtx/F");
       emuTree->Branch("muNSeg", &muNSeg, "muNSeg/F");
       emuTree->Branch("muTrkIso03", &muTrkIso03, "muTrkIso03/F");
+      emuTree->Branch("muIsoCombRel", &muIsoCombRel, "muIsoCombRel/F");
       emuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
       emuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
       emuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
@@ -458,8 +479,8 @@ void EmuSpectrum::Loop()
             else evtRegion = -1;
             // fill control variables
             nVtx = pvsize;
-            dZFstPVtx = fabs(gsf_dz_firstPVtx[GSF_passHEEP[0]] - muon_dz_firstPVtx[MU_passGOOD[0]]);
-            dXYFstPVtx = fabs(gsf_dxy_firstPVtx[GSF_passHEEP[0]] - muon_dxy_firstPVtx[MU_passGOOD[0]]);
+            eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passHEEP[0]] - muon_dz_firstPVtx[MU_passGOOD[0]]);
+            eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passHEEP[0]] - muon_dxy_firstPVtx[MU_passGOOD[0]]);
             if (fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]);
             if (fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]);
             dEta = fabs(muon_eta[MU_passGOOD[0]] - gsf_eta[GSF_passHEEP[0]]);
@@ -469,25 +490,34 @@ void EmuSpectrum::Loop()
             eleDEta = gsf_deltaeta[GSF_passHEEP[0]];
             eleDPhi = gsf_deltaphi[GSF_passHEEP[0]];
             eleHOE = gsf_hovere[GSF_passHEEP[0]];
+            eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passHEEP[0]];
+            eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passHEEP[0]];
             eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passHEEP[0]];
             eleEcalIso = gsf_ecaliso[GSF_passHEEP[0]];
-            eleHcalIso12 = gsf_hcaliso1[GSF_passHEEP[0]] + gsf_hcaliso2[GSF_passHEEP[0]];
+            eleHcalIso1 = gsf_hcaliso1[GSF_passHEEP[0]];
+            eleHcalIso2 = gsf_hcaliso2[GSF_passHEEP[0]];
             eleTrkIso = gsf_trackiso[GSF_passHEEP[0]];
             eleLostHits = gsf_nLostInnerHits[GSF_passHEEP[0]];
-            muIsoCombRel = CombRelIso;
-            muEtEleOPtMu = gsf_gsfet[GSF_passHEEP[0]]/muon_pt[MU_passGOOD[0]];
-            if (gsf_charge[GSF_passHEEP[0]] > 0 && muon_charge[MU_passGOOD[0]] < 0) muPtPlusOPtMinus = gsf_gsfet[GSF_passHEEP[0]]/muon_pt[MU_passGOOD[0]];
-            if (gsf_charge[GSF_passHEEP[0]] < 0 && muon_charge[MU_passGOOD[0]] > 0) muPtPlusOPtMinus = muon_pt[MU_passGOOD[0]]/gsf_gsfet[GSF_passHEEP[0]];
+            eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passHEEP[0]];
+            eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passHEEP[0]];
+            etEleOPtMu = gsf_gsfet[GSF_passHEEP[0]]/muon_pt[MU_passGOOD[0]];
+            if (gsf_charge[GSF_passHEEP[0]] > 0 && muon_charge[MU_passGOOD[0]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passHEEP[0]]/muon_pt[MU_passGOOD[0]];
+            else if (gsf_charge[GSF_passHEEP[0]] < 0 && muon_charge[MU_passGOOD[0]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[0]]/gsf_gsfet[GSF_passHEEP[0]];
+            else lepPtPlusOPtMinus = 0.;
+            eChTimesMuCh = eCharge * muCharge;
             muPt = muon_pt[MU_passGOOD[0]];
+            muPtErr = muon_ptError[MU_passGOOD[0]];
             muEta = muon_eta[MU_passGOOD[0]];
             muPhi = muon_phi[MU_passGOOD[0]];
             muHitLayers = muon_nlayerswithhits[MU_passGOOD[0]];
+            muTrkHits = muon_nhitstrack[MU_passGOOD[0]];
             muPxlHits = muon_nhitspixel[MU_passGOOD[0]];
             muMuHits = muon_nhitsmuons[MU_passGOOD[0]];
             muDZFstPVtx = muon_dz_firstPVtx[MU_passGOOD[0]];
             muDXYFstPVtx = muon_dxy_firstPVtx[MU_passGOOD[0]];
             muNSeg = muon_nSegmentMatch[MU_passGOOD[0]];
             muTrkIso03 = muon_trackIso03[MU_passGOOD[0]];
+            muIsoCombRel = CombRelIso;
             numOfJets = JetColl_size;
             numOfJetsPt20 = jetsPt20;
             numOfJetsPt30 = jetsPt30;

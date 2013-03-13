@@ -317,6 +317,7 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("zmumu");
    suffix.push_back("zee");
    suffix.push_back("zz");
+   suffix.push_back("ttbarMg");
    suffix.push_back("ttbarto2l");
    suffix.push_back("ttbarto1l1jet");
    suffix.push_back("ttbarw");
