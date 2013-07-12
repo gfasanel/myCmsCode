@@ -49,59 +49,61 @@ TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brNam
 void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
-  //TFile input("./emuSpec_19619pb-1.root", "open");
-  TFile input("test_19619pb-1.root", "open");
+  TFile input("../forest/emuSpec_19780pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
-  const int nBins = 75;
   const bool usePu = 1;
   const bool useWeight = 1;
   const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
 
   int eRegion = 2; // electron region EB(0), EE(1), EB+EE(2)
 
-  bool plotSign[3];
+  bool plotSign[5];
   plotSign[0] = 1;  // all
-  plotSign[1] = 1;  // SS same sign
-  plotSign[2] = 1;  // OS opposite sign
+  plotSign[1] = 0;  // SS same sign
+  plotSign[2] = 0;  // OS opposite sign
+  plotSign[3] = 0;  // e-mu+
+  plotSign[4] = 0;  // e+mu-
 
   bool plotType[2];
   plotType[0] = 1;  // emu spectrum
-  plotType[1] = 1;  // cumulative emu spectrum
+  plotType[1] = 0;  // cumulative emu spectrum
 
+  const float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
   const bool plotPull = 1; // plot (data-bkg)/bkg
   const bool plotPullBelowSpec = 1; // plot (data-bkg)/bkg below spectrum
+  const bool varBinning = 1;
   const bool logPlotX = 0;
   const bool logPlotY = 1;
   const bool prelim = 1;
   const bool groupedPlot = 0;
-  const bool overflowBin = 1;
+  const bool overflowBin = 0;
 
   float xRangeMin = 60.;
-  float xRangeMax = 1200.;
+  //float xRangeMax = 1200.;
   //float xRangeMin = 0.;
-  //float xRangeMax = 1500.;
-  float yRangeMin[6] = {0.002, 0.002, 0.002, 0.2, 0.2, 0.2};
-  float yRangeMax[6] = {250, 40, 250, 30000, 4000, 30000};
-  float yRangeMinRatio[3] = {-0.7, -0.7, -0.7};
-  float yRangeMaxRatio[3] = {0.7, 0.7, 0.7};
+  float xRangeMax = 1500.;
+  float yRangeMin[10] = {0.002, 0.002, 0.002,  0.002,  0.0002, 0.2, 0.2, 0.2, 0.2, 0.2};
+  float yRangeMax[10] = {250, 40, 250, 250, 250, 30000, 4000, 30000, 30000, 30000};
+  float yRangeMinRatio[5] = {-0.7, -0.7, -0.7, -0.7, -0.7};
+  float yRangeMaxRatio[5] = {0.7, 0.7, 0.7, 0.7, 0.7};
   float fitMin = xRangeMin;
-  float fitMax = 1100.; // set to highest bin with a data point
-  float xRangeMinRatio = fitMin;
-  float xRangeMaxRatio = fitMax;
+  float fitMax = 1500.; // set to highest bin with a data point
+  float xRangeMinRatio = xRangeMin;
+  float xRangeMaxRatio = xRangeMax;
 
   // output file formats
   const bool savePull = 0;
   const bool saveSpec = 0;
   const bool saveCumSpec = 0;
-  const bool saveAsPdf = 1;
+  const bool saveAsPdf = 0;
   const bool saveAsPng = 1;
-  const bool saveAsRoot = 1;
+  const bool saveAsRoot = 0;
   const char *fileNameExtra = "";
   //const char *fileNameExtra = "madgraphTTbar_";
-  const char *plotDir = "./plottemp/";
+  const char *plotDir = "../plots/20130523_withSignal/";
 
   // plot style
   int ttbarColour = TColor::GetColor("#ff6666");
@@ -141,8 +143,8 @@ void macro_MakeEMuInvMassPlot()
   TH1::AddDirectory(kFALSE);
   TH1::SetDefaultSumw2(kTRUE);
 
-  TString histoSign[3] = {"", "SS_", "OS_"};
-  TString xAxisTitle[3] = {"m(e#mu)", "m(e^{#pm}#mu^{#pm})", "m(e^{#pm}#mu^{#mp})"};
+  TString histoSign[5] = {"", "SS_", "OS_", "e-mu+_", "e+mu-_"};
+  TString xAxisTitle[5] = {"m(e#mu)", "m(e^{#pm}#mu^{#pm})", "m(e^{#pm}#mu^{#mp})", "m(e^{-}#mu^{+})", "m(e^{+}#mu^{-})"};
   TString nameSuffix[2] = {"", "cumul"};
   TString titleSuffix[2] = {"", " - Cumulative"};
 
@@ -159,46 +161,55 @@ void macro_MakeEMuInvMassPlot()
   vector<TH1F *> emuMass_qcd;
   vector<TH1F *> emuMass_ttLike;
   vector<TH1F *> emuMass_fakePairs;
+  vector<TH1F *> emuMass_sig1;
+  vector<TH1F *> emuMass_sig2;
+  vector<TH1F *> emuMass_sig3;
+  vector<TH1F *> emuMass_sig4;
+  vector<TH1F *> dataOverBgHist;
 
   // define the binning
   vector<float> binning;
-  if (logPlotX) {
-    //for (float bin = 0.; bin < 100.; bin += 5.)
-    //  binning.push_back(bin);
-    for (float bin = 0.; bin < 200.; bin += 10.)
-      binning.push_back(bin);
-    for (float bin = 200.; bin < 400.; bin += 20.)
-      binning.push_back(bin);
-    for (float bin = 400.; bin < 500.; bin += 25.)
-      binning.push_back(bin);
-    for (float bin = 500.; bin <= 620.; bin += 40.)
-      binning.push_back(bin);
-      binning.push_back(670.);
-      binning.push_back(720.);
-      binning.push_back(780.);
-      binning.push_back(840.);
-      binning.push_back(920.);
-      binning.push_back(1000.);
-      binning.push_back(1100.);
-      binning.push_back(1220.);
-      binning.push_back(1380.);
-      binning.push_back(1500.);
+  if (varBinning) {
+    if (logPlotX) {
+      //for (float bin = 0.; bin < 100.; bin += 5.)
+      //  binning.push_back(bin);
+      for (float bin = 0.; bin < 200.; bin += 10.)
+        binning.push_back(bin);
+      for (float bin = 200.; bin < 400.; bin += 20.)
+        binning.push_back(bin);
+      for (float bin = 400.; bin < 500.; bin += 25.)
+        binning.push_back(bin);
+      for (float bin = 500.; bin <= 620.; bin += 40.)
+        binning.push_back(bin);
+        binning.push_back(670.);
+        binning.push_back(720.);
+        binning.push_back(780.);
+        binning.push_back(840.);
+        binning.push_back(920.);
+        binning.push_back(1000.);
+        binning.push_back(1100.);
+        binning.push_back(1220.);
+        binning.push_back(1380.);
+        binning.push_back(1500.);
+    } else {
+      for (float bin = 0.; bin < 200.; bin += 20.)
+        binning.push_back(bin);
+      for (float bin = 200.; bin < 400.; bin += 40.)
+        binning.push_back(bin);
+      for (float bin = 400.; bin < 700.; bin += 50.)
+        binning.push_back(bin);
+      for (float bin = 700.; bin < 1000.; bin += 75.)
+        binning.push_back(bin);
+      for (float bin = 1000.; bin < 1200.; bin += 100.)
+        binning.push_back(bin);
+      for (float bin = 1200.; bin <= 1500.; bin += 150.)
+        binning.push_back(bin);
+    }
   } else {
-    //for (float bin = 0.; bin <= 1500.; bin += 20.)
-    //  binning.push_back(bin);
-    for (float bin = 0.; bin < 200.; bin += 20.)
-      binning.push_back(bin);
-    for (float bin = 200.; bin < 400.; bin += 40.)
-      binning.push_back(bin);
-    for (float bin = 400.; bin < 700.; bin += 50.)
-      binning.push_back(bin);
-    for (float bin = 700.; bin < 1000.; bin += 75.)
-      binning.push_back(bin);
-    for (float bin = 1000.; bin < 1200.; bin += 100.)
-      binning.push_back(bin);
-    for (float bin = 1200.; bin <= 1500.; bin += 150.)
+    for (float bin = 0.; bin <= 1500.; bin += 20.)
       binning.push_back(bin);
   }
+  int nBins = binning.size();
 
   THashList *mcWeights = (THashList *)input.Get("mcWeights");
   TParameter<float> *mcWeight = (TParameter<float> *)mcWeights->FindObject("ttbar");
@@ -238,8 +249,13 @@ void macro_MakeEMuInvMassPlot()
     qcdContrib->Scale((ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral());
   } 
 
+  TLatex *tex = new TLatex();
+  tex->SetNDC();
+  tex->SetTextFont(font);
+  tex->SetLineWidth(2);
+
   // loop over full spectrum, SS and OS
-  for (int k = 0; k < 3; ++k) {
+  for (int k = 0; k < 5; ++k) {
     // loop to get normal and cumulated spectrum
     for (unsigned int j = 0; j < 2; ++j) {
       input.cd();
@@ -248,8 +264,10 @@ void macro_MakeEMuInvMassPlot()
       if (j > 0) normToBin = false;
 
       if (k == 2) k = -1;
+      else if (k == 3) k = -3;
+      else if (k == 4) k = -2;
       // make the histograms
-      TH1F *dataOverBgHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x100, normToBin);
+      dataOverBgHist.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x100, normToBin));
       emuMass_data.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x100));
 
       TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "genMTtbar", 0., 700., binning, 0x1DF, normToBin);
@@ -269,8 +287,14 @@ void macro_MakeEMuInvMassPlot()
       emuMass_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
       emuMass_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
       emuMass_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      if (plotSignal[0] > 0.) emuMass_sig1.push_back(MakeHistoFromBranch(&input, "emuTree_sig500", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      if (plotSignal[1] > 0.) emuMass_sig2.push_back(MakeHistoFromBranch(&input, "emuTree_sig750", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      if (plotSignal[2] > 0.) emuMass_sig3.push_back(MakeHistoFromBranch(&input, "emuTree_sig1000", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      if (plotSignal[3] > 0.) emuMass_sig4.push_back(MakeHistoFromBranch(&input, "emuTree_sig1250", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
       if (qcdEst != 2) emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
       if (k == -1) k = 2;
+      else if (k == -2) k = 4;
+      else if (k == -3) k = 3;
       emuMass_data.back()->SetName("emuMass_" + histoSign[k] + "data" + nameSuffix[j]);
       emuMass_ttbar.back()->SetName("emuMass_" + histoSign[k] + "ttbar" + nameSuffix[j]);
       emuMass_ztautau.back()->SetName("emuMass_" + histoSign[k] + "ztautau" + nameSuffix[j]);
@@ -281,15 +305,36 @@ void macro_MakeEMuInvMassPlot()
       emuMass_zmumu.back()->SetName("emuMass_" + histoSign[k] + "zmumu" + nameSuffix[j]);
       emuMass_zee.back()->SetName("emuMass_" + histoSign[k] + "zee" + nameSuffix[j]);
       if (qcdEst != 2) emuMass_wjets.back()->SetName("emuMass_" + histoSign[k] + "wjets" + nameSuffix[j]);
+      if (plotSignal[0] > 0.) {
+        emuMass_sig1.back()->SetName("emuMass_" + histoSign[k] + "sig1" + nameSuffix[j]);
+        emuMass_sig1.back()->Scale(plotSignal[0]);
+      }
+      if (plotSignal[1] > 0.) {
+        emuMass_sig2.back()->SetName("emuMass_" + histoSign[k] + "sig2" + nameSuffix[j]);
+        emuMass_sig2.back()->Scale(plotSignal[1]);
+      }
+      if (plotSignal[2] > 0.) {
+        emuMass_sig3.back()->SetName("emuMass_" + histoSign[k] + "sig3" + nameSuffix[j]);
+        emuMass_sig3.back()->Scale(plotSignal[2]);
+      }
+      if (plotSignal[3] > 0.) {
+        emuMass_sig4.back()->SetName("emuMass_" + histoSign[k] + "sig4" + nameSuffix[j]);
+        emuMass_sig4.back()->Scale(plotSignal[3]);
+      }
 
       // qcd contribution
       if (qcdEst > 0) {
         if (k == 2) k = -1;
+        else if (k == 3) k = -3;
+        else if (k == 4) k = -2;
         if (qcdEst == 2) {
           //qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", "mass", ALL, eRegion, "", 0., 0., binning, 0x300);
           //if (k != ALL) emuMass_qcd.back()->Scale(0.5);
           qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x300);
         }
+        if (k == -1) k = 2;
+        else if (k == -2) k = 4;
+        else if (k == -3) k = 3;
         emuMass_qcd.push_back((TH1F *)qcdContrib->Clone("emuMass_" + histoSign[k] + "qcd"));
         if (qcdEst == 1 && k == ALL) emuMass_qcd.back()->Scale(2.);
         // normalize to bin width
@@ -299,12 +344,11 @@ void macro_MakeEMuInvMassPlot()
             emuMass_qcd.back()->SetBinError(i, emuMass_qcd.back()->GetBinError(i) / emuMass_qcd.back()->GetBinWidth(i));
           }
         }
-        if (k == -1) k = 2;
       }
 
       // add overflow in last bin
       if (j == 0 && overflowBin) {
-        dataOverBgHist->SetBinContent(dataOverBgHist->GetNbinsX(), dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX()) + dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX() + 1));
+        dataOverBgHist.back()->SetBinContent(dataOverBgHist.back()->GetNbinsX(), dataOverBgHist.back()->GetBinContent(dataOverBgHist.back()->GetNbinsX()) + dataOverBgHist.back()->GetBinContent(dataOverBgHist.back()->GetNbinsX() + 1));
         emuMass_data.back()->SetBinContent(emuMass_data.back()->GetNbinsX(), emuMass_data.back()->GetBinContent(emuMass_data.back()->GetNbinsX()) + emuMass_data.back()->GetBinContent(emuMass_data.back()->GetNbinsX() + 1));
         emuMass_ttbar.back()->SetBinContent(emuMass_ttbar.back()->GetNbinsX(), emuMass_ttbar.back()->GetBinContent(emuMass_ttbar.back()->GetNbinsX()) + emuMass_ttbar.back()->GetBinContent(emuMass_ttbar.back()->GetNbinsX() + 1));
         emuMass_ztautau.back()->SetBinContent(emuMass_ztautau.back()->GetNbinsX(), emuMass_ztautau.back()->GetBinContent(emuMass_ztautau.back()->GetNbinsX()) + emuMass_ztautau.back()->GetBinContent(emuMass_ztautau.back()->GetNbinsX() + 1));
@@ -316,6 +360,10 @@ void macro_MakeEMuInvMassPlot()
         emuMass_zee.back()->SetBinContent(emuMass_zee.back()->GetNbinsX(), emuMass_zee.back()->GetBinContent(emuMass_zee.back()->GetNbinsX()) + emuMass_zee.back()->GetBinContent(emuMass_zee.back()->GetNbinsX() + 1));
         if (qcdEst != 2) emuMass_wjets.back()->SetBinContent(emuMass_wjets.back()->GetNbinsX(), emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX()) + emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX() + 1));
         if (qcdEst > 0) emuMass_qcd.back()->SetBinContent(emuMass_qcd.back()->GetNbinsX(), emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX()) + emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX() + 1));
+      if (plotSignal[0] > 0.) emuMass_sig1.back()->SetBinContent(emuMass_sig1.back()->GetNbinsX(), emuMass_sig1.back()->GetBinContent(emuMass_sig1.back()->GetNbinsX()) + emuMass_sig1.back()->GetBinContent(emuMass_sig1.back()->GetNbinsX() + 1));
+      if (plotSignal[1] > 0.) emuMass_sig2.back()->SetBinContent(emuMass_sig2.back()->GetNbinsX(), emuMass_sig2.back()->GetBinContent(emuMass_sig2.back()->GetNbinsX()) + emuMass_sig2.back()->GetBinContent(emuMass_sig2.back()->GetNbinsX() + 1));
+      if (plotSignal[2] > 0.) emuMass_sig3.back()->SetBinContent(emuMass_sig3.back()->GetNbinsX(), emuMass_sig3.back()->GetBinContent(emuMass_sig3.back()->GetNbinsX()) + emuMass_sig3.back()->GetBinContent(emuMass_sig3.back()->GetNbinsX() + 1));
+      if (plotSignal[3] > 0.) emuMass_sig4.back()->SetBinContent(emuMass_sig4.back()->GetNbinsX(), emuMass_sig4.back()->GetBinContent(emuMass_sig4.back()->GetNbinsX()) + emuMass_sig4.back()->GetBinContent(emuMass_sig4.back()->GetNbinsX() + 1));
       }
 
       // make grouped histograms
@@ -361,6 +409,22 @@ void macro_MakeEMuInvMassPlot()
             emuMass_qcd.back()->SetBinContent(i, emuMass_qcd.back()->IntegralAndError(i, nBins, error));
             emuMass_qcd.back()->SetBinError(i, error);
           }
+          if (plotSignal[0] > 0.) {
+            emuMass_sig1.back()->SetBinContent(i, emuMass_sig1.back()->IntegralAndError(i, nBins, error));
+            emuMass_sig1.back()->SetBinError(i, error);
+          }
+          if (plotSignal[1] > 0.) {
+            emuMass_sig2.back()->SetBinContent(i, emuMass_sig2.back()->IntegralAndError(i, nBins, error));
+            emuMass_sig2.back()->SetBinError(i, error);
+          }
+          if (plotSignal[2] > 0.) {
+            emuMass_sig3.back()->SetBinContent(i, emuMass_sig3.back()->IntegralAndError(i, nBins, error));
+            emuMass_sig3.back()->SetBinError(i, error);
+          }
+          if (plotSignal[3] > 0.) {
+            emuMass_sig4.back()->SetBinContent(i, emuMass_sig4.back()->IntegralAndError(i, nBins, error));
+            emuMass_sig4.back()->SetBinError(i, error);
+          }
 
           // grouped histograms
           emuMass_ttLike.back()->SetBinContent(i, emuMass_ttLike.back()->IntegralAndError(i, nBins, error));
@@ -376,7 +440,7 @@ void macro_MakeEMuInvMassPlot()
       TCanvas *emuPlot;
       TPad *specPad;
       if (plotPullBelowSpec && j == 0) {
-        emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 900);
+        emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 720);
         specPad = new TPad("specPad" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 0., 0.33, 1., 1.);
         specPad->SetBottomMargin(0.06);
       } else {
@@ -439,6 +503,23 @@ void macro_MakeEMuInvMassPlot()
       bgHist->Add(emuMass_ww.back());
       bgHist->Add(emuMass_ztautau.back());
 
+      if (plotSignal[0] > 0.) {
+        emuMass_sig1.back()->SetLineColor(kGreen);
+        emuMass_sig1.back()->SetLineWidth(2);
+      }
+      if (plotSignal[1] > 0.) {
+        emuMass_sig2.back()->SetLineColor(kBlue);
+        emuMass_sig2.back()->SetLineWidth(2);
+      }
+      if (plotSignal[2] > 0.) {
+        emuMass_sig3.back()->SetLineColor(kCyan);
+        emuMass_sig3.back()->SetLineWidth(2);
+      }
+      if (plotSignal[3] > 0.) {
+        emuMass_sig4.back()->SetLineColor(kMagenta);
+        emuMass_sig4.back()->SetLineWidth(2);
+      }
+
       // plot spectrum
       if (groupedPlot) {
         emuMass_ttLike.back()->SetFillColor(ttbarColour);
@@ -451,6 +532,10 @@ void macro_MakeEMuInvMassPlot()
         emuMass_fakePairs.back()->SetLineWidth(2);
         //emuMass_fakePairs.back()->Draw("HISTsames");
         bgStackGrouped->Draw("hist");
+        if (plotSignal[0] > 0.) emuMass_sig1.back()->Draw("histsame");
+        if (plotSignal[1] > 0.) emuMass_sig2.back()->Draw("histsame");
+        if (plotSignal[2] > 0.) emuMass_sig3.back()->Draw("histsame");
+        if (plotSignal[3] > 0.) emuMass_sig4.back()->Draw("histsame");
 
         if (plotPullBelowSpec && j == 0) {
           bgStackGrouped->GetXaxis()->SetTitle("");
@@ -473,8 +558,8 @@ void macro_MakeEMuInvMassPlot()
         bgStackGrouped->GetYaxis()->SetTitleOffset(1.1);
         bgStackGrouped->GetYaxis()->SetLabelFont(font);
         bgStackGrouped->GetYaxis()->SetLabelSize(0.05);
-        bgStackGrouped->SetMinimum(yRangeMin[k + j * 3]); 
-        bgStackGrouped->SetMaximum(yRangeMax[k + j * 3]); 
+        bgStackGrouped->SetMinimum(yRangeMin[k + j * 5]); 
+        bgStackGrouped->SetMaximum(yRangeMax[k + j * 5]); 
       } else {
         emuMass_ttbar.back()->SetFillColor(ttbarColour);
         emuMass_ttbar.back()->SetLineColor(kBlack);
@@ -530,6 +615,10 @@ void macro_MakeEMuInvMassPlot()
           //emuMass_qcd.back()->Draw("HISTsames");
         }
         bgStack->Draw("hist");
+        if (plotSignal[0] > 0.) emuMass_sig1.back()->Draw("histsame");
+        if (plotSignal[1] > 0.) emuMass_sig2.back()->Draw("histsame");
+        if (plotSignal[2] > 0.) emuMass_sig3.back()->Draw("histsame");
+        if (plotSignal[3] > 0.) emuMass_sig4.back()->Draw("histsame");
 
         if (plotPullBelowSpec && j == 0) {
           bgStack->GetXaxis()->SetTitle("");
@@ -552,8 +641,8 @@ void macro_MakeEMuInvMassPlot()
         bgStack->GetYaxis()->SetTitleOffset(1.1);
         bgStack->GetYaxis()->SetLabelFont(font);
         bgStack->GetYaxis()->SetLabelSize(0.05);
-        bgStack->SetMinimum(yRangeMin[k + j * 3]); 
-        bgStack->SetMaximum(yRangeMax[k + j * 3]); 
+        bgStack->SetMinimum(yRangeMin[k + j * 5]); 
+        bgStack->SetMaximum(yRangeMax[k + j * 5]); 
       }
 
       emuMass_data.back()->SetLineWidth(1);
@@ -609,13 +698,13 @@ void macro_MakeEMuInvMassPlot()
         legend.AddEntry(emuMass_zee.back(), "#gamma/Z#rightarrowee" ,"F");
         if (qcdEst != 2) legend.AddEntry(emuMass_wjets.back(), "W+jets" ,"F");
         if (qcdEst > 0) legend.AddEntry(emuMass_qcd.back(), "jets (data)" ,"F");
+        if (plotSignal[0] > 0.) legend.AddEntry(emuMass_sig1.back(), Form("Z'/#gamma'500 (x%.0f)", plotSignal[0]) ,"l");
+        if (plotSignal[1] > 0.) legend.AddEntry(emuMass_sig2.back(), Form("Z'/#gamma'750 (x%.0f)", plotSignal[1]) ,"l");
+        if (plotSignal[2] > 0.) legend.AddEntry(emuMass_sig3.back(), Form("Z'/#gamma'1000 (x%.0f)", plotSignal[2]) ,"l");
+        if (plotSignal[3] > 0.) legend.AddEntry(emuMass_sig4.back(), Form("Z'/#gamma'1250 (x%.0f)", plotSignal[3]) ,"l");
       }
       legend.DrawClone("sames");
       
-      TLatex *tex = new TLatex();
-      tex->SetNDC();
-      tex->SetTextFont(font);
-      tex->SetLineWidth(2);
       if (groupedPlot) {
         tex->SetTextSize(0.047);
         if (prelim) tex->DrawLatex(0.467, 0.846, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
@@ -642,6 +731,7 @@ void macro_MakeEMuInvMassPlot()
         if (j > 0) sStream << "_";
         if (groupedPlot) sStream << "grouped_";
         if (!logPlotY) sStream << "lin_";
+        if (!varBinning) sStream << "constBin_";
         sStream << lumi->GetVal() << "pb-1";
         TString saveFileName = sStream.str();
         if ((j == 0 && saveSpec) || (j > 0 && saveCumSpec)) {
@@ -653,8 +743,8 @@ void macro_MakeEMuInvMassPlot()
 
       if (j > 0 || !plotPull) continue;
       // plot a (data - bg)/bg histogram
-      dataOverBgHist->Add(bgHist, -1.);
-      dataOverBgHist->Divide(bgHist);
+      dataOverBgHist.back()->Add(bgHist, -1.);
+      dataOverBgHist.back()->Divide(bgHist);
 
       float fontScaleBot = 1.;
       TPad *pullPad = new TPad("pullPad" + histoSign[k] + nameSuffix[j], "(data - bg) / bg" + titleSuffix[j], 0., 0., 1., 1.);
@@ -683,33 +773,32 @@ void macro_MakeEMuInvMassPlot()
       pullPad->SetTickx(1);
       pullPad->SetTicky(1);
 
-      dataOverBgHist->SetLineWidth(1);
-      dataOverBgHist->SetLineColor(kBlack);
-      dataOverBgHist->SetMarkerStyle(20);
-      dataOverBgHist->SetMarkerSize(1.1);
+      dataOverBgHist.back()->SetLineWidth(1);
+      dataOverBgHist.back()->SetLineColor(kBlack);
+      dataOverBgHist.back()->SetMarkerStyle(20);
+      dataOverBgHist.back()->SetMarkerSize(1.1);
 
-      dataOverBgHist->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
-      dataOverBgHist->GetXaxis()->SetTitleFont(font);
-      dataOverBgHist->GetXaxis()->SetTitleSize(0.047 * fontScaleBot);
-      dataOverBgHist->GetXaxis()->SetTitleOffset(0.9);
-      dataOverBgHist->GetXaxis()->SetLabelFont(font);
-      dataOverBgHist->GetXaxis()->SetLabelSize(0.05 * fontScaleBot);
-      dataOverBgHist->GetXaxis()->SetMoreLogLabels();
-      dataOverBgHist->GetXaxis()->SetNoExponent();
-      dataOverBgHist->GetXaxis()->SetRangeUser(xRangeMinRatio, xRangeMaxRatio);
-      dataOverBgHist->GetYaxis()->SetTitle("(data-bkg)/bkg");
-      dataOverBgHist->GetYaxis()->SetTitleFont(font);
-      dataOverBgHist->GetYaxis()->SetTitleSize(0.047 * fontScaleBot);
-      dataOverBgHist->GetYaxis()->SetTitleOffset(1.1 / fontScaleBot);
-      dataOverBgHist->GetYaxis()->SetLabelFont(font);
-      dataOverBgHist->GetYaxis()->SetLabelSize(0.05 * fontScaleBot);
-      dataOverBgHist->GetYaxis()->SetRangeUser(yRangeMinRatio[k], yRangeMaxRatio[k]);
+      dataOverBgHist.back()->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+      dataOverBgHist.back()->GetXaxis()->SetTitleFont(font);
+      dataOverBgHist.back()->GetXaxis()->SetTitleSize(0.047 * fontScaleBot);
+      dataOverBgHist.back()->GetXaxis()->SetTitleOffset(0.9);
+      dataOverBgHist.back()->GetXaxis()->SetLabelFont(font);
+      dataOverBgHist.back()->GetXaxis()->SetLabelSize(0.05 * fontScaleBot);
+      dataOverBgHist.back()->GetXaxis()->SetMoreLogLabels();
+      dataOverBgHist.back()->GetXaxis()->SetNoExponent();
+      dataOverBgHist.back()->GetXaxis()->SetRangeUser(xRangeMinRatio, xRangeMaxRatio - 0.1);
+      dataOverBgHist.back()->GetYaxis()->SetTitle("(data-bkg)/bkg");
+      dataOverBgHist.back()->GetYaxis()->SetTitleFont(font);
+      dataOverBgHist.back()->GetYaxis()->SetTitleSize(0.047 * fontScaleBot);
+      dataOverBgHist.back()->GetYaxis()->SetTitleOffset(1.1 / fontScaleBot);
+      dataOverBgHist.back()->GetYaxis()->SetLabelFont(font);
+      dataOverBgHist.back()->GetYaxis()->SetLabelSize(0.05 * fontScaleBot);
+      dataOverBgHist.back()->GetYaxis()->SetRangeUser(yRangeMinRatio[k], yRangeMaxRatio[k]);
 
-      dataOverBgHist->Draw();
+      dataOverBgHist.back()->Draw();
 
       TF1 *f0 = new TF1("f0" + histoSign[k], "[0]");
-      dataOverBgHist->Fit("f0" + histoSign[k], "", "", fitMin, fitMax);
-      //dataOverBgHist->Draw("sameaxis");
+      dataOverBgHist.back()->Fit("f0" + histoSign[k], "", "", fitMin, fitMax);
 
       if (!plotPullBelowSpec) {
         if (groupedPlot) tex->SetTextSize(0.047 * fontScaleBot);
@@ -735,6 +824,7 @@ void macro_MakeEMuInvMassPlot()
         sStream << histoSign[k];
         if (eRegion == 0) sStream << "EB_";
         if (eRegion == 1) sStream << "EE_";
+        if (!varBinning) sStream << "constBin_";
         sStream << fileNameExtra << lumi->GetVal() << "pb-1";
         TString saveFileName = sStream.str();
         if (saveAsPdf) dataOverBgPlot->Print(saveFileName + ".pdf", "pdf");
@@ -752,6 +842,7 @@ void macro_MakeEMuInvMassPlot()
         if (j > 0) sStream << "_";
         if (groupedPlot) sStream << "grouped_";
         if (!logPlotY) sStream << "lin_";
+        if (!varBinning) sStream << "constBin_";
         sStream << lumi->GetVal() << "pb-1";
         TString saveFileName = sStream.str();
         if ((j == 0 && saveSpec) || (j > 0 && saveCumSpec)) {
@@ -763,6 +854,98 @@ void macro_MakeEMuInvMassPlot()
     } // end loop over normal or cumulated
   } // end loop over full, SS and OS
 
+  ////////////////////////////////////////////////////////////////////////////
+  // background parametrisation histograms
+  gStyle->SetOptFit(1111);
+  TCanvas* bgParamPlot;
+  TPad* bgParamPad;
+  if (plotPull) {
+    bgParamPlot = new TCanvas("bgParamPlot", "Bkg Parametrisation", 100, 100, 600, 720);
+    bgParamPad = new TPad("bgParamPad", "Bkg Parametrisation", 0., 0.33, 1., 1.);
+    bgParamPad->SetBottomMargin(0.06);
+  } else {
+    bgParamPlot = new TCanvas("bgParamPlot", "Bkg Parametrisation", 100, 100, 600, 600);
+    bgParamPad = new TPad("bgParamPad", "Bkg Parametrisation", 0., 0., 1., 1.);
+  }
+  bgParamPad->SetBorderMode(0);
+  bgParamPad->SetBorderSize(2);
+  bgParamPad->SetFrameBorderMode(0);
+  bgParamPad->SetFillColor(0);
+  bgParamPad->SetFrameFillColor(0);
+  if (logPlotX) bgParamPad->SetLogx();
+  bgParamPad->SetLogy();
+  bgParamPad->SetLeftMargin(0.11);
+  bgParamPad->SetRightMargin(0.09);
+  bgParamPad->SetTopMargin(0.08);
+  bgParamPad->SetTicks(1, 1);
+  bgParamPad->Draw();
+  TPad* bgParamDiffPad = (TPad*)bgParamPad->Clone("bgParamDiffPad");
+  if (plotPull) {
+    bgParamDiffPad->SetPad(0., 0., 1., 0.33);
+    bgParamDiffPad->SetLogy(0);
+    bgParamDiffPad->SetGridy();
+    bgParamDiffPad->SetTopMargin(0.05);
+    bgParamDiffPad->SetBottomMargin(0.22);
+    bgParamDiffPad->Draw();
+  }
+  float fontScaleLow = bgParamPad->GetHNDC() / bgParamDiffPad->GetHNDC();
+  bgParamPad->cd();
+  TH1F* emuMass_allBkg = (TH1F*)emuMass_ttbar[0]->Clone("");
+  if (qcdEst > 0) emuMass_allBkg->Add(emuMass_qcd[0]);
+  if (qcdEst != 2) emuMass_allBkg->Add(emuMass_wjets[0]);
+  emuMass_allBkg->Add(emuMass_zee[0]);
+  emuMass_allBkg->Add(emuMass_zmumu[0]);
+  emuMass_allBkg->Add(emuMass_tw[0]);
+  emuMass_allBkg->Add(emuMass_zz[0]);
+  emuMass_allBkg->Add(emuMass_wz[0]);
+  emuMass_allBkg->Add(emuMass_ww[0]);
+  emuMass_allBkg->Add(emuMass_ztautau[0]);
+  if (!plotPull) emuMass_allBkg->GetXaxis()->SetTitle(xAxisTitle[0] + " [GeV]");
+  emuMass_allBkg->GetYaxis()->SetTitle("Events / GeV");
+  emuMass_allBkg->GetYaxis()->SetTitleOffset(1.2);
+  emuMass_allBkg->Draw();
+  TFile* outFile = new TFile("bgFit.root", "recreate");
+  //TF1 *bgParamFunc = new TF1("bgParamFunc", "x^(-1*[3]) * exp([0] + [1]*x + [2]*x*x)", 150., 1500.);
+  //bgParamFunc->SetParLimits(0, 0., 1000.);
+  //bgParamFunc->SetParLimits(1, -10., 0.);
+  //bgParamFunc->SetParLimits(2, 0., 1.);
+  //bgParamFunc->SetParLimits(3, 0., 5.);
+  //bgParamFunc->SetParNames("a", "b", "c", "#kappa");
+  TF1 *bgParamFunc = new TF1("bgParamFunc", "1/[1]*(1+([2]*(x-[0]))/([1]))**(-1/[2]-1)", 0., 6000.);
+  bgParamFunc->SetParLimits(0, 100., 1.e5);
+  bgParamFunc->SetParLimits(1, 10., 1000.);
+  bgParamFunc->SetParLimits(2, 0.01, 1.);
+  bgParamFunc->SetParNames("m_{min}", "#alpha", "#beta");
+  //emuMass_allBkg->Rebin(2);
+  emuMass_allBkg->Fit("bgParamFunc", "", "", 150., 1500.);
+  bgParamFunc->Write();
+  outFile->Close();
+  cout << "Chi^2 / NDF: " << bgParamFunc->GetChisquare() << " / " << bgParamFunc->GetNDF() << ", prob: " << bgParamFunc->GetProb() << endl;
+  tex->SetTextSize(0.035);
+  if (prelim) tex->DrawLatex(0.109, 0.935, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
+  else tex->DrawLatex(0.109, 0.935, "CMS, 8 TeV, 19.6 fb^{-1}");
+  if (eRegion == 0) tex->DrawLatex(0.325, 0.845, "e in barrel");
+  if (eRegion == 1) tex->DrawLatex(0.325, 0.845, "e in endcap");
+  //tex->DrawLatex(0.159, 0.180, "P(m|a,b,c,#kappa) = m^{-#kappa} e^{a + b m + c m^{2}}");
+  tex->DrawLatex(0.159, 0.180, "P(m|m_{min},#alpha,#beta) = #frac{1}{#alpha}#left(1+#frac{#beta(m-m_{min})}{#alpha}#right)^{-#frac{1}{#beta}-1}");
+  if (plotPull) {
+    bgParamDiffPad->cd();
+    TH1F* bgParamDiff = (TH1F*)emuMass_allBkg->Clone("bgParamDiff");
+    bgParamDiff->GetXaxis()->SetTitle(xAxisTitle[0] + " [GeV]");
+    bgParamDiff->GetXaxis()->SetTitleSize(emuMass_allBkg->GetXaxis()->GetTitleSize() * fontScaleLow);
+    bgParamDiff->GetXaxis()->SetLabelSize(emuMass_allBkg->GetXaxis()->GetTitleSize() * fontScaleLow);
+    bgParamDiff->GetYaxis()->SetTitle("(bgk-fit)/fit");
+    bgParamDiff->GetYaxis()->SetTitleSize(emuMass_allBkg->GetYaxis()->GetTitleSize() * fontScaleLow);
+    bgParamDiff->GetYaxis()->SetTitleOffset(emuMass_allBkg->GetYaxis()->GetTitleOffset() / fontScaleLow);
+    bgParamDiff->GetYaxis()->SetLabelSize(emuMass_allBkg->GetYaxis()->GetTitleSize() * fontScaleLow);
+    bgParamDiff->Eval(bgParamFunc, "R");
+    bgParamDiff->Add(emuMass_allBkg, -1.);
+    bgParamDiff->Divide(bgParamFunc, -1.);
+    bgParamDiff->Draw();
+    bgParamDiff->GetYaxis()->SetRangeUser(-1., 2.5);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
   // generate one object containing everything
   vector<vector<TH1F *> > emuMasses;
   emuMasses.push_back(emuMass_data);
@@ -1371,7 +1554,8 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     // user defined cut
     if (cutVariable[0] != '\0')
       if (cutVar < cutLow || cutVar >= cutHigh) continue;
-    
+
+    // fake rate 
     if (flags & 1<<9) {
       if (!passHeep) scaleFactor *= fakeRate / (1 - fakeRate);
       else continue;

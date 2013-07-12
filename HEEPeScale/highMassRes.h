@@ -53,11 +53,10 @@ using namespace RooFit;
 
 class HighMassRes {
 public:
-  HighMassRes(const char *_inFile = "./eScaleEvents19616pb-1.root", const int _lumi = 19616);
+  HighMassRes(const char *_inFile = "../forest/emuSpec_19780pb-1.root", const int _lumi = 19780);
   inline virtual ~HighMassRes() {};
 
   void RunCryBall();
-  void CompareCryBall();
 
 protected:
   const char *inFile;
@@ -86,19 +85,12 @@ protected:
 
   std::vector<std::pair<Float_t, Float_t> > sigmaExtras;
 
-  std::vector<const char *> dyTreeNames;
-  std::vector<Float_t> dyFitRanges;
+  float fitRangeMin;
+  float fitRangeMax;
   std::vector<std::pair<Int_t, const char *> > zPrimeGenMasses;
-  unsigned int ssmStart;
 
-  const int fitColorDy;
-  const int fitColorZpPsi;
-  const int fitColorZpSsm;
+  const int fitColor;
   const int fitColorRes;
-  const int fit2ColorDy;
-  const int fit2ColorZpPsi;
-  const int fit2ColorZpSsm;
-  const int fitColorRes2;
 
   std::vector<TString> regTxt;
   std::vector<TString> regFileNameSuffix;
@@ -110,25 +102,11 @@ protected:
   TString powerLName;
   TString powerRName;
 
-  // histos for the DY samples
-  std::vector<TH1F *> sigmaHistos;
-  std::vector<TH1F *> dmHistos;
-  std::vector<TH1F *> acbHistos;
-  std::vector<TH1F *> ncbHistos;
   // histos for the Z'PSI signal samples
   std::vector<TH1F *> sigmaHistosZpPsi;
-  std::vector<TH1F *> dmHistosZpPsi;
-  std::vector<TH1F *> acbHistosZpPsi;
-  std::vector<TH1F *> ncbHistosZpPsi;
-  // histos for the Z'SSM signal samples
-  std::vector<TH1F *> sigmaHistosZpSsm;
-  std::vector<TH1F *> dmHistosZpSsm;
-  std::vector<TH1F *> acbHistosZpSsm;
-  std::vector<TH1F *> ncbHistosZpSsm;
-
-  std::vector<TH1F *> sigmaDCBHistos;
-  std::vector<TH1F *> sigmaDCBHistosZpPsi;
-  std::vector<TH1F *> sigmaDCBHistosZpSsm;
+  //std::vector<TH1F *> dmHistosZpPsi;
+  //std::vector<TH1F *> acbHistosZpPsi;
+  //std::vector<TH1F *> ncbHistosZpPsi;
 
   RooWorkspace * cryBall(
                    TTree* tree,
@@ -146,8 +124,8 @@ protected:
 #endif
 
 HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
-                   fitModelType(1), // (0, 1) = (CB, double CB)
-                   fitModelType2(1), // (0, 1) = (CB, double CB)
+                   fitModelType(0), // (0, 1) = (CB, double CB)
+                   fitModelType2(0), // (0, 1) = (CB, double CB)
                    cutoff_cb(2.),
                    plotOpt("NEU"),
                    nBins(80),
@@ -162,14 +140,8 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
                    fileNameExtra(""),
                    plotDir("./"),
                    useRootTermForFit(0),
-                   fitColorDy(kRed),
-                   fitColorZpPsi(kGreen+1),
-                   fitColorZpSsm(kMagenta+1),
+                   fitColor(kRed),
                    fitColorRes(kBlue),
-                   fit2ColorDy(kCyan+1),
-                   fit2ColorZpPsi(kOrange+7),
-                   fit2ColorZpSsm(kOrange),
-                   fitColorRes2(kOrange-3),
                    biasName("#Deltam_{CB}"),
                    sigmaName("#sigma_{CB}"),
                    cutLName("a_{CB}"),
@@ -180,84 +152,38 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
   inFile = _inFile;
   lumi = _lumi;
 
-  plotReg[0] = 1; // EB-EB
+  fitRangeMin = 0.;
+  fitRangeMax = 5000.;
+
+  plotReg[0] = 0; // EB-EB
   plotReg[1] = 0; // EB-EE
-  plotReg[2] = 0; // EB-EB + EB-EE
-  plotReg[3] = 0; // EE-EE
-  plotReg[4] = 0; // EB-EB + EE-EE
-  plotReg[5] = 0; // EB-EE + EE-EE
-  plotReg[6] = 0; // EB-EB + EB-EE + EE-EE
+  plotReg[2] = 1; // EB-EB + EB-EE
 
   // powheg START53 19.6fb-1 HEEP v4.1 double Crystal Ball
-  sigmaExtras.reserve(7);
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.92, 0.02));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.43, 0.02));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.25, 0.02));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.99, 0.04));
   sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
   sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
   sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
 
-  dyFitRanges.reserve(16);
-  dyFitRanges.push_back(100.);
-  dyFitRanges.push_back(120.);
-  dyFitRanges.push_back(200.);
-  dyFitRanges.push_back(300.);
-  dyFitRanges.push_back(400.);
-  dyFitRanges.push_back(500.);
-  dyFitRanges.push_back(600.);
-  dyFitRanges.push_back(700.);
-  dyFitRanges.push_back(800.);
-  dyFitRanges.push_back(1000.);
-  dyFitRanges.push_back(1250.);
-  dyFitRanges.push_back(1500.);
-  dyFitRanges.push_back(1750.);
-  dyFitRanges.push_back(2000.);
-  dyFitRanges.push_back(2250.);
-  dyFitRanges.push_back(2500.);
-  dyFitRanges.push_back(3500.);
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (500, "emuTree_sigNoAccCuts500"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (750, "emuTree_sigNoAccCuts750"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1000, "emuTree_sigNoAccCuts1000"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1250, "emuTree_sigNoAccCuts1250"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1500, "emuTree_sigNoAccCuts1500"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1750, "emuTree_sigNoAccCuts1750"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (2000, "emuTree_sigNoAccCuts2000"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (2500, "emuTree_sigNoAccCuts2500"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (3000, "emuTree_sigNoAccCuts3000"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (3500, "emuTree_sigNoAccCuts3500"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (4000, "emuTree_sigNoAccCuts4000"));
+  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (5000, "emuTree_sigNoAccCuts5000"));
 
-  zPrimeGenMasses.reserve(9);
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (750, "eleZp750Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1000, "eleZp1000Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1250, "eleZp1250Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1500, "eleZp1500Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (1750, "eleZp1750Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (2000, "eleZp2000Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (2250, "eleZp2250Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (3000, "eleZp3000Tree"));
-  zPrimeGenMasses.push_back(std::pair<Int_t, const char *> (2250, "eleZpSsm2250Tree"));
-  ssmStart = 8;
-
-  dyTreeNames.reserve(10);
-  dyTreeNames.push_back("eleDY20Tree");
-  dyTreeNames.push_back("eleDY120Tree");
-  dyTreeNames.push_back("eleDY200Tree");
-  dyTreeNames.push_back("eleDY400Tree");
-  dyTreeNames.push_back("eleDY500Tree");
-  dyTreeNames.push_back("eleDY700Tree");
-  dyTreeNames.push_back("eleDY800Tree");
-  dyTreeNames.push_back("eleDY1000Tree");
-  dyTreeNames.push_back("eleDY1500Tree");
-  dyTreeNames.push_back("eleDY2000Tree");
-
-  regTxt.reserve(7);
   regTxt.push_back("EB-EB");
   regTxt.push_back("EB-EE");
   regTxt.push_back("EB-EB + EB-EE");
-  regTxt.push_back("EE-EE");
-  regTxt.push_back("EB-EB + EE-EE");
-  regTxt.push_back("EB-EE + EE-EE");
-  regTxt.push_back("EB-EB + EB-EE + EE-EE");
 
-  regFileNameSuffix.reserve(7);
   regFileNameSuffix.push_back("BB");
   regFileNameSuffix.push_back("BE");
   regFileNameSuffix.push_back("BBBE");
-  regFileNameSuffix.push_back("EE");
-  regFileNameSuffix.push_back("BBEE");
-  regFileNameSuffix.push_back("BEEE");
-  regFileNameSuffix.push_back("BBBEEE");
 
   if (fitModelType > 0) {
     biasName = "#Deltam_{DCB}";
@@ -268,103 +194,30 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
     powerRName = "nr_{DCB}";
   }
 
-  // set up histograms for the high mass resolution parametrisation
-  Int_t nBinsHisto = dyFitRanges.size() - 1;
-  Float_t binArray[16];
-  for (Int_t it = 0; it <= nBinsHisto; ++it)
-    binArray[it] = dyFitRanges[it];
-  // histos for the DY samples
-  sigmaHistos.reserve(4);
-  sigmaHistos.push_back(new TH1F("sigmaBB", "sigma of fitted function EB-EB", nBinsHisto, binArray));
-  sigmaHistos.push_back(new TH1F("sigmaBE", "sigma of fitted function EB-EE", nBinsHisto, binArray));
-  sigmaHistos.push_back(new TH1F("sigmaBBBE", "sigma of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  sigmaHistos.push_back(new TH1F("sigmaEE", "sigma of fitted function EE-EE", nBinsHisto, binArray));
-
-  dmHistos.reserve(4);
-  dmHistos.push_back(new TH1F("dmBB", "dm of fitted function EB-EB", nBinsHisto, binArray));
-  dmHistos.push_back(new TH1F("dmBE", "dm of fitted function EB-EE", nBinsHisto, binArray));
-  dmHistos.push_back(new TH1F("dmBBBE", "dm of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  dmHistos.push_back(new TH1F("dmEE", "dm of fitted function EE-EE", nBinsHisto, binArray));
-
-  acbHistos.reserve(4);
-  acbHistos.push_back(new TH1F("acbBB", "acb of fitted function EB-EB", nBinsHisto, binArray));
-  acbHistos.push_back(new TH1F("acbBE", "acb of fitted function EB-EE", nBinsHisto, binArray));
-  acbHistos.push_back(new TH1F("acbBBBE", "acb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  acbHistos.push_back(new TH1F("acbEE", "acb of fitted function EE-EE", nBinsHisto, binArray));
-  
-  ncbHistos.reserve(4);
-  ncbHistos.push_back(new TH1F("ncbBB", "ncb of fitted function EB-EB", nBinsHisto, binArray));
-  ncbHistos.push_back(new TH1F("ncbBE", "ncb of fitted function EB-EE", nBinsHisto, binArray));
-  ncbHistos.push_back(new TH1F("ncbBBBE", "ncb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  ncbHistos.push_back(new TH1F("ncbEE", "ncb of fitted function EE-EE", nBinsHisto, binArray));
   // histos for the Z'PSI signal samples
   sigmaHistosZpPsi.reserve(4);
-  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiBB", "sigma of fitted function for Signal MC EB-EB", 338, 120., 3500.));
-  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiBE", "sigma of fitted function for Signal MC EB-EE", 338, 120., 3500.));
-  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiBBBE", "sigma of fitted function for Signal MC EB-EB + EB-EE", 338, 120., 3500.));
-  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiEE", "sigma of fitted function for Signal MC EE-EE", 338, 120., 3500.));
+  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiBB", "sigma of fitted function for Signal MC EB-EB", 338, 0., 5010.));
+  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiBE", "sigma of fitted function for Signal MC EB-EE", 338, 0., 5010.));
+  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiBBBE", "sigma of fitted function for Signal MC EB-EB + EB-EE", 338, 0., 5010.));
+  sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiEE", "sigma of fitted function for Signal MC EE-EE", 338, 0., 5010.));
 
-  dmHistosZpPsi.reserve(4);
-  dmHistosZpPsi.push_back(new TH1F("dmZpPsiBB", "dm of fitted function EB-EB", nBinsHisto, binArray));
-  dmHistosZpPsi.push_back(new TH1F("dmZpPsiBE", "dm of fitted function EB-EE", nBinsHisto, binArray));
-  dmHistosZpPsi.push_back(new TH1F("dmZpPsiBBBE", "dm of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  dmHistosZpPsi.push_back(new TH1F("dmZpPsiEE", "dm of fitted function EE-EE", nBinsHisto, binArray));
+  //dmHistosZpPsi.reserve(4);
+  //dmHistosZpPsi.push_back(new TH1F("dmZpPsiBB", "dm of fitted function EB-EB", nBinsHisto, binArray));
+  //dmHistosZpPsi.push_back(new TH1F("dmZpPsiBE", "dm of fitted function EB-EE", nBinsHisto, binArray));
+  //dmHistosZpPsi.push_back(new TH1F("dmZpPsiBBBE", "dm of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  //dmHistosZpPsi.push_back(new TH1F("dmZpPsiEE", "dm of fitted function EE-EE", nBinsHisto, binArray));
 
-  acbHistosZpPsi.reserve(4);
-  acbHistosZpPsi.push_back(new TH1F("acbZpPsiBB", "acb of fitted function EB-EB", nBinsHisto, binArray));
-  acbHistosZpPsi.push_back(new TH1F("acbZpPsiBE", "acb of fitted function EB-EE", nBinsHisto, binArray));
-  acbHistosZpPsi.push_back(new TH1F("acbZpPsiBBBE", "acb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  acbHistosZpPsi.push_back(new TH1F("acbZpPsiEE", "acb of fitted function EE-EE", nBinsHisto, binArray));
+  //acbHistosZpPsi.reserve(4);
+  //acbHistosZpPsi.push_back(new TH1F("acbZpPsiBB", "acb of fitted function EB-EB", nBinsHisto, binArray));
+  //acbHistosZpPsi.push_back(new TH1F("acbZpPsiBE", "acb of fitted function EB-EE", nBinsHisto, binArray));
+  //acbHistosZpPsi.push_back(new TH1F("acbZpPsiBBBE", "acb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  //acbHistosZpPsi.push_back(new TH1F("acbZpPsiEE", "acb of fitted function EE-EE", nBinsHisto, binArray));
 
-  ncbHistosZpPsi.reserve(4);
-  ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBB", "ncb of fitted function EB-EB", nBinsHisto, binArray));
-  ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBE", "ncb of fitted function EB-EE", nBinsHisto, binArray));
-  ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBBBE", "ncb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiEE", "ncb of fitted function EE-EE", nBinsHisto, binArray));
-  // histos for the Z'SSM signal samples
-  sigmaHistosZpSsm.reserve(4);
-  sigmaHistosZpSsm.push_back(new TH1F("sigmaZpSsmBB", "sigma of fitted function for Signal MC EB-EB", 338, 120., 3500.));
-  sigmaHistosZpSsm.push_back(new TH1F("sigmaZpSsmBE", "sigma of fitted function for Signal MC EB-EE", 338, 120., 3500.));
-  sigmaHistosZpSsm.push_back(new TH1F("sigmaZpSsmBBBE", "sigma of fitted function for Signal MC EB-EB + EB-EE", 338, 120., 3500.));
-  sigmaHistosZpSsm.push_back(new TH1F("sigmaZpSsmEE", "sigma of fitted function for Signal MC EE-EE", 338, 120., 3500.));
-
-  dmHistosZpSsm.reserve(4);
-  dmHistosZpSsm.push_back(new TH1F("dmZpSsmBB", "dm of fitted function EB-EB", nBinsHisto, binArray));
-  dmHistosZpSsm.push_back(new TH1F("dmZpSsmBE", "dm of fitted function EB-EE", nBinsHisto, binArray));
-  dmHistosZpSsm.push_back(new TH1F("dmZpSsmBBBE", "dm of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  dmHistosZpSsm.push_back(new TH1F("dmZpSsmEE", "dm of fitted function EE-EE", nBinsHisto, binArray));
-
-  acbHistosZpSsm.reserve(4);
-  acbHistosZpSsm.push_back(new TH1F("acbZpSsmBB", "acb of fitted function EB-EB", nBinsHisto, binArray));
-  acbHistosZpSsm.push_back(new TH1F("acbZpSsmBE", "acb of fitted function EB-EE", nBinsHisto, binArray));
-  acbHistosZpSsm.push_back(new TH1F("acbZpSsmBBBE", "acb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  acbHistosZpSsm.push_back(new TH1F("acbZpSsmEE", "acb of fitted function EE-EE", nBinsHisto, binArray));
-
-  ncbHistosZpSsm.reserve(4);
-  ncbHistosZpSsm.push_back(new TH1F("ncbZpSsmBB", "ncb of fitted function EB-EB", nBinsHisto, binArray));
-  ncbHistosZpSsm.push_back(new TH1F("ncbZpSsmBE", "ncb of fitted function EB-EE", nBinsHisto, binArray));
-  ncbHistosZpSsm.push_back(new TH1F("ncbZpSsmBBBE", "ncb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  ncbHistosZpSsm.push_back(new TH1F("ncbZpSsmEE", "ncb of fitted function EE-EE", nBinsHisto, binArray));
-
-  ///////
-  sigmaDCBHistos.reserve(4);
-  sigmaDCBHistos.push_back(new TH1F("sigmaDCBBB", "sigma of fitted function EB-EB", nBinsHisto, binArray));
-  sigmaDCBHistos.push_back(new TH1F("sigmaDCBBE", "sigma of fitted function EB-EE", nBinsHisto, binArray));
-  sigmaDCBHistos.push_back(new TH1F("sigmaDCBBBBE", "sigma of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
-  sigmaDCBHistos.push_back(new TH1F("sigmaDCBEE", "sigma of fitted function EE-EE", nBinsHisto, binArray));
-
-  sigmaDCBHistosZpPsi.reserve(4);
-  sigmaDCBHistosZpPsi.push_back(new TH1F("sigmaDCBZpPsiBB", "sigma of fitted function for Signal MC EB-EB", 338, 120., 3500.));
-  sigmaDCBHistosZpPsi.push_back(new TH1F("sigmaDCBZpPsiBE", "sigma of fitted function for Signal MC EB-EE", 338, 120., 3500.));
-  sigmaDCBHistosZpPsi.push_back(new TH1F("sigmaDCBZpPsiBBBE", "sigma of fitted function for Signal MC EB-EB + EB-EE", 338, 120., 3500.));
-  sigmaDCBHistosZpPsi.push_back(new TH1F("sigmaDCBZpPsiEE", "sigma of fitted function for Signal MC EE-EE", 338, 120., 3500.));
-
-  sigmaDCBHistosZpSsm.reserve(4);
-  sigmaDCBHistosZpSsm.push_back(new TH1F("sigmaDCBZpSsmBB", "sigma of fitted function for Signal MC EB-EB", 338, 120., 3500.));
-  sigmaDCBHistosZpSsm.push_back(new TH1F("sigmaDCBZpSsmBE", "sigma of fitted function for Signal MC EB-EE", 338, 120., 3500.));
-  sigmaDCBHistosZpSsm.push_back(new TH1F("sigmaDCBZpSsmBBBE", "sigma of fitted function for Signal MC EB-EB + EB-EE", 338, 120., 3500.));
-  sigmaDCBHistosZpSsm.push_back(new TH1F("sigmaDCBZpSsmEE", "sigma of fitted function for Signal MC EE-EE", 338, 120., 3500.));
-
+  //ncbHistosZpPsi.reserve(4);
+  //ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBB", "ncb of fitted function EB-EB", nBinsHisto, binArray));
+  //ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBE", "ncb of fitted function EB-EE", nBinsHisto, binArray));
+  //ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBBBE", "ncb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  //ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiEE", "ncb of fitted function EE-EE", nBinsHisto, binArray));
 
   TH1::SetDefaultSumw2(kTRUE);
 }
