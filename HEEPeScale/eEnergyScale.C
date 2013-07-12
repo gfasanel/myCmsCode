@@ -203,9 +203,7 @@ RooWorkspace * cryBallBW(
 void RunCryBall()
 {
   // parameters //////////////////////////////////////////////////////////////
-  const char *inFile = "plots_24dec2012/eScaleEvents19616pb-1.root";
-  //const char *inFile = "plots_11dec2012/eScaleEvents14815pb-1.root";
-  //const char *inFile = "plots_29nov2012/eScaleEvents_runCv2_6394pb-1.root";
+  const char *inFile = "eScaleEvents19616pb-1.root";
   const int lumi = 19616;
   double minMass = 60;
   double maxMass = 120;
@@ -217,19 +215,19 @@ void RunCryBall()
   const char* plotOpt = "NEU";
   const int nBins = 40;
   bool plotReg[4];
-  plotReg[0] = 1; // EB-EB
+  plotReg[0] = 0; // EB-EB
   plotReg[1] = 0; // EB-EE
   plotReg[2] = 0; // EB-EB + EB-EE
-  plotReg[3] = 0; // EE-EE
+  plotReg[3] = 1; // EE-EE
 
   bool plotMC = true;
   bool normalizeMC = true;
   bool printLatexTable = true;
   bool printHtmlTable = true;
 
-  const bool saveAsPdf = 1;
-  const bool saveAsPng = 1;
-  const bool saveAsRoot = 1;
+  const bool saveAsPdf = 0;
+  const bool saveAsPng = 0;
+  const bool saveAsRoot = 0;
   const char *fileNameExtra = "";
   //const char *fileNameExtra = "_runCv2";
   const char *plotDir = "./plots_24dec2012/";

@@ -1,7 +1,7 @@
 #include "highMassRes.h"
 
 RooWorkspace * HighMassRes::cryBall(
-                   const char *treeName,
+                   TTree *tree,
                    const int regions,
                    double minMass,
                    double maxMass,
@@ -26,15 +26,15 @@ RooWorkspace * HighMassRes::cryBall(
   RooRealVar ele2Eta("ele2Eta", "ele2Eta", -3., 3.);
 
   // get invariant mass histo from file
-  TFile input(inFile, "read");
-  input.Cd("");
-  TTree *tree = (TTree *)gDirectory->Get(treeName);
+  //TFile input(inFile, "read");
+  //input.cd();
+  //TTree *tree = (TTree *)gDirectory->Get(treeName);
 
   // Read dataset from tree
   RooDataSet *dataAll = new RooDataSet("dataAll", "complete dataset", RooArgSet(mass, trueMass, evtRegion, ele1Eta, ele2Eta), Import(*tree));
   dataAll->Print();
 
-  input.Close(); 
+  //input.Close(); 
 
   // add column with m_reco - m_true
   RooFormulaVar massDiff("massDiff", "m_{RECO} - m_{true} (GeV)", "@0-@1", RooArgSet(mass, trueMass));
@@ -209,23 +209,40 @@ RooWorkspace * HighMassRes::cryBall(
 
 void HighMassRes::RunCryBall()
 {
+  // make tree from all dy trees in file
+  TFile input(inFile, "read");
+  //input.cd();
+  THashTable* dyTreeTable = new THashTable();
+  std::vector<TTree*> inTrees(1, (TTree*)gDirectory->Get(dyTreeNames[0]));
+  inTrees.reserve(dyTreeNames.size());
+  for (unsigned int i = 1; i < dyTreeNames.size(); ++i) {
+    inTrees.push_back((TTree*)gDirectory->Get(dyTreeNames[i]));
+    dyTreeTable->Add(inTrees.back());
+    cout << "Entries in " << dyTreeNames[i] << ": " << inTrees.back()->GetEntries() << endl;
+  }
+  TFile* f = new TFile("intermediate.root", "recreate");
+  TTree* allDyTree = inTrees.front()->CloneTree();
+  allDyTree->Merge(dyTreeTable);
+  cout << "Entries in allDyTree: " << allDyTree->GetEntries() << ", Number of branches: " << allDyTree->GetNbranches() << endl;
+
+
   for (unsigned int reg = 0; reg < 7; ++reg) {
     if (!plotReg[reg]) continue;
     stringstream sStream;
     //========================================================================
     // fit for DY samples
     for (unsigned int iRange = 0; iRange < dyFitRanges.size() - 1; ++iRange) {
-      Float_t minMass = dyFitRanges[iRange].first;
-      Float_t maxMass = dyFitRanges[iRange + 1].first;
-      float meanMass = 0.5 * (dyFitRanges[iRange].first + dyFitRanges[iRange + 1].first);
-      Float_t trueMassMin = dyFitRanges[iRange].first;
-      Float_t trueMassMax = dyFitRanges[iRange + 1].first;
+      Float_t minMass = dyFitRanges[iRange];
+      Float_t maxMass = dyFitRanges[iRange + 1];
+      //float meanMass = 0.5 * (dyFitRanges[iRange] + dyFitRanges[iRange + 1]);
+      Float_t trueMassMin = dyFitRanges[iRange];
+      Float_t trueMassMax = dyFitRanges[iRange + 1];
       //Float_t trueMassMin = meanMass - meanMass * 0.02;
       //Float_t trueMassMax = meanMass + meanMass * 0.02;
 
       // fit
-      std::cout << "FIT " << dyFitRanges[iRange].second << " mass: " << dyFitRanges[iRange].first << std::endl;
-      RooWorkspace *mcWkSpc = cryBall(dyFitRanges[iRange].second, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
+      std::cout << "mass: " << dyFitRanges[iRange] << std::endl;
+      RooWorkspace *mcWkSpc = cryBall(allDyTree, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
       //mcWkSpc->Print("v");
 
       // retrieve plot from workspace
@@ -290,7 +307,7 @@ void HighMassRes::RunCryBall()
       RooRealVar *cbPowerMC = mcWkSpc->var(powerLName.Data());
 
       // fill the histograms with fit results from fit range
-      Float_t denom = (dyFitRanges[iRange].first + dyFitRanges[iRange + 1].first) / 2;
+      Float_t denom = (dyFitRanges[iRange] + dyFitRanges[iRange + 1]) / 2;
       sigmaHistos[reg]->SetBinContent(iRange + 1, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
       sigmaHistos[reg]->SetBinError(iRange + 1, sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
       dmHistos[reg]->SetBinContent(iRange + 1, cbBiasMC->getVal());
@@ -314,9 +331,14 @@ void HighMassRes::RunCryBall()
         trueMassMax = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.05; // ~3sigma around the peak
       }
 
+      // get invariant mass histo from file
+      //TFile input(inFile, "read");
+      input.cd();
+      TTree *zpTree = (TTree *)gDirectory->Get(zPrimeGenMasses[iZp].second);
+
       // fit
       std::cout << "FIT " << zPrimeGenMasses[iZp].second << " mass: " << zPrimeGenMasses[iZp].first << std::endl;
-      RooWorkspace *mcZpWkSpc = cryBall(zPrimeGenMasses[iZp].second, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
+      RooWorkspace *mcZpWkSpc = cryBall(zpTree, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
       //mcZpWkSpc->Print("v");
 
       // retrieve plot from workspace
@@ -412,7 +434,7 @@ void HighMassRes::RunCryBall()
     TCanvas* c1 = new TCanvas("c1" + regTxt[reg], "High mass resolution fit " + regTxt[reg], 0, 0, 800, 600);
     c1->cd();
     // plot the data and fit the model
-    TF1 *fitFunc = new TF1("fitFunc", "sqrt([0]^2/x^2 + [1]^2/x + [2]^2 + [3]^2*x)", dyFitRanges.front().first, dyFitRanges.back().first);
+    TF1 *fitFunc = new TF1("fitFunc", "sqrt([0]^2/x^2 + [1]^2/x + [2]^2 + [3]^2*x)", dyFitRanges.front(), dyFitRanges.back());
     fitFunc->SetParameters(165., 10., 1.5, 0.01);
     if (!useRootTermForFit) fitFunc->FixParameter(3, 0.);
     fitFunc->SetParNames("N", "S", "C", "R");
@@ -625,6 +647,16 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
 void HighMassRes::CompareCryBall()
 {
+  // make tree from all dy trees in file
+  TFile input(inFile, "read");
+  input.cd();
+  THashTable* dyTreeTable = new THashTable();
+  for (unsigned int i = 0; i < dyTreeNames.size(); ++i) {
+    TTree* inTree = (TTree*)gDirectory->Get(dyTreeNames[i]);
+    dyTreeTable->Add(inTree);
+  }
+  TTree* allDyTree = new TTree("allDyTree", "allDyTree");
+  allDyTree->Merge(dyTreeTable);
 
   for (unsigned int reg = 0; reg < 7; ++reg) {
     if (!plotReg[reg]) continue;
@@ -632,13 +664,13 @@ void HighMassRes::CompareCryBall()
     //========================================================================
     // fit for DY samples
     for (unsigned int iRange = 0; iRange < dyFitRanges.size() - 1; ++iRange) {
-      Float_t minMass = dyFitRanges[iRange].first;
-      Float_t maxMass = dyFitRanges[iRange + 1].first;
+      Float_t minMass = dyFitRanges[iRange];
+      Float_t maxMass = dyFitRanges[iRange + 1];
 
       // fit
-      std::cout << "FIT " << dyFitRanges[iRange].second << " mass: " << dyFitRanges[iRange].first << std::endl;
-      RooWorkspace *mcWkSpc = cryBall(dyFitRanges[iRange].second, reg + 1, minMass, maxMass, minMass, maxMass, cutoff_cb, plotOpt, nBins, fitModelType);
-      RooWorkspace *mcWkSpc2 = cryBall(dyFitRanges[iRange].second, reg + 1, minMass, maxMass, minMass, maxMass, cutoff_cb, plotOpt, nBins, fitModelType2);
+      std::cout << "mass: " << dyFitRanges[iRange] << std::endl;
+      RooWorkspace *mcWkSpc = cryBall(allDyTree, reg + 1, minMass, maxMass, minMass, maxMass, cutoff_cb, plotOpt, nBins, fitModelType);
+      RooWorkspace *mcWkSpc2 = cryBall(allDyTree, reg + 1, minMass, maxMass, minMass, maxMass, cutoff_cb, plotOpt, nBins, fitModelType2);
       //mcWkSpc->Print("v");
 
       // retrieve plot from workspace
@@ -743,7 +775,7 @@ void HighMassRes::CompareCryBall()
       RooRealVar *dCBSigmaMC = mcWkSpc2->var(sigmaName.Data());
 
       // fill the histograms with fit results from fit range
-      Float_t denom = (dyFitRanges[iRange].first + dyFitRanges[iRange + 1].first) / 2;
+      Float_t denom = (dyFitRanges[iRange] + dyFitRanges[iRange + 1]) / 2;
       sigmaHistos[reg]->SetBinContent(iRange + 1, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
       sigmaHistos[reg]->SetBinError(iRange + 1, sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
       dmHistos[reg]->SetBinContent(iRange + 1, cbBiasMC->getVal());
@@ -770,10 +802,15 @@ void HighMassRes::CompareCryBall()
         trueMassMax = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.05; // ~3sigma around the peak
       }
 
+      // get invariant mass histo from file
+      //TFile input(inFile, "read");
+      input.cd();
+      TTree *zpTree = (TTree *)gDirectory->Get(zPrimeGenMasses[iZp].second);
+
       // fit
-      std::cout << "FIT " << zPrimeGenMasses[iZp].second << " mass: " << zPrimeGenMasses[iZp].first << std::endl;
-      RooWorkspace *mcZpWkSpc = cryBall(zPrimeGenMasses[iZp].second, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
-      RooWorkspace *mcZpWkSpc2 = cryBall(zPrimeGenMasses[iZp].second, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType2);
+      std::cout << "mass: " << zPrimeGenMasses[iZp].first << std::endl;
+      RooWorkspace *mcZpWkSpc = cryBall(zpTree, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
+      RooWorkspace *mcZpWkSpc2 = cryBall(zpTree, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType2);
       //mcZpWkSpc->Print("v");
 
       // retrieve plot from workspace
@@ -930,12 +967,12 @@ void HighMassRes::CompareCryBall()
     TCanvas* c1 = new TCanvas("c1" + regTxt[reg], "High mass resolution fit " + regTxt[reg], 0, 0, 800, 600);
     c1->cd();
     // plot the data and fit the model
-    TF1 *fitFunc = new TF1("fitFunc", "sqrt([0]^2 / x + [1]^2 / x^2 + [2]^2)", dyFitRanges.front().first, dyFitRanges.back().first);
+    TF1 *fitFunc = new TF1("fitFunc", "sqrt([0]^2 / x + [1]^2 / x^2 + [2]^2)", dyFitRanges.front(), dyFitRanges.back());
     fitFunc->SetParameters(10., 125., 1.);
     fitFunc->SetParNames("S", "N", "C");
     fitFunc->SetLineWidth(2);
     fitFunc->SetLineColor(fitColorRes);
-    TF1 *fitFunc2 = new TF1("fitFunc2", "sqrt([0]^2 / x + [1]^2 / x^2 + [2]^2)", dyFitRanges.front().first, dyFitRanges.back().first);
+    TF1 *fitFunc2 = new TF1("fitFunc2", "sqrt([0]^2 / x + [1]^2 / x^2 + [2]^2)", dyFitRanges.front(), dyFitRanges.back());
     fitFunc2->SetParameters(10., 125., 1.);
     fitFunc2->SetParNames("S_{DCB}", "N_{DCB}", "C_{DCB}");
     fitFunc2->SetLineWidth(2);
