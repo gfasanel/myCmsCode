@@ -32,6 +32,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include "DataFormats/Math/interface/deltaR.h"
+
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -109,6 +111,7 @@ public :
    Float_t         gsf_e2x5overe5x5[100];   //[gsf_size]
    Float_t         gsf_e1x5overe5x5[100];   //[gsf_size]
    Float_t         gsf_gsfet[100];   //[gsf_size]
+   Float_t         genelemom_mass[100];
    Float_t         genPair_mass;
    Int_t           trueNVtx;
 
@@ -173,6 +176,7 @@ public :
    TBranch        *b_gsf_e2x5overe5x5;   //!
    TBranch        *b_gsf_e1x5overe5x5;   //!
    TBranch        *b_gsf_gsfet;   //!
+   TBranch        *b_genelemom_mass;   //!
    TBranch        *b_genPair_mass;   //!
    TBranch        *b_trueNVtx;   //!
 
@@ -232,12 +236,24 @@ protected :
    int muon_nSegMatchMin;
    float muon_relIsoCutMax;
 
+   // fake rate preselection
+   float frps_hOverECutEB;
+   float frps_hOverECutEE;
+   float frps_sieieCutEB;
+   float frps_sieieCutEE;
+   float frps_dxyCutEB;
+   float frps_dxyCutEE;
+   int frps_missHitsCutEB;
+   int frps_missHitsCutEE;
+
    // strings for histogram names
    vector<TString> suffix;
 
    // Functions
    bool PassHEEP(const int &n);
    bool PassHighPtMu(const int &n);
+   bool PassFRPreSel(const int &n);
+   double FakeRate (const float& et, const float& eta);
    int Trigger(int &prescale, unsigned int *trig, const int &selector = 0);
 };
 
@@ -305,6 +321,17 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    muon_nSegMatchMin = 2;
    muon_relIsoCutMax = 0.1;
 
+   // fake rate preselection
+   frps_hOverECutEB = 0.15;
+   frps_hOverECutEE = 0.1;
+   frps_sieieCutEB = 0.013;
+   frps_sieieCutEE = 0.034;
+   frps_dxyCutEB = 0.02;
+   frps_dxyCutEE = 0.05;
+   frps_missHitsCutEB = 1;
+   frps_missHitsCutEE = 1;
+
+   suffix.reserve(40);
    suffix.push_back("data");
    suffix.push_back("ttbar");
    suffix.push_back("ttbar700to1000");
@@ -322,6 +349,30 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("ttbarto1l1jet");
    suffix.push_back("ttbarw");
    suffix.push_back("ttbarww");
+   suffix.push_back("sig500");
+   suffix.push_back("sig750");
+   suffix.push_back("sig1000");
+   suffix.push_back("sig1250");
+   suffix.push_back("sig1500");
+   suffix.push_back("sig1750");
+   suffix.push_back("sig2000");
+   suffix.push_back("sig2500");
+   suffix.push_back("sig3000");
+   suffix.push_back("sig3500");
+   suffix.push_back("sig4000");
+   suffix.push_back("sig5000");
+   suffix.push_back("sigNoAccCuts500");
+   suffix.push_back("sigNoAccCuts750");
+   suffix.push_back("sigNoAccCuts1000");
+   suffix.push_back("sigNoAccCuts1250");
+   suffix.push_back("sigNoAccCuts1500");
+   suffix.push_back("sigNoAccCuts1750");
+   suffix.push_back("sigNoAccCuts2000");
+   suffix.push_back("sigNoAccCuts2500");
+   suffix.push_back("sigNoAccCuts3000");
+   suffix.push_back("sigNoAccCuts3500");
+   suffix.push_back("sigNoAccCuts4000");
+   suffix.push_back("sigNoAccCuts5000");
 }
 
 EmuSpectrum::~EmuSpectrum()
@@ -425,6 +476,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("gsf_e2x5overe5x5", gsf_e2x5overe5x5, &b_gsf_e2x5overe5x5);
    fChain->SetBranchAddress("gsf_e1x5overe5x5", gsf_e1x5overe5x5, &b_gsf_e1x5overe5x5);
    fChain->SetBranchAddress("gsf_gsfet", gsf_gsfet, &b_gsf_gsfet);
+   fChain->SetBranchAddress("genelemom_mass", genelemom_mass, &b_genelemom_mass);
    fChain->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
    fChain->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
 
@@ -490,6 +542,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("gsf_e2x5overe5x5", 1);
    fChain->SetBranchStatus("gsf_e1x5overe5x5", 1);
    fChain->SetBranchStatus("gsf_gsfet", 1);
+   fChain->SetBranchStatus("genelemom_mass", 1);
    fChain->SetBranchStatus("genPair_mass", 1);
    fChain->SetBranchStatus("trueNVtx", 1);
 
