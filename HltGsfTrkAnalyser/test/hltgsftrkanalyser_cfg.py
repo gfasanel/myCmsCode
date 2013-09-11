@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+import FWCore.ParameterSet.VarParsing as VarParsing
 
 process = cms.Process("GSFANA")
 
@@ -18,23 +19,37 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-refNcSuffix = ''
-testNcSuffix = 'NC2'
+# initalize the command line parser
+options = VarParsing.VarParsing()
+options.register('refNcSuffix', '', # default value
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Number of components suffix string for reference")
+options.register('testNcSuffix', 'NC2', # default value
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Number of components suffix string for test")
+options.register('outFile', 'histo.root', # default value
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Output file name")
+options.parseArguments()
+
 process.HltGsfTrkAna = cms.EDAnalyzer('HltGsfTrkAnalyser',
     # track collections
     #referenceTrackCollTag = cms.InputTag('electronGsfTracks', '', 'RECO'),
-    referenceTrackCollTag = cms.InputTag('hltActivityElectronGsfTracks' + refNcSuffix, '', 'GSFTEST'),
-    #referenceTrackCollTag = cms.InputTag('hltL1SeededElectronGsfTracks' + refNcSuffix, '', 'GSFTEST'),
-    testTrackCollTag = cms.InputTag('hltActivityElectronGsfTracks' + testNcSuffix, '', 'GSFTEST'),
-    #testTrackCollTag = cms.InputTag('hltL1SeededElectronGsfTracks' + testNcSuffix, '', 'GSFTEST'),
+    referenceTrackCollTag = cms.InputTag('hltActivityElectronGsfTracks' + options.refNcSuffix, '', 'GSFTEST'),
+    #referenceTrackCollTag = cms.InputTag('hltL1SeededElectronGsfTracks' + options.refNcSuffix, '', 'GSFTEST'),
+    testTrackCollTag = cms.InputTag('hltActivityElectronGsfTracks' + options.testNcSuffix, '', 'GSFTEST'),
+    #testTrackCollTag = cms.InputTag('hltL1SeededElectronGsfTracks' + options.testNcSuffix, '', 'GSFTEST'),
 
     # Deta and Dphi
-    referenceTrackVarsTag = cms.InputTag('hltActivityGsfTrackVars'+ refNcSuffix, '', 'GSFTEST'),
-    testTrackVarsTag = cms.InputTag('hltActivityGsfTrackVars' + testNcSuffix, '', 'GSFTEST'),
+    referenceTrackVarsTag = cms.InputTag('hltActivityGsfTrackVars'+ options.refNcSuffix, '', 'GSFTEST'),
+    testTrackVarsTag = cms.InputTag('hltActivityGsfTrackVars' + options.testNcSuffix, '', 'GSFTEST'),
     referenceEcalCandTagForDEta = cms.InputTag('hltDiEle33CaloIdLPixelMatchDoubleFilter', '', 'GSFTEST'),
     testEcalCandTagForDEta = cms.InputTag('hltDiEle33CaloIdLPixelMatchDoubleFilter', '', 'GSFTEST'),
-    referenceEcalCandTagForDPhi = cms.InputTag('hltDiEle33CaloIdLGsfTrkIdVLDEtaDoubleFilter' + refNcSuffix, '', 'GSFTEST'),
-    testEcalCandTagForDPhi = cms.InputTag('hltDiEle33CaloIdLGsfTrkIdVLDEtaDoubleFilter' + testNcSuffix, '', 'GSFTEST'),
+    referenceEcalCandTagForDPhi = cms.InputTag('hltDiEle33CaloIdLGsfTrkIdVLDEtaDoubleFilter' + options.refNcSuffix, '', 'GSFTEST'),
+    testEcalCandTagForDPhi = cms.InputTag('hltDiEle33CaloIdLGsfTrkIdVLDEtaDoubleFilter' + options.testNcSuffix, '', 'GSFTEST'),
     referenceDEtaCut = cms.untracked.double(0.02),
     referenceDPhiCut = cms.untracked.double(0.15),
     testDEtaCut = cms.untracked.double(0.02),
@@ -91,7 +106,8 @@ process.HltGsfTrkAna = cms.EDAnalyzer('HltGsfTrkAnalyser',
 )
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('histo.root')
+    #fileName = cms.string('histo.root')
+    fileName = cms.string(options.outFile)
 )
 
 process.p = cms.Path(
