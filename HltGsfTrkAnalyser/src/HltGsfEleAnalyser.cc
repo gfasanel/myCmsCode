@@ -65,6 +65,9 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       edm::InputTag trgResultsTag_;
       std::vector<edm::ParameterSet> trgVPSet_;
 
+      float deltaEtCut = 15.;
+      float etCutStepSize = 0.5;
+
       HLTConfigProvider hltConfig;
       std::vector<unsigned int> trgIndices;
       std::vector<std::string> trgNames;
@@ -85,12 +88,15 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       TH1F* h_nPassHeep_nPassEt_notTrgd;
       TH1F* h_trgd;
       TH1F* h_notTrgd;
+      std::vector<TH1F*> v_h_nPassHeep_nMinus1PassEt_vsEt_total;
+      std::vector<TH1F*> v_h_nPassHeep_nMinus1PassEt_vsEt_trgd;
 
       // ratio histograms
       TH1F* hRatio_nPassHeep_trgdVsTotal;
       TH1F* hRatio_nPassHeep_notTrgdVsTotal;
       TH1F* hRatio_nPassHeep_nPassEt_trgdVsTotal;
       TH1F* hRatio_nPassHeep_nPassEt_notTrgdVsTotal;
+      std::vector<TH1F*> v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal;
 
       TH2F* h2Ratio_nPassHeep_trgd;
       TH2F* h2Ratio_nPassHeep_notTrgd;
@@ -156,8 +162,16 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
    h2Ratio_trgd = fs->make<TH2F>("h2Ratio_trgd", "Inter trigger ratio of triggered events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
    h2Ratio_notTrgd = fs->make<TH2F>("h2Ratio_notTrgd", "Inter trigger ratio of not triggered events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
 
-   // set bin labels
    for (unsigned int i = 0; i < trgNames.size(); ++i) {
+      float lastTrgMinEt = trgMinEtss.at(i).back(); 
+      std::string nameString = "h_nPassHeep_nMinus1PassEt_vsEt_total_" + trgNames[i];
+      v_h_nPassHeep_nMinus1PassEt_vsEt_total.push_back(fs->make<TH1F>(nameString.data(), "# of events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "h_nPassHeep_nMinus1PassEt_vsEt_trgd_" + trgNames[i];
+      v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.push_back(fs->make<TH1F>(nameString.data(), "# of triggered events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal_" + trgNames[i];
+      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal.push_back(fs->make<TH1F>(nameString.data(), "# triggered / # total n-HEEP events vs. Et cuts", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+
+      // set bin labels
       const char* trgName = trgNames[i].data();
       h_total->GetXaxis()->SetBinLabel(i+1, trgName);
       h_1PassHeep_total->GetXaxis()->SetBinLabel(i+1, trgName);
@@ -235,44 +249,70 @@ HltGsfEleAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    // trigger requirements
    edm::TriggerResultsByName trgRes = iEvent.triggerResultsByName(trgResultsTag_.process());
-   for (unsigned int i = 0; i < trgNames.size(); ++i) {
-      bool triggered = trgRes.accept(trgIndices[i]) ^ trgInvs[i];
+   for (unsigned int trgIndex = 0; trgIndex < trgNames.size(); ++trgIndex) {
+      bool triggered = trgRes.accept(trgIndices[trgIndex]) ^ trgInvs[trgIndex];
 
-      h_total->Fill(i);
-      if (nPassHeep > 0) h_1PassHeep_total->Fill(i);
-      if (nPassHeep > 1) h_2PassHeep_total->Fill(i);
+      h_total->Fill(trgIndex);
+      if (nPassHeep > 0) h_1PassHeep_total->Fill(trgIndex);
+      if (nPassHeep > 1) h_2PassHeep_total->Fill(trgIndex);
 
-      if (nPassHeep >= trgMinEles[i]) {
-         h_nPassHeep_total->Fill(i);
-         if (triggered) h_nPassHeep_trgd->Fill(i);
-         else h_nPassHeep_notTrgd->Fill(i);
+      if (nPassHeep >= trgMinEles[trgIndex]) {
+         h_nPassHeep_total->Fill(trgIndex);
+         if (triggered) h_nPassHeep_trgd->Fill(trgIndex);
+         else h_nPassHeep_notTrgd->Fill(trgIndex);
 
          // find heep electrons passing also Et cuts from cfg file
          std::vector<unsigned int> heepEleSearchVector(heepEleIndices);
-         for (unsigned int j = 0; j < trgMinEtss.at(i).size(); ++j) {
+         std::vector<unsigned int> heepEleSearchVectorForked(heepEleIndices);
+         for (unsigned int etCutIndex = 0; etCutIndex < trgMinEtss.at(trgIndex).size(); ++etCutIndex) {
             // find smallest passing electron
             float smallestPassEt = 9999999.;
             unsigned int smallestPassIndex = 9999999;
             for (unsigned int k = 0; k < heepEleSearchVector.size(); ++k) {
                float et = gsfElectrons->at(k).caloEnergy() * sin(gsfElectrons->at(k).p4().theta());
-               if (et > trgMinEtss.at(i).at(j) && et < smallestPassEt) {
+               if (et > trgMinEtss.at(trgIndex).at(etCutIndex) && et < smallestPassEt) {
                   smallestPassEt = et;
                   smallestPassIndex = k;
                }
             }
-            // fond HEEP electron passing Et cut -> erase electron index from search vector
+            // found HEEP electron passing Et cut -> erase electron index from search vector
             if (smallestPassIndex < heepEleSearchVector.size()) heepEleSearchVector.erase(heepEleSearchVector.begin() + smallestPassIndex);
+
+            // fork search vector for et scan
+            if (etCutIndex == trgMinEtss.at(trgIndex).size() - 2) heepEleSearchVectorForked = heepEleSearchVector;
          }
+
          // fill histos in case we found enough HEEP electrons passing Et cuts
-         if (heepEleIndices.size() - heepEleSearchVector.size() == trgMinEtss.at(i).size()) {
-            h_nPassHeep_nPassEt_total->Fill(i);
-            if (triggered) h_nPassHeep_nPassEt_trgd->Fill(i);
-            else h_nPassHeep_nPassEt_notTrgd->Fill(i);
+         if (heepEleIndices.size() - heepEleSearchVector.size() == trgMinEtss.at(trgIndex).size()) {
+            h_nPassHeep_nPassEt_total->Fill(trgIndex);
+            if (triggered) h_nPassHeep_nPassEt_trgd->Fill(trgIndex);
+            else h_nPassHeep_nPassEt_notTrgd->Fill(trgIndex);
+         }
+
+         // fill histograms vs. et of electron
+         float lastTrgMinEt = trgMinEtss.at(trgIndex).back(); 
+         for (float etCut = lastTrgMinEt-deltaEtCut; etCut < lastTrgMinEt+deltaEtCut; etCut += etCutStepSize) {
+            // check the remaining HEEP electrons if one is in the Et range
+            int subtractValue = 0;
+            for (unsigned int k = 0; k < heepEleSearchVectorForked.size(); ++k) {
+               float et = gsfElectrons->at(k).caloEnergy() * sin(gsfElectrons->at(k).p4().theta());
+               if (et > etCut && et < etCut + etCutStepSize) {
+                  subtractValue = 1;
+                  break;
+               }
+            }
+
+            // fill histos in case we found enough HEEP electrons passing Et cuts
+            if (heepEleIndices.size() - (heepEleSearchVectorForked.size() - subtractValue) == trgMinEtss.at(trgIndex).size()) {
+               v_h_nPassHeep_nMinus1PassEt_vsEt_total.at(trgIndex)->Fill(etCut);
+               if (triggered) v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.at(trgIndex)->Fill(etCut);
+            }
          }
       }
 
-      if (triggered) h_trgd->Fill(i);
-      else h_notTrgd->Fill(i);
+      if (triggered) h_trgd->Fill(trgIndex);
+      else h_notTrgd->Fill(trgIndex);
+
    }
 }
 
@@ -354,6 +394,9 @@ HltGsfEleAnalyser::endJob()
    hRatio_nPassHeep_notTrgdVsTotal->Divide(h_nPassHeep_notTrgd, h_nPassHeep_total);
    hRatio_nPassHeep_nPassEt_trgdVsTotal->Divide(h_nPassHeep_nPassEt_trgd, h_nPassHeep_nPassEt_total);
    hRatio_nPassHeep_nPassEt_notTrgdVsTotal->Divide(h_nPassHeep_nPassEt_notTrgd, h_nPassHeep_nPassEt_total);
+   for (unsigned int i = 0; i < trgNames.size(); ++i) {
+      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal.at(i)->Divide(v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.at(i), v_h_nPassHeep_nMinus1PassEt_vsEt_total.at(i));
+   }
 
    TH2F* h2Denom_nPassHeep_trgd = (TH2F*)h2Ratio_nPassHeep_trgd->Clone("h2Denom_nPassHeep_trgd");
    TH2F* h2Denom_nPassHeep_notTrgd = (TH2F*)h2Ratio_nPassHeep_notTrgd->Clone("h2Denom_nPassHeep_notTrgd");
