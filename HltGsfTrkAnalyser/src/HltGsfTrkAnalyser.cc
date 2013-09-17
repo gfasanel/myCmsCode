@@ -617,8 +617,8 @@ HltGsfTrkAnalyser::HltGsfTrkAnalyser(const edm::ParameterSet& iConfig)
    hMatch_pull_dz = fs->make<TH1D>("hMatch_pull_dz", "GsfTrack_{matched}: |d_{z}^{test} - d_{z}^{ref}|/|d_{z}^{ref}|", 100, 0., 10.);
    hMatch_pull_dxyError = fs->make<TH1D>("hMatch_pull_dxyError", "GsfTrack_{matched}: |d_{xy}-error_{test} - d_{xy}-error_{ref}|/d_{xy}-error_{ref}", 100, 0., 4.);
    hMatch_pull_dzError = fs->make<TH1D>("hMatch_pull_dzError", "GsfTrack_{matched}: |d_{z}-error_{test} - d_{z}-error_{ref}|/d_{z}-error_{ref}", 100, 0., 4.);
-   hMatch_pull_numberOfValidHits = fs->make<TH1D>("hMatch_pull_numberOfValidHits", "GsfTrack_{matched}: (#hits_{valid}^{test} - #hits_{valid}^{ref}|/#hits_{valid}^{ref}", 100, 0., 0.5);
-   hMatch_pull_numberOfLostHits = fs->make<TH1D>("hMatch_pull_numberOfLostHits", "GsfTrack_{matched}: |#hits_{lost}^{test} - #hits_{lost}^{ref}|/#hits_{lost}^{ref}", 100, 0., 0.5);
+   hMatch_pull_numberOfValidHits = fs->make<TH1D>("hMatch_pull_numberOfValidHits", "GsfTrack_{matched}: (#hits_{valid}^{test} - #hits_{valid}^{ref}|/#hits_{valid}^{ref}", 100, 0., 5.);
+   hMatch_pull_numberOfLostHits = fs->make<TH1D>("hMatch_pull_numberOfLostHits", "GsfTrack_{matched}: |#hits_{lost}^{test} - #hits_{lost}^{ref}|/#hits_{lost}^{ref}", 100, 0., 5.);
    hMatch_pull_validFraction = fs->make<TH1D>("hMatch_pull_validFraction", "GsfTrack_{matched}: |valid fraction_{test} - valid fraction_{ref}|/valid fraction_{ref}", 100, 0., 1.);
 
    hMatch2d_dp_dr = fs->make<TH2D>("hMatch2d_dp_dr", "GsfTrack_{matched}: #Deltap:#DeltaR", 500, -250., 250., 100, 0., 0.5);
@@ -729,8 +729,8 @@ HltGsfTrkAnalyser::HltGsfTrkAnalyser(const edm::ParameterSet& iConfig)
    hMatch_ptCut_pull_dz = fs->make<TH1D>("hMatch_ptCut_pull_dz", "GsfTrack_{matched}: |d_{z}^{test} - d_{z}^{ref}|/|d_{z}^{ref}|", 100, 0., 10.);
    hMatch_ptCut_pull_dxyError = fs->make<TH1D>("hMatch_ptCut_pull_dxyError", "GsfTrack_{matched}: |d_{xy}-error_{test} - d_{xy}-error_{ref}|/d_{xy}-error_{ref}", 100, 0., 4.);
    hMatch_ptCut_pull_dzError = fs->make<TH1D>("hMatch_ptCut_pull_dzError", "GsfTrack_{matched}: |d_{z}-error_{test} - d_{z}-error_{ref}|/d_{z}-error_{ref}", 100, 0., 4.);
-   hMatch_ptCut_pull_numberOfValidHits = fs->make<TH1D>("hMatch_ptCut_pull_numberOfValidHits", "GsfTrack_{matched}: (#hits_{valid}^{test} - #hits_{valid}^{ref}|/#hits_{valid}^{ref}", 100, 0., 0.5);
-   hMatch_ptCut_pull_numberOfLostHits = fs->make<TH1D>("hMatch_ptCut_pull_numberOfLostHits", "GsfTrack_{matched}: |#hits_{lost}^{test} - #hits_{lost}^{ref}|/#hits_{lost}^{ref}", 100, 0., 0.5);
+   hMatch_ptCut_pull_numberOfValidHits = fs->make<TH1D>("hMatch_ptCut_pull_numberOfValidHits", "GsfTrack_{matched}: (#hits_{valid}^{test} - #hits_{valid}^{ref}|/#hits_{valid}^{ref}", 100, 0., 5.);
+   hMatch_ptCut_pull_numberOfLostHits = fs->make<TH1D>("hMatch_ptCut_pull_numberOfLostHits", "GsfTrack_{matched}: |#hits_{lost}^{test} - #hits_{lost}^{ref}|/#hits_{lost}^{ref}", 100, 0., 5.);
    hMatch_ptCut_pull_validFraction = fs->make<TH1D>("hMatch_ptCut_pull_validFraction", "GsfTrack_{matched}: |valid fraction_{test} - valid fraction_{ref}|/valid fraction_{ref}", 100, 0., 1.);
 
    hR_dEta_mapSize = fs->make<TH1D>("hR_dEta_mapSize", "GsfTrack-SC: mapSize_{#Delta#eta}", 20, 0., 20.);
@@ -1095,8 +1095,8 @@ HltGsfTrkAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       hMatch_pull_dz->Fill(fabs(trkRefVal->dz() - trkRefKey.get()->dz()) / fabs(trkRefKey.get()->dz()));
       hMatch_pull_dxyError->Fill(fabs(trkRefVal->dxyError() - trkRefKey.get()->dxyError()) / trkRefKey.get()->dxyError());
       hMatch_pull_dzError->Fill(fabs(trkRefVal->dzError() - trkRefKey.get()->dzError()) / trkRefKey.get()->dzError());
-      hMatch_pull_numberOfValidHits->Fill(fabs(trkRefVal->numberOfValidHits() - trkRefKey.get()->numberOfValidHits()) / (float)trkRefKey.get()->numberOfValidHits());
-      hMatch_pull_numberOfLostHits->Fill(fabs(trkRefVal->numberOfLostHits() - trkRefKey.get()->numberOfLostHits()) / (float)trkRefKey.get()->numberOfLostHits());
+      if (trkRefKey.get()->numberOfValidHits() != 0) hMatch_pull_numberOfValidHits->Fill(fabs(trkRefVal->numberOfValidHits() - trkRefKey.get()->numberOfValidHits()) / (float)trkRefKey.get()->numberOfValidHits());
+      if (trkRefKey.get()->numberOfLostHits() != 0) hMatch_pull_numberOfLostHits->Fill(fabs(trkRefVal->numberOfLostHits() - trkRefKey.get()->numberOfLostHits()) / (float)trkRefKey.get()->numberOfLostHits());
       hMatch_pull_validFraction->Fill(fabs(trkRefVal->validFraction() - trkRefKey.get()->validFraction()) / trkRefKey.get()->validFraction());
 
       hMatch2d_dp_dr->Fill(trkRefVal->p() - trkRefKey.get()->p(), dR);
@@ -1208,8 +1208,8 @@ HltGsfTrkAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          hMatch_ptCut_pull_dz->Fill(fabs(trkRefVal->dz() - trkRefKey.get()->dz()) / fabs(trkRefKey.get()->dz()));
          hMatch_ptCut_pull_dxyError->Fill(fabs(trkRefVal->dxyError() - trkRefKey.get()->dxyError()) / trkRefKey.get()->dxyError());
          hMatch_ptCut_pull_dzError->Fill(fabs(trkRefVal->dzError() - trkRefKey.get()->dzError()) / trkRefKey.get()->dzError());
-         hMatch_ptCut_pull_numberOfValidHits->Fill(fabs(trkRefVal->numberOfValidHits() - trkRefKey.get()->numberOfValidHits()) / (float)trkRefKey.get()->numberOfValidHits());
-         hMatch_ptCut_pull_numberOfLostHits->Fill(fabs(trkRefVal->numberOfLostHits() - trkRefKey.get()->numberOfLostHits()) / (float)trkRefKey.get()->numberOfLostHits());
+         if (trkRefKey.get()->numberOfValidHits() != 0) hMatch_ptCut_pull_numberOfValidHits->Fill(fabs(trkRefVal->numberOfValidHits() - trkRefKey.get()->numberOfValidHits()) / (float)trkRefKey.get()->numberOfValidHits());
+         if (trkRefKey.get()->numberOfLostHits() != 0) hMatch_ptCut_pull_numberOfLostHits->Fill(fabs(trkRefVal->numberOfLostHits() - trkRefKey.get()->numberOfLostHits()) / (float)trkRefKey.get()->numberOfLostHits());
          hMatch_ptCut_pull_validFraction->Fill(fabs(trkRefVal->validFraction() - trkRefKey.get()->validFraction()) / trkRefKey.get()->validFraction());
       }
    }

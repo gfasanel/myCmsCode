@@ -1,6 +1,6 @@
 #!/bin/bash
-cmsRun hltgsftrkanalyser_cfg.py outFile=nc6VsNc2_pt10_sharedHits3_passHltDEle33_test.root
-cmsRun hltgsftrkanalyser_cfg.py testNcSuffix=NC3 outFile=nc6VsNc3_pt10_sharedHits3_passHltDEle33_test.root
-cmsRun hltgsftrkanalyser_cfg.py testNcSuffix=NC4 outFile=nc6VsNc4_pt10_sharedHits3_passHltDEle33_test.root
-cmsRun hltgsftrkanalyser_cfg.py testNcSuffix=NC5 outFile=nc6VsNc5_pt10_sharedHits3_passHltDEle33_test.root
+cmsRun hltgsftrkanalyser_cfg.py testNcSuffix=NC2 outFile=nc6VsNc2_pt10_sharedHits3_passHltDEle33.root
+cmsRun hltgsftrkanalyser_cfg.py testNcSuffix=NC3 outFile=nc6VsNc3_pt10_sharedHits3_passHltDEle33.root
+cmsRun hltgsftrkanalyser_cfg.py testNcSuffix=NC4 outFile=nc6VsNc4_pt10_sharedHits3_passHltDEle33.root
+cmsRun hltgsftrkanalyser_cfg.py testNcSuffix=NC5 outFile=nc6VsNc5_pt10_sharedHits3_passHltDEle33.root
 

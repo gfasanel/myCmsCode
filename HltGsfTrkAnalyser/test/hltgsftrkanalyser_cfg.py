@@ -4,8 +4,8 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 process = cms.Process("GSFANA")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'GR_P_V42::All'
-process.GlobalTag.globaltag = 'START53_V19D::All'
+process.GlobalTag.globaltag = 'FT_53_V21_AN6::All'
+#process.GlobalTag.globaltag = 'START53_V19D::All'
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -15,7 +15,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/outputAForPP.root'
+        'file:/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/outputZskim.root'
     )
 )
 
@@ -25,7 +25,7 @@ options.register('refNcSuffix', '', # default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Number of components suffix string for reference")
-options.register('testNcSuffix', 'NC2', # default value
+options.register('testNcSuffix', '', # default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Number of components suffix string for test")

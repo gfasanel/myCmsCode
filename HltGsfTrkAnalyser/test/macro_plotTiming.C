@@ -17,45 +17,47 @@ void macro_plotTiming()
 {
    TH1::AddDirectory(kFALSE);
 
+   const bool plotDoubleEleTrg = 1;
+
    int font = 42;
    const bool saveAsPng = 0;
-   TString plotsDir = "plots_20130715/";
+   TString plotsDir = "plots_20130917/";
 
-   TString fileDir("/afs/cern.ch/work/t/treis/hlt/CMSSW_5_3_8_patch3/src/HLTrigger/Configuration/test/");
+   TString fileDir("/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/");
    vector<TString> files;
-   //files.push_back("./DQM_V0001_R000203994__HLT__FastTimerService__All.root");
-   //files.push_back("./DQM_V0001_R000204002__HLT__FastTimerService__All.root");
-   //files.push_back("./DQM_V0001_R000204100__HLT__FastTimerService__All.root");
-   //files.push_back("./DQM_V0001_R000204101__HLT__FastTimerService__All.root");
-   //files.push_back("./DQM_V0001_R000204113__HLT__FastTimerService__All_vocms110.root");
-   files.push_back("./DQM_V0001_R000204114__HLT__FastTimerService__All.root");
-   //TString dir("DQMData/Run 203994/HLT/Run summary/TimerService/");
-   TString dir("DQMData/Run 204114/HLT/Run summary/TimerService/");
+   files.push_back("./DQM_V0001_R000204113__HLT__FastTimerService__All_vocms110.root");
+   TString dir("DQMData/Run 204113/HLT/Run summary/TimerService/");
    TString subDir("Paths/");
 
    vector<TString> trgNames;
-   trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7");
-   trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC5");
-   trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC4");
-   trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC3");
-   trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC2");
-   //trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_v2");
-   //trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC5");
-   //trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC4");
-   //trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC3");
-   //trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC2");
+   if (plotDoubleEleTrg) {
+      trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7");
+      trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC5");
+      trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC4");
+      trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC3");
+      trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC2");
+   } else {
+      trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_v2");
+      trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC5");
+      trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC4");
+      trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC3");
+      trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC2");
+   }
 
    vector<TString> moduleNames;
-   moduleNames.push_back("hltActivityElectronGsfTracks");
-   moduleNames.push_back("hltActivityElectronGsfTracksNC5");
-   moduleNames.push_back("hltActivityElectronGsfTracksNC4");
-   moduleNames.push_back("hltActivityElectronGsfTracksNC3");
-   moduleNames.push_back("hltActivityElectronGsfTracksNC2");
-   //moduleNames.push_back("hltL1SeededElectronGsfTracks");
-   //moduleNames.push_back("hltL1SeededElectronGsfTracksNC5");
-   //moduleNames.push_back("hltL1SeededElectronGsfTracksNC4");
-   //moduleNames.push_back("hltL1SeededElectronGsfTracksNC3");
-   //moduleNames.push_back("hltL1SeededElectronGsfTracksNC2");
+   if (plotDoubleEleTrg) {
+      moduleNames.push_back("hltActivityElectronGsfTracks");
+      moduleNames.push_back("hltActivityElectronGsfTracksNC5");
+      moduleNames.push_back("hltActivityElectronGsfTracksNC4");
+      moduleNames.push_back("hltActivityElectronGsfTracksNC3");
+      moduleNames.push_back("hltActivityElectronGsfTracksNC2");
+   } else {
+      moduleNames.push_back("hltL1SeededElectronGsfTracks");
+      moduleNames.push_back("hltL1SeededElectronGsfTracksNC5");
+      moduleNames.push_back("hltL1SeededElectronGsfTracksNC4");
+      moduleNames.push_back("hltL1SeededElectronGsfTracksNC3");
+      moduleNames.push_back("hltL1SeededElectronGsfTracksNC2");
+   }
 
    vector<TString> legEntries;
    legEntries.push_back("NC6");
@@ -112,12 +114,15 @@ void macro_plotTiming()
       tex->SetTextFont(font);
       tex->SetLineWidth(2);
       tex->SetTextSize(0.03);
-      tex->DrawLatex(0.10, 0.91, "Paths: HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_*");
-      //tex->DrawLatex(0.10, 0.91, "Paths: HLT_Ele80_CaloIdVT_GsfTrkIdT_*");
+      if (plotDoubleEleTrg) tex->DrawLatex(0.10, 0.91, "Paths: HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_*");
+      else tex->DrawLatex(0.10, 0.91, "Paths: HLT_Ele80_CaloIdVT_GsfTrkIdT_*");
       tex->DrawLatex(0.75, 0.91, "CMS Preliminary");
 
-      if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7" + histoNames[i] + ".png", "png");
-      //if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_Ele80_CaloIdVT_GsfTrkIdT" + histoNames[i] + ".png", "png");
+      if (plotDoubleEleTrg) {
+         if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7" + histoNames[i] + ".png", "png");
+      } else {
+         if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_Ele80_CaloIdVT_GsfTrkIdT" + histoNames[i] + ".png", "png");
+      }
    }
 
    {
@@ -173,8 +178,8 @@ void macro_plotTiming()
       tex->SetTextFont(font);
       tex->SetLineWidth(2);
       tex->SetTextSize(0.03);
-      tex->DrawLatex(0.10, 0.91, "Modules: hltActivityElectronGsfTracks*");
-      //tex->DrawLatex(0.10, 0.91, "Modules: hltL1SeededElectronGsfTracks*");
+      if (plotDoubleEleTrg) tex->DrawLatex(0.10, 0.91, "Modules: hltActivityElectronGsfTracks*");
+      else tex->DrawLatex(0.10, 0.91, "Modules: hltL1SeededElectronGsfTracks*");
       tex->DrawLatex(0.75, 0.91, "CMS Preliminary");
 
       if (saveAsPng) c1->Print(plotsDir + "hModTime_" + moduleNames[0] + ".png", "png");

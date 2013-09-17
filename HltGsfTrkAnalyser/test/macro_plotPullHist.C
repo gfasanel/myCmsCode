@@ -22,20 +22,20 @@ void macro_plotPullHist()
    const bool overflow = 1;
    int font = 42;
    const bool saveAsPng = 0;
-   TString plotsDir = "../plots_20130718/";
+   TString plotsDir = "./plots_20130917/";
 
    vector<TString> files;
    if (compToReco) {
-      files.push_back("../recoVsNc6_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("../recoVsNc5_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("../recoVsNc4_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("../recoVsNc3_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("../recoVsNc2_pt10_dr0p5_passHltDEle33.root");
+      files.push_back("./recoVsNc6_pt10_dr0p5_passHltDEle33.root");
+      files.push_back("./recoVsNc5_pt10_dr0p5_passHltDEle33.root");
+      files.push_back("./recoVsNc4_pt10_dr0p5_passHltDEle33.root");
+      files.push_back("./recoVsNc3_pt10_dr0p5_passHltDEle33.root");
+      files.push_back("./recoVsNc2_pt10_dr0p5_passHltDEle33.root");
    } else {
-      files.push_back("../nc6VsNc5_pt10_sharedHits3_passHltDEle33.root");
-      files.push_back("../nc6VsNc4_pt10_sharedHits3_passHltDEle33.root");
-      files.push_back("../nc6VsNc3_pt10_sharedHits3_passHltDEle33.root");
-      files.push_back("../nc6VsNc2_pt10_sharedHits3_passHltDEle33.root");
+      files.push_back("./nc6VsNc5_pt10_sharedHits3_passHltDEle33.root");
+      files.push_back("./nc6VsNc4_pt10_sharedHits3_passHltDEle33.root");
+      files.push_back("./nc6VsNc3_pt10_sharedHits3_passHltDEle33.root");
+      files.push_back("./nc6VsNc2_pt10_sharedHits3_passHltDEle33.root");
    }
    //files.push_back("./nc6VsNc5_pt30_dr0p5_passHltDEle33TrkNC5_noPassHltDEle33TrkNC6.root");
    //files.push_back("./nc6VsNc4_pt30_dr0p5_passHltDEle33TrkNC4_noPassHltDEle33TrkNC6.root");
