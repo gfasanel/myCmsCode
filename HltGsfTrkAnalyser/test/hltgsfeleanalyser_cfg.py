@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("GSFANA")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'GR_P_V42::All'
-process.GlobalTag.globaltag = 'START53_V19D::All'
+process.GlobalTag.globaltag = 'FT_53_V21_AN6::All'
+#process.GlobalTag.globaltag = 'START53_V19D::All'
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -14,7 +14,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/outputAForPP.root'
+        #'file:/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/QCD_hltRun_grid/res/outputQCD.root'
+        #'file:/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/DY_hltRun_grid/res/outputDY.root'
+        'file:/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/outputZskim.root'
     )
 )
 
@@ -27,72 +29,98 @@ process.HltGsfEleAna = cms.EDAnalyzer('HltGsfEleAnalyser',
     triggers = cms.untracked.VPSet(
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
+            refTriggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(2),
             minEts = cms.untracked.vdouble(35., 35.),
         ),
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC2'),
+            refTriggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(2),
             minEts = cms.untracked.vdouble(35., 35.),
         ),
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC3'),
+            refTriggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(2),
             minEts = cms.untracked.vdouble(35., 35.),
         ),
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC4'),
+            refTriggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(2),
             minEts = cms.untracked.vdouble(35., 35.),
         ),
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC5'),
+            refTriggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(2),
             minEts = cms.untracked.vdouble(35., 35.),
         ),
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7'),
+            refTriggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(2),
             minEts = cms.untracked.vdouble(35., 35.),
         ),
         cms.untracked.PSet(
-            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_v2'),
+            triggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdT_v10'),
+            refTriggerName = cms.untracked.string('HLT_DoubleEle33_CaloIdL_v14'),
             invertBit = cms.untracked.bool(False),
-            minEle = cms.untracked.uint32(1),
-            minEts = cms.untracked.vdouble(80.),
+            minEle = cms.untracked.uint32(2),
+            minEts = cms.untracked.vdouble(35., 35.),
         ),
         cms.untracked.PSet(
-            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_nC5'),
-            invertBit = cms.untracked.bool(False),
-            minEle = cms.untracked.uint32(1),
-            minEts = cms.untracked.vdouble(80.),
-        ),
-        cms.untracked.PSet(
-            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_nC4'),
-            invertBit = cms.untracked.bool(False),
-            minEle = cms.untracked.uint32(1),
-            minEts = cms.untracked.vdouble(80.),
-        ),
-        cms.untracked.PSet(
-            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_nC3'),
+            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
+            refTriggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(1),
             minEts = cms.untracked.vdouble(80.),
         ),
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_nC2'),
+            refTriggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
+            invertBit = cms.untracked.bool(False),
+            minEle = cms.untracked.uint32(1),
+            minEts = cms.untracked.vdouble(80.),
+        ),
+        cms.untracked.PSet(
+            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_nC3'),
+            refTriggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
+            invertBit = cms.untracked.bool(False),
+            minEle = cms.untracked.uint32(1),
+            minEts = cms.untracked.vdouble(80.),
+        ),
+        cms.untracked.PSet(
+            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_nC4'),
+            refTriggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
+            invertBit = cms.untracked.bool(False),
+            minEle = cms.untracked.uint32(1),
+            minEts = cms.untracked.vdouble(80.),
+        ),
+        cms.untracked.PSet(
+            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_nC5'),
+            refTriggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
+            invertBit = cms.untracked.bool(False),
+            minEle = cms.untracked.uint32(1),
+            minEts = cms.untracked.vdouble(80.),
+        ),
+        cms.untracked.PSet(
+            triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_GsfTrkIdT_v2'),
+            refTriggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(1),
             minEts = cms.untracked.vdouble(80.),
         ),
         cms.untracked.PSet(
             triggerName = cms.untracked.string('HLT_Ele80_CaloIdVT_TrkIdT'),
+            refTriggerName = cms.untracked.string('HLT_Ele80_CaloIdVT'),
             invertBit = cms.untracked.bool(False),
             minEle = cms.untracked.uint32(1),
             minEts = cms.untracked.vdouble(80.),

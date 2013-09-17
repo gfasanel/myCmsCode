@@ -37,6 +37,8 @@
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "TH2F.h"
+#include "TEfficiency.h"
+#include "TGraphAsymmErrors.h"
 //
 // class declaration
 //
@@ -70,7 +72,9 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
 
       HLTConfigProvider hltConfig;
       std::vector<unsigned int> trgIndices;
+      std::vector<unsigned int> refTrgIndices;
       std::vector<std::string> trgNames;
+      std::vector<std::string> refTrgNames;
       std::vector<bool> trgInvs;
       std::vector<unsigned int> trgMinEles;
       std::vector<std::vector<double> > trgMinEtss;
@@ -78,17 +82,26 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       // histograms
       TH1F* h_nHeep;
       TH1F* h_total;
-      TH1F* h_1PassHeep_total;
-      TH1F* h_2PassHeep_total;
-      TH1F* h_nPassHeep_total;
-      TH1F* h_nPassHeep_trgd;
-      TH1F* h_nPassHeep_notTrgd;
-      TH1F* h_nPassHeep_nPassEt_total;
-      TH1F* h_nPassHeep_nPassEt_trgd;
-      TH1F* h_nPassHeep_nPassEt_notTrgd;
+      TH1F* h_refTrgd;
       TH1F* h_trgd;
       TH1F* h_notTrgd;
+      TH1F* h_notTrgdRefTrgd;
+      TH1F* h_1PassHeep_total;
+      TH1F* h_1PassHeep_refTrgd;
+      TH1F* h_2PassHeep_total;
+      TH1F* h_2PassHeep_refTrgd;
+      TH1F* h_nPassHeep_total;
+      TH1F* h_nPassHeep_refTrgd;
+      TH1F* h_nPassHeep_trgd;
+      TH1F* h_nPassHeep_notTrgd;
+      TH1F* h_nPassHeep_notTrgdRefTrgd;
+      TH1F* h_nPassHeep_nPassEt_total;
+      TH1F* h_nPassHeep_nPassEt_refTrgd;
+      TH1F* h_nPassHeep_nPassEt_trgd;
+      TH1F* h_nPassHeep_nPassEt_notTrgd;
+      TH1F* h_nPassHeep_nPassEt_notTrgdRefTrgd;
       std::vector<TH1F*> v_h_nPassHeep_nMinus1PassEt_vsEt_total;
+      std::vector<TH1F*> v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd;
       std::vector<TH1F*> v_h_nPassHeep_nMinus1PassEt_vsEt_trgd;
 
       // ratio histograms
@@ -96,14 +109,34 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       TH1F* hRatio_nPassHeep_notTrgdVsTotal;
       TH1F* hRatio_nPassHeep_nPassEt_trgdVsTotal;
       TH1F* hRatio_nPassHeep_nPassEt_notTrgdVsTotal;
+      TH1F* hRatio_trgdVsRefTrgd;
+      TH1F* hRatio_notTrgdVsRefTrgd;
+      TH1F* hRatio_notTrgdRefTrgdVsRefTrgd;
+      TH1F* hRatio_nPassHeep_trgdVsRefTrgd;
+      TH1F* hRatio_nPassHeep_notTrgdVsRefTrgd;
+      TH1F* hRatio_nPassHeep_notTrgdRefTrgdVsRefTrgd;
+      TH1F* hRatio_nPassHeep_nPassEt_trgdVsRefTrgd;
+      TH1F* hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd;
+      TH1F* hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd;
       std::vector<TH1F*> v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal;
+      std::vector<TH1F*> v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd;
 
-      TH2F* h2Ratio_nPassHeep_trgd;
-      TH2F* h2Ratio_nPassHeep_notTrgd;
-      TH2F* h2Ratio_nPassHeep_nPassEt_trgd;
-      TH2F* h2Ratio_nPassHeep_nPassEt_notTrgd;
+      TGraphAsymmErrors* gEff_trgdVsRefTrgd;
+      TGraphAsymmErrors* gEff_notTrgdRefTrgdVsRefTrgd;
+      TGraphAsymmErrors* gEff_nPassHeep_trgdVsRefTrgd;
+      TGraphAsymmErrors* gEff_nPassHeep_notTrgdRefTrgdVsRefTrgd;
+      TGraphAsymmErrors* gEff_nPassHeep_nPassEt_trgdVsRefTrgd;
+      TGraphAsymmErrors* gEff_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd;
+
       TH2F* h2Ratio_trgd;
       TH2F* h2Ratio_notTrgd;
+      TH2F* h2Ratio_notTrgdRefTrgd;
+      TH2F* h2Ratio_nPassHeep_trgd;
+      TH2F* h2Ratio_nPassHeep_notTrgd;
+      TH2F* h2Ratio_nPassHeep_notTrgdRefTrgd;
+      TH2F* h2Ratio_nPassHeep_nPassEt_trgd;
+      TH2F* h2Ratio_nPassHeep_nPassEt_notTrgd;
+      TH2F* h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd;
       //TODO: make 2D histos wrt. nPassHEEP_total 
 };
 
@@ -127,6 +160,7 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
 
    for (std::vector<edm::ParameterSet>::const_iterator trgIt = trgVPSet_.begin(); trgIt < trgVPSet_.end(); ++trgIt) {
       trgNames.push_back(trgIt->getUntrackedParameter<std::string>("triggerName", "HLTriggerFinalPath")); 
+      refTrgNames.push_back(trgIt->getUntrackedParameter<std::string>("refTriggerName", "HLTriggerFinalPath")); 
       trgInvs.push_back(trgIt->getUntrackedParameter<bool>("invertBit", 0));
       trgMinEles.push_back(trgIt->getUntrackedParameter<unsigned int>("minEle", 1));
       trgMinEtss.push_back(trgIt->getUntrackedParameter<std::vector<double> >("minEts", std::vector<double> (1, 0.)));
@@ -136,18 +170,26 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
 
    unsigned int trgsSize = trgVPSet_.size();
    edm::Service<TFileService> fs;
-   h_total = fs->make<TH1F>("h_total", "Total # events", trgsSize, 0., trgsSize);
-   h_1PassHeep_total = fs->make<TH1F>("h_1PassHeep_total", "Total events with one HEEP electron", trgsSize, 0., trgsSize);
-   h_2PassHeep_total = fs->make<TH1F>("h_2PassHeep_total", "Total events with two HEEP electrons", trgsSize, 0., trgsSize);
-   h_nPassHeep_total = fs->make<TH1F>("h_nPassHeep_total", "Total events with n HEEP electrons (n defined by trigger)", trgsSize, 0., trgsSize);
-   h_nPassHeep_trgd = fs->make<TH1F>("h_nPassHeep_trgd", "Triggered events with n HEEP electrons (n defined by trigger)", trgsSize, 0., trgsSize);
-   h_nPassHeep_notTrgd = fs->make<TH1F>("h_nPassHeep_notTrgd", "Not triggered events with n HEEP electrons (n defined by trigger)", trgsSize, 0., trgsSize);
-   h_nPassHeep_nPassEt_total = fs->make<TH1F>("h_nPassHeep_nPassEt_total", "Total events with n HEEP electrons passing Et cut (n defined by trigger)", trgsSize, 0., trgsSize);
-   h_nPassHeep_nPassEt_trgd = fs->make<TH1F>("h_nPassHeep_nPassEt_trgd", "Triggered events with n HEEP electrons passing Et cut (n defined by trigger)", trgsSize, 0., trgsSize);
-   h_nPassHeep_nPassEt_notTrgd = fs->make<TH1F>("h_nPassHeep_nPassEt_notTrgd", "Not triggered events with n HEEP electrons passing Et cut (n defined by trigger)", trgsSize, 0., trgsSize);
    h_nHeep = fs->make<TH1F>("h_nHeep", "# of HEEP electrons", 10, 0., 10.);
+   h_total = fs->make<TH1F>("h_total", "Total # events", trgsSize, 0., trgsSize);
+   h_refTrgd = fs->make<TH1F>("h_refTrgd", "Events triggered by reference trigger", trgsSize, 0., trgsSize);
    h_trgd = fs->make<TH1F>("h_trgd", "# of triggered events", trgsSize, 0., trgsSize);
    h_notTrgd = fs->make<TH1F>("h_notTrgd", "# of not triggered events", trgsSize, 0., trgsSize);
+   h_notTrgdRefTrgd = fs->make<TH1F>("h_notTrgdRefTrgd", "# of not triggered events triggered by reference trigger", trgsSize, 0., trgsSize);
+   h_1PassHeep_total = fs->make<TH1F>("h_1PassHeep_total", "Total events with one HEEP electron", trgsSize, 0., trgsSize);
+   h_1PassHeep_refTrgd = fs->make<TH1F>("h_1PassHeep_refTrgd", "Events with one HEEP electron triggered by reference trigger", trgsSize, 0., trgsSize);
+   h_2PassHeep_total = fs->make<TH1F>("h_2PassHeep_total", "Total events with two HEEP electrons", trgsSize, 0., trgsSize);
+   h_2PassHeep_refTrgd = fs->make<TH1F>("h_2PassHeep_refTrgd", "Events with two HEEP electrons triggered by reference trigger", trgsSize, 0., trgsSize);
+   h_nPassHeep_total = fs->make<TH1F>("h_nPassHeep_total", "Total events with n HEEP electrons (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_refTrgd = fs->make<TH1F>("h_nPassHeep_refTrgd", "Events with n HEEP electrons triggered by reference trigger (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_trgd = fs->make<TH1F>("h_nPassHeep_trgd", "Triggered events with n HEEP electrons (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_notTrgd = fs->make<TH1F>("h_nPassHeep_notTrgd", "Not triggered events with n HEEP electrons (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_notTrgdRefTrgd = fs->make<TH1F>("h_nPassHeep_notTrgdRefTrgd", "Not triggered events with n HEEP electrons triggered by reference trigger (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_nPassEt_total = fs->make<TH1F>("h_nPassHeep_nPassEt_total", "Total events with n HEEP electrons passing Et cut (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_nPassEt_refTrgd = fs->make<TH1F>("h_nPassHeep_nPassEt_refTrgd", "Events with n HEEP electrons passing Et cut triggered by reference trigger (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_nPassEt_trgd = fs->make<TH1F>("h_nPassHeep_nPassEt_trgd", "Triggered events with n HEEP electrons passing Et cut (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_nPassEt_notTrgd = fs->make<TH1F>("h_nPassHeep_nPassEt_notTrgd", "Not triggered events with n HEEP electrons passing Et cut (n defined by trigger)", trgsSize, 0., trgsSize);
+   h_nPassHeep_nPassEt_notTrgdRefTrgd = fs->make<TH1F>("h_nPassHeep_nPassEt_notTrgdRefTrgd", "Not triggered events with n HEEP electrons passing Et cut triggered by reference trigger (n defined by trigger)", trgsSize, 0., trgsSize);
 
    // ratio histos
    hRatio_nPassHeep_trgdVsTotal = fs->make<TH1F>("hRatio_nPassHeep_trgdVsTotal", "# triggered / # total n-HEEP events", trgsSize, 0., trgsSize);
@@ -155,54 +197,96 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
    hRatio_nPassHeep_nPassEt_trgdVsTotal = fs->make<TH1F>("hRatio_nPassHeep_nPassEt_trgdVsTotal", "# triggered / # total n-HEEP events passing Et cuts", trgsSize, 0., trgsSize);
    hRatio_nPassHeep_nPassEt_notTrgdVsTotal = fs->make<TH1F>("hRatio_nPassHeep_nPassEt_notTrgdVsTotal", "# not triggered / # total n-HEEP events passing Et cuts", trgsSize, 0., trgsSize);
 
-   h2Ratio_nPassHeep_trgd = fs->make<TH2F>("h2Ratio_nPassHeep_trgd", "Inter trigger ratio of triggered n-HEEP events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
-   h2Ratio_nPassHeep_notTrgd = fs->make<TH2F>("h2Ratio_nPassHeep_notTrgd", "Inter trigger ratio of not triggered n-HEEP events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
-   h2Ratio_nPassHeep_nPassEt_trgd = fs->make<TH2F>("h2Ratio_nPassHeep_nPassEt_trgd", "Inter trigger ratio of triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
-   h2Ratio_nPassHeep_nPassEt_notTrgd = fs->make<TH2F>("h2Ratio_nPassHeep_nPassEt_notTrgd", "Inter trigger ratio of not triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   hRatio_trgdVsRefTrgd = fs->make<TH1F>("hRatio_trgdVsRefTrgd", "# triggered / # reference triggered events", trgsSize, 0., trgsSize);
+   hRatio_notTrgdVsRefTrgd = fs->make<TH1F>("hRatio_notTrgdVsRefTrgd", "# not triggered / # reference triggered events", trgsSize, 0., trgsSize);
+   hRatio_notTrgdRefTrgdVsRefTrgd = fs->make<TH1F>("hRatio_notTrgdRefTrgdVsRefTrgd", "# not triggered but reference triggered/ # reference triggered events", trgsSize, 0., trgsSize);
+   hRatio_nPassHeep_trgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_trgdVsRefTrgd", "# triggered / # reference triggered n-HEEP events", trgsSize, 0., trgsSize);
+   hRatio_nPassHeep_notTrgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_notTrgdVsRefTrgd", "# not triggered / # reference triggered n-HEEP events", trgsSize, 0., trgsSize);
+   hRatio_nPassHeep_notTrgdRefTrgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_notTrgdRefTrgdVsRefTrgd", "# not triggered but reference triggered / # reference triggered n-HEEP events", trgsSize, 0., trgsSize);
+   hRatio_nPassHeep_nPassEt_trgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_nPassEt_trgdVsRefTrgd", "# triggered / # reference triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize);
+   hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd", "# not triggered / # reference triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize);
+   hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd", "# not triggered but reference triggered / # reference triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize);
+
    h2Ratio_trgd = fs->make<TH2F>("h2Ratio_trgd", "Inter trigger ratio of triggered events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
    h2Ratio_notTrgd = fs->make<TH2F>("h2Ratio_notTrgd", "Inter trigger ratio of not triggered events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   h2Ratio_notTrgdRefTrgd = fs->make<TH2F>("h2Ratio_notTrgdRefTrgd", "Inter trigger ratio of not triggered events triggered by the reference trigger", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   h2Ratio_nPassHeep_trgd = fs->make<TH2F>("h2Ratio_nPassHeep_trgd", "Inter trigger ratio of triggered n-HEEP events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   h2Ratio_nPassHeep_notTrgd = fs->make<TH2F>("h2Ratio_nPassHeep_notTrgd", "Inter trigger ratio of not triggered n-HEEP events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   h2Ratio_nPassHeep_notTrgdRefTrgd = fs->make<TH2F>("h2Ratio_nPassHeep_notTrgdRefTrgd", "Inter trigger ratio of not triggered n-HEEP events triggered by the reference trigger", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   h2Ratio_nPassHeep_nPassEt_trgd = fs->make<TH2F>("h2Ratio_nPassHeep_nPassEt_trgd", "Inter trigger ratio of triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   h2Ratio_nPassHeep_nPassEt_notTrgd = fs->make<TH2F>("h2Ratio_nPassHeep_nPassEt_notTrgd", "Inter trigger ratio of not triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
+   h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd = fs->make<TH2F>("h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd", "Inter trigger ratio of not triggered n-HEEP events passing Et cuts triggered by the reference trigger", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
 
    for (unsigned int i = 0; i < trgNames.size(); ++i) {
       float lastTrgMinEt = trgMinEtss.at(i).back(); 
       std::string nameString = "h_nPassHeep_nMinus1PassEt_vsEt_total_" + trgNames[i];
       v_h_nPassHeep_nMinus1PassEt_vsEt_total.push_back(fs->make<TH1F>(nameString.data(), "# of events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "h_nPassHeep_nMinus1PassEt_vsEt_refTrgd_" + trgNames[i];
+      v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd.push_back(fs->make<TH1F>(nameString.data(), "# of reference trigger triggered events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
       nameString = "h_nPassHeep_nMinus1PassEt_vsEt_trgd_" + trgNames[i];
       v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.push_back(fs->make<TH1F>(nameString.data(), "# of triggered events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
       nameString = "hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal_" + trgNames[i];
       v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal.push_back(fs->make<TH1F>(nameString.data(), "# triggered / # total n-HEEP events vs. Et cuts", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd_" + trgNames[i];
+      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd.push_back(fs->make<TH1F>(nameString.data(), "# triggered / # reference triggered n-HEEP events vs. Et cuts", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
 
       // set bin labels
-      const char* trgName = trgNames[i].data();
+      std::string triggerName = trgNames[i];
+      if (triggerName.compare(refTrgNames[i]) == 0) triggerName += " [ref]";
+      const char* trgName = triggerName.data();
       h_total->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_1PassHeep_total->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_2PassHeep_total->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_nPassHeep_total->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_nPassHeep_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_nPassHeep_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_nPassHeep_nPassEt_total->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_nPassHeep_nPassEt_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
-      h_nPassHeep_nPassEt_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_refTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
       h_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
       h_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_notTrgdRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_1PassHeep_total->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_1PassHeep_refTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_2PassHeep_total->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_2PassHeep_refTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_total->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_refTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_notTrgdRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_nPassEt_total->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_nPassEt_refTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_nPassEt_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_nPassEt_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h_nPassHeep_nPassEt_notTrgdRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
 
       // ratio histos
       hRatio_nPassHeep_trgdVsTotal->GetXaxis()->SetBinLabel(i+1, trgName);
       hRatio_nPassHeep_notTrgdVsTotal->GetXaxis()->SetBinLabel(i+1, trgName);
       hRatio_nPassHeep_nPassEt_trgdVsTotal->GetXaxis()->SetBinLabel(i+1, trgName);
       hRatio_nPassHeep_nPassEt_notTrgdVsTotal->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_trgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_notTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_notTrgdRefTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_nPassHeep_trgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_nPassHeep_notTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_nPassHeep_notTrgdRefTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_nPassHeep_nPassEt_trgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
 
-      h2Ratio_nPassHeep_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
-      h2Ratio_nPassHeep_trgd->GetYaxis()->SetBinLabel(i+1, trgName);
-      h2Ratio_nPassHeep_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
-      h2Ratio_nPassHeep_notTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
-      h2Ratio_nPassHeep_nPassEt_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
-      h2Ratio_nPassHeep_nPassEt_trgd->GetYaxis()->SetBinLabel(i+1, trgName);
-      h2Ratio_nPassHeep_nPassEt_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
-      h2Ratio_nPassHeep_nPassEt_notTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
       h2Ratio_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
       h2Ratio_trgd->GetYaxis()->SetBinLabel(i+1, trgName);
       h2Ratio_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
       h2Ratio_notTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_notTrgdRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_notTrgdRefTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_trgd->GetYaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_notTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_notTrgdRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_notTrgdRefTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_nPassEt_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_nPassEt_trgd->GetYaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_nPassEt_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_nPassEt_notTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd->GetYaxis()->SetBinLabel(i+1, trgName);
    }
 }
 
@@ -251,15 +335,25 @@ HltGsfEleAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    edm::TriggerResultsByName trgRes = iEvent.triggerResultsByName(trgResultsTag_.process());
    for (unsigned int trgIndex = 0; trgIndex < trgNames.size(); ++trgIndex) {
       bool triggered = trgRes.accept(trgIndices[trgIndex]) ^ trgInvs[trgIndex];
+      bool refTriggered = trgRes.accept(refTrgIndices[trgIndex]);
 
       h_total->Fill(trgIndex);
+      if (refTriggered) {
+         h_refTrgd->Fill(trgIndex);
+         if (nPassHeep > 0) h_1PassHeep_refTrgd->Fill(trgIndex);
+         if (nPassHeep > 1) h_2PassHeep_refTrgd->Fill(trgIndex);
+      }
       if (nPassHeep > 0) h_1PassHeep_total->Fill(trgIndex);
       if (nPassHeep > 1) h_2PassHeep_total->Fill(trgIndex);
 
       if (nPassHeep >= trgMinEles[trgIndex]) {
          h_nPassHeep_total->Fill(trgIndex);
+         if (refTriggered) h_nPassHeep_refTrgd->Fill(trgIndex);
          if (triggered) h_nPassHeep_trgd->Fill(trgIndex);
-         else h_nPassHeep_notTrgd->Fill(trgIndex);
+         else {
+            h_nPassHeep_notTrgd->Fill(trgIndex);
+            if (refTriggered) h_nPassHeep_notTrgdRefTrgd->Fill(trgIndex);
+         }
 
          // find heep electrons passing also Et cuts from cfg file
          std::vector<unsigned int> heepEleSearchVector(heepEleIndices);
@@ -285,8 +379,12 @@ HltGsfEleAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          // fill histos in case we found enough HEEP electrons passing Et cuts
          if (heepEleIndices.size() - heepEleSearchVector.size() == trgMinEtss.at(trgIndex).size()) {
             h_nPassHeep_nPassEt_total->Fill(trgIndex);
+            if (refTriggered) h_nPassHeep_nPassEt_refTrgd->Fill(trgIndex);
             if (triggered) h_nPassHeep_nPassEt_trgd->Fill(trgIndex);
-            else h_nPassHeep_nPassEt_notTrgd->Fill(trgIndex);
+            else {
+               h_nPassHeep_nPassEt_notTrgd->Fill(trgIndex);
+               if (refTriggered) h_nPassHeep_nPassEt_notTrgdRefTrgd->Fill(trgIndex);
+            }
          }
 
          // fill histograms vs. et of electron
@@ -305,14 +403,17 @@ HltGsfEleAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             // fill histos in case we found enough HEEP electrons passing Et cuts
             if (heepEleIndices.size() - (heepEleSearchVectorForked.size() - subtractValue) == trgMinEtss.at(trgIndex).size()) {
                v_h_nPassHeep_nMinus1PassEt_vsEt_total.at(trgIndex)->Fill(etCut);
+               if (refTriggered) v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd.at(trgIndex)->Fill(etCut);
                if (triggered) v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.at(trgIndex)->Fill(etCut);
             }
          }
       }
 
       if (triggered) h_trgd->Fill(trgIndex);
-      else h_notTrgd->Fill(trgIndex);
-
+      else {
+         h_notTrgd->Fill(trgIndex);
+         if (refTriggered) h_notTrgdRefTrgd->Fill(trgIndex);
+      }
    }
 }
 
@@ -394,18 +495,71 @@ HltGsfEleAnalyser::endJob()
    hRatio_nPassHeep_notTrgdVsTotal->Divide(h_nPassHeep_notTrgd, h_nPassHeep_total);
    hRatio_nPassHeep_nPassEt_trgdVsTotal->Divide(h_nPassHeep_nPassEt_trgd, h_nPassHeep_nPassEt_total);
    hRatio_nPassHeep_nPassEt_notTrgdVsTotal->Divide(h_nPassHeep_nPassEt_notTrgd, h_nPassHeep_nPassEt_total);
+
+   hRatio_trgdVsRefTrgd->Divide(h_trgd, h_refTrgd);
+   hRatio_notTrgdVsRefTrgd->Divide(h_notTrgd, h_refTrgd);
+   hRatio_notTrgdRefTrgdVsRefTrgd->Divide(h_notTrgdRefTrgd, h_refTrgd);
+   hRatio_nPassHeep_trgdVsRefTrgd->Divide(h_nPassHeep_trgd, h_nPassHeep_refTrgd);
+   hRatio_nPassHeep_notTrgdVsRefTrgd->Divide(h_nPassHeep_notTrgd, h_nPassHeep_refTrgd);
+   hRatio_nPassHeep_notTrgdRefTrgdVsRefTrgd->Divide(h_nPassHeep_notTrgdRefTrgd, h_nPassHeep_refTrgd);
+   hRatio_nPassHeep_nPassEt_trgdVsRefTrgd->Divide(h_nPassHeep_nPassEt_trgd, h_nPassHeep_nPassEt_refTrgd);
+   hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd->Divide(h_nPassHeep_nPassEt_notTrgd, h_nPassHeep_nPassEt_refTrgd);
+   hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd->Divide(h_nPassHeep_nPassEt_notTrgdRefTrgd, h_nPassHeep_nPassEt_refTrgd);
    for (unsigned int i = 0; i < trgNames.size(); ++i) {
       v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal.at(i)->Divide(v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.at(i), v_h_nPassHeep_nMinus1PassEt_vsEt_total.at(i));
+      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd.at(i)->Divide(v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.at(i), v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd.at(i));
    }
 
-   TH2F* h2Denom_nPassHeep_trgd = (TH2F*)h2Ratio_nPassHeep_trgd->Clone("h2Denom_nPassHeep_trgd");
-   TH2F* h2Denom_nPassHeep_notTrgd = (TH2F*)h2Ratio_nPassHeep_notTrgd->Clone("h2Denom_nPassHeep_notTrgd");
-   TH2F* h2Denom_nPassHeep_nPassEt_trgd = (TH2F*)h2Ratio_nPassHeep_nPassEt_trgd->Clone("h2Denom_nPassHeep_nPassEt_trgd");
-   TH2F* h2Denom_nPassHeep_nPassEt_notTrgd = (TH2F*)h2Ratio_nPassHeep_nPassEt_notTrgd->Clone("h2Denom_nPassHeep_nPassEt_notTrgd");
+   edm::Service<TFileService> fs;
+   gEff_trgdVsRefTrgd = fs->make<TGraphAsymmErrors>(h_trgd, h_refTrgd, "cp");
+   gEff_notTrgdRefTrgdVsRefTrgd = fs->make<TGraphAsymmErrors>(h_notTrgdRefTrgd, h_refTrgd, "cp");
+   gEff_nPassHeep_trgdVsRefTrgd = fs->make<TGraphAsymmErrors>(h_nPassHeep_trgd, h_nPassHeep_refTrgd, "cp");
+   gEff_nPassHeep_notTrgdRefTrgdVsRefTrgd = fs->make<TGraphAsymmErrors>(h_nPassHeep_notTrgdRefTrgd, h_nPassHeep_refTrgd, "cp");
+   gEff_nPassHeep_nPassEt_trgdVsRefTrgd = fs->make<TGraphAsymmErrors>(h_nPassHeep_nPassEt_trgd, h_nPassHeep_nPassEt_refTrgd, "cp");
+   gEff_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd = fs->make<TGraphAsymmErrors>(h_nPassHeep_nPassEt_notTrgdRefTrgd, h_nPassHeep_nPassEt_refTrgd, "cp");
+
+   gEff_trgdVsRefTrgd->SetNameTitle("gEff_trgdVsRefTrgd", "# triggered / # reference triggered events");
+   gEff_notTrgdRefTrgdVsRefTrgd->SetNameTitle("gEff_notTrgdRefTrgdVsRefTrgd", "# not triggered but reference triggered / # reference triggered events");
+   gEff_nPassHeep_trgdVsRefTrgd->SetNameTitle("gEff_nPassHeep_trgdVsRefTrgd", "# triggered / # reference triggered n-HEEP events");
+   gEff_nPassHeep_notTrgdRefTrgdVsRefTrgd->SetNameTitle("gEff_nPassHeep_notTrgdRefTrgdVsRefTrgd", "# not triggered but reference triggered / # reference triggered n-HEEP events");
+   gEff_nPassHeep_nPassEt_trgdVsRefTrgd->SetNameTitle("gEff_nPassHeep_nPassEt_trgdVsRefTrgd", "# triggered / # reference triggered n-HEEP events passing Et cuts");
+   gEff_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd->SetNameTitle("gEff_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd", "# not triggered but reference triggered / # reference triggered n-HEEP events passing Et cuts");
+   for (unsigned int i = 0; i < trgNames.size(); ++i) {
+      std::string triggerName = trgNames[i];
+      if (triggerName.compare(refTrgNames[i]) == 0) triggerName += " [ref]";
+      const char* trgName = triggerName.data();
+      gEff_trgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      gEff_notTrgdRefTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      gEff_nPassHeep_trgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      gEff_nPassHeep_notTrgdRefTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      gEff_nPassHeep_nPassEt_trgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+      gEff_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+   }
+
    TH2F* h2Denom_trgd = (TH2F*)h2Ratio_trgd->Clone("h2Denom_trgd");
    TH2F* h2Denom_notTrgd = (TH2F*)h2Ratio_notTrgd->Clone("h2Denom_notTrgd");
+   TH2F* h2Denom_notTrgdRefTrgd = (TH2F*)h2Ratio_notTrgdRefTrgd->Clone("h2Denom_notTrgdRefTrgd");
+   TH2F* h2Denom_nPassHeep_trgd = (TH2F*)h2Ratio_nPassHeep_trgd->Clone("h2Denom_nPassHeep_trgd");
+   TH2F* h2Denom_nPassHeep_notTrgd = (TH2F*)h2Ratio_nPassHeep_notTrgd->Clone("h2Denom_nPassHeep_notTrgd");
+   TH2F* h2Denom_nPassHeep_notTrgdRefTrgd = (TH2F*)h2Ratio_nPassHeep_notTrgdRefTrgd->Clone("h2Denom_nPassHeep_notTrgdRefTrgd");
+   TH2F* h2Denom_nPassHeep_nPassEt_trgd = (TH2F*)h2Ratio_nPassHeep_nPassEt_trgd->Clone("h2Denom_nPassHeep_nPassEt_trgd");
+   TH2F* h2Denom_nPassHeep_nPassEt_notTrgd = (TH2F*)h2Ratio_nPassHeep_nPassEt_notTrgd->Clone("h2Denom_nPassHeep_nPassEt_notTrgd");
+   TH2F* h2Denom_nPassHeep_nPassEt_notTrgdRefTrgd = (TH2F*)h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd->Clone("h2Denom_nPassHeep_nPassEt_notTrgdRefTrgd");
    for (unsigned int ix = 1; ix <= trgNames.size(); ++ix) {
       for (unsigned int iy = 1; iy <= trgNames.size(); ++iy) {
+         h2Ratio_trgd->SetBinContent(ix, iy, h_trgd->GetBinContent(ix));
+         h2Ratio_trgd->SetBinError(ix, iy, h_trgd->GetBinError(ix));
+         h2Denom_trgd->SetBinContent(ix, iy, h_trgd->GetBinContent(iy));
+         h2Denom_trgd->SetBinError(ix, iy, h_trgd->GetBinError(iy));
+         h2Ratio_notTrgd->SetBinContent(ix, iy, h_notTrgd->GetBinContent(ix));
+         h2Ratio_notTrgd->SetBinError(ix, iy, h_notTrgd->GetBinError(ix));
+         h2Denom_notTrgd->SetBinContent(ix, iy, h_notTrgd->GetBinContent(iy));
+         h2Denom_notTrgd->SetBinError(ix, iy, h_notTrgd->GetBinError(iy));
+         h2Ratio_notTrgdRefTrgd->SetBinContent(ix, iy, h_notTrgdRefTrgd->GetBinContent(ix));
+         h2Ratio_notTrgdRefTrgd->SetBinError(ix, iy, h_notTrgdRefTrgd->GetBinError(ix));
+         h2Denom_notTrgdRefTrgd->SetBinContent(ix, iy, h_notTrgdRefTrgd->GetBinContent(iy));
+         h2Denom_notTrgdRefTrgd->SetBinError(ix, iy, h_notTrgdRefTrgd->GetBinError(iy));
+
          h2Ratio_nPassHeep_trgd->SetBinContent(ix, iy, h_nPassHeep_trgd->GetBinContent(ix));
          h2Ratio_nPassHeep_trgd->SetBinError(ix, iy, h_nPassHeep_trgd->GetBinError(ix));
          h2Denom_nPassHeep_trgd->SetBinContent(ix, iy, h_nPassHeep_trgd->GetBinContent(iy));
@@ -414,6 +568,10 @@ HltGsfEleAnalyser::endJob()
          h2Ratio_nPassHeep_notTrgd->SetBinError(ix, iy, h_nPassHeep_notTrgd->GetBinError(ix));
          h2Denom_nPassHeep_notTrgd->SetBinContent(ix, iy, h_nPassHeep_notTrgd->GetBinContent(iy));
          h2Denom_nPassHeep_notTrgd->SetBinError(ix, iy, h_nPassHeep_notTrgd->GetBinError(iy));
+         h2Ratio_nPassHeep_notTrgdRefTrgd->SetBinContent(ix, iy, h_nPassHeep_notTrgdRefTrgd->GetBinContent(ix));
+         h2Ratio_nPassHeep_notTrgdRefTrgd->SetBinError(ix, iy, h_nPassHeep_notTrgdRefTrgd->GetBinError(ix));
+         h2Denom_nPassHeep_notTrgdRefTrgd->SetBinContent(ix, iy, h_nPassHeep_notTrgdRefTrgd->GetBinContent(iy));
+         h2Denom_nPassHeep_notTrgdRefTrgd->SetBinError(ix, iy, h_nPassHeep_notTrgdRefTrgd->GetBinError(iy));
 
          h2Ratio_nPassHeep_nPassEt_trgd->SetBinContent(ix, iy, h_nPassHeep_nPassEt_trgd->GetBinContent(ix));
          h2Ratio_nPassHeep_nPassEt_trgd->SetBinError(ix, iy, h_nPassHeep_nPassEt_trgd->GetBinError(ix));
@@ -423,23 +581,21 @@ HltGsfEleAnalyser::endJob()
          h2Ratio_nPassHeep_nPassEt_notTrgd->SetBinError(ix, iy, h_nPassHeep_nPassEt_notTrgd->GetBinError(ix));
          h2Denom_nPassHeep_nPassEt_notTrgd->SetBinContent(ix, iy, h_nPassHeep_nPassEt_notTrgd->GetBinContent(iy));
          h2Denom_nPassHeep_nPassEt_notTrgd->SetBinError(ix, iy, h_nPassHeep_nPassEt_notTrgd->GetBinError(iy));
-
-         h2Ratio_trgd->SetBinContent(ix, iy, h_trgd->GetBinContent(ix));
-         h2Ratio_trgd->SetBinError(ix, iy, h_trgd->GetBinError(ix));
-         h2Denom_trgd->SetBinContent(ix, iy, h_trgd->GetBinContent(iy));
-         h2Denom_trgd->SetBinError(ix, iy, h_trgd->GetBinError(iy));
-         h2Ratio_notTrgd->SetBinContent(ix, iy, h_notTrgd->GetBinContent(ix));
-         h2Ratio_notTrgd->SetBinError(ix, iy, h_notTrgd->GetBinError(ix));
-         h2Denom_notTrgd->SetBinContent(ix, iy, h_notTrgd->GetBinContent(iy));
-         h2Denom_notTrgd->SetBinError(ix, iy, h_notTrgd->GetBinError(iy));
+         h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd->SetBinContent(ix, iy, h_nPassHeep_nPassEt_notTrgdRefTrgd->GetBinContent(ix));
+         h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd->SetBinError(ix, iy, h_nPassHeep_nPassEt_notTrgdRefTrgd->GetBinError(ix));
+         h2Denom_nPassHeep_nPassEt_notTrgdRefTrgd->SetBinContent(ix, iy, h_nPassHeep_nPassEt_notTrgdRefTrgd->GetBinContent(iy));
+         h2Denom_nPassHeep_nPassEt_notTrgdRefTrgd->SetBinError(ix, iy, h_nPassHeep_nPassEt_notTrgdRefTrgd->GetBinError(iy));
       }
    }
-   h2Ratio_nPassHeep_trgd->Divide(h2Denom_nPassHeep_trgd);
-   h2Ratio_nPassHeep_notTrgd->Divide(h2Denom_nPassHeep_notTrgd);
-   h2Ratio_nPassHeep_nPassEt_trgd->Divide(h2Denom_nPassHeep_nPassEt_trgd);
-   h2Ratio_nPassHeep_nPassEt_notTrgd->Divide(h2Denom_nPassHeep_nPassEt_notTrgd);
    h2Ratio_trgd->Divide(h2Denom_trgd);
    h2Ratio_notTrgd->Divide(h2Denom_notTrgd);
+   h2Ratio_notTrgdRefTrgd->Divide(h2Denom_notTrgdRefTrgd);
+   h2Ratio_nPassHeep_trgd->Divide(h2Denom_nPassHeep_trgd);
+   h2Ratio_nPassHeep_notTrgd->Divide(h2Denom_nPassHeep_notTrgd);
+   h2Ratio_nPassHeep_notTrgdRefTrgd->Divide(h2Denom_nPassHeep_notTrgdRefTrgd);
+   h2Ratio_nPassHeep_nPassEt_trgd->Divide(h2Denom_nPassHeep_nPassEt_trgd);
+   h2Ratio_nPassHeep_nPassEt_notTrgd->Divide(h2Denom_nPassHeep_nPassEt_notTrgd);
+   h2Ratio_nPassHeep_nPassEt_notTrgdRefTrgd->Divide(h2Denom_nPassHeep_nPassEt_notTrgdRefTrgd);
 }
 
 // ------------ method called when starting to processes a run  ------------
@@ -450,8 +606,10 @@ HltGsfEleAnalyser::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
    if (hltConfig.init(iRun, iSetup, trgResultsTag_.process(), changed)) {
       if (changed) {
          trgIndices.clear();
+         refTrgIndices.clear();
          for (unsigned int i = 0; i < trgNames.size(); ++i) {
             trgIndices.push_back(hltConfig.triggerIndex(trgNames[i]));
+            refTrgIndices.push_back(hltConfig.triggerIndex(refTrgNames[i]));
          }
       }
    } else {
