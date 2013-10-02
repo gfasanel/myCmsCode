@@ -53,7 +53,8 @@ using namespace RooFit;
 
 class HighMassRes {
 public:
-  HighMassRes(const char *_inFile = "./eScaleEvents19616pb-1.root", const int _lumi = 19616);
+  HighMassRes(const char *_inFile = "./eScaleEvents19712pb-1.root", const int _lumi = 19712);
+  //HighMassRes(const char *_inFile = "/user/treis/heep/CMSSW_5_3_7_patch4/src/eScaleEvents19616pb-1.root", const int _lumi = 19616);
   inline virtual ~HighMassRes() {};
 
   void RunCryBall();
@@ -160,7 +161,7 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
                    saveResAsPng(0),
                    saveResAsRoot(0),
                    fileNameExtra(""),
-                   plotDir("./"),
+                   plotDir("./plots_20131001/"),
                    useRootTermForFit(0),
                    fitColorDy(kRed),
                    fitColorZpPsi(kGreen+1),
@@ -180,20 +181,20 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
   inFile = _inFile;
   lumi = _lumi;
 
-  plotReg[0] = 1; // EB-EB
+  plotReg[0] = 0; // EB-EB
   plotReg[1] = 0; // EB-EE
   plotReg[2] = 0; // EB-EB + EB-EE
-  plotReg[3] = 0; // EE-EE
+  plotReg[3] = 1; // EE-EE
   plotReg[4] = 0; // EB-EB + EE-EE
   plotReg[5] = 0; // EB-EE + EE-EE
   plotReg[6] = 0; // EB-EB + EB-EE + EE-EE
 
-  // powheg START53 19.6fb-1 HEEP v4.1 double Crystal Ball
+  // powheg START53 19.7fb-1 HEEP v4.1 double Crystal Ball
   sigmaExtras.reserve(7);
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.92, 0.02));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.43, 0.02));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.25, 0.02));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.99, 0.04));
+  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.73, 0.01));
+  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.93, 0.01));
+  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.2, 0.01));
   sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
   sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
   sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));

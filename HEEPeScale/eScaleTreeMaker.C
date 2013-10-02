@@ -30,8 +30,7 @@ void EScaleTreeMaker::Loop()
   //TString outFile("eScaleEventsTest");
 
   bool usePUInfo = true;
-  TString puFile = "file:////user/treis/data2012/pileup/pileup_runA+B+C-ReReco+D-Prompt_puJSON-190389-208686_DoubleElectron.root";
-  //TString puFile = "file:////user/treis/data2012/pileup/pileup_DoubleElectron_Run2012C-PromptReco-v2.root";
+  TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_DoubleElectron_Run2012ABCDReReco22Jan2013.root";
   float bar_et = 25.;
   float end_et = 25.;
   ////////////////////////////////////////////////////////////////////////////
@@ -44,114 +43,113 @@ void EScaleTreeMaker::Loop()
   vector<pair<TFile *, double> > input;
   vector<TString> inFileTag;
   vector<float> minPtDY;
-  float lumi = 19616.;
-  TFile *inData = TFile::Open("file:////user/treis/data2012/DoubleElectron_Run2012A+B+C+D_13Jul2012+06Aug2012+24Aug2012+11Dec2012+PromptReco-Cv2+Dv1_Cert_190456-208686_gct1_45+46_19616pb-1.root");
-  //TFile *inData = TFile::Open("file:////user/treis/data2012/DoubleElectron_Run2012D-PromptReco-v1_AOD_Cert_190456-206098_8TeV_PromptReco_Collisions12_JSON_GR_P_V42_AN2_gct1_45_2607pb-1.root");
+  float lumi = 19712.;
+  TFile *inData = TFile::Open("file:////user/treis/data2013/DoubleElectron_Run2012A+B+C+D-22Jan2013-v1_AOD_eScaleSkim_19712pb-1.root");
   input.push_back(make_pair(inData, 1 / lumi));
   inFileTag.push_back("Data");
   const unsigned int DATA = 0;
 
-  TFile *inDY20 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3297045ev.root");
-  input.push_back(make_pair(inDY20, 1915. / 3297045.));
+  TFile *inDY20 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1+2_AODSIM_eScaleSkim.root");
+  input.push_back(make_pair(inDY20, 1915. / (3297045. + 42705454.)));
   inFileTag.push_back("DY20");
   minPtDY.push_back(20);
   const unsigned int DY20 = 1;
 
-  TFile *inDY120 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-120_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99987ev.root");
+  TFile *inDY120 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-120_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY120, 11.89 / 99987. * 1915. / 1871.));
   inFileTag.push_back("DY120");
   minPtDY.push_back(120);
   const unsigned int DY120 = 2;
 
-  TFile *inDY200 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-200_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99991ev.root");
+  TFile *inDY200 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-200_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY200, 1.483 / 99991. * 1915. / 1871.));
   inFileTag.push_back("DY200");
   minPtDY.push_back(200);
   const unsigned int DY200 = 3;
 
-  TFile *inDY400 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-400_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99991ev.root");
+  TFile *inDY400 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-400_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY400, 0.1085 / 99991. * 1915. / 1871.));
   inFileTag.push_back("DY400");
   minPtDY.push_back(400);
   const unsigned int DY400 = 4;
 
-  TFile *inDY500 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-500_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99986ev.root");
+  TFile *inDY500 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-500_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY500, 0.04409 / 99986. * 1915. / 1871.));
   inFileTag.push_back("DY500");
   minPtDY.push_back(500);
   const unsigned int DY500 = 5;
 
-  TFile *inDY700 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-700_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99990ev.root");
+  TFile *inDY700 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-700_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY700, 0.01025 / 99990. * 1915. / 1871.));
   inFileTag.push_back("DY700");
   minPtDY.push_back(700);
   const unsigned int DY700 = 6;
 
-  TFile *inDY800 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-800_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99990ev.root");
+  TFile *inDY800 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-800_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY800, 0.005491 / 99990. * 1915. / 1871.));
   inFileTag.push_back("DY800");
   minPtDY.push_back(800);
   const unsigned int DY800 = 7;
 
-  TFile *inDY1000 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-1000_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99992ev.root");
+  TFile *inDY1000 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-1000_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY1000, 0.001796 / 99992. * 1915. / 1871.));
   inFileTag.push_back("DY1000");
   minPtDY.push_back(1000);
   const unsigned int DY1000 = 8;
 
-  TFile *inDY1500 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-1500_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99999ev.root");
+  TFile *inDY1500 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-1500_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY1500, 1.705E-4 / 99999. * 1915. / 1871.));
   inFileTag.push_back("DY1500");
   minPtDY.push_back(1500);
   const unsigned int DY1500 = 9;
 
-  TFile *inDY2000 = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-2000_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_99993ev.root");
+  TFile *inDY2000 = TFile::Open("file:////user/treis/mcsamples/mc2013/DYToEE_M-2000_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inDY2000, 2.208E-5 / 99993. * 1915. / 1871.));
   inFileTag.push_back("DY2000");
   minPtDY.push_back(2000);
   const unsigned int DY2000 = 10;
 
-  TFile *inZpPsi750 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-750_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25200ev.root");
+  TFile *inZpPsi750 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-750_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpPsi750, 0.1328 / 25200.));
   inFileTag.push_back("Zp750");
   const unsigned int ZP750 = 11;
 
-  TFile *inZpPsi1000 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-1000_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25200ev.root");
+  TFile *inZpPsi1000 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-1000_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpPsi1000, 0.03933 / 25200.));
   inFileTag.push_back("Zp1000");
   const unsigned int ZP1000 = 12;
 
-  TFile *inZpPsi1250 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-1250_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25200ev.root");
+  TFile *inZpPsi1250 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-1250_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpPsi1250, 0.01196 / 25200.));
   inFileTag.push_back("Zp1250");
   const unsigned int ZP1250 = 13;
 
-  TFile *inZpPsi1500 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-1500_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25200ev.root");
+  TFile *inZpPsi1500 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-1500_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpPsi1500, 0.00437 / 25200.));
   inFileTag.push_back("Zp1500");
   const unsigned int ZP1500 = 14;
 
-  TFile *inZpPsi1750 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-1750_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25280ev.root");
+  TFile *inZpPsi1750 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-1750_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpPsi1750, 0.00168 / 25280.));
   inFileTag.push_back("Zp1750");
   const unsigned int ZP1750 = 15;
 
-  TFile *inZpPsi2000 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-2000_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25280ev.root");
+  TFile *inZpPsi2000 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-2000_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpPsi2000, 7.029E-4 / 25280.));
   inFileTag.push_back("Zp2000");
   const unsigned int ZP2000 = 16;
 
-  TFile *inZpPsi2250 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-2250_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25280ev.root");
+  TFile *inZpPsi2250 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-2250_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_25280ev.root");
   input.push_back(make_pair(inZpPsi2250, 2.895E-4 / 25280.));
   inFileTag.push_back("Zp2250");
   const unsigned int ZP2250 = 17;
 
-  TFile *inZpPsi3000 = TFile::Open("file:////user/treis/mcsamples/ZprimePSIToEE_M-3000_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25280ev.root");
+  TFile *inZpPsi3000 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimePSIToEE_M-3000_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpPsi3000, 2.666E-5 / 25280.));
   inFileTag.push_back("Zp3000");
   const unsigned int ZP3000 = 18;
 
-  TFile *inZpSsm2250 = TFile::Open("file:////user/treis/mcsamples/ZprimeSSMToEE_M-2250_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_25280ev.root");
+  TFile *inZpSsm2250 = TFile::Open("file:////user/treis/mcsamples/mc2013/ZprimeSSMToEE_M-2250_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_eScaleSkim.root");
   input.push_back(make_pair(inZpSsm2250, 0.001302 / 25280.));
   inFileTag.push_back("ZpSsm2250");
   const unsigned int ZPSSM2250 = 19;
