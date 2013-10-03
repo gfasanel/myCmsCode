@@ -5,7 +5,7 @@ process.source.fileNames = cms.untracked.vstring(
 )
 
 # track collections
-process.HltGsfTrkAna.referenceTrackCollTag = cms.InputTag('hltL1SeededElectronGsfTracks' + options.refNcSuffix, '', 'GSFTEST'),
+process.HltGsfTrkAna.referenceTrackCollTag = cms.InputTag('hltL1SeededElectronGsfTracks' + options.refNcSuffix, '', 'GSFTEST')
 process.HltGsfTrkAna.testTrackCollTag = cms.InputTag('hltCtfL1SeededWithMaterialTracks', '', 'GSFTEST')
 
 # Deta and Dphi
