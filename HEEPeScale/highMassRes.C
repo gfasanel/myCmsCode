@@ -157,7 +157,7 @@ RooWorkspace * HighMassRes::cryBall(
   plot->drawBefore("dataMDiff", "model_paramBox");
 
   // garnish it with some text
-  TLatex *texLumi = new TLatex(0.625, 0.865, "CMS simulation preliminary");
+  TLatex *texLumi = new TLatex(0.625, 0.865, "CMS Simulation");
   texLumi->SetName("texLumi");
   texLumi->SetTextColor(kBlack);
   texLumi->SetNDC();
@@ -308,8 +308,10 @@ void HighMassRes::RunCryBall()
 
       // fill the histograms with fit results from fit range
       Float_t denom = (dyFitRanges[iRange] + dyFitRanges[iRange + 1]) / 2;
-      sigmaHistos[reg]->SetBinContent(iRange + 1, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
-      sigmaHistos[reg]->SetBinError(iRange + 1, sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
+      sigmaHistos[reg]->SetBinContent(iRange + 1, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
+      sigmaHistos[reg]->SetBinError(iRange + 1, sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
+cout << sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)) << " +/- ";
+cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)) << endl;
       dmHistos[reg]->SetBinContent(iRange + 1, cbBiasMC->getVal());
       dmHistos[reg]->SetBinError(iRange + 1, cbBiasMC->getError());
       acbHistos[reg]->SetBinContent(iRange + 1, cbCutMC->getVal());
@@ -408,8 +410,8 @@ void HighMassRes::RunCryBall()
       // fill the histograms with fit results from fit range
       Float_t denom = (Float_t)zPrimeGenMasses[iZp].first;
       if (iZp < ssmStart) {
-        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
-        sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
+        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
+        sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
         dmHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasMC->getVal());
         dmHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasMC->getError());
         acbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutMC->getVal());
@@ -417,8 +419,8 @@ void HighMassRes::RunCryBall()
         ncbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerMC->getVal());
         ncbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerMC->getError());
       } else {
-        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
-        sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
+        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
+        sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
         dmHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasMC->getVal());
         dmHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasMC->getError());
         acbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutMC->getVal());
@@ -478,7 +480,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     legEntry->SetLineWidth(2);
     legend->Draw("sames");
 
-    TLatex *tex = new TLatex(0.25, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex->SetNDC();
     tex->SetTextFont(font);
     tex->SetLineWidth(2);
@@ -541,7 +543,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     if (zPrimeGenMasses.size() > 7) legend2->AddEntry(dmHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend2->Draw("sames");
 
-    TLatex *tex2 = new TLatex(0.25, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex2 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex2->SetNDC();
     tex2->SetTextFont(font);
     tex2->SetLineWidth(2);
@@ -587,7 +589,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     if (zPrimeGenMasses.size() > 7) legend3->AddEntry(acbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend3->Draw("sames");
 
-    TLatex *tex3 = new TLatex(0.25, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex3 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex3->SetNDC();
     tex3->SetTextFont(font);
     tex3->SetLineWidth(2);
@@ -633,7 +635,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     if (zPrimeGenMasses.size() > 7) legend4->AddEntry(ncbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend4->Draw("sames");
 
-    TLatex *tex4 = new TLatex(0.25, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex4 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex4->SetNDC();
     tex4->SetTextFont(font);
     tex4->SetLineWidth(2);
@@ -1040,7 +1042,7 @@ void HighMassRes::CompareCryBall()
     legEntry2->SetLineWidth(2);
     legend->Draw("sames");
 
-    TLatex *tex = new TLatex(0.18, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex = new TLatex(0.18, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex->SetNDC();
     tex->SetTextFont(font);
     tex->SetLineWidth(2);
@@ -1098,7 +1100,7 @@ void HighMassRes::CompareCryBall()
     if (zPrimeGenMasses.size() > 7) legend2->AddEntry(dmHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend2->Draw("sames");
 
-    TLatex *tex2 = new TLatex(0.25, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex2 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex2->SetNDC();
     tex2->SetTextFont(font);
     tex2->SetLineWidth(2);
@@ -1144,7 +1146,7 @@ void HighMassRes::CompareCryBall()
     if (zPrimeGenMasses.size() > 7) legend3->AddEntry(acbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend3->Draw("sames");
 
-    TLatex *tex3 = new TLatex(0.25, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex3 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex3->SetNDC();
     tex3->SetTextFont(font);
     tex3->SetLineWidth(2);
@@ -1190,7 +1192,7 @@ void HighMassRes::CompareCryBall()
     if (zPrimeGenMasses.size() > 7) legend4->AddEntry(ncbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend4->Draw("sames");
 
-    TLatex *tex4 = new TLatex(0.25, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    TLatex *tex4 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex4->SetNDC();
     tex4->SetTextFont(font);
     tex4->SetLineWidth(2);

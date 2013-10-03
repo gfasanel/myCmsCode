@@ -54,7 +54,8 @@ RooWorkspace * cryBallBW(
                    double cutoff_cb = 1.0,
                    const char* plotOpt = "NEU",
                    const int nbins = 40,
-                   const unsigned int fitModelType = 1) // (0, 1) = (CB, double CB)
+                   const unsigned int fitModelType = 1,  // (0, 1) = (CB, double CB)
+                   const unsigned int nCpu = 1)
 {
   setTDRStyle();
 
@@ -186,7 +187,7 @@ RooWorkspace * cryBallBW(
   t.Start();
   //model.fitTo(*data, FitOptions("mh"), NumCPU(2), Optimize(kFALSE), Timer(kTRUE), Range(70,110));
   //model.fitTo(*data, FitOptions("mh"), NumCPU(2), Optimize(kFALSE), Timer(kTRUE));
-  model.fitTo(*data, NumCPU(2), Timer(kTRUE), Save());
+  model.fitTo(*data, NumCPU(nCpu), Timer(kTRUE), Save());
   t.Print();
 
   //fit->Print();
@@ -203,8 +204,8 @@ RooWorkspace * cryBallBW(
 void RunCryBall()
 {
   // parameters //////////////////////////////////////////////////////////////
-  const char *inFile = "eScaleEvents19616pb-1.root";
-  const int lumi = 19616;
+  const char *inFile = "eScaleEvents19712pb-1.root";
+  const int lumi = 19712;
   double minMass = 60;
   double maxMass = 120;
   double mean_bw = 91.1876;
@@ -215,22 +216,22 @@ void RunCryBall()
   const char* plotOpt = "NEU";
   const int nBins = 40;
   bool plotReg[4];
-  plotReg[0] = 0; // EB-EB
+  plotReg[0] = 1; // EB-EB
   plotReg[1] = 0; // EB-EE
   plotReg[2] = 0; // EB-EB + EB-EE
-  plotReg[3] = 1; // EE-EE
+  plotReg[3] = 0; // EE-EE
 
   bool plotMC = true;
   bool normalizeMC = true;
   bool printLatexTable = true;
   bool printHtmlTable = true;
 
-  const bool saveAsPdf = 0;
-  const bool saveAsPng = 0;
-  const bool saveAsRoot = 0;
+  const bool saveAsPdf = 1;
+  const bool saveAsPng = 1;
+  const bool saveAsRoot = 1;
   const char *fileNameExtra = "";
   //const char *fileNameExtra = "_runCv2";
-  const char *plotDir = "./plots_24dec2012/";
+  const char *plotDir = "./plots_20131001_2/";
   ////////////////////////////////////////////////////////////////////////////
 
   vector<TString> treeNames;
@@ -260,14 +261,16 @@ void RunCryBall()
 
   for (unsigned int reg = 0; reg < 4; ++reg) {
     if (!plotReg[reg]) continue;
+    unsigned int nCpu = 3;
+    if (reg == 2) nCpu = 1;
     // fit
-    RooWorkspace *dataWkSpc = cryBallBW(inFile, treeNames[0].Data(), reg + 1, minMass, maxMass, mean_bw, gamma_bw, cutoff_cb, plotOpt, nBins, fitModelType);
+    RooWorkspace *dataWkSpc = cryBallBW(inFile, treeNames[0].Data(), reg + 1, minMass, maxMass, mean_bw, gamma_bw, cutoff_cb, plotOpt, nBins, fitModelType, nCpu);
     dataWkSpc->Print("v");
     RooRealVar *mass = dataWkSpc->var("mass");
     RooDataSet *data = (RooDataSet *)dataWkSpc->data("data");
     RooAddPdf *model = (RooAddPdf *)dataWkSpc->pdf("model");
 
-    RooWorkspace *dy20WkSpc = cryBallBW(inFile, treeNames[1].Data(), reg + 1, minMass, maxMass, mean_bw, gamma_bw, cutoff_cb, plotOpt, nBins, fitModelType);
+    RooWorkspace *dy20WkSpc = cryBallBW(inFile, treeNames[1].Data(), reg + 1, minMass, maxMass, mean_bw, gamma_bw, cutoff_cb, plotOpt, nBins, fitModelType, nCpu);
     RooDataSet *dataMc = (RooDataSet *)dy20WkSpc->data("data");
     RooAddPdf *modelMc = (RooAddPdf *)dy20WkSpc->pdf("model");
 
@@ -367,7 +370,7 @@ void RunCryBall()
     helper.clear();
 
     // draw a legend
-    TLegend *legend = new TLegend(0.72, 0.45, 0.88, 0.65);
+    TLegend *legend = new TLegend(0.70, 0.45, 0.86, 0.65);
     legend->SetTextSize(0.03);
     legend->SetTextFont(42);
     legend->SetBorderSize(0);
@@ -397,14 +400,14 @@ void RunCryBall()
     plot->Draw();
     //plot->Print("v");
    
-    //TLatex *tex = new TLatex(0.63, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    //TLatex *tex = new TLatex(0.63, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     TLatex *tex = new TLatex();
     tex->SetNDC();
     tex->SetTextFont(42);
     tex->SetLineWidth(2);
     //tex->Draw();
     tex->SetTextSize(0.035);
-    tex->DrawLatex(0.63, 0.85, "#splitline{CMS preliminary}{#sqrt{s} = 8 TeV    #int L dt = 19.6 fb^{-1}}");
+    tex->DrawLatex(0.52, 0.88, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex->SetTextSize(0.05);
     tex->DrawLatex(0.7, 0.33, (const char *)regTxt[reg]);
     //tex->SetTextColor(kBlue);
