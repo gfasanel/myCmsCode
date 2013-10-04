@@ -63,8 +63,8 @@ class HltGsfTrkAnalyser : public edm::EDAnalyzer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
-      double TrackMatcher(reco::GsfTrack const&, reco::GsfTrack const &);
-      unsigned int GetNSharedHits(const reco::GsfTrack &t1, const reco::GsfTrack &t2);
+      double TrackMatcher(reco::Track const&, reco::Track const &);
+      unsigned int GetNSharedHits(const reco::Track &t1, const reco::Track &t2);
       // ----------member data ---------------------------
       edm::InputTag referenceTrackCollTag_;
       edm::InputTag testTrackCollTag_;
@@ -1472,7 +1472,7 @@ HltGsfTrkAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 }
 
 double 
-HltGsfTrkAnalyser::TrackMatcher(const reco::GsfTrack &t1, const reco::GsfTrack &t2) 
+HltGsfTrkAnalyser::TrackMatcher(const reco::Track &t1, const reco::Track &t2) 
 {
    double discr = -1.;
 
@@ -1485,7 +1485,7 @@ HltGsfTrkAnalyser::TrackMatcher(const reco::GsfTrack &t1, const reco::GsfTrack &
 }
 
 unsigned int 
-HltGsfTrkAnalyser::GetNSharedHits(const reco::GsfTrack &t1, const reco::GsfTrack &t2) 
+HltGsfTrkAnalyser::GetNSharedHits(const reco::Track &t1, const reco::Track &t2) 
 {
    unsigned int nSharedHits = 0;
    trackingRecHit_iterator nhit=t1.recHitsBegin();
