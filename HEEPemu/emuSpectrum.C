@@ -71,17 +71,17 @@ void EmuSpectrum::Loop()
    // MC
    TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root");
    //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
-   input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.067));
+   input.push_back(make_pair(inTTbar, 245.8 / 28150723.));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.034));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3082812ev.root");
-   input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 234./211.));  // ttbar  mtt 700to1000
+   input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 245.8./211.));  // ttbar  mtt 700to1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.15));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_1249111ev.root");
-   input.push_back(make_pair(inTTbar1000up, 2.954 / 1249111. * 234./211.));  // ttbar  mtt>1000
+   input.push_back(make_pair(inTTbar1000up, 2.954 / 1249111. * 245.8/211.));  // ttbar  mtt>1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.15));
    storeGenMTtbar.push_back(1);
 
