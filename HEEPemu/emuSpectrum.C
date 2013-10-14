@@ -10,7 +10,7 @@ void EmuSpectrum::Loop()
    TStopwatch timer;
    timer.Start();
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 19780.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   float LumiFactor = 19712.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
    TParameter<float> lumi("lumi", LumiFactor);
 
    // DATA file
@@ -44,7 +44,7 @@ void EmuSpectrum::Loop()
    TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.948);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
    // global systematic errors
-   TParameter<float> systErrLumi("systErrLumi", 0.044);
+   TParameter<float> systErrLumi("systErrLumi", 0.026);
    TParameter<float> systErrEff("systErrEff", 0.007); // muon err (0.002) & ele err (0.007)
 
    bool usePUInfo = true;
@@ -609,7 +609,7 @@ void EmuSpectrum::Loop()
          /////////////////////////////////////////////////////////////////////////////////////////////
          //loop over electrons
          for (int j = 0; j < gsf_size; ++j) {
-            //cleaning: fake electrons from muons
+            //cleaning: fake electrons from muons skim electrons if there is a muon within dR<0.1
             bool fakeEle = false;
             for (int k = 0; k < muon_size; ++k) {
                float DeltaR = deltaR(gsf_eta[j], gsf_phi[j], muon_eta[k], muon_phi[k]);
