@@ -76,7 +76,7 @@ void EmuSpectrum::Loop()
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3082812ev.root");
-   input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 245.8./211.));  // ttbar  mtt 700to1000
+   input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 245.8/211.));  // ttbar  mtt 700to1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.15));
    storeGenMTtbar.push_back(1);
 
@@ -609,9 +609,10 @@ void EmuSpectrum::Loop()
          /////////////////////////////////////////////////////////////////////////////////////////////
          //loop over electrons
          for (int j = 0; j < gsf_size; ++j) {
-            //cleaning: fake electrons from muons skim electrons if there is a muon within dR<0.1
+            //cleaning: fake electrons from muons skim electrons if there is a muon with pt>5 GeV within dR<0.1
             bool fakeEle = false;
             for (int k = 0; k < muon_size; ++k) {
+               if (muon_pt[k] < 5.) continue;
                float DeltaR = deltaR(gsf_eta[j], gsf_phi[j], muon_eta[k], muon_phi[k]);
                if (DeltaR < 0.1) {
                   fakeEle = true;
