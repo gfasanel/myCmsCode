@@ -254,6 +254,12 @@ void EScaleTreeMaker::Loop()
     if (etShiftData && p == DATA)
       etShift = true;
 
+    unsigned int oneHeepEleEv = 0;
+    unsigned int twoHeepEleEv = 0;
+    unsigned int threeHeepEleEv = 0;
+    unsigned int fourHeepEleEv = 0;
+    unsigned int fiveHeepEleEv = 0;
+
     unsigned int evCounter = 0;
     //Long64_t nbytes = 0, nb = 0;
     /////////////////////////////////////////////////////////////////////////
@@ -308,13 +314,16 @@ void EScaleTreeMaker::Loop()
       ////////////////////////////////////////////////////////////////////////
       // find the two highest pt GSF and HEEP electrons
       ////////////////////////////////////////////////////////////////////////
+      unsigned int heepCounter = 0;
       int iHeep1 = -1;
       int iHeep2 = -1;
       int iHeepDrMatched1 = -1;
       int iHeepDrMatched2 = -1;
       float highestHeepEt = ptcut;
       for (int n = 0; n < gsf_size; ++n) {
-        if (highestHeepEt < gsf_gsfet[n] && PassHEEP(n)) {
+        bool passHeep = PassHEEP(n);
+        if (passHeep) ++heepCounter;
+        if (highestHeepEt < gsf_gsfet[n] && passHeep) {
           iHeep1 = n;
           highestHeepEt = gsf_gsfet[n];
         }
@@ -353,6 +362,13 @@ void EScaleTreeMaker::Loop()
       bool fillTree = false;
       // fill the HEEP-HEEP cases
       float heepHeepMass = CalcInvariantMass(iHeep1, iHeep2, etShift);
+      if (heepHeepMass > 0.) {
+        if (heepCounter > 4) ++fiveHeepEleEv;
+        else if (heepCounter > 3) ++fourHeepEleEv;
+        else if (heepCounter > 2) ++threeHeepEleEv;
+        else if (heepCounter > 1) ++twoHeepEleEv;
+        else if (heepCounter > 0) ++oneHeepEleEv;
+      }
       if (heepHeepMass > massCut) {
         if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iHeep2]) < 2.5) {
           if (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iHeep2]) > 1.56) {
@@ -447,6 +463,7 @@ void EScaleTreeMaker::Loop()
     } // end of loop over events
 
     cout << "Number of selected events: " << evCounter << endl;
+    cout << "Number of 1 / 2 / 3 / 4 / 5 HEEP events: " << oneHeepEleEv << " / " << twoHeepEleEv << " / " << threeHeepEleEv << " / " << fourHeepEleEv << " / " << fiveHeepEleEv << " / " << endl;
 
     // write root file with good HEEP-HEEP event data
     goodEvFile->cd();
@@ -496,7 +513,7 @@ EScaleTreeMaker::PassHEEP(const int &n)
 
   // HEEP v4.0
   // barrel
-  float bar_et = 25.;
+  float bar_et = 35.;
   float bar_hoE = 0.05;
   float bar_DEta = 0.005;
   float bar_DPhi = 0.06;
@@ -510,7 +527,7 @@ EScaleTreeMaker::PassHEEP(const int &n)
   int bar_missInnerHits = 0;
 
   // endcap
-  float end_et = 25.;
+  float end_et = 35.;
   float end_hoE = 0.05;
   float end_DEta = 0.007 ;
   float end_DPhi = 0.06;
