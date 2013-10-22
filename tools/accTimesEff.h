@@ -53,9 +53,11 @@ public :
    UInt_t          eventnumber;
    UInt_t          luminosityBlock;
    Int_t           HLT_Mu22_Photon22_CaloIdL;
+   Int_t           HLT_Mu40_eta2p1;
    Int_t           HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           prescale_HLT_Mu22_Photon22_CaloIdL;
+   Int_t           prescale_HLT_Mu40_eta2p1;
    Int_t           prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Float_t         rho;
@@ -84,6 +86,8 @@ public :
    Float_t         muon_trackIso03[100];   //[muon_size]
    Float_t         muon_emIso03[100];   //[muon_size]
    Float_t         muon_hadIso03[100];   //[muon_size]
+   Int_t           muMatch_hltL1Mu3p5EG12L3Filtered22[100];
+   Int_t           muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q[100];
    Int_t           gsf_size;
    Float_t         gsf_eta[100];   //[gsf_size]
    Float_t         gsf_phi[100];   //[gsf_size]
@@ -109,12 +113,21 @@ public :
    Float_t         gsf_e2x5overe5x5[100];   //[gsf_size]
    Float_t         gsf_e1x5overe5x5[100];   //[gsf_size]
    Float_t         gsf_gsfet[100];   //[gsf_size]
+   Int_t           gsfmatch_hltMu22Photon22CaloIdLHEFilter[100];
    Float_t         hardGenEle_pt[100];
    Float_t         hardGenEle_eta[100];
+   Float_t         hardGenEle_phi[100];
    Float_t         hardGenMu_pt[100];
    Float_t         hardGenMu_eta[100];
+   Float_t         hardGenMu_phi[100];
+   Float_t         genele_pt[100];
+   Float_t         genele_eta[100];
+   Float_t         genele_phi[100];
+   Float_t         genmu_pt[100];
+   Float_t         genmu_eta[100];
+   Float_t         genmu_phi[100];
    Float_t         genelemom_mass[100];
-   Float_t         genPair_mass;
+   Int_t           genelemom_pdgid[100];
    Int_t           trueNVtx;
 
    // List of branches
@@ -122,9 +135,11 @@ public :
    TBranch        *b_eventnumber;   //!
    TBranch        *b_luminosityBlock;   //!
    TBranch        *b_HLT_Mu22_Photon22_CaloIdL;   //!
+   TBranch        *b_HLT_Mu40_eta2p1;   //!
    TBranch        *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_prescale_HLT_Mu22_Photon22_CaloIdL;   //!
+   TBranch        *b_prescale_HLT_Mu40_eta2p1;   //!
    TBranch        *b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_rho;   //!
@@ -153,6 +168,8 @@ public :
    TBranch        *b_muon_trackIso03;   //!
    TBranch        *b_muon_emIso03;   //!
    TBranch        *b_muon_hadIso03;   //!
+   TBranch        *b_muMatch_hltL1Mu3p5EG12L3Filtered22;
+   TBranch        *b_muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
    TBranch        *b_gsf_size;   //!
    TBranch        *b_gsf_eta;   //!
    TBranch        *b_gsf_phi;   //!
@@ -178,12 +195,21 @@ public :
    TBranch        *b_gsf_e2x5overe5x5;   //!
    TBranch        *b_gsf_e1x5overe5x5;   //!
    TBranch        *b_gsf_gsfet;   //!
+   TBranch        *b_gsfmatch_hltMu22Photon22CaloIdLHEFilter;
    TBranch        *b_hardGenEle_pt;   //!
    TBranch        *b_hardGenEle_eta;   //!
+   TBranch        *b_hardGenEle_phi;   //!
    TBranch        *b_hardGenMu_pt;   //!
    TBranch        *b_hardGenMu_eta;   //!
+   TBranch        *b_hardGenMu_phi;   //!
+   TBranch        *b_genele_pt;   //!
+   TBranch        *b_genele_eta;   //!
+   TBranch        *b_genele_phi;   //!
+   TBranch        *b_genmu_pt;   //!
+   TBranch        *b_genmu_eta;   //!
+   TBranch        *b_genmu_phi;   //!
    TBranch        *b_genelemom_mass;   //!
-   TBranch        *b_genPair_mass;   //!
+   TBranch        *b_genelemom_pdgid;   //!
    TBranch        *b_trueNVtx;   //!
 
    AccTimesEff(TTree *tree=0);
@@ -198,6 +224,7 @@ public :
 
 protected :
    pair<unsigned int, unsigned int> runs_HLT_Mu22_Photon22_CaloIdL;
+   pair<unsigned int, unsigned int> runs_HLT_Mu40_eta2p1;
    pair<unsigned int, unsigned int> runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    pair<unsigned int, unsigned int> runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
 
@@ -260,6 +287,7 @@ AccTimesEff::AccTimesEff(TTree *tree) : fChain(0)
 // used to generate this class and read the Tree.
    Init(tree);
    runs_HLT_Mu22_Photon22_CaloIdL = make_pair(999999999, 0);
+   runs_HLT_Mu40_eta2p1 = make_pair(999999999, 0);
    runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL = make_pair(999999999, 0);
    runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL = make_pair(999999999, 0);
    
@@ -350,9 +378,11 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchAddress("eventnumber", &eventnumber, &b_eventnumber);
    fChain->SetBranchAddress("luminosityBlock", &luminosityBlock, &b_luminosityBlock);
    fChain->SetBranchAddress("HLT_Mu22_Photon22_CaloIdL", &HLT_Mu22_Photon22_CaloIdL, &b_HLT_Mu22_Photon22_CaloIdL);
+   fChain->SetBranchAddress("HLT_Mu40_eta2p1", &HLT_Mu40_eta2p1, &b_HLT_Mu40_eta2p1);
    fChain->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("prescale_HLT_Mu22_Photon22_CaloIdL", &prescale_HLT_Mu22_Photon22_CaloIdL, &b_prescale_HLT_Mu22_Photon22_CaloIdL);
+   fChain->SetBranchAddress("prescale_HLT_Mu40_eta2p1", &prescale_HLT_Mu40_eta2p1, &b_prescale_HLT_Mu40_eta2p1);
    fChain->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("rho", &rho, &b_rho);
@@ -381,6 +411,8 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchAddress("muon_trackIso03", muon_trackIso03, &b_muon_trackIso03);
    fChain->SetBranchAddress("muon_emIso03", muon_emIso03, &b_muon_emIso03);
    fChain->SetBranchAddress("muon_hadIso03", muon_hadIso03, &b_muon_hadIso03);
+   fChain->SetBranchAddress("muMatch_hltL1Mu3p5EG12L3Filtered22", muMatch_hltL1Mu3p5EG12L3Filtered22, &b_muMatch_hltL1Mu3p5EG12L3Filtered22);
+   fChain->SetBranchAddress("muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q", muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q, &b_muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q);
    fChain->SetBranchAddress("gsf_size", &gsf_size, &b_gsf_size);
    fChain->SetBranchAddress("gsf_eta", gsf_eta, &b_gsf_eta);
    fChain->SetBranchAddress("gsf_phi", gsf_phi, &b_gsf_phi);
@@ -406,12 +438,21 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchAddress("gsf_e2x5overe5x5", gsf_e2x5overe5x5, &b_gsf_e2x5overe5x5);
    fChain->SetBranchAddress("gsf_e1x5overe5x5", gsf_e1x5overe5x5, &b_gsf_e1x5overe5x5);
    fChain->SetBranchAddress("gsf_gsfet", gsf_gsfet, &b_gsf_gsfet);
+   fChain->SetBranchAddress("gsfmatch_hltMu22Photon22CaloIdLHEFilter", gsfmatch_hltMu22Photon22CaloIdLHEFilter, &b_gsfmatch_hltMu22Photon22CaloIdLHEFilter);
    fChain->SetBranchAddress("hardGenEle_pt", hardGenEle_pt, &b_hardGenEle_pt);
    fChain->SetBranchAddress("hardGenEle_eta", hardGenEle_eta, &b_hardGenEle_eta);
+   fChain->SetBranchAddress("hardGenEle_phi", hardGenEle_phi, &b_hardGenEle_phi);
    fChain->SetBranchAddress("hardGenMu_pt", hardGenMu_pt, &b_hardGenMu_pt);
    fChain->SetBranchAddress("hardGenMu_eta", hardGenMu_eta, &b_hardGenMu_eta);
+   fChain->SetBranchAddress("hardGenMu_phi", hardGenMu_phi, &b_hardGenMu_phi);
+   fChain->SetBranchAddress("genele_pt", genele_pt, &b_genele_pt);
+   fChain->SetBranchAddress("genele_eta", genele_eta, &b_genele_eta);
+   fChain->SetBranchAddress("genele_phi", genele_phi, &b_genele_phi);
+   fChain->SetBranchAddress("genmu_pt", genmu_pt, &b_genmu_pt);
+   fChain->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
+   fChain->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
    fChain->SetBranchAddress("genelemom_mass", genelemom_mass, &b_genelemom_mass);
-   fChain->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
+   fChain->SetBranchAddress("genelemom_pdgid", genelemom_pdgid, &b_genelemom_pdgid);
    fChain->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
 
    // enable only used branches
@@ -420,9 +461,11 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchStatus("eventnumber", 1);
    fChain->SetBranchStatus("luminosityBlock", 1);
    fChain->SetBranchStatus("HLT_Mu22_Photon22_CaloIdL", 1);
+   fChain->SetBranchStatus("HLT_Mu40_eta2p1", 1);
    fChain->SetBranchStatus("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("prescale_HLT_Mu22_Photon22_CaloIdL", 1);
+   fChain->SetBranchStatus("prescale_HLT_Mu40_eta2p1", 1);
    fChain->SetBranchStatus("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("rho", 1);
@@ -451,6 +494,8 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchStatus("muon_trackIso03", 1);
    fChain->SetBranchStatus("muon_emIso03", 1);
    fChain->SetBranchStatus("muon_hadIso03", 1);
+   fChain->SetBranchStatus("muMatch_hltL1Mu3p5EG12L3Filtered22", 1);
+   fChain->SetBranchStatus("muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q", 1);
    fChain->SetBranchStatus("gsf_size", 1);
    fChain->SetBranchStatus("gsf_eta", 1);
    fChain->SetBranchStatus("gsf_phi", 1);
@@ -476,12 +521,21 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchStatus("gsf_e2x5overe5x5", 1);
    fChain->SetBranchStatus("gsf_e1x5overe5x5", 1);
    fChain->SetBranchStatus("gsf_gsfet", 1);
+   fChain->SetBranchStatus("gsfmatch_hltMu22Photon22CaloIdLHEFilter", 1);
    fChain->SetBranchStatus("hardGenEle_pt", 1);
    fChain->SetBranchStatus("hardGenEle_eta", 1);
+   fChain->SetBranchStatus("hardGenEle_phi", 1);
    fChain->SetBranchStatus("hardGenMu_pt", 1);
    fChain->SetBranchStatus("hardGenMu_eta", 1);
+   fChain->SetBranchStatus("hardGenMu_phi", 1);
+   fChain->SetBranchStatus("genele_pt", 1);
+   fChain->SetBranchStatus("genele_eta", 1);
+   fChain->SetBranchStatus("genele_phi", 1);
+   fChain->SetBranchStatus("genmu_pt", 1);
+   fChain->SetBranchStatus("genmu_eta", 1);
+   fChain->SetBranchStatus("genmu_phi", 1);
    fChain->SetBranchStatus("genelemom_mass", 1);
-   fChain->SetBranchStatus("genPair_mass", 1);
+   fChain->SetBranchStatus("genelemom_pdgid", 1);
    fChain->SetBranchStatus("trueNVtx", 1);
 
    Notify();

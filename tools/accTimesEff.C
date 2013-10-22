@@ -18,29 +18,45 @@ void AccTimesEff::Loop()
    vector<TString> files;
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeLFVToEMu_M-1000_TuneZ2star_8TeV_madgraph_Summer12_DR53X-PU_S10_START53_V19E-v1_AODSIM_9996ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9898ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9966ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9400ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9999ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9993ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9959ev.root");
    string outfileName = "accTimesEffHistos";
 
    // output file formats
    const bool saveSpec = 0;
    const bool saveAsPdf = 0;
    const bool saveAsPng = 1;
-   const bool saveAsRoot = 0;
+   const bool saveAsRoot = 1;
    TString plotDir = "./plots/";
+
+   unsigned int triggerInd = 0;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
 
    int font = 42; //62
    // selection cuts /////////////////////////////////////////////////////////
    float elePtCut = 35.;
    float muPtCut = 35.;
+   float muEtaCut = 2.4;
    float minInvMass = 0.;
 
    TH1::SetDefaultSumw2(kTRUE);
@@ -48,6 +64,17 @@ void AccTimesEff::Loop()
    ///////////////////////////////////////////////////////////////////////////
 
    ///////////////////////////////////////////////////////////////////////////
+   bool triggerBit = 0;
+   TString triggerName = "";
+   if (triggerInd == 0) {
+      triggerName = "HLT_Mu22_Photon22_CaloIdL";
+   } else {
+      triggerName = "HLT_Mu40_eta2p1";
+      muon_pt_min = 45.;
+      muPtCut = muon_pt_min;
+      muon_etaMax = 2.1;
+      muEtaCut = muon_etaMax;
+   }
 
    TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 145, 0., 5010.);
    hGenEvts->GetXaxis()->SetTitle("M_{Z'}^{truth}");
@@ -61,6 +88,23 @@ void AccTimesEff::Loop()
    hGenEvts->SetLineWidth(2);
    hGenEvts->SetMarkerStyle(20);
    hGenEvts->SetMarkerColor(kBlack);
+   TH1F *hGenEvts_ele_pt = (TH1F*)hGenEvts->Clone("hGenEvts_ele_pt");
+   hGenEvts_ele_pt->SetBins(50, 0., 3000.);
+   hGenEvts_ele_pt->GetXaxis()->SetTitle("e p_{T}^{truth}");
+   TH1F *hGenEvts_ele_eta = (TH1F*)hGenEvts->Clone("hGenEvts_ele_eta");
+   hGenEvts_ele_eta->SetBins(30, -3., 3.);
+   hGenEvts_ele_eta->GetXaxis()->SetTitle("e #eta^{truth}");
+   TH1F *hGenEvts_mu_pt = (TH1F*)hGenEvts_ele_pt->Clone("hGenEvts_mu_pt");
+   hGenEvts_mu_pt->GetXaxis()->SetTitle("#mu p_{T}^{truth}");
+   TH1F *hGenEvts_mu_eta = (TH1F*)hGenEvts_ele_eta->Clone("hGenEvts_mu_eta");
+   hGenEvts_mu_eta->GetXaxis()->SetTitle("#mu #eta^{truth}");
+
+   TH1F *hPassPtCuts = (TH1F*)hGenEvts->Clone("hPassPtCuts");
+   TH1F *hPassEtaCuts = (TH1F*)hGenEvts->Clone("hPassEtaCuts");
+   TH1F *hPassPtEtaCuts = (TH1F*)hGenEvts->Clone("hPassPtEtaCuts");
+   TH1F *hPassPtEff = (TH1F*)hGenEvts->Clone("hPassPtEff");
+   TH1F *hPassEtaEff = (TH1F*)hGenEvts->Clone("hPassEtaEff");
+   TH1F *hPassPtEtaEff = (TH1F*)hGenEvts->Clone("hPassPtEtaEff");
    TH1F *hGenEvtsEleInAcc = (TH1F*)hGenEvts->Clone("hGenEvtsEleInAcc");
    TH1F *hGenEvtsEleInAccEB = (TH1F*)hGenEvts->Clone("hGenEvtsEleInAccEB");
    TH1F *hGenEvtsEleInAccEE = (TH1F*)hGenEvts->Clone("hGenEvtsEleInAccEE");
@@ -68,6 +112,32 @@ void AccTimesEff::Loop()
    TH1F *hGenEvtsInAcc = (TH1F*)hGenEvts->Clone("hGenEvtsInAcc");
    TH1F *hTrgEvts = (TH1F*)hGenEvts->Clone("hTrgEvts");
    hTrgEvts->SetTitle("hTrgEvts");
+   TH1F *hTrgEvts_mu22ph22 = (TH1F*)hGenEvts->Clone("hTrgEvts_mu22ph22");
+   hTrgEvts_mu22ph22->SetTitle("hTrgEvts_mu22ph22");
+   TH1F *hTrgEvts_mu22ph22_ele_pt = (TH1F*)hGenEvts_ele_pt->Clone("hTrgEvts_mu22ph22_ele_pt");
+   hTrgEvts_mu22ph22_ele_pt->SetTitle("hTrgEvts_mu22ph22_ele_pt");
+   TH1F *hTrgEvts_mu22ph22_ele_eta = (TH1F*)hGenEvts_ele_eta->Clone("hTrgEvts_mu22ph22_ele_eta");
+   hTrgEvts_mu22ph22_ele_eta->SetTitle("hTrgEvts_mu22ph22_ele_eta");
+   TH1F *hTrgEvts_mu22ph22_mu_pt = (TH1F*)hGenEvts_mu_pt->Clone("hTrgEvts_mu22ph22_mu_pt");
+   hTrgEvts_mu22ph22_mu_pt->SetTitle("hTrgEvts_mu22ph22_mu_pt");
+   TH1F *hTrgEvts_mu22ph22_mu_eta = (TH1F*)hGenEvts_mu_eta->Clone("hTrgEvts_mu22ph22_mu_eta");
+   hTrgEvts_mu22ph22_mu_eta->SetTitle("hTrgEvts_mu22ph22_mu_eta");
+   TH1F *hTrgEvts_mu40 = (TH1F*)hGenEvts->Clone("hTrgEvts_mu40");
+   hTrgEvts_mu40->SetTitle("hTrgEvts_mu40");
+   TH1F *hTrgEvts_mu40_ele_pt = (TH1F*)hGenEvts_ele_pt->Clone("hTrgEvts_mu40_ele_pt");
+   hTrgEvts_mu40_ele_pt->SetTitle("hTrgEvts_mu40_ele_pt");
+   TH1F *hTrgEvts_mu40_ele_eta = (TH1F*)hGenEvts_ele_eta->Clone("hTrgEvts_mu40_ele_eta");
+   hTrgEvts_mu40_ele_eta->SetTitle("hTrgEvts_mu40_ele_eta");
+   TH1F *hTrgEvts_mu40_mu_pt = (TH1F*)hGenEvts_mu_pt->Clone("hTrgEvts_mu40_mu_pt");
+   hTrgEvts_mu40_mu_pt->SetTitle("hTrgEvts_mu40_mu_pt");
+   TH1F *hTrgEvts_mu40_mu_eta = (TH1F*)hGenEvts_mu_eta->Clone("hTrgEvts_mu40_mu_eta");
+   hTrgEvts_mu40_mu_eta->SetTitle("hTrgEvts_mu40_mu_eta");
+   TH1F *hFltrMatchEvts_mu22ph22_phLeg = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_mu22ph22_phLeg");
+   hFltrMatchEvts_mu22ph22_phLeg->SetTitle("hFltrMatchEvts_mu22ph22_phLeg");
+   TH1F *hFltrMatchEvts_mu22ph22_muLeg = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_mu22ph22_muLeg");
+   hFltrMatchEvts_mu22ph22_muLeg->SetTitle("hFltrMatchEvts_mu22ph22_muLeg");
+   TH1F *hFltrMatchEvts_mu40 = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_mu40");
+   hFltrMatchEvts_mu40->SetTitle("hFltrMatchEvts_mu40");
    TH1F *hRecoEvts = (TH1F*)hGenEvts->Clone("hRecoEvts");
    hRecoEvts->SetTitle("hRecoEvts");
    TH1F *hRecoEvtsEB = (TH1F*)hRecoEvts->Clone("hRecoEvtsEB");
@@ -89,8 +159,17 @@ void AccTimesEff::Loop()
    TH1F* hAccEleEB;
    TH1F* hAccEleEE;
    TH1F* hAccMu;
-   TH1F* hAccTimesTrgEff;
    TH1F* hTrgEff;
+   TH1F* hTrgEff_mu22ph22;
+   TH1F* hTrgEff_mu22ph22_ele_pt;
+   TH1F* hTrgEff_mu22ph22_ele_eta;
+   TH1F* hTrgEff_mu22ph22_mu_pt;
+   TH1F* hTrgEff_mu22ph22_mu_eta;
+   TH1F* hTrgEff_mu40;
+   TH1F* hTrgEff_mu40_ele_pt;
+   TH1F* hTrgEff_mu40_ele_eta;
+   TH1F* hTrgEff_mu40_mu_pt;
+   TH1F* hTrgEff_mu40_mu_eta;
    TH1F* hAccTimesEff;
    TH1F* hAccTimesEffEB;
    TH1F* hAccTimesEffEE;
@@ -117,6 +196,9 @@ void AccTimesEff::Loop()
    TH1F* hTrgRecoVsRecoEleEB;
    TH1F* hTrgRecoVsRecoEleEE;
    TH1F* hTrgRecoVsRecoMu;
+   TH1F* hFltrMatchVsReco_mu22ph22_phLeg;
+   TH1F* hFltrMatchVsReco_mu22ph22_muLeg;
+   TH1F* hFltrMatchVsReco_mu40;
 
    // output file
    stringstream ssOutfile;
@@ -146,29 +228,74 @@ void AccTimesEff::Loop()
          //if (jentry % 50000 == 0) cout << "Processing event " << jentry << endl;
          thetree->GetEntry(jentry);
 
+         //hard ele + hard muon
+         TLorentzVector hardEle1;
+         TLorentzVector hardMu1;
+         hardEle1.SetPtEtaPhiM(hardGenEle_pt[0], hardGenEle_eta[0], hardGenEle_phi[0], 0.000511);
+         hardMu1.SetPtEtaPhiM(hardGenMu_pt[0], hardGenMu_eta[0], hardGenMu_phi[0], 0.10566);
+         double hardInvMass = (hardEle1 + hardMu1).M();
+         //gen ele + gen muon
+         TLorentzVector genEle1;
+         TLorentzVector genMu1;
+         genEle1.SetPtEtaPhiM(genele_pt[0], genele_eta[0], genele_phi[0], 0.000511);
+         genMu1.SetPtEtaPhiM(genmu_pt[0], genmu_eta[0], genmu_phi[0], 0.10566);
+         double genInvMass = (genEle1 + genMu1).M();
+
+         //cout << genelemom_mass[0] << "     " << genInvMass << "     " << hardInvMass << endl;
+         if (fabs(genelemom_pdgid[0]) < 7) continue;
          // fill the gen histograms
-         hGenEvts->Fill(genelemom_mass[0]);
+         hGenEvts->Fill(hardInvMass);
+         hGenEvts_ele_pt->Fill(genele_pt[0]);
+         hGenEvts_ele_eta->Fill(genele_eta[0]);
+         hGenEvts_mu_pt->Fill(genmu_pt[0]);
+         hGenEvts_mu_eta->Fill(genmu_eta[0]);
 
          // fill the acc histograms
+         bool passEleEta = 0;
+         bool passMuEta = 0;
+         if (fabs(hardGenEle_eta[0]) < 1.442 || (fabs(hardGenEle_eta[0]) > 1.56 && fabs(hardGenEle_eta[0]) < 2.5)) passEleEta = 1;
+         if (fabs(hardGenMu_eta[0]) < muEtaCut) passMuEta = 1;
+         if (passEleEta && passMuEta) hPassEtaCuts->Fill(hardInvMass);
          if (hardGenEle_pt[0] > elePtCut) {
             if (fabs(hardGenEle_eta[0]) < 1.442) {
-               hGenEvtsEleInAcc->Fill(genelemom_mass[0]);
-               hGenEvtsEleInAccEB->Fill(genelemom_mass[0]);
+               hGenEvtsEleInAcc->Fill(hardInvMass);
+               hGenEvtsEleInAccEB->Fill(hardInvMass);
             }
             else if (fabs(hardGenEle_eta[0]) > 1.56 && fabs(hardGenEle_eta[0]) < 2.5) {
-               hGenEvtsEleInAcc->Fill(genelemom_mass[0]);
-               hGenEvtsEleInAccEE->Fill(genelemom_mass[0]);
+               hGenEvtsEleInAcc->Fill(hardInvMass);
+               hGenEvtsEleInAccEE->Fill(hardInvMass);
+            }
+            if (hardGenMu_pt[0] > muPtCut) {
+               hPassPtCuts->Fill(hardInvMass);
+               if (passEleEta && passMuEta) hPassPtEtaCuts->Fill(hardInvMass);
             }
          }
-         if (hardGenMu_pt[0] > muPtCut && fabs(hardGenMu_eta[0]) < 2.4) {
-            hGenEvtsMuInAcc->Fill(genelemom_mass[0]);
-            if (fabs(hardGenEle_eta[0]) < 1.442 || (fabs(hardGenEle_eta[0]) > 1.56 && fabs(hardGenEle_eta[0]) < 2.5)) {
-               if (hardGenEle_pt[0] > elePtCut) hGenEvtsInAcc->Fill(genelemom_mass[0]);
+         if (hardGenMu_pt[0] > muPtCut && passMuEta) {
+            hGenEvtsMuInAcc->Fill(hardInvMass);
+            if (passEleEta) {
+               if (hardGenEle_pt[0] > elePtCut) hGenEvtsInAcc->Fill(hardInvMass);
             }
          }
 
          // trigger?
-         if (HLT_Mu22_Photon22_CaloIdL) hTrgEvts->Fill(genelemom_mass[0]);
+         if (triggerInd == 0) triggerBit = HLT_Mu22_Photon22_CaloIdL;
+         else triggerBit = HLT_Mu40_eta2p1;
+
+         if (triggerBit) hTrgEvts->Fill(hardInvMass);
+         if (HLT_Mu22_Photon22_CaloIdL) {
+            hTrgEvts_mu22ph22->Fill(hardInvMass);
+            hTrgEvts_mu22ph22_ele_pt->Fill(genele_pt[0]);
+            hTrgEvts_mu22ph22_ele_eta->Fill(genele_eta[0]);
+            hTrgEvts_mu22ph22_mu_pt->Fill(genmu_pt[0]);
+            hTrgEvts_mu22ph22_mu_eta->Fill(genmu_eta[0]);
+         }
+         if (HLT_Mu40_eta2p1) {
+            hTrgEvts_mu40->Fill(hardInvMass);
+            hTrgEvts_mu40_ele_pt->Fill(genele_pt[0]);
+            hTrgEvts_mu40_ele_eta->Fill(genele_eta[0]);
+            hTrgEvts_mu40_mu_pt->Fill(genmu_pt[0]);
+            hTrgEvts_mu40_mu_eta->Fill(genmu_eta[0]);
+         }
 
          // at least one gsf electron and one muon above the threshold
          if (gsf_size < 1 || muon_size < 1) continue;
@@ -181,6 +308,7 @@ void AccTimesEff::Loop()
             //cleaning: fake electrons from muons
             bool fakeEle = false;
             for (int k = 0; k < muon_size; ++k) {
+               if (muon_pt[k] < 5.) continue;
                float DeltaR = deltaR(gsf_eta[j], gsf_phi[j], muon_eta[k], muon_phi[k]);
                if (DeltaR < 0.1) {
                   fakeEle = true;
@@ -199,17 +327,17 @@ void AccTimesEff::Loop()
 
          if (GSF_passHEEP.size() == 1) {
             if (HLT_Mu22_Photon22_CaloIdL) {
-               hRecoEleEvts->Fill(genelemom_mass[0]);
-               if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoEleEvtsEB->Fill(genelemom_mass[0]);
-               if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoEleEvtsEE->Fill(genelemom_mass[0]);
+               hRecoEleEvts->Fill(hardInvMass);
+               if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoEleEvtsEB->Fill(hardInvMass);
+               if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoEleEvtsEE->Fill(hardInvMass);
             }
-            hRecoNoTrgEleEvts->Fill(genelemom_mass[0]);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(genelemom_mass[0]);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(genelemom_mass[0]);
+            hRecoNoTrgEleEvts->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(hardInvMass);
          } 
          if (MU_passGOOD.size() == 1) {
-            if (HLT_Mu22_Photon22_CaloIdL) hRecoMuEvts->Fill(genelemom_mass[0]);
-            hRecoNoTrgMuEvts->Fill(genelemom_mass[0]);
+            if (HLT_Mu22_Photon22_CaloIdL) hRecoMuEvts->Fill(hardInvMass);
+            hRecoNoTrgMuEvts->Fill(hardInvMass);
          }
 
          // veto when there are more than one good candidates
@@ -227,14 +355,18 @@ void AccTimesEff::Loop()
          //MASS CUT
          if (invMass < minInvMass) continue;
 
-         if (HLT_Mu22_Photon22_CaloIdL) {
-            hRecoEvts->Fill(genelemom_mass[0]);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoEvtsEB->Fill(genelemom_mass[0]);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoEvtsEE->Fill(genelemom_mass[0]);
+         if (muMatch_hltL1Mu3p5EG12L3Filtered22[MU_passGOOD[0]]) hFltrMatchEvts_mu22ph22_muLeg->Fill(hardInvMass);
+         if (gsfmatch_hltMu22Photon22CaloIdLHEFilter[GSF_passHEEP[0]]) hFltrMatchEvts_mu22ph22_phLeg->Fill(hardInvMass);
+         if (muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q[MU_passGOOD[0]]) hFltrMatchEvts_mu40->Fill(hardInvMass);
+
+         if (triggerBit) {
+            hRecoEvts->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoEvtsEB->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoEvtsEE->Fill(hardInvMass);
          }
-         hRecoNoTrgEvts->Fill(genelemom_mass[0]);
-         if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoNoTrgEvtsEB->Fill(genelemom_mass[0]);
-         if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoNoTrgEvtsEE->Fill(genelemom_mass[0]);
+         hRecoNoTrgEvts->Fill(hardInvMass);
+         if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoNoTrgEvtsEB->Fill(hardInvMass);
+         if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoNoTrgEvtsEE->Fill(hardInvMass);
          ++evCounter;
         ///////////////////////////////////////////////////////////////////////
       } //END LOOP OVER EVENTS
@@ -244,71 +376,101 @@ void AccTimesEff::Loop()
    } //END LOOP OVER FILES
      //////////////////////////////////////////////////////////////////////////
    hAcc = (TH1F*)hGenEvtsInAcc->Clone("hAcc");
-   hAccEle = (TH1F*)hGenEvtsEleInAcc->Clone("hAccEle");
-   hAccEleEB = (TH1F*)hGenEvtsEleInAccEB->Clone("hAccEleEB");
-   hAccEleEE = (TH1F*)hGenEvtsEleInAccEE->Clone("hAccEleEE");
-   hAccMu = (TH1F*)hGenEvtsMuInAcc->Clone("hAccMu");
-   hAccTimesTrgEff = (TH1F*)hTrgEvts->Clone("hAccTimesTrgEff");
-   hTrgEff = (TH1F*)hTrgEvts->Clone("hTrgEff");
-   hAccTimesEff = (TH1F*)hRecoEvts->Clone("hAccTimesEff");
-   hAccTimesEffEB = (TH1F*)hRecoEvtsEB->Clone("hAccTimesEffEB");
-   hAccTimesEffEE = (TH1F*)hRecoEvtsEE->Clone("hAccTimesEffEE");
-   hAccTimesEffEle = (TH1F*)hRecoEleEvts->Clone("hAccTimesEffEle");
-   hAccTimesEffEleEB = (TH1F*)hRecoEleEvtsEB->Clone("hAccTimesEffEleEB");
-   hAccTimesEffEleEE = (TH1F*)hRecoEleEvtsEE->Clone("hAccTimesEffEleEE");
-   hAccTimesEffMu = (TH1F*)hRecoMuEvts->Clone("hAccTimesEffMu");
-   hAccTimesEffNoTrg = (TH1F*)hRecoNoTrgEvts->Clone("hAccTimesEffNoTrg");
-   //hAccTimesEffNoTrgEB = (TH1F*)hRecoNoTrgEvtsEB->Clone("hAccTimesEffNoTrgEB");
-   //hAccTimesEffNoTrgEE = (TH1F*)hRecoNoTrgEvtsEE->Clone("hAccTimesEffNoTrgEE");
-   hAccTimesEffNoTrgEle = (TH1F*)hRecoNoTrgEleEvts->Clone("hAccTimesEffNoTrgEle");
-   hAccTimesEffNoTrgEleEB = (TH1F*)hRecoNoTrgEleEvtsEB->Clone("hAccTimesEffNoTrgEleEB");
-   hAccTimesEffNoTrgEleEE = (TH1F*)hRecoNoTrgEleEvtsEE->Clone("hAccTimesEffNoTrgEleEE");
-   hAccTimesEffNoTrgMu = (TH1F*)hRecoNoTrgMuEvts->Clone("hAccTimesEffNoTrgMu");
-   hEffAftTrg = (TH1F*)hRecoEvts->Clone("hAccTimesEff");
-   hEffAftTrgEle = (TH1F*)hRecoEleEvts->Clone("hAccTimesEffEle");
-   hEffAftTrgEleEB = (TH1F*)hRecoEleEvtsEB->Clone("hAccTimesEffEleEB");
-   hEffAftTrgEleEE = (TH1F*)hRecoEleEvtsEE->Clone("hAccTimesEffEleEE");
-   hEffAftTrgMu = (TH1F*)hRecoMuEvts->Clone("hAccTimesEffMu");
-   hTrgRecoVsReco = (TH1F*)hRecoEvts->Clone("hTrgRecoVsReco");
-   //hTrgRecoVsRecoEB = (TH1F*)hRecoEvtsEB->Clone("hTrgRecoVsRecoEB");
-   //hTrgRecoVsRecoEE = (TH1F*)hRecoEvtsEE->Clone("hTrgRecoVsRecoEE");
-   hTrgRecoVsRecoEle = (TH1F*)hRecoEleEvts->Clone("hTrgRecoVsRecoEle");
-   hTrgRecoVsRecoEleEB = (TH1F*)hRecoEleEvtsEB->Clone("hTrgRecoVsRecoEleEB");
-   hTrgRecoVsRecoEleEE = (TH1F*)hRecoEleEvtsEE->Clone("hTrgRecoVsRecoEleEE");
-   hTrgRecoVsRecoMu = (TH1F*)hRecoMuEvts->Clone("hTrgRecoVsRecoMu");
    hAcc->Divide(hGenEvts);
+   hAccEle = (TH1F*)hGenEvtsEleInAcc->Clone("hAccEle");
    hAccEle->Divide(hGenEvts);
+   hAccEleEB = (TH1F*)hGenEvtsEleInAccEB->Clone("hAccEleEB");
    hAccEleEB->Divide(hGenEvts);
+   hAccEleEE = (TH1F*)hGenEvtsEleInAccEE->Clone("hAccEleEE");
    hAccEleEE->Divide(hGenEvts);
+   hAccMu = (TH1F*)hGenEvtsMuInAcc->Clone("hAccMu");
    hAccMu->Divide(hGenEvts);
-   hAccTimesTrgEff->Divide(hGenEvts);
-   hTrgEff->Divide(hGenEvtsInAcc);
+   hAccTimesEff = (TH1F*)hRecoEvts->Clone("hAccTimesEff");
    hAccTimesEff->Divide(hGenEvts);
+   hAccTimesEffEB = (TH1F*)hRecoEvtsEB->Clone("hAccTimesEffEB");
    hAccTimesEffEB->Divide(hGenEvts);
+   hAccTimesEffEE = (TH1F*)hRecoEvtsEE->Clone("hAccTimesEffEE");
    hAccTimesEffEE->Divide(hGenEvts);
+   hAccTimesEffEle = (TH1F*)hRecoEleEvts->Clone("hAccTimesEffEle");
    hAccTimesEffEle->Divide(hGenEvts);
+   hAccTimesEffEleEB = (TH1F*)hRecoEleEvtsEB->Clone("hAccTimesEffEleEB");
    hAccTimesEffEleEB->Divide(hGenEvts);
+   hAccTimesEffEleEE = (TH1F*)hRecoEleEvtsEE->Clone("hAccTimesEffEleEE");
    hAccTimesEffEleEE->Divide(hGenEvts);
+   hAccTimesEffMu = (TH1F*)hRecoMuEvts->Clone("hAccTimesEffMu");
    hAccTimesEffMu->Divide(hGenEvts);
+   hAccTimesEffNoTrg = (TH1F*)hRecoNoTrgEvts->Clone("hAccTimesEffNoTrg");
    hAccTimesEffNoTrg->Divide(hGenEvts);
+   //hAccTimesEffNoTrgEB = (TH1F*)hRecoNoTrgEvtsEB->Clone("hAccTimesEffNoTrgEB");
    //hAccTimesEffNoTrgEB->Divide(hGenEvts);
+   //hAccTimesEffNoTrgEE = (TH1F*)hRecoNoTrgEvtsEE->Clone("hAccTimesEffNoTrgEE");
    //hAccTimesEffNoTrgEE->Divide(hGenEvts);
+   hAccTimesEffNoTrgEle = (TH1F*)hRecoNoTrgEleEvts->Clone("hAccTimesEffNoTrgEle");
    hAccTimesEffNoTrgEle->Divide(hGenEvts);
+   hAccTimesEffNoTrgEleEB = (TH1F*)hRecoNoTrgEleEvtsEB->Clone("hAccTimesEffNoTrgEleEB");
    hAccTimesEffNoTrgEleEB->Divide(hGenEvts);
+   hAccTimesEffNoTrgEleEE = (TH1F*)hRecoNoTrgEleEvtsEE->Clone("hAccTimesEffNoTrgEleEE");
    hAccTimesEffNoTrgEleEE->Divide(hGenEvts);
+   hAccTimesEffNoTrgMu = (TH1F*)hRecoNoTrgMuEvts->Clone("hAccTimesEffNoTrgMu");
    hAccTimesEffNoTrgMu->Divide(hGenEvts);
+   hEffAftTrg = (TH1F*)hRecoEvts->Clone("hEffAftTrg");
    hEffAftTrg->Divide(hTrgEvts);
+   hEffAftTrgEle = (TH1F*)hRecoEleEvts->Clone("hEffAftTrgEle");
    hEffAftTrgEle->Divide(hTrgEvts);
+   hEffAftTrgEleEB = (TH1F*)hRecoEleEvtsEB->Clone("hEffAftTrgEleEB");
    hEffAftTrgEleEB->Divide(hTrgEvts);
+   hEffAftTrgEleEE = (TH1F*)hRecoEleEvtsEE->Clone("hEffAftTrgEleEE");
    hEffAftTrgEleEE->Divide(hTrgEvts);
+   hEffAftTrgMu = (TH1F*)hRecoMuEvts->Clone("hEffAftTrgMu");
    hEffAftTrgMu->Divide(hTrgEvts);
+   hTrgRecoVsReco = (TH1F*)hRecoEvts->Clone("hTrgRecoVsReco");
    hTrgRecoVsReco->Divide(hRecoNoTrgEvts);
+   //hTrgRecoVsRecoEB = (TH1F*)hRecoEvtsEB->Clone("hTrgRecoVsRecoEB");
    //hTrgRecoVsRecoEB->Divide(hRecoNoTrgEvtsEB);
+   //hTrgRecoVsRecoEE = (TH1F*)hRecoEvtsEE->Clone("hTrgRecoVsRecoEE");
    //hTrgRecoVsRecoEE->Divide(hRecoNoTrgEvtsEE);
+   hTrgRecoVsRecoEle = (TH1F*)hRecoEleEvts->Clone("hTrgRecoVsRecoEle");
    hTrgRecoVsRecoEle->Divide(hRecoNoTrgEleEvts);
+   hTrgRecoVsRecoEleEB = (TH1F*)hRecoEleEvtsEB->Clone("hTrgRecoVsRecoEleEB");
    hTrgRecoVsRecoEleEB->Divide(hRecoNoTrgEleEvtsEB);
+   hTrgRecoVsRecoEleEE = (TH1F*)hRecoEleEvtsEE->Clone("hTrgRecoVsRecoEleEE");
    hTrgRecoVsRecoEleEE->Divide(hRecoNoTrgEleEvtsEE);
+   hTrgRecoVsRecoMu = (TH1F*)hRecoMuEvts->Clone("hTrgRecoVsRecoMu");
    hTrgRecoVsRecoMu->Divide(hRecoNoTrgMuEvts);
+   hFltrMatchVsReco_mu22ph22_phLeg = (TH1F*)hFltrMatchEvts_mu22ph22_phLeg->Clone("hFltrMatchVsReco_mu22ph22_phLeg");
+   hFltrMatchVsReco_mu22ph22_phLeg->Divide(hRecoNoTrgEvts);
+   hFltrMatchVsReco_mu22ph22_muLeg = (TH1F*)hFltrMatchEvts_mu22ph22_muLeg->Clone("hFltrMatchVsReco_mu22ph22_muLeg");
+   hFltrMatchVsReco_mu22ph22_muLeg->Divide(hRecoNoTrgEvts);
+   hFltrMatchVsReco_mu40 = (TH1F*)hFltrMatchEvts_mu40->Clone("hFltrMatchVsReco_mu40");
+   hFltrMatchVsReco_mu40->Divide(hRecoNoTrgEvts);
+   hTrgEff = (TH1F*)hTrgEvts->Clone("hTrgEff");
+   hTrgEff->Divide(hGenEvts);
+   hTrgEff_mu22ph22 = (TH1F*)hTrgEvts_mu22ph22->Clone("hTrgEff_mu22ph22");
+   hTrgEff_mu22ph22->Divide(hGenEvts);
+   hTrgEff_mu22ph22_ele_pt = (TH1F*)hTrgEvts_mu22ph22_ele_pt->Clone("hTrgEff_mu22ph22_ele_pt");
+   hTrgEff_mu22ph22_ele_pt->Divide(hGenEvts_ele_pt);
+   hTrgEff_mu22ph22_ele_eta = (TH1F*)hTrgEvts_mu22ph22_ele_eta->Clone("hTrgEff_mu22ph22_ele_eta");
+   hTrgEff_mu22ph22_ele_eta->Divide(hGenEvts_ele_eta);
+   hTrgEff_mu22ph22_mu_pt = (TH1F*)hTrgEvts_mu22ph22_mu_pt->Clone("hTrgEff_mu22ph22_mu_pt");
+   hTrgEff_mu22ph22_mu_pt->Divide(hGenEvts_mu_pt);
+   hTrgEff_mu22ph22_mu_eta = (TH1F*)hTrgEvts_mu22ph22_mu_eta->Clone("hTrgEff_mu22ph22_mu_eta");
+   hTrgEff_mu22ph22_mu_eta->Divide(hGenEvts_mu_eta);
+   hTrgEff_mu40 = (TH1F*)hTrgEvts_mu40->Clone("hTrgEff_mu40");
+   hTrgEff_mu40->Divide(hGenEvts);
+   hTrgEff_mu40_ele_pt = (TH1F*)hTrgEvts_mu40_ele_pt->Clone("hTrgEff_mu40_ele_pt");
+   hTrgEff_mu40_ele_pt->Divide(hGenEvts_ele_pt);
+   hTrgEff_mu40_ele_eta = (TH1F*)hTrgEvts_mu40_ele_eta->Clone("hTrgEff_mu40_ele_eta");
+   hTrgEff_mu40_ele_eta->Divide(hGenEvts_ele_eta);
+   hTrgEff_mu40_mu_pt = (TH1F*)hTrgEvts_mu40_mu_pt->Clone("hTrgEff_mu40_mu_pt");
+   hTrgEff_mu40_mu_pt->Divide(hGenEvts_mu_pt);
+   hTrgEff_mu40_mu_eta = (TH1F*)hTrgEvts_mu40_mu_eta->Clone("hTrgEff_mu40_mu_eta");
+   hTrgEff_mu40_mu_eta->Divide(hGenEvts_mu_eta);
+   hPassPtEff = (TH1F*)hPassPtCuts->Clone("hPassPtEff");
+   hPassPtEff->Divide(hGenEvts);
+   hPassEtaEff = (TH1F*)hPassEtaCuts->Clone("hPassEtaEff");
+   hPassEtaEff->Divide(hGenEvts);
+   hPassPtEtaEff = (TH1F*)hPassPtEtaCuts->Clone("hPassPtEtaEff");
+   hPassPtEtaEff->Divide(hGenEvts);
 
    // plot
    TCanvas *accTimesEffPlot = new TCanvas("accTimesEffPlot", "acc x eff", 100, 100, 600, 600);
@@ -365,6 +527,7 @@ void AccTimesEff::Loop()
    tex->Draw();
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
    tex->DrawLatex(0.17, 0.85, "trg + electron + muon");
+   tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);
 
    TCanvas *accTimesEffPlotEB = new TCanvas("accTimesEffPlotEB", "acc x eff, barrel electron + muon", 100, 100, 600, 600);
    TPad *accTimesEffPadEB = (TPad*)accTimesEffPad->Clone("accTimesEffPadEB");
@@ -377,6 +540,7 @@ void AccTimesEff::Loop()
    //tex->DrawLatex(0.46, 0.21, "P(M|p0,p1,p2) = p0 + #frac{p1}{M+p2}");
    tex->DrawLatex(0.22, 0.21, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
    tex->DrawLatex(0.17, 0.85, "trg + barrel electron + muon");
+   tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);
 
    TCanvas *accTimesEffPlotEE = new TCanvas("accTimesEffPlotEE", "acc x eff, endcap electron + muon", 100, 100, 600, 600);
    TPad *accTimesEffPadEE = (TPad*)accTimesEffPad->Clone("accTimesEffPadEE");
@@ -388,6 +552,7 @@ void AccTimesEff::Loop()
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
    tex->DrawLatex(0.45, 0.38, "P(M|p0,p1,p2) = p0 + #frac{p1}{M^{2}+p2}");
    tex->DrawLatex(0.17, 0.85, "trg + endcap electron + muon");
+   tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);
 
    TCanvas *accTimesEffObjPlot = new TCanvas("accTimesEffObjPlot", "acc x eff, objects", 100, 100, 600, 600);
    TPad *accTimesEffObjPad = (TPad*)accTimesEffPad->Clone("accTimesEffObjPad");
@@ -428,7 +593,7 @@ void AccTimesEff::Loop()
    legend->AddEntry(hAccTimesEffEleEE, "endcap electrons");
    legend->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
-   tex->DrawLatex(0.17, 0.85, "trg: HLT_Mu22_Photon22_CaloIdL");
+   tex->DrawLatex(0.17, 0.85, "trg: " + triggerName);
 
    // acc x eff with no trg applied
    TCanvas *accTimesEffNoTrgObjPlot = new TCanvas("accTimesEffNoTrgObjPlot", "acc x eff, no trigger, objects", 100, 100, 600, 600);
@@ -453,9 +618,24 @@ void AccTimesEff::Loop()
    hAccTimesEffNoTrgMu->SetMarkerColor(kGreen+1);
    hAccTimesEffNoTrgMu->SetLineColor(kGreen+1);
    hAccTimesEffNoTrgMu->Draw("same");
+   //hPassPtEff->SetMarkerStyle(24);
+   //hPassPtEff->SetMarkerColor(kGreen+2);
+   //hPassPtEff->SetLineColor(kGreen+2);
+   //hPassPtEff->Draw("same");
+   //hPassEtaEff->SetMarkerStyle(25);
+   //hPassEtaEff->SetMarkerColor(kGreen+3);
+   //hPassEtaEff->SetLineColor(kGreen+3);
+   //hPassEtaEff->Draw("same");
+   //hPassPtEtaEff->SetMarkerStyle(26);
+   //hPassPtEtaEff->SetMarkerColor(kGreen+4);
+   //hPassPtEtaEff->SetLineColor(kGreen+4);
+   //hPassPtEtaEff->Draw("same");
    hAccTimesEffNoTrg->Draw("same");
    TLegend* accXeffNoTrg = (TLegend*)legend->Clone("effAftTrgLegend");
    accXeffNoTrg->Clear();
+   //accXeffNoTrg->AddEntry(hPassPtEff, "passing p_{T} cuts");
+   //accXeffNoTrg->AddEntry(hPassEtaEff, "passing #eta cuts");
+   //accXeffNoTrg->AddEntry(hPassPtEtaEff, "passing p_{T} and #eta cuts");
    accXeffNoTrg->AddEntry(hAccTimesEffNoTrg, "total acc x eff");
    accXeffNoTrg->AddEntry(hAccTimesEffNoTrgMu, "muons");
    accXeffNoTrg->AddEntry(hAccTimesEffNoTrgEle, "all electrons");
@@ -464,13 +644,14 @@ void AccTimesEff::Loop()
    accXeffNoTrg->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
    tex->DrawLatex(0.17, 0.85, "trg: none");
+   tex->DrawLatex(0.14, 0.15, "#mu_{Id} for " + triggerName);
 
    // efficiency on triggered events
    TCanvas *effAftTrgPlot = new TCanvas("effAftTrgPlot", "efficiency after trigger", 100, 100, 600, 600);
    TPad *effAftTrgPad = (TPad*)accTimesEffPad->Clone("effAftTrgPad");
    effAftTrgPad->Draw(); 
    effAftTrgPad->cd();
-   hEffAftTrgEle->GetYaxis()->SetTitle("eff");
+   hEffAftTrgEle->GetYaxis()->SetTitle("eff for triggered events");
    hEffAftTrgEle->GetYaxis()->SetRangeUser(0., 1.);
    hEffAftTrgEle->SetMarkerStyle(kFullSquare);
    hEffAftTrgEle->SetMarkerColor(kViolet);
@@ -498,15 +679,15 @@ void AccTimesEff::Loop()
    effAftTrgLegend->AddEntry(hEffAftTrgEleEE, "endcap electrons");
    effAftTrgLegend->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
-   tex->DrawLatex(0.14, 0.15, "trg: HLT_Mu22_Photon22_CaloIdL");
+   tex->DrawLatex(0.14, 0.15, "trg: " + triggerName);
 
    // acceptance
    TCanvas *accPlot = new TCanvas("accPlot", "acc", 100, 100, 600, 600);
    TPad *accPad = (TPad*)accTimesEffPad->Clone("accPad");
    accPad->Draw(); 
    accPad->cd();
-   hAcc->GetYaxis()->SetTitle("acc");
-   hAcc->GetYaxis()->SetRangeUser(0., 1.);
+   hAccEle->GetYaxis()->SetTitle("acc");
+   hAccEle->GetYaxis()->SetRangeUser(0., 1.);
    hAccEle->SetMarkerStyle(kFullSquare);
    hAccEle->SetMarkerColor(kViolet);
    hAccEle->SetLineColor(kViolet);
@@ -533,13 +714,14 @@ void AccTimesEff::Loop()
    accLegend->AddEntry(hAccEleEE, "endcap electrons");
    accLegend->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+   tex->DrawLatex(0.14, 0.15, "#mu_{Id} for " + triggerName);
 
    // reco with trg vs. reco
    TCanvas *trgRecoVsRecoPlot = new TCanvas("trgRecoVsRecoPlot", "reco with trg vs. reco", 100, 100, 600, 600);
    TPad *trgRecoVsRecoPad = (TPad*)accTimesEffPad->Clone("trgRecoVsRecoPad");
    trgRecoVsRecoPad->Draw(); 
    trgRecoVsRecoPad->cd();
-   hTrgRecoVsRecoEle->GetYaxis()->SetTitle("eff");
+   hTrgRecoVsRecoEle->GetYaxis()->SetTitle("trg eff for selected objects");
    hTrgRecoVsRecoEle->GetYaxis()->SetRangeUser(0., 1.);
    hTrgRecoVsRecoEle->SetMarkerStyle(kFullSquare);
    hTrgRecoVsRecoEle->SetMarkerColor(kViolet);
@@ -567,74 +749,231 @@ void AccTimesEff::Loop()
    //trgRecoVsRecoLegend->AddEntry(hTrgRecoVsRecoEleEE, "endcap electrons");
    trgRecoVsRecoLegend->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+   tex->DrawLatex(0.14, 0.15, "trg: " + triggerName);
 
-   TCanvas *accTimesTrgEffPlot = new TCanvas("accTimesTrgEffPlot", "acc x trigger eff", 100, 100, 600, 600);
-   TPad *accTimesTrgEffPad = (TPad*)accTimesEffPad->Clone("accTimesTrgEffPad");
-   accTimesTrgEffPad->Draw(); 
-   accTimesTrgEffPad->cd();
-   hAccTimesTrgEff->GetYaxis()->SetTitle("acc x trg eff");
-   hAccTimesTrgEff->GetYaxis()->SetRangeUser(0., 1.);
-   hAccTimesTrgEff->SetMarkerStyle(20);
-   hAccTimesTrgEff->SetMarkerColor(kCyan);
-   hAccTimesTrgEff->SetLineColor(kCyan);
-   hAccTimesTrgEff->Draw();
-   hTrgEff->SetMarkerStyle(21);
-   hTrgEff->SetMarkerColor(kMagenta);
-   hTrgEff->SetLineColor(kMagenta);
-   hTrgEff->Draw("same");
+   TCanvas *trgEffPlot = new TCanvas("trgEffPlot", "trigger eff", 100, 100, 600, 600);
+   TPad *trgEffPad = (TPad*)accTimesEffPad->Clone("trgEffPad");
+   trgEffPad->Draw(); 
+   trgEffPad->cd();
+   hTrgEff_mu22ph22->GetYaxis()->SetTitle("trg eff");
+   hTrgEff_mu22ph22->GetYaxis()->SetRangeUser(0., 1.);
+   hTrgEff_mu22ph22->SetMarkerStyle(21);
+   hTrgEff_mu22ph22->SetMarkerColor(kMagenta);
+   hTrgEff_mu22ph22->SetLineColor(kMagenta);
+   hTrgEff_mu22ph22->Draw();
+   hTrgEff_mu40->SetMarkerStyle(20);
+   hTrgEff_mu40->SetMarkerColor(kCyan+1);
+   hTrgEff_mu40->SetLineColor(kCyan+1);
+   hTrgEff_mu40->Draw("same");
    TLegend* trgLegend = (TLegend*)legend->Clone("trgLegend");
    trgLegend->Clear();
-   trgLegend->AddEntry(hTrgEff, "trigger eff in acc");
-   trgLegend->AddEntry(hAccTimesTrgEff, "acc x trigger eff");
+   trgLegend->SetX1(0.38);
+   trgLegend->SetX2(0.67);
+   trgLegend->AddEntry(hTrgEff_mu22ph22, "eff HLT_Mu22_Photon22_CaloIdL");
+   trgLegend->AddEntry(hTrgEff_mu40, "eff HLT_Mu40_eta2p1");
    trgLegend->Draw("same");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgEffPlot_ele_pt = new TCanvas("trgEffPlot_ele_pt", "trigger eff wrt ele pt", 100, 100, 600, 600);
+   TPad *trgEffPad_ele_pt = (TPad*)accTimesEffPad->Clone("trgEffPad_ele_pt");
+   trgEffPad_ele_pt->Draw(); 
+   trgEffPad_ele_pt->cd();
+   hTrgEff_mu22ph22_ele_pt->GetYaxis()->SetTitle("trg eff");
+   hTrgEff_mu22ph22_ele_pt->GetYaxis()->SetRangeUser(0., 1.);
+   hTrgEff_mu22ph22_ele_pt->SetMarkerStyle(21);
+   hTrgEff_mu22ph22_ele_pt->SetMarkerColor(kMagenta);
+   hTrgEff_mu22ph22_ele_pt->SetLineColor(kMagenta);
+   hTrgEff_mu22ph22_ele_pt->Draw();
+   hTrgEff_mu40_ele_pt->SetMarkerStyle(20);
+   hTrgEff_mu40_ele_pt->SetMarkerColor(kCyan+1);
+   hTrgEff_mu40_ele_pt->SetLineColor(kCyan+1);
+   hTrgEff_mu40_ele_pt->Draw("same");
+   TLegend* trgLegend_ele_pt = (TLegend*)legend->Clone("trgLegend_ele_pt");
+   trgLegend_ele_pt->Clear();
+   trgLegend_ele_pt->SetX1(0.38);
+   trgLegend_ele_pt->SetX2(0.67);
+   trgLegend_ele_pt->AddEntry(hTrgEff_mu22ph22_ele_pt, "eff HLT_Mu22_Photon22_CaloIdL");
+   trgLegend_ele_pt->AddEntry(hTrgEff_mu40_ele_pt, "eff HLT_Mu40_eta2p1");
+   trgLegend_ele_pt->Draw("same");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgEffPlot_ele_eta = new TCanvas("trgEffPlot_ele_eta", "trigger eff wrt ele eta", 100, 100, 600, 600);
+   TPad *trgEffPad_ele_eta = (TPad*)accTimesEffPad->Clone("trgEffPad_ele_eta");
+   trgEffPad_ele_eta->Draw(); 
+   trgEffPad_ele_eta->cd();
+   hTrgEff_mu22ph22_ele_eta->GetYaxis()->SetTitle("trg eff");
+   hTrgEff_mu22ph22_ele_eta->GetYaxis()->SetRangeUser(0., 1.);
+   hTrgEff_mu22ph22_ele_eta->SetMarkerStyle(21);
+   hTrgEff_mu22ph22_ele_eta->SetMarkerColor(kMagenta);
+   hTrgEff_mu22ph22_ele_eta->SetLineColor(kMagenta);
+   hTrgEff_mu22ph22_ele_eta->Draw();
+   hTrgEff_mu40_ele_eta->SetMarkerStyle(20);
+   hTrgEff_mu40_ele_eta->SetMarkerColor(kCyan+1);
+   hTrgEff_mu40_ele_eta->SetLineColor(kCyan+1);
+   hTrgEff_mu40_ele_eta->Draw("same");
+   TLegend* trgLegend_ele_eta = (TLegend*)legend->Clone("trgLegend_ele_eta");
+   trgLegend_ele_eta->Clear();
+   trgLegend_ele_eta->SetX1(0.38);
+   trgLegend_ele_eta->SetX2(0.67);
+   trgLegend_ele_eta->AddEntry(hTrgEff_mu22ph22_ele_eta, "eff HLT_Mu22_Photon22_CaloIdL");
+   trgLegend_ele_eta->AddEntry(hTrgEff_mu40_ele_eta, "eff HLT_Mu40_eta2p1");
+   trgLegend_ele_eta->Draw("same");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgEffPlot_mu_pt = new TCanvas("trgEffPlot_mu_pt", "trigger eff wrt muon pt", 100, 100, 600, 600);
+   TPad *trgEffPad_mu_pt = (TPad*)accTimesEffPad->Clone("trgEffPad_mu_pt");
+   trgEffPad_mu_pt->Draw(); 
+   trgEffPad_mu_pt->cd();
+   hTrgEff_mu22ph22_mu_pt->GetYaxis()->SetTitle("trg eff");
+   hTrgEff_mu22ph22_mu_pt->GetYaxis()->SetRangeUser(0., 1.);
+   hTrgEff_mu22ph22_mu_pt->SetMarkerStyle(21);
+   hTrgEff_mu22ph22_mu_pt->SetMarkerColor(kMagenta);
+   hTrgEff_mu22ph22_mu_pt->SetLineColor(kMagenta);
+   hTrgEff_mu22ph22_mu_pt->Draw();
+   hTrgEff_mu40_mu_pt->SetMarkerStyle(20);
+   hTrgEff_mu40_mu_pt->SetMarkerColor(kCyan+1);
+   hTrgEff_mu40_mu_pt->SetLineColor(kCyan+1);
+   hTrgEff_mu40_mu_pt->Draw("same");
+   TLegend* trgLegend_mu_pt = (TLegend*)legend->Clone("trgLegend_mu_pt");
+   trgLegend_mu_pt->Clear();
+   trgLegend_mu_pt->SetX1(0.38);
+   trgLegend_mu_pt->SetX2(0.67);
+   trgLegend_mu_pt->AddEntry(hTrgEff_mu22ph22_mu_pt, "eff HLT_Mu22_Photon22_CaloIdL");
+   trgLegend_mu_pt->AddEntry(hTrgEff_mu40_mu_pt, "eff HLT_Mu40_eta2p1");
+   trgLegend_mu_pt->Draw("same");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgEffPlot_mu_eta = new TCanvas("trgEffPlot_mu_eta", "trigger eff wrt muon eta", 100, 100, 600, 600);
+   TPad *trgEffPad_mu_eta = (TPad*)accTimesEffPad->Clone("trgEffPad_mu_eta");
+   trgEffPad_mu_eta->Draw(); 
+   trgEffPad_mu_eta->cd();
+   hTrgEff_mu22ph22_mu_eta->GetYaxis()->SetTitle("trg eff");
+   hTrgEff_mu22ph22_mu_eta->GetYaxis()->SetRangeUser(0., 1.);
+   hTrgEff_mu22ph22_mu_eta->SetMarkerStyle(21);
+   hTrgEff_mu22ph22_mu_eta->SetMarkerColor(kMagenta);
+   hTrgEff_mu22ph22_mu_eta->SetLineColor(kMagenta);
+   hTrgEff_mu22ph22_mu_eta->Draw();
+   hTrgEff_mu40_mu_eta->SetMarkerStyle(20);
+   hTrgEff_mu40_mu_eta->SetMarkerColor(kCyan+1);
+   hTrgEff_mu40_mu_eta->SetLineColor(kCyan+1);
+   hTrgEff_mu40_mu_eta->Draw("same");
+   TLegend* trgLegend_mu_eta = (TLegend*)legend->Clone("trgLegend_mu_eta");
+   trgLegend_mu_eta->Clear();
+   trgLegend_mu_eta->SetX1(0.38);
+   trgLegend_mu_eta->SetX2(0.67);
+   trgLegend_mu_eta->AddEntry(hTrgEff_mu22ph22_mu_eta, "eff HLT_Mu22_Photon22_CaloIdL");
+   trgLegend_mu_eta->AddEntry(hTrgEff_mu40_mu_eta, "eff HLT_Mu40_eta2p1");
+   trgLegend_mu_eta->Draw("same");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgFltrEffPlot = new TCanvas("trgFltrEffPlot", "trigger filter eff wrt selected event", 100, 100, 600, 600);
+   TPad *trgFltrEffPad = (TPad*)accTimesEffPad->Clone("trgFltrEffPad");
+   trgFltrEffPad->Draw(); 
+   trgFltrEffPad->cd();
+   TLegend* trgFltrLegend = (TLegend*)legend->Clone("trgFltrLegend");
+   trgFltrLegend->Clear();
+   trgFltrLegend->SetX1(0.33);
+   trgFltrLegend->SetX2(0.62);
+   if (triggerInd == 0) {
+      hFltrMatchVsReco_mu22ph22_muLeg->GetYaxis()->SetTitle("eff");
+      hFltrMatchVsReco_mu22ph22_muLeg->GetYaxis()->SetRangeUser(0.75, 1.);
+      hFltrMatchVsReco_mu22ph22_muLeg->SetMarkerStyle(kFullTriangleUp);
+      hFltrMatchVsReco_mu22ph22_muLeg->SetMarkerColor(kGreen+1);
+      hFltrMatchVsReco_mu22ph22_muLeg->SetLineColor(kGreen+1);
+      hFltrMatchVsReco_mu22ph22_muLeg->Draw();
+      hFltrMatchVsReco_mu22ph22_phLeg->SetMarkerStyle(kFullTriangleDown);
+      hFltrMatchVsReco_mu22ph22_phLeg->SetMarkerColor(kBlue);
+      hFltrMatchVsReco_mu22ph22_phLeg->SetLineColor(kBlue);
+      hFltrMatchVsReco_mu22ph22_phLeg->Draw("same");
+      trgFltrLegend->AddEntry(hFltrMatchVsReco_mu22ph22_muLeg, "eff #mu-leg HLT_Mu22_Photon22_CaloIdL");
+      trgFltrLegend->AddEntry(hFltrMatchVsReco_mu22ph22_phLeg, "eff #gamma-leg HLT_Mu22_Photon22_CaloIdL");
+   } else {
+      hFltrMatchVsReco_mu40->GetYaxis()->SetTitle("eff");
+      hFltrMatchVsReco_mu40->GetYaxis()->SetRangeUser(0.75, 1.);
+      hFltrMatchVsReco_mu40->SetMarkerStyle(21);
+      hFltrMatchVsReco_mu40->SetMarkerColor(kRed);
+      hFltrMatchVsReco_mu40->SetLineColor(kRed);
+      hFltrMatchVsReco_mu40->Draw();
+      trgFltrLegend->AddEntry(hFltrMatchVsReco_mu40, "eff #mu-leg HLT_Mu40_eta2p1");
+   }
+   trgFltrLegend->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
 
    // safe in various file formats
    if (saveSpec) {
      if (saveAsPdf) {
-        accTimesTrgEffPlot->Print(plotDir + accTimesTrgEffPlot->GetName() + ".pdf", "pdf");
-        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + ".pdf", "pdf");
-        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + ".pdf", "pdf");
-        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + ".pdf", "pdf");
-        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + ".pdf", "pdf");
-        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + ".pdf", "pdf");
-        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + ".pdf", "pdf");
-        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + ".pdf", "pdf");
-        accPlot->Print(plotDir + accPlot->GetName() + ".pdf", "pdf");
+        trgEffPlot->Print(plotDir + trgEffPlot->GetName() + ".pdf", "pdf");
+        trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + ".pdf", "pdf");
+        trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + ".pdf", "pdf");
+        trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + ".pdf", "pdf");
+        trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + ".pdf", "pdf");
+        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + ".pdf", "pdf");
+        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + ".pdf", "pdf");
+        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + ".pdf", "pdf");
+        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + ".pdf", "pdf");
+        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + ".pdf", "pdf");
+        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + ".pdf", "pdf");
+        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + ".pdf", "pdf");
+        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + ".pdf", "pdf");
+        accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + ".pdf", "pdf");
      }
      if (saveAsPng) {
-        accTimesTrgEffPlot->Print(plotDir + accTimesTrgEffPlot->GetName() + ".png", "png");
-        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + ".png", "png");
-        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + ".png", "png");
-        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + ".png", "png");
-        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + ".png", "png");
-        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + ".png", "png");
-        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + ".png", "png");
-        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + ".png", "png");
-        accPlot->Print(plotDir + accPlot->GetName() + ".png", "png");
+        trgEffPlot->Print(plotDir + trgEffPlot->GetName() + ".png", "png");
+        trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + ".png", "png");
+        trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + ".png", "png");
+        trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + ".png", "png");
+        trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + ".png", "png");
+        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + ".png", "png");
+        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + ".png", "png");
+        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + ".png", "png");
+        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + ".png", "png");
+        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + ".png", "png");
+        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + ".png", "png");
+        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + ".png", "png");
+        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + ".png", "png");
+        accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + ".png", "png");
      }
      if (saveAsRoot) {
-        accTimesTrgEffPlot->Print(plotDir + accTimesTrgEffPlot->GetName() + ".root", "root");
-        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + ".root", "root");
-        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + ".root", "root");
-        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + ".root", "root");
-        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + ".root", "root");
-        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + ".root", "root");
-        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + ".root", "root");
-        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + ".root", "root");
-        accPlot->Print(plotDir + accPlot->GetName() + ".root", "root");
+        trgEffPlot->Print(plotDir + trgEffPlot->GetName() + ".root", "root");
+        trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + ".root", "root");
+        trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + ".root", "root");
+        trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + ".root", "root");
+        trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + ".root", "root");
+        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + ".root", "root");
+        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + ".root", "root");
+        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + ".root", "root");
+        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + ".root", "root");
+        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + ".root", "root");
+        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + ".root", "root");
+        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + ".root", "root");
+        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + ".root", "root");
+        accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + ".root", "root");
      }
    }
 
    // write histos to file
    output->cd();
    hGenEvts->Write();
+   hGenEvts_ele_pt->Write();
+   hGenEvts_ele_eta->Write();
+   hGenEvts_mu_pt->Write();
+   hGenEvts_mu_eta->Write();
    hGenEvtsEleInAcc->Write();
    hGenEvtsEleInAccEB->Write();
    hGenEvtsEleInAccEE->Write();
    hGenEvtsMuInAcc->Write();
    hGenEvtsInAcc->Write();
    hTrgEvts->Write();
+   hTrgEvts_mu22ph22->Write();
+   hTrgEvts_mu22ph22_ele_pt->Write();
+   hTrgEvts_mu22ph22_ele_eta->Write();
+   hTrgEvts_mu22ph22_mu_pt->Write();
+   hTrgEvts_mu22ph22_mu_eta->Write();
+   hTrgEvts_mu40->Write();
+   hTrgEvts_mu40_ele_pt->Write();
+   hTrgEvts_mu40_ele_eta->Write();
+   hTrgEvts_mu40_mu_pt->Write();
+   hTrgEvts_mu40_mu_eta->Write();
    hRecoEvts->Write();
    hRecoEvtsEB->Write();
    hRecoEvtsEE->Write();
@@ -642,12 +981,34 @@ void AccTimesEff::Loop()
    hRecoEleEvtsEB->Write();
    hRecoEleEvtsEE->Write();
    hRecoMuEvts->Write();
+   hRecoNoTrgEvts->Write();
+   hRecoNoTrgEvtsEB->Write();
+   hRecoNoTrgEvtsEE->Write();
+   hRecoNoTrgEleEvts->Write();
+   hRecoNoTrgEleEvtsEB->Write();
+   hRecoNoTrgEleEvtsEE->Write();
+   hRecoNoTrgMuEvts->Write();
+   hFltrMatchEvts_mu22ph22_phLeg->Write();
+   hFltrMatchEvts_mu22ph22_muLeg->Write();
+   hFltrMatchEvts_mu40->Write();
+   hFltrMatchVsReco_mu22ph22_phLeg->Write();
+   hFltrMatchVsReco_mu22ph22_muLeg->Write();
+   hFltrMatchVsReco_mu40->Write();
    hAccEle->Write();
    hAccEleEB->Write();
    hAccEleEE->Write();
    hAccMu->Write();
-   hAccTimesTrgEff->Write();
    hTrgEff->Write();
+   hTrgEff_mu22ph22->Write();
+   hTrgEff_mu22ph22_ele_pt->Write();
+   hTrgEff_mu22ph22_ele_eta->Write();
+   hTrgEff_mu22ph22_mu_pt->Write();
+   hTrgEff_mu22ph22_mu_eta->Write();
+   hTrgEff_mu40->Write();
+   hTrgEff_mu40_ele_pt->Write();
+   hTrgEff_mu40_ele_eta->Write();
+   hTrgEff_mu40_mu_pt->Write();
+   hTrgEff_mu40_mu_eta->Write();
    hAccTimesEff->Write();
    hAccTimesEffEB->Write();
    hAccTimesEffEE->Write();
@@ -660,6 +1021,12 @@ void AccTimesEff::Loop()
    hEffAftTrgEleEB->Write();
    hEffAftTrgEleEE->Write();
    hEffAftTrgMu->Write();
+   hPassPtCuts->Write();
+   hPassEtaCuts->Write();
+   hPassPtEtaCuts->Write();
+   hPassPtEff->Write();
+   hPassEtaEff->Write();
+   hPassPtEtaEff->Write();
    fitFunc->Write();
    fitFuncEB->Write();
    fitFuncEE->Write();
