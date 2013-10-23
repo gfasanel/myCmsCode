@@ -50,7 +50,7 @@ void AccTimesEff::Loop()
    const bool saveAsRoot = 1;
    TString plotDir = "./plots/";
 
-   unsigned int triggerInd = 0;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
+   unsigned int triggerInd = 1;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
 
    int font = 42; //62
    // selection cuts /////////////////////////////////////////////////////////
@@ -326,7 +326,7 @@ void AccTimesEff::Loop()
          }
 
          if (GSF_passHEEP.size() == 1) {
-            if (HLT_Mu22_Photon22_CaloIdL) {
+            if (triggerBit) {
                hRecoEleEvts->Fill(hardInvMass);
                if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoEleEvtsEB->Fill(hardInvMass);
                if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoEleEvtsEE->Fill(hardInvMass);
@@ -336,7 +336,7 @@ void AccTimesEff::Loop()
             if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(hardInvMass);
          } 
          if (MU_passGOOD.size() == 1) {
-            if (HLT_Mu22_Photon22_CaloIdL) hRecoMuEvts->Fill(hardInvMass);
+            if (triggerBit) hRecoMuEvts->Fill(hardInvMass);
             hRecoNoTrgMuEvts->Fill(hardInvMass);
          }
 
