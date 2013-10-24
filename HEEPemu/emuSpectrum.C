@@ -10,42 +10,54 @@ void EmuSpectrum::Loop()
    TStopwatch timer;
    timer.Start();
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 19780.; //Lumi in pb-1   -LUMI FROM GOLDEN JSON
+   float LumiFactor = 19703.; //Lumi in pb-1
    TParameter<float> lumi("lumi", LumiFactor);
 
    // DATA file
-   TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19780pb-1.root";
+   TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19703pb-1.root";
    // pile up histogram
-   TString puFile = "file:////user/lathomas/data2012/ReReco22Jan2013/pileupHistoMuEG_Run2012ABCDReReco22Jan2013.root";
+   TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
 
    string outfileName = "emuSpec";
    //string outfileName = "test";
 
    // scale factors
-   // muon factors  https://indico.cern.ch/getFile.py/access?contribId=3&resId=0&materialId=slides&confId=214870
-   TParameter<float> trgEff("trgEff", 0.99 * 0.891); // ele L1 eff times Mu40 eff measured by Z' to mumu
-   TParameter<float> trgEffLowEta("trgEffLowEta", 0.99 * 0.941); // ele L1 eff times Mu40 eff measured by Z' to mumu for |eta|<0.9
-   TParameter<float> trgEffMidEta("trgEffMidEta", 0.99 * 0.844); // ele L1 eff times Mu40 eff measured by Z' to mumu for 0.9<|eta|<1.2
-   TParameter<float> trgEffHighEta("trgEffHighEta", 0.99 * 0.827); // ele L1 eff times Mu40 eff measured by Z' to mumu for 1.2<|eta|
-   TParameter<float> trgDataMcScaleFactor("trgDataMcScaleFactor", 0.981); // scale factor between data and mc measured by Z' to mumu for Mu40
-   TParameter<float> trgDataMcScaleFactorLowEta("trgDataMcScaleFactorLowEta", 0.981); // scale factor between data and mc measured by Z' to mumu for Mu40 for |eta|<0.9
-   TParameter<float> trgDataMcScaleFactorMidEta("trgDataMcScaleFactorMidEta", 0.962); // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
-   TParameter<float> trgDataMcScaleFactorHighEta("trgDataMcScaleFactorHighEta", 0.990); // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
+   // muon factors: mu high_pt id trk iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
+   TParameter<float> trgEffLowEta("trgEffLowEta", 0.99 * 0.929); // ele L1 eff times Mu40 eff measured by Z' to mumu for |eta|<0.9
+   TParameter<float> trgEffMidEta("trgEffMidEta", 0.99 * 0.8314); // ele L1 eff times Mu40 eff measured by Z' to mumu for 0.9<|eta|<1.2
+   TParameter<float> trgEffHighEta("trgEffHighEta", 0.99 * 0.8027); // ele L1 eff times Mu40 eff measured by Z' to mumu for 1.2<|eta|
+   TParameter<float> trgDataMcScaleFactorLowEta("trgDataMcScaleFactorLowEta", 0.976); // scale factor between data and mc measured by Z' to mumu for Mu40 for |eta|<0.9
+   TParameter<float> trgDataMcScaleFactorMidEta("trgDataMcScaleFactorMidEta", 0.954); // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
+   TParameter<float> trgDataMcScaleFactorHighEta("trgDataMcScaleFactorHighEta", 0.983); // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
    // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
-   TParameter<float> eleScaleFactorEB("eleScaleFactorEB", 0.995 * 1.001); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak, pt>35 GeV)
-   TParameter<float> eleScaleFactorEE("eleScaleFactorEE", 0.994 * 1.000); // data/MC scale for epsilon_cand (>50GeV) * epsilon_id (at Z peak, pt>35 GeV)
-   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=3&resId=0&materialId=slides&confId=214870
-   TParameter<float> muScaleFactor("muScaleFactor", 0.994);
-   TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.993); // for |eta|<0.9
-   TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.991); // for 0.9<|eta|<1.2
-   TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.998); // for 1.2<|eta|<2.1
-   TParameter<float> lumiScaleFactor("lumiScaleFactor", 0.980);  // not used // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
-   TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.993);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
-   TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.948);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
+   TParameter<float> eps_cand_sf_0p8("eps_cand_sf_0p8", 0.990); // data/MC scale for epsilon_cand (>50GeV) |eta|<0.8
+   TParameter<float> eps_cand_sf_err_0p8("eps_cand_sf_err_0p8", 0.004); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) |eta|<0.8
+   TParameter<float> eps_cand_sf_0p8to1p4442("eps_cand_sf_0p8to1p4442", 0.991); // data/MC scale for epsilon_cand (>50GeV) 0.8<|eta|<1.4442
+   TParameter<float> eps_cand_sf_err_0p8to1p4442("eps_cand_sf_err_0p8to1p4442", 0.004); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) 0.8<|eta|<1.4442
+   TParameter<float> eps_cand_sf_1p566to2p0("eps_cand_sf_1p566to2p0", 0.990); // data/MC scale for epsilon_cand (>50GeV) 1.566<|eta|<2.0
+   TParameter<float> eps_cand_sf_err_1p566to2p0("eps_cand_sf_err_1p566to2p0", 0.005); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) 1.566<|eta|<2.0
+   TParameter<float> eps_cand_sf_2p0to2p5("eps_cand_sf_2p0to2p5", 0.998); // data/MC scale for epsilon_cand (>50GeV) 2.0<|eta|<2.5
+   TParameter<float> eps_cand_sf_err_2p0to2p5("eps_cand_sf_err_2p0to2p5", 0.006); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) 2.0<|eta|<2.5
+   // HEEP eff scale factors from AN-12-415 Tables 7 and 8
+   TParameter<float> eps_heep_sf_eb_pt35("eps_heep_sf_eb_pt35", 1.001); // HEEP eff scale factor
+   TParameter<float> eps_heep_sf_err_eb_pt35("eps_heep_sf_err_eb_pt35", 0.007); // HEEP eff scale factor error
+   TParameter<float> eps_heep_sf_eb_pt100("eps_heep_sf_eb_pt100", 0.983); // HEEP eff scale factor
+   TParameter<float> eps_heep_sf_err_eb_pt100("eps_heep_sf_err_eb_pt100", 0.015); // HEEP eff scale factor error
+   TParameter<float> eps_heep_sf_ee_pt35("eps_heep_sf_eb_pt35", 1.000); // HEEP eff scale factor
+   TParameter<float> eps_heep_sf_err_ee_pt35("eps_heep_sf_err_eb_pt35", 0.007); // HEEP eff scale factor error
+   TParameter<float> eps_heep_sf_ee_pt100("eps_heep_sf_eb_pt100", 0.984); // HEEP eff scale factor
+   TParameter<float> eps_heep_sf_err_ee_pt100("eps_heep_sf_err_eb_pt100", 0.012); // HEEP eff scale factor error
+   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
+   TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.9900); // for |eta|<0.9
+   TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.9923); // for 0.9<|eta|<1.2
+   TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.9949); // for 1.2<|eta|<2.1
+   TParameter<float> muScaleFactorHighestEta("muScaleFactorHighestEta", 0.9923); // for 2.1<|eta|<2.4
+   TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.992);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
+   TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.930);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
    // global systematic errors
-   TParameter<float> systErrLumi("systErrLumi", 0.044);
-   TParameter<float> systErrEff("systErrEff", 0.007); // muon err (0.002) & ele err (0.007)
+   TParameter<float> systErrLumi("systErrLumi", 0.026);
+   TParameter<float> systErrEff("systErrEff", 0.010); // muon err (0.0057) & ele err (0.0086)
 
    bool usePUInfo = true;
    bool lowMassPuOnly = false;
@@ -71,18 +83,19 @@ void EmuSpectrum::Loop()
    // MC
    TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root");
    //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
-   input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.067));
+   //input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
+   input.push_back(make_pair(inTTbar, 245.8 / 28150723.));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.036));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3082812ev.root");
-   input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 234./211.));  // ttbar  mtt 700to1000
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.15));
+   input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 245.8/211.));  // ttbar  mtt 700to1000
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.036));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_1249111ev.root");
-   input.push_back(make_pair(inTTbar1000up, 2.954 / 1249111. * 234./211.));  // ttbar  mtt>1000
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.15));
+   input.push_back(make_pair(inTTbar1000up, 2.954 / 1249111. * 245.8/211.));  // ttbar  mtt>1000
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.036));
    storeGenMTtbar.push_back(1);
 
    TFile *inZtt = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3295238ev.root");
@@ -126,23 +139,23 @@ void EmuSpectrum::Loop()
    storeGenMTtbar.push_back(0);
 
    TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_8288533ev.root");
-   input.push_back(make_pair(inTTbarMg, 234./ 8288533.)); //TTjets from MadGraph
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.067));
+   input.push_back(make_pair(inTTbarMg, 245.8/ 8288533.)); //TTjets from MadGraph
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_16365457ev.root");
-   input.push_back(make_pair(inTTbar22l, 13.43 / 16365457. * 234./(13.43+53.2+53.4))); //TT to 2l
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.067));
+   input.push_back(make_pair(inTTbar22l, 13.43 / 16365457. * 245.8/(13.43+53.2+53.4))); //TT to 2l
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A_ext-v1_AODSIM_gct1_46_25424818ev.root");
-   input.push_back(make_pair(inTTbar21l, 53.2 / 25424818. * 234./(13.43+53.2+53.4))); //TT to 1l1jet
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.067));
+   input.push_back(make_pair(inTTbar21l, 53.2 / 25424818. * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_196046ev.root");
-   input.push_back(make_pair(inTTW, 0.2149 / 196046.)); //TTW
-   systErrMCs.Add(new TParameter<float>("systErrMcTtW", 0.));
+   input.push_back(make_pair(inTTW, 0.232 / 196046.)); //TTW
+   systErrMCs.Add(new TParameter<float>("systErrMcTtW", 0.32));
    storeGenMTtbar.push_back(1);
 
    TFile *inTTWW = TFile::Open("file:////user/treis/mcsamples/TTWWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_217820ev.root");
@@ -159,8 +172,8 @@ void EmuSpectrum::Loop()
    //systErrMCs.Add(new TParameter<float>("systErrMcWJets100up", 0.05));
    //storeGenMTtbar.push_back(0);
 
-   TFile *inSig1 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
-   input.push_back(make_pair(inSig1, 0.000239 / 10000.)); //Signal
+   TFile *inSig1 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9400ev.root");
+   input.push_back(make_pair(inSig1, 0.000239 / 9400.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig1", 0.));
    storeGenMTtbar.push_back(0);
 
@@ -169,7 +182,7 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcSig2", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig3 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig3 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9999ev.root");
    input.push_back(make_pair(inSig3, 3.867e-5 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig3", 0.));
    storeGenMTtbar.push_back(0);
@@ -254,8 +267,8 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcSig19", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig20 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   input.push_back(make_pair(inSig20, 4.735e-7 / 9999.)); //Signal with no acceptance cuts
+   TFile *inSig20 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
+   input.push_back(make_pair(inSig20, 4.735e-7 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig20", 0.));
    storeGenMTtbar.push_back(0);
 
@@ -264,8 +277,8 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcSig21", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig22 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9898ev.root");
-   input.push_back(make_pair(inSig22, 2.197e-8 / 9898.)); //Signal with no acceptance cuts
+   TFile *inSig22 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
+   input.push_back(make_pair(inSig22, 2.197e-8 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig22", 0.));
    storeGenMTtbar.push_back(0);
 
@@ -321,20 +334,31 @@ void EmuSpectrum::Loop()
 
    // write parameters
    lumi.Write();
-   trgEff.Write();
    trgEffLowEta.Write();
    trgEffMidEta.Write();
    trgEffHighEta.Write();
-   trgDataMcScaleFactor.Write();
    trgDataMcScaleFactorLowEta.Write();
    trgDataMcScaleFactorMidEta.Write();
    trgDataMcScaleFactorHighEta.Write();
    lumiScaleFactor.Write();
    lumiScaleFactorEB.Write();
    lumiScaleFactorEE.Write();
-   eleScaleFactorEB.Write();
-   eleScaleFactorEE.Write();
-   muScaleFactor.Write();
+   eps_cand_sf_0p8.Write();
+   eps_cand_sf_err_0p8.Write();
+   eps_cand_sf_0p8to1p4442.Write();
+   eps_cand_sf_err_0p8to1p4442.Write();
+   eps_cand_sf_1p566to2p0.Write();
+   eps_cand_sf_err_1p566to2p0.Write();
+   eps_cand_sf_2p0to2p5.Write();
+   eps_cand_sf_err_2p0to2p5.Write();
+   eps_heep_sf_eb_pt35.Write();
+   eps_heep_sf_err_eb_pt35.Write();
+   eps_heep_sf_eb_pt100.Write();
+   eps_heep_sf_err_eb_pt100.Write();
+   eps_heep_sf_ee_pt35.Write();
+   eps_heep_sf_err_ee_pt35.Write();
+   eps_heep_sf_ee_pt100.Write();
+   eps_heep_sf_err_ee_pt100.Write();
    muScaleFactorLowEta.Write();
    muScaleFactorMidEta.Write();
    muScaleFactorHighEta.Write();
@@ -381,6 +405,11 @@ void EmuSpectrum::Loop()
       int muCharge;
       float totWeight = 1.;
       float puWeight = 1.;
+      float trgEff = 1.;
+      float trgEffSf = 1.;
+      float eleEffSf = 1.;
+      float eleEffSfErr = 0.;
+      float muEffSf = 1.;
       TTree *emuTree = new TTree("emuTree_" + suffix[p], "emuTree_" + suffix[p]);
       emuTree->Branch("runnr", &runnumber, "runnr/i");
       emuTree->Branch("eventnr", &eventnumber, "eventnr/i");
@@ -393,6 +422,11 @@ void EmuSpectrum::Loop()
       emuTree->Branch("muCharge", &muCharge, "muCharge/I");
       emuTree->Branch("weight", &totWeight, "weight/F");
       emuTree->Branch("puWeight", &puWeight, "puWeight/F");
+      emuTree->Branch("trgEff", &trgEff, "trgEff/F");
+      emuTree->Branch("trgEffSf", &trgEffSf, "trgEffSf/F");
+      emuTree->Branch("eleEffSf", &eleEffSf, "eleEffSf/F");
+      emuTree->Branch("eleEffSfErr", &eleEffSfErr, "eleEffSfErr/F");
+      emuTree->Branch("muEffSf", &muEffSf, "muEffSf/F");
       if (storeGenMTtbar[p]) emuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
       // control variables
       float nVtx = 0.;
@@ -785,18 +819,71 @@ void EmuSpectrum::Loop()
             float CombRelIso = (muon_emIso03[MU_passGOOD[0]] + muon_hadIso03[MU_passGOOD[0]] + muon_trackIso03[MU_passGOOD[0]]) / muon_pt[MU_passGOOD[0]];
 
             // set correction factors according to detector region
-            float Elec_ScaleFactor = 1.;
+            float heepEffSf = 1.;
+            float heepEffSfErr = 0.;
             float Lumi_ScaleFactor = 1.;
             if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.442) {
-              Elec_ScaleFactor = eleScaleFactorEB.GetVal();
               Lumi_ScaleFactor = lumiScaleFactorEB.GetVal();
+              if (gsf_gsfet[GSF_passHEEP[0]] > 35.) {
+                heepEffSf = eps_heep_sf_eb_pt35.GetVal();
+                heepEffSfErr = eps_heep_sf_err_eb_pt35.GetVal();
+              }
+              if (gsf_gsfet[GSF_passHEEP[0]] > 100.) {
+                heepEffSf = eps_heep_sf_eb_pt100.GetVal();
+                heepEffSfErr = eps_heep_sf_err_eb_pt100.GetVal();
+              }
             }
             else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 2.5) {
-              Elec_ScaleFactor = eleScaleFactorEE.GetVal();
               Lumi_ScaleFactor = lumiScaleFactorEE.GetVal();
+              if (gsf_gsfet[GSF_passHEEP[0]] > 35.) {
+                heepEffSf = eps_heep_sf_ee_pt35.GetVal();
+                heepEffSfErr = eps_heep_sf_err_ee_pt35.GetVal();
+              }
+              if (gsf_gsfet[GSF_passHEEP[0]] > 100.) {
+                heepEffSf = eps_heep_sf_ee_pt100.GetVal();
+                heepEffSfErr = eps_heep_sf_err_ee_pt100.GetVal();
+              }
             }
+            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 0.8) {
+              eleEffSf = heepEffSf * eps_cand_sf_0p8.GetVal();
+              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8.GetVal()*eps_cand_sf_err_0p8.GetVal());
+            }
+            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.442) {
+              eleEffSf = heepEffSf * eps_cand_sf_0p8to1p4442.GetVal();
+              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8to1p4442.GetVal()*eps_cand_sf_err_0p8to1p4442.GetVal());
+            }
+            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 2.0) {
+              eleEffSf = heepEffSf * eps_cand_sf_1p566to2p0.GetVal();
+              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_1p566to2p0.GetVal()*eps_cand_sf_err_1p566to2p0.GetVal());
+            }
+            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 2.0 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 2.5) {
+              eleEffSf = heepEffSf * eps_cand_sf_2p0to2p5.GetVal();
+              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_2p0to2p5.GetVal()*eps_cand_sf_err_2p0to2p5.GetVal());
+            }
+            // muon scale factor
+            if (fabs(muon_eta[MU_passGOOD[0]]) < 0.9) {
+              muEffSf = muScaleFactorLowEta.GetVal();
+              trgEffSf = trgDataMcScaleFactorLowEta.GetVal();
+              trgEff = trgEffLowEta.GetVal();
+            }
+            else if (fabs(muon_eta[MU_passGOOD[0]]) < 1.2) {
+              muEffSf = muScaleFactorMidEta.GetVal();
+              trgEffSf = trgDataMcScaleFactorMidEta.GetVal();
+              trgEff = trgEffMidEta.GetVal();
+            }
+            else if (fabs(muon_eta[MU_passGOOD[0]]) < 2.1) {
+              muEffSf = muScaleFactorHighEta.GetVal();
+              trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
+              trgEff = trgEffHighEta.GetVal();
+            }
+            else if (fabs(muon_eta[MU_passGOOD[0]]) < 2.4) {
+              muEffSf = muScaleFactorHighestEta.GetVal();
+              trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
+              trgEff = trgEffHighEta.GetVal();
+            }
+
             if (lowMassPuOnly && invMass > puMassCut) weight = 1.;
-            if (p > 0) weight *= Elec_ScaleFactor * muScaleFactor.GetVal() * Lumi_ScaleFactor * trgDataMcScaleFactor.GetVal();
+            if (p > 0) weight *= eleEffSf * muEffSf * Lumi_ScaleFactor * trgEffSf;
 
             int jetsPt20 = 0;
             int jetsPt30 = 0;
@@ -1069,18 +1156,11 @@ EmuSpectrum::PassFRPreSel(const int &n)
 double
 EmuSpectrum::FakeRate (const float& et, const float& eta)
 {
-  // fake rate 19.3/fb
-  if (fabs(eta) < 1.5) {
-    if (et < 189.3) return 0.0179 - 0.000056 * et;
-    return 0.0073;
-  } else if (abs(eta) < 2.0) {
-    if (et < 96.6) return exp(-2.31 - 0.011 * et);
-    else if (et < 178.0) return 0.040 - 0.000059 * et;
-    return 0.0295;
-  } else if (abs(eta) < 2.5) {
-    if(et < 115.4) return 0.099 - 0.00035 * et;
-    else return 0.0586;
-  } else return 0;
+  // fake rate full 2012 rereco 19.7/fb
+  if (fabs(eta) < 1.5) return 0.0068;
+  else if (abs(eta) < 2.0) return 0.0263;
+  else if (abs(eta) < 2.5) return 0.0533;
+  else return 0.; 
 }
 
 int EmuSpectrum::Trigger(int &prescale, unsigned int *trig, const int &selector)

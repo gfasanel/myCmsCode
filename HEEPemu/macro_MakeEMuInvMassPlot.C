@@ -49,16 +49,14 @@ TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brNam
 void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
-  //TFile input("./emuSpec_19619pb-1.root", "open");
-  TFile input("test_19619pb-1.root", "open");
+  TFile input("./emuSpec_19703pb-1.root", "open");
+  //TFile input("test_19619pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
   const int nBins = 75;
-  const bool usePu = 1;
-  const bool useWeight = 1;
-  const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
+  const int qcdEst = 1; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
 
   int eRegion = 2; // electron region EB(0), EE(1), EB+EE(2)
 
@@ -618,14 +616,14 @@ void macro_MakeEMuInvMassPlot()
       tex->SetLineWidth(2);
       if (groupedPlot) {
         tex->SetTextSize(0.047);
-        if (prelim) tex->DrawLatex(0.467, 0.846, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-        else tex->DrawLatex(0.518, 0.846, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (prelim) tex->DrawLatex(0.467, 0.846, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+        else tex->DrawLatex(0.518, 0.846, "CMS, 8 TeV, 19.7 fb^{-1}");
         if (eRegion == 0) tex->DrawLatex(0.275, 0.846, "e in barrel");
         if (eRegion == 1) tex->DrawLatex(0.275, 0.846, "e in endcap");
       } else {
         tex->SetTextSize(0.042);
-        if (prelim) tex->DrawLatex(0.325, 0.853, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-        else tex->DrawLatex(0.405, 0.853, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (prelim) tex->DrawLatex(0.325, 0.853, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+        else tex->DrawLatex(0.405, 0.853, "CMS, 8 TeV, 19.7 fb^{-1}");
         if (eRegion == 0) tex->DrawLatex(0.325, 0.775, "e in barrel");
         if (eRegion == 1) tex->DrawLatex(0.325, 0.775, "e in endcap");
       }
@@ -714,8 +712,8 @@ void macro_MakeEMuInvMassPlot()
       if (!plotPullBelowSpec) {
         if (groupedPlot) tex->SetTextSize(0.047 * fontScaleBot);
         else tex->SetTextSize(0.042 * fontScaleBot);
-        if (prelim) tex->DrawLatex(0.150, 0.853, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-        else tex->DrawLatex(0.150, 0.853, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (prelim) tex->DrawLatex(0.150, 0.853, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+        else tex->DrawLatex(0.150, 0.853, "CMS, 8 TeV, 19.7 fb^{-1}");
         tex->SetTextSize(0.042 * fontScaleBot);
         tex->DrawLatex(0.150, 0.764, Form("#chi^{2} / ndf: %.2f / %i", f0->GetChisquare(), f0->GetNDF()));
         tex->DrawLatex(0.150, 0.720, Form("p0: %.4f #pm %0.4f", f0->GetParameter(0), f0->GetParError(0)));
@@ -1285,11 +1283,6 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (flags & 1<<9) charOffset += 2;
     userScale *= ((TParameter<float> *)mcWeights->FindObject(treeName + charOffset))->GetVal();
   }
-  if (flags & 1<<5) userScale *= ((TParameter<float> *)input->Get("trgEff"))->GetVal();
-  if (flags & 1<<4) userScale *= ((TParameter<float> *)input->Get("trgDataMcScaleFactor"))->GetVal();
-  if (flags & 1<<1) userScale *= ((TParameter<float> *)input->Get("muScaleFactor"))->GetVal();
-  float eleScaleFactorEB = ((TParameter<float> *)input->Get("eleScaleFactorEB"))->GetVal();
-  float eleScaleFactorEE = ((TParameter<float> *)input->Get("eleScaleFactorEE"))->GetVal();
   float lumiScaleFactorEB = ((TParameter<float> *)input->Get("lumiScaleFactorEB"))->GetVal();
   float lumiScaleFactorEE = ((TParameter<float> *)input->Get("lumiScaleFactorEE"))->GetVal();
 
@@ -1309,6 +1302,10 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   int evtRegion;
   float cutVar = 0.;
   float fakeRate = 0.;
+  float trgEff = 1.;
+  float trgEffSf = 1.;
+  float eleEffSf = 1.;
+  float muEffSf = 1.;
   tree->SetBranchStatus("*",0); //disable all branches
   tree->SetBranchStatus(brName,1);
   tree->SetBranchAddress(brName, &var);
@@ -1334,6 +1331,22 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     tree->SetBranchStatus(cutVariable,1);
     tree->SetBranchAddress(cutVariable, &cutVar);
   }
+  if (flags & 1<<5) {
+    tree->SetBranchStatus("trgEff",1);
+    tree->SetBranchAddress("trgEff", &trgEff);
+  }
+  if (flags & 1<<4) {
+    tree->SetBranchStatus("trgEffSf",1);
+    tree->SetBranchAddress("trgEffSf", &trgEffSf);
+  }
+  if (flags & 1<<2) {
+    tree->SetBranchStatus("eleEffSf",1);
+    tree->SetBranchAddress("eleEffSf", &eleEffSf);
+  }
+  if (flags & 1<<1) {
+    tree->SetBranchStatus("muEffSf",1);
+    tree->SetBranchAddress("muEffSf", &muEffSf);
+  }
   if (flags & 1<<9) {
     tree->SetBranchStatus("passHeep",1);
     tree->SetBranchStatus("fakeRate",1);
@@ -1353,9 +1366,11 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (evtRegion == 1 && region == 0) continue;
 
     float scaleFactor = userScale;
-    // set lumi and electron scalefactor according to detector region
-    if (evtRegion == 0 && flags & 1<<2) scaleFactor *= eleScaleFactorEB;
-    if (evtRegion == 1 && flags & 1<<2) scaleFactor *= eleScaleFactorEE;
+    if (flags & 1<<5) scaleFactor *= trgEff;
+    if (flags & 1<<4) scaleFactor *= trgEffSf;
+    if (flags & 1<<2) scaleFactor *= eleEffSf;
+    if (flags & 1<<1) scaleFactor *= muEffSf;
+    // set lumi according to detector region
     if (evtRegion == 0 && flags & 1<<3) scaleFactor *= lumiScaleFactorEB;
     if (evtRegion == 1 && flags & 1<<3) scaleFactor *= lumiScaleFactorEE;
 
