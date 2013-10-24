@@ -167,8 +167,7 @@ void InvariantMass::Loop()
   const unsigned int DY2000 = 10;
 
   TFile *inTTBar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root");
-  //input.push_back(make_pair(inTTBar, 225.197 / 28150723.));
-  input.push_back(make_pair(inTTBar, 234 / 28150723.));
+  input.push_back(make_pair(inTTBar, 245.8 / 28150723.));
   inFileTag.push_back("ttbar");
   const unsigned int TTBAR = 11;
 
