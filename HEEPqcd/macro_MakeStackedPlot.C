@@ -19,7 +19,7 @@ void macro_MakeStackedPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
   // luminosity of data
-  const float lumi = 14818.;
+  const float lumi = 19712.;
 
   string inputFilePrefix = "invMassHistos";  // lumi and .root will be added
   
@@ -118,20 +118,20 @@ void macro_MakeStackedPlot()
       input.cd("combinations");
       TH1F *histoBgQCD = (TH1F *)gDirectory->Get("histoGsfGsfCorr" + acroSuffix[p]);
       TH1F *histoBgDY = (TH1F *)gDirectory->Get("histoDYCombined" + acroSuffix[p]);
-      input.cd("WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_45_76102995ev");
+      input.cd("WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_76102995ev");
       TH1F *histoBgWjet = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
-      input.cd("TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_45_28150723ev");
+      input.cd("TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev");
       TH1F *histoBgTtbar = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
-      input.cd("DYToTauTau_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_3295238ev");
+      input.cd("DYToTauTau_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3295238ev");
       TH1F *histoBgDYTT = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
-      input.cd("WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_10000431ev");
+      input.cd("WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000431ev");
       TH1F *histoBgWW = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
-      input.cd("WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_10000283ev");
+      input.cd("WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000283ev");
       TH1F *histoBgWZ = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
-      input.cd("T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_45_991118ev");
+      input.cd("T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_991118ev");
       TH1F *histoBgTW = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
       sStream.str("");
-      sStream << "Photon_Run2012A+DoublePhotonHighPt_Run2012B+C+D_13Jul2012+06Aug2012+PromptReco-v1+v2_Cert_190456-206098_gct1_41_14818pb-1";
+      sStream << "Photon_RunA_DoublePhotonHighPt_RunBCD_ReReco22Jan2013_19712pb-1";
       //sStream << lumi << "pb-1";
       input.cd(sStream.str().c_str());
       TH1F *histoData = (TH1F *)gDirectory->Get("histoHeepHeepMass" + acroSuffix[p]);
@@ -266,7 +266,7 @@ void macro_MakeStackedPlot()
       }
     
       sStream.str("");
-      sStream << "#sqrt{s} = 8TeV,  #int L dt = " << lumi << "pb^{-1}";
+      sStream << "CMS Preliminary, 8 TeV, " << lumi << "pb^{-1}";
       TPaveLabel *label0 = new TPaveLabel(0.6, 0.7, 0.9, 0.8, sStream.str().c_str(), "brNDC");
       label0->SetFillColor(0);
       label0->SetFillStyle(0);
@@ -274,7 +274,7 @@ void macro_MakeStackedPlot()
       label0->SetTextSize(0.30);
       label0->SetTextFont(font);
       label0->Draw("sames");
-      TPaveLabel *label1 = new TPaveLabel(0.6, 0.8, 0.9, 0.9, "CMS preliminary", "brNDC");
+      TPaveLabel *label1 = new TPaveLabel(0.6, 0.8, 0.9, 0.9, "CMS Preliminary", "brNDC");
       label1->SetFillColor(0);
       label1->SetFillStyle(0);
       label1->SetBorderSize(0);
@@ -288,7 +288,7 @@ void macro_MakeStackedPlot()
       legend->SetBorderSize(0);
       legend->SetFillStyle(0);
     
-      legend->AddEntry(histoDataRebinned, "DATA", "lep");
+      legend->AddEntry(histoDataRebinned, "data", "lep");
       legend->AddEntry(histoBgDYRebinned, "Z/#gamma* #rightarrow ee", "f");
       legend->AddEntry(histoBgTtbarRebinned, "t#bar{t}", "f");
       legend->AddEntry(histoBgDYTTRebinned, "Z/#gamma* #rightarrow #tau#tau", "f");
