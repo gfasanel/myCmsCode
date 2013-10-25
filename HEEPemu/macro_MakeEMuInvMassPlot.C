@@ -74,7 +74,7 @@ void macro_MakeEMuInvMassPlot()
   const bool logPlotX = 0;
   const bool logPlotY = 1;
   const bool prelim = 1;
-  const bool groupedPlot = 0;
+  const bool groupedPlot = 1;
   const bool overflowBin = 1;
 
   float xRangeMin = 60.;
@@ -86,9 +86,9 @@ void macro_MakeEMuInvMassPlot()
   float yRangeMinRatio[3] = {-0.7, -0.7, -0.7};
   float yRangeMaxRatio[3] = {0.7, 0.7, 0.7};
   float fitMin = xRangeMin;
-  float fitMax = 1100.; // set to highest bin with a data point
-  float xRangeMinRatio = fitMin;
-  float xRangeMaxRatio = fitMax;
+  float fitMax = 1200.; // set to highest bin with a data point
+  float xRangeMinRatio = xRangeMin;
+  float xRangeMaxRatio = xRangeMax;
 
   // output file formats
   const bool savePull = 0;
@@ -462,8 +462,8 @@ void macro_MakeEMuInvMassPlot()
         bgStackGrouped->GetXaxis()->SetLabelSize(0.05);
         bgStackGrouped->GetXaxis()->SetMoreLogLabels();
         bgStackGrouped->GetXaxis()->SetNoExponent();
-        //bgStackGrouped->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
-        bgStackGrouped->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
+        bgStackGrouped->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
+        //bgStackGrouped->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
         if (j == 1) bgStackGrouped->GetYaxis()->SetTitle("Events #geq " + xAxisTitle[k]);
         else bgStackGrouped->GetYaxis()->SetTitle("Events / GeV");
         bgStackGrouped->GetYaxis()->SetTitleFont(font);
@@ -541,8 +541,8 @@ void macro_MakeEMuInvMassPlot()
         bgStack->GetXaxis()->SetLabelSize(0.05);
         bgStack->GetXaxis()->SetMoreLogLabels();
         bgStack->GetXaxis()->SetNoExponent();
-        //bgStack->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
-        bgStack->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
+        bgStack->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
+        //bgStack->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
         if (j == 1) bgStack->GetYaxis()->SetTitle("Events #geq " + xAxisTitle[k]);
         else bgStack->GetYaxis()->SetTitle("Events / GeV");
         bgStack->GetYaxis()->SetTitleFont(font);
