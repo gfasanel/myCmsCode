@@ -75,7 +75,7 @@ void macro_MakeEMuInvMassPlot()
   const bool logPlotY = 1;
   const bool prelim = 1;
   const bool groupedPlot = 1;
-  const bool overflowBin = 1;
+  const bool overflowBin = 0;
 
   float xRangeMin = 60.;
   float xRangeMax = 1200.;
@@ -594,8 +594,8 @@ void macro_MakeEMuInvMassPlot()
       }
       legend.AddEntry(emuMass_data.back(), "DATA");
       if (groupedPlot) {
-        legend.AddEntry(emuMass_ttLike.back(), "t#bar{t} + other prompt leptons" ,"F");
-        legend.AddEntry(emuMass_fakePairs.back(), "fake e#mu pairs" ,"F");
+        legend.AddEntry(emuMass_ttLike.back(), "t#bar{t}, tW, VV, #tau#tau" ,"F");
+        legend.AddEntry(emuMass_fakePairs.back(), "#mu#mu, ee, W+jets, jets (data)" ,"F");
       } else {
         legend.AddEntry(emuMass_ttbar.back(), "t#bar{t}" ,"F");
         legend.AddEntry(emuMass_ztautau.back(), "#gamma/Z#rightarrow#tau#tau" ,"F");
@@ -1013,6 +1013,7 @@ void macro_MakeEMuInvMassPlot()
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "\\begin{table}[tbh]" << endl;
   cout << "\\centering" << endl;
+  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
@@ -1037,7 +1038,6 @@ void macro_MakeEMuInvMassPlot()
           emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400, -1, calcQcdErr));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
-  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
   cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\end{table}" << endl;
 
@@ -1047,6 +1047,7 @@ void macro_MakeEMuInvMassPlot()
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "\\begin{table}[tbh]" << endl;
   cout << "\\centering" << endl;
+  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
@@ -1079,7 +1080,6 @@ void macro_MakeEMuInvMassPlot()
           CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400, -1, calcQcdErr));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
-  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
   cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\end{table}" << endl;
 
@@ -1089,6 +1089,7 @@ void macro_MakeEMuInvMassPlot()
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "\\begin{table}[b]" << endl;
   cout << "\\centering" << endl;
+  cout << "\\caption{Number of $e\\mu$ events with invariant mass in different regions and with different charge combinations.}" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline\\hline" << endl;
   cout << "Source & \\multicolumn{9}{c|}{number of events} \\\\" << endl;
@@ -1147,7 +1148,6 @@ void macro_MakeEMuInvMassPlot()
 
   cout << "\\hline\\hline" << endl;
   cout << "\\end{tabular}" << endl;
-  cout << "\\caption{Number of $e\\mu$ events with invariant mass in different regions and with different charge combinations.}" << endl;
   cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\end{table}" << endl;
 }
