@@ -125,6 +125,7 @@ void setTDRStyle() {
   tdrStyle->SetTitleYOffset(1.25);
   // tdrStyle->SetTitleOffset(1.1, "Y"); // Another way to set the Offset
 
+  tdrStyle->SetTextFont(font);
 // For the axis labels:
 
   tdrStyle->SetLabelColor(1, "XYZ");

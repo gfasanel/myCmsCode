@@ -340,7 +340,6 @@ void EmuSpectrum::Loop()
    trgDataMcScaleFactorLowEta.Write();
    trgDataMcScaleFactorMidEta.Write();
    trgDataMcScaleFactorHighEta.Write();
-   lumiScaleFactor.Write();
    lumiScaleFactorEB.Write();
    lumiScaleFactorEE.Write();
    eps_cand_sf_0p8.Write();

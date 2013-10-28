@@ -464,10 +464,14 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     sigmaHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+    sigmaHistos[reg]->GetXaxis()->SetTitleFont(font);
     sigmaHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+    sigmaHistos[reg]->GetXaxis()->SetLabelFont(font);
     sigmaHistos[reg]->GetYaxis()->SetTitle("#sqrt{#sigma_{fit}^{2}+#sigma_{extra}^{2}} (%)");
-    sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    //sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    sigmaHistos[reg]->GetYaxis()->SetTitleFont(font);
     sigmaHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+    sigmaHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend->SetTextSize(0.04);
@@ -530,10 +534,14 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     dmHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     dmHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+    dmHistos[reg]->GetXaxis()->SetTitleFont(font);
     dmHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+    dmHistos[reg]->GetXaxis()->SetLabelFont(font);
     dmHistos[reg]->GetYaxis()->SetTitle("#Deltam_{CB} (GeV)");
     dmHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    dmHistos[reg]->GetYaxis()->SetTitleFont(font);
     dmHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+    dmHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend2 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend2->SetTextSize(0.04);
@@ -576,10 +584,14 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     acbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     acbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+    acbHistos[reg]->GetXaxis()->SetTitleFont(font);
     acbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+    acbHistos[reg]->GetXaxis()->SetLabelFont(font);
     acbHistos[reg]->GetYaxis()->SetTitle("a_{CB}");
     acbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    acbHistos[reg]->GetYaxis()->SetTitleFont(font);
     acbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+    acbHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend3 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend3->SetTextSize(0.04);
@@ -622,10 +634,14 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     ncbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+    ncbHistos[reg]->GetXaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+    ncbHistos[reg]->GetXaxis()->SetLabelFont(font);
     ncbHistos[reg]->GetYaxis()->SetTitle("n_{CB}");
     ncbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    ncbHistos[reg]->GetYaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+    ncbHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend4 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend4->SetTextSize(0.04);
@@ -1016,10 +1032,14 @@ void HighMassRes::CompareCryBall()
 
     sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     sigmaHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+    sigmaHistos[reg]->GetXaxis()->SetTitleFont(font);
     sigmaHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+    sigmaHistos[reg]->GetXaxis()->SetLabelFont(font);
     sigmaHistos[reg]->GetYaxis()->SetTitle("#sqrt{#sigma_{fit}^{2}+#sigma_{extra}^{2}} (%)");
-    sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    //sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    sigmaHistos[reg]->GetYaxis()->SetTitleFont(font);
     sigmaHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+    sigmaHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend = new TLegend(0.577, 0.645, 0.951, 0.935);
     legend->SetTextSize(0.04);
@@ -1087,10 +1107,14 @@ void HighMassRes::CompareCryBall()
 
     dmHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     dmHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+    dmHistos[reg]->GetXaxis()->SetTitleFont(font);
     dmHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+    dmHistos[reg]->GetXaxis()->SetLabelFont(font);
     dmHistos[reg]->GetYaxis()->SetTitle("#Deltam_{CB} (GeV)");
     dmHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    dmHistos[reg]->GetYaxis()->SetTitleFont(font);
     dmHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+    dmHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend2 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend2->SetTextSize(0.04);
@@ -1179,10 +1203,14 @@ void HighMassRes::CompareCryBall()
 
     ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     ncbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+    ncbHistos[reg]->GetXaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+    ncbHistos[reg]->GetXaxis()->SetLabelFont(font);
     ncbHistos[reg]->GetYaxis()->SetTitle("n_{CB}");
     ncbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+    ncbHistos[reg]->GetYaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+    ncbHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend4 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend4->SetTextSize(0.04);
