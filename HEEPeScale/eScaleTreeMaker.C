@@ -513,7 +513,7 @@ EScaleTreeMaker::PassHEEP(const int &n)
 
   // HEEP v4.0
   // barrel
-  float bar_et = 35.;
+  float bar_et = 25.;
   float bar_hoE = 0.05;
   float bar_DEta = 0.005;
   float bar_DPhi = 0.06;
@@ -527,7 +527,7 @@ EScaleTreeMaker::PassHEEP(const int &n)
   int bar_missInnerHits = 0;
 
   // endcap
-  float end_et = 35.;
+  float end_et = 25.;
   float end_hoE = 0.05;
   float end_DEta = 0.007 ;
   float end_DPhi = 0.06;
