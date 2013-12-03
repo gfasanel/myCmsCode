@@ -32,6 +32,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+#include "DataFormats/HLTReco/interface/TriggerObject.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
@@ -62,9 +64,11 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       bool PassHeep(reco::GsfElectron const&, double &);
+      bool MatchTrgFltr(const edm::Event&, reco::GsfElectron const&, const char*);
       // ----------member data ---------------------------
       edm::InputTag electronCollTag_;
       edm::InputTag trgResultsTag_;
+      edm::InputTag trgEventTag_;
       std::vector<edm::ParameterSet> trgVPSet_;
 
       float deltaEtCut = 15.;
@@ -73,13 +77,18 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       HLTConfigProvider hltConfig;
       std::vector<unsigned int> trgIndices;
       std::vector<unsigned int> refTrgIndices;
+      std::vector<unsigned int> tpTrgIndices;
       std::vector<std::string> trgNames;
       std::vector<std::string> refTrgNames;
       std::vector<bool> trgInvs;
       std::vector<unsigned int> trgMinEles;
       std::vector<std::vector<double> > trgMinEtss;
+      std::vector<std::string> tpTrgNames;
+      std::vector<std::string> tagFilterNames;
+      std::vector<std::string> probeFilterNames;
 
       // histograms
+      TH1F* h_gsfEle_et;
       TH1F* h_nHeep;
       TH1F* h_total;
       TH1F* h_refTrgd;
@@ -104,6 +113,41 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       std::vector<TH1F*> v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd;
       std::vector<TH1F*> v_h_nPassHeep_nMinus1PassEt_vsEt_trgd;
 
+      TH1F* hTp_tags;
+      TH1F* hTp_probes;
+      TH1F* hTp_allProbesGsf;
+      TH1F* hTp_passProbesGsf;
+      TH1F* hTp_allProbesGsf_et25;
+      TH1F* hTp_passProbesGsf_et25;
+      TH1F* hTp_allProbesGsf_et33;
+      TH1F* hTp_passProbesGsf_et33;
+      TH1F* hTp_allProbesGsf_et35;
+      TH1F* hTp_passProbesGsf_et35;
+      TH1F* hTp_allProbesGsf_et80;
+      TH1F* hTp_passProbesGsf_et80;
+      TH1F* hTp_allProbesGsf_et100;
+      TH1F* hTp_passProbesGsf_et100;
+      TH1F* hTp_allProbesGsf_withEtCut;
+      TH1F* hTp_passProbesGsf_withEtCut;
+      std::vector<TH1F*> v_hTp_allProbesGsf_et;
+      std::vector<TH1F*> v_hTp_passProbesGsf_et;
+      TH1F* hTp_allProbesHeep;
+      TH1F* hTp_passProbesHeep;
+      TH1F* hTp_allProbesHeep_et25;
+      TH1F* hTp_passProbesHeep_et25;
+      TH1F* hTp_allProbesHeep_et33;
+      TH1F* hTp_passProbesHeep_et33;
+      TH1F* hTp_allProbesHeep_et35;
+      TH1F* hTp_passProbesHeep_et35;
+      TH1F* hTp_allProbesHeep_et80;
+      TH1F* hTp_passProbesHeep_et80;
+      TH1F* hTp_allProbesHeep_et100;
+      TH1F* hTp_passProbesHeep_et100;
+      TH1F* hTp_allProbesHeep_withEtCut;
+      TH1F* hTp_passProbesHeep_withEtCut;
+      std::vector<TH1F*> v_hTp_allProbesHeep_et;
+      std::vector<TH1F*> v_hTp_passProbesHeep_et;
+
       // ratio histograms
       TH1F* hRatio_nPassHeep_trgdVsTotal;
       TH1F* hRatio_nPassHeep_notTrgdVsTotal;
@@ -120,6 +164,22 @@ class HltGsfEleAnalyser : public edm::EDAnalyzer {
       TH1F* hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd;
       std::vector<TH1F*> v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal;
       std::vector<TH1F*> v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd;
+      TH1F* hTpRatio_passProbesGsf_vs_allProbesGsf;
+      TH1F* hTpRatio_passProbesGsf_et25_vs_allProbesGsf_et25;
+      TH1F* hTpRatio_passProbesGsf_et33_vs_allProbesGsf_et33;
+      TH1F* hTpRatio_passProbesGsf_et35_vs_allProbesGsf_et35;
+      TH1F* hTpRatio_passProbesGsf_et80_vs_allProbesGsf_et80;
+      TH1F* hTpRatio_passProbesGsf_et100_vs_allProbesGsf_et100;
+      TH1F* hTpRatio_passProbesGsf_withEtCut_vs_allProbesGsf_withEtCut;
+      std::vector<TH1F*> v_hTpRatio_passProbesGsf_et_vs_allProbesGsf_et;
+      TH1F* hTpRatio_passProbesHeep_vs_allProbesHeep;
+      TH1F* hTpRatio_passProbesHeep_et25_vs_allProbesHeep_et25;
+      TH1F* hTpRatio_passProbesHeep_et33_vs_allProbesHeep_et33;
+      TH1F* hTpRatio_passProbesHeep_et35_vs_allProbesHeep_et35;
+      TH1F* hTpRatio_passProbesHeep_et80_vs_allProbesHeep_et80;
+      TH1F* hTpRatio_passProbesHeep_et100_vs_allProbesHeep_et100;
+      TH1F* hTpRatio_passProbesHeep_withEtCut_vs_allProbesHeep_withEtCut;
+      std::vector<TH1F*> v_hTpRatio_passProbesHeep_et_vs_allProbesHeep_et;
 
       TGraphAsymmErrors* gEff_trgdVsRefTrgd;
       TGraphAsymmErrors* gEff_notTrgdRefTrgdVsRefTrgd;
@@ -156,6 +216,7 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
    //now do what ever initialization is needed
    electronCollTag_ = iConfig.getParameter<edm::InputTag>("electronCollTag");
    trgResultsTag_ = iConfig.getParameter<edm::InputTag>("trgResultsTag");
+   trgEventTag_ = iConfig.getParameter<edm::InputTag>("trgEventTag");
    trgVPSet_ = iConfig.getUntrackedParameter<std::vector<edm::ParameterSet> >("triggers");
 
    for (std::vector<edm::ParameterSet>::const_iterator trgIt = trgVPSet_.begin(); trgIt < trgVPSet_.end(); ++trgIt) {
@@ -164,12 +225,16 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
       trgInvs.push_back(trgIt->getUntrackedParameter<bool>("invertBit", 0));
       trgMinEles.push_back(trgIt->getUntrackedParameter<unsigned int>("minEle", 1));
       trgMinEtss.push_back(trgIt->getUntrackedParameter<std::vector<double> >("minEts", std::vector<double> (1, 0.)));
+      tpTrgNames.push_back(trgIt->getUntrackedParameter<std::string>("tpTriggerName", "")); 
+      tagFilterNames.push_back(trgIt->getUntrackedParameter<std::string>("tagFilterName", "")); 
+      probeFilterNames.push_back(trgIt->getUntrackedParameter<std::string>("probeFilterName", "")); 
    }
 
    TH1::SetDefaultSumw2(kTRUE);
 
    unsigned int trgsSize = trgVPSet_.size();
    edm::Service<TFileService> fs;
+   h_gsfEle_et = fs->make<TH1F>("h_gsfEle_et", "gsfElectron E_{T}", 100, 0., 500.);
    h_nHeep = fs->make<TH1F>("h_nHeep", "# of HEEP electrons", 10, 0., 10.);
    h_total = fs->make<TH1F>("h_total", "Total # events", trgsSize, 0., trgsSize);
    h_refTrgd = fs->make<TH1F>("h_refTrgd", "Events triggered by reference trigger", trgsSize, 0., trgsSize);
@@ -191,6 +256,37 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
    h_nPassHeep_nPassEt_notTrgd = fs->make<TH1F>("h_nPassHeep_nPassEt_notTrgd", "Not triggered events with n HEEP electrons passing Et cut (n defined by trigger)", trgsSize, 0., trgsSize);
    h_nPassHeep_nPassEt_notTrgdRefTrgd = fs->make<TH1F>("h_nPassHeep_nPassEt_notTrgdRefTrgd", "Not triggered events with n HEEP electrons passing Et cut triggered by reference trigger (n defined by trigger)", trgsSize, 0., trgsSize);
 
+   hTp_tags = fs->make<TH1F>("hTp_tags", "# tags;# tags", 10, 0., 10.);
+   hTp_probes = fs->make<TH1F>("hTp_probes", "# probes;# probes", 10, 0., 10.);
+   hTp_allProbesGsf = fs->make<TH1F>("hTp_allProbesGsf", "# GSF probes", trgsSize, 0., trgsSize);
+   hTp_passProbesGsf = fs->make<TH1F>("hTp_passProbesGsf", "# passing GSF probes", trgsSize, 0., trgsSize);
+   hTp_allProbesGsf_et25 = fs->make<TH1F>("hTp_allProbesGsf_et25", "# GSF probes with E_{T} > 25 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesGsf_et25 = fs->make<TH1F>("hTp_passProbesGsf_et25", "# passing GSF probes with E_{T} > 25 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesGsf_et33 = fs->make<TH1F>("hTp_allProbesGsf_et33", "# GSF probes with E_{T} > 33 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesGsf_et33 = fs->make<TH1F>("hTp_passProbesGsf_et33", "# passing GSF probes with E_{T} > 33 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesGsf_et35 = fs->make<TH1F>("hTp_allProbesGsf_et35", "# GSF probes with E_{T} > 35 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesGsf_et35 = fs->make<TH1F>("hTp_passProbesGsf_et35", "# passing GSF probes with E_{T} > 35 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesGsf_et80 = fs->make<TH1F>("hTp_allProbesGsf_et80", "# GSF probes with E_{T} > 80 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesGsf_et80 = fs->make<TH1F>("hTp_passProbesGsf_et80", "# passing GSF probes with E_{T} > 80 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesGsf_et100 = fs->make<TH1F>("hTp_allProbesGsf_et100", "# GSF probes with E_{T} > 100 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesGsf_et100 = fs->make<TH1F>("hTp_passProbesGsf_et100", "# passing GSF probes with E_{T} > 100 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesGsf_withEtCut = fs->make<TH1F>("hTp_allProbesGsf_withEtCut", "# GSF probes passing E_{T} cut", trgsSize, 0., trgsSize);
+   hTp_passProbesGsf_withEtCut = fs->make<TH1F>("hTp_passProbesGsf_withEtCut", "# passing GSF probes passing E_{T} cut", trgsSize, 0., trgsSize);
+   hTp_allProbesHeep = fs->make<TH1F>("hTp_allProbesHeep", "# HEEP probes", trgsSize, 0., trgsSize);
+   hTp_passProbesHeep = fs->make<TH1F>("hTp_passProbesHeep", "# passing HEEP probes", trgsSize, 0., trgsSize);
+   hTp_allProbesHeep_et25 = fs->make<TH1F>("hTp_allProbesHeep_et25", "# HEEP probes with E_{T} > 25 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesHeep_et25 = fs->make<TH1F>("hTp_passProbesHeep_et25", "# passing HEEP probes with E_{T} > 25 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesHeep_et33 = fs->make<TH1F>("hTp_allProbesHeep_et33", "# HEEP probes with E_{T} > 33 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesHeep_et33 = fs->make<TH1F>("hTp_passProbesHeep_et33", "# passing HEEP probes with E_{T} > 33 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesHeep_et35 = fs->make<TH1F>("hTp_allProbesHeep_et35", "# HEEP probes with E_{T} > 35 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesHeep_et35 = fs->make<TH1F>("hTp_passProbesHeep_et35", "# passing HEEP probes with E_{T} > 35 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesHeep_et80 = fs->make<TH1F>("hTp_allProbesHeep_et80", "# HEEP probes with E_{T} > 80 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesHeep_et80 = fs->make<TH1F>("hTp_passProbesHeep_et80", "# passing HEEP probes with E_{T} > 80 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesHeep_et100 = fs->make<TH1F>("hTp_allProbesHeep_et100", "# HEEP probes with E_{T} > 100 GeV", trgsSize, 0., trgsSize);
+   hTp_passProbesHeep_et100 = fs->make<TH1F>("hTp_passProbesHeep_et100", "# passing HEEP probes with E_{T} > 100 GeV", trgsSize, 0., trgsSize);
+   hTp_allProbesHeep_withEtCut = fs->make<TH1F>("hTp_allProbesHeep_withEtCut", "# HEEP probes passing E_{T} cut", trgsSize, 0., trgsSize);
+   hTp_passProbesHeep_withEtCut = fs->make<TH1F>("hTp_passProbesHeep_withEtCut", "# passing HEEP probes passing E_{T} cut", trgsSize, 0., trgsSize);
+
    // ratio histos
    hRatio_nPassHeep_trgdVsTotal = fs->make<TH1F>("hRatio_nPassHeep_trgdVsTotal", "# triggered / # total n-HEEP events", trgsSize, 0., trgsSize);
    hRatio_nPassHeep_notTrgdVsTotal = fs->make<TH1F>("hRatio_nPassHeep_notTrgdVsTotal", "# not triggered / # total n-HEEP events", trgsSize, 0., trgsSize);
@@ -207,6 +303,21 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
    hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd", "# not triggered / # reference triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize);
    hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd = fs->make<TH1F>("hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd", "# not triggered but reference triggered / # reference triggered n-HEEP events passing Et cuts", trgsSize, 0., trgsSize);
 
+   hTpRatio_passProbesGsf_vs_allProbesGsf = fs->make<TH1F>("hTpRatio_passProbesGsf_vs_allProbesGsf", "# passing GSF probes / # all GSF probes", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesGsf_et25_vs_allProbesGsf_et25 = fs->make<TH1F>("hTpRatio_passProbesGsf_et25_vs_allProbesGsf_et25", "# passing GSF probes / # all GSF probes with E_{T} > 25 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesGsf_et33_vs_allProbesGsf_et33 = fs->make<TH1F>("hTpRatio_passProbesGsf_et33_vs_allProbesGsf_et33", "# passing GSF probes / # all GSF probes with E_{T} > 33 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesGsf_et35_vs_allProbesGsf_et35 = fs->make<TH1F>("hTpRatio_passProbesGsf_et35_vs_allProbesGsf_et35", "# passing GSF probes / # all GSF probes with E_{T} > 35 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesGsf_et80_vs_allProbesGsf_et80 = fs->make<TH1F>("hTpRatio_passProbesGsf_et80_vs_allProbesGsf_et80", "# passing GSF probes / # all GSF probes with E_{T} > 80 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesGsf_et100_vs_allProbesGsf_et100 = fs->make<TH1F>("hTpRatio_passProbesGsf_et100_vs_allProbesGsf_et100", "# passing GSF probes / # all GSF probes with E_{T} > 100 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesGsf_withEtCut_vs_allProbesGsf_withEtCut = fs->make<TH1F>("hTpRatio_passProbesGsf_withEtCut_vs_allProbesGsf_withEtCut", "# passing GSF probes / # all GSF probes passing E_{T} cut", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesHeep_vs_allProbesHeep = fs->make<TH1F>("hTpRatio_passProbesHeep_vs_allProbesHeep", "# passing HEEP probes / # all HEEP probes", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesHeep_et25_vs_allProbesHeep_et25 = fs->make<TH1F>("hTpRatio_passProbesHeep_et25_vs_allProbesHeep_et25", "# passing HEEP probes / # all HEEP probes with E_{T} > 25 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesHeep_et33_vs_allProbesHeep_et33 = fs->make<TH1F>("hTpRatio_passProbesHeep_et33_vs_allProbesHeep_et33", "# passing HEEP probes / # all HEEP probes with E_{T} > 33 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesHeep_et35_vs_allProbesHeep_et35 = fs->make<TH1F>("hTpRatio_passProbesHeep_et35_vs_allProbesHeep_et35", "# passing HEEP probes / # all HEEP probes with E_{T} > 35 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesHeep_et80_vs_allProbesHeep_et80 = fs->make<TH1F>("hTpRatio_passProbesHeep_et80_vs_allProbesHeep_et80", "# passing HEEP probes / # all HEEP probes with E_{T} > 80 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesHeep_et100_vs_allProbesHeep_et100 = fs->make<TH1F>("hTpRatio_passProbesHeep_et100_vs_allProbesHeep_et100", "# passing HEEP probes / # all HEEP probes with E_{T} > 100 GeV", trgsSize, 0., trgsSize);
+   hTpRatio_passProbesHeep_withEtCut_vs_allProbesHeep_withEtCut = fs->make<TH1F>("hTpRatio_passProbesHeep_withEtCut_vs_allProbesHeep_withEtCut", "# passing HEEP probes / # all HEEP probes passing E_{T} cut", trgsSize, 0., trgsSize);
+
    h2Ratio_trgd = fs->make<TH2F>("h2Ratio_trgd", "Inter trigger ratio of triggered events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
    h2Ratio_notTrgd = fs->make<TH2F>("h2Ratio_notTrgd", "Inter trigger ratio of not triggered events", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
    h2Ratio_notTrgdRefTrgd = fs->make<TH2F>("h2Ratio_notTrgdRefTrgd", "Inter trigger ratio of not triggered events triggered by the reference trigger", trgsSize, 0., trgsSize, trgsSize, 0., trgsSize);
@@ -220,15 +331,28 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
    for (unsigned int i = 0; i < trgNames.size(); ++i) {
       float lastTrgMinEt = trgMinEtss.at(i).back(); 
       std::string nameString = "h_nPassHeep_nMinus1PassEt_vsEt_total_" + trgNames[i];
-      v_h_nPassHeep_nMinus1PassEt_vsEt_total.push_back(fs->make<TH1F>(nameString.data(), "# of events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      v_h_nPassHeep_nMinus1PassEt_vsEt_total.push_back(fs->make<TH1F>(nameString.data(), "# of events vs. Et cut;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
       nameString = "h_nPassHeep_nMinus1PassEt_vsEt_refTrgd_" + trgNames[i];
-      v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd.push_back(fs->make<TH1F>(nameString.data(), "# of reference trigger triggered events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd.push_back(fs->make<TH1F>(nameString.data(), "# of reference trigger triggered events vs. Et cut;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
       nameString = "h_nPassHeep_nMinus1PassEt_vsEt_trgd_" + trgNames[i];
-      v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.push_back(fs->make<TH1F>(nameString.data(), "# of triggered events vs. Et cut", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.push_back(fs->make<TH1F>(nameString.data(), "# of triggered events vs. Et cut;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
       nameString = "hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal_" + trgNames[i];
-      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal.push_back(fs->make<TH1F>(nameString.data(), "# triggered / # total n-HEEP events vs. Et cuts", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal.push_back(fs->make<TH1F>(nameString.data(), "# triggered / # total n-HEEP events vs. Et cuts;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
       nameString = "hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd_" + trgNames[i];
-      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd.push_back(fs->make<TH1F>(nameString.data(), "# triggered / # reference triggered n-HEEP events vs. Et cuts", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd.push_back(fs->make<TH1F>(nameString.data(), "# triggered / # reference triggered n-HEEP events vs. Et cuts;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+
+      nameString = "hTp_allProbesGsf_et_" + trgNames[i];
+      v_hTp_allProbesGsf_et.push_back(fs->make<TH1F>(nameString.data(), "E_{T} of GSF probes;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "hTp_passProbesGsf_et_" + trgNames[i];
+      v_hTp_passProbesGsf_et.push_back(fs->make<TH1F>(nameString.data(), "E_{T} of passing GSF probes;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "hTpRatio_passProbesGsf_et_vs_allProbesGsf_et_" + trgNames[i];
+      v_hTpRatio_passProbesGsf_et_vs_allProbesGsf_et.push_back(fs->make<TH1F>(nameString.data(), "# pass GSF probes / # all GSF probes;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "hTp_allProbesHeep_et_" + trgNames[i];
+      v_hTp_allProbesHeep_et.push_back(fs->make<TH1F>(nameString.data(), "E_{T} of HEEP probes;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "hTp_passProbesHeep_et_" + trgNames[i];
+      v_hTp_passProbesHeep_et.push_back(fs->make<TH1F>(nameString.data(), "E_{T} of passing HEEP probes;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
+      nameString = "hTpRatio_passProbesHeep_et_vs_allProbesHeep_et_" + trgNames[i];
+      v_hTpRatio_passProbesHeep_et_vs_allProbesHeep_et.push_back(fs->make<TH1F>(nameString.data(), "# pass HEEP probes / # all HEEP probes;E_{T} (GeV)", 2*deltaEtCut/etCutStepSize, lastTrgMinEt-deltaEtCut, lastTrgMinEt+deltaEtCut));
 
       // set bin labels
       std::string triggerName = trgNames[i];
@@ -254,6 +378,35 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
       h_nPassHeep_nPassEt_notTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
       h_nPassHeep_nPassEt_notTrgdRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
 
+      hTp_allProbesGsf->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesGsf->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesGsf_et25->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesGsf_et25->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesGsf_et33->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesGsf_et33->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesGsf_et35->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesGsf_et35->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesGsf_et80->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesGsf_et80->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesGsf_et100->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesGsf_et100->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesGsf_withEtCut->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesGsf_withEtCut->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesHeep->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesHeep->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesHeep_et25->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesHeep_et25->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesHeep_et33->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesHeep_et33->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesHeep_et35->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesHeep_et35->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesHeep_et80->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesHeep_et80->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesHeep_et100->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesHeep_et100->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_allProbesHeep_withEtCut->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTp_passProbesHeep_withEtCut->GetXaxis()->SetBinLabel(i+1, trgName);
+
       // ratio histos
       hRatio_nPassHeep_trgdVsTotal->GetXaxis()->SetBinLabel(i+1, trgName);
       hRatio_nPassHeep_notTrgdVsTotal->GetXaxis()->SetBinLabel(i+1, trgName);
@@ -268,6 +421,21 @@ HltGsfEleAnalyser::HltGsfEleAnalyser(const edm::ParameterSet& iConfig)
       hRatio_nPassHeep_nPassEt_trgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
       hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
       hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd->GetXaxis()->SetBinLabel(i+1, trgName);
+
+      hTpRatio_passProbesGsf_vs_allProbesGsf->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesGsf_et25_vs_allProbesGsf_et25->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesGsf_et33_vs_allProbesGsf_et33->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesGsf_et35_vs_allProbesGsf_et35->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesGsf_et80_vs_allProbesGsf_et80->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesGsf_et100_vs_allProbesGsf_et100->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesGsf_withEtCut_vs_allProbesGsf_withEtCut->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesHeep_vs_allProbesHeep->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesHeep_et25_vs_allProbesHeep_et25->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesHeep_et33_vs_allProbesHeep_et33->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesHeep_et35_vs_allProbesHeep_et35->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesHeep_et80_vs_allProbesHeep_et80->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesHeep_et100_vs_allProbesHeep_et100->GetXaxis()->SetBinLabel(i+1, trgName);
+      hTpRatio_passProbesHeep_withEtCut_vs_allProbesHeep_withEtCut->GetXaxis()->SetBinLabel(i+1, trgName);
 
       h2Ratio_trgd->GetXaxis()->SetBinLabel(i+1, trgName);
       h2Ratio_trgd->GetYaxis()->SetBinLabel(i+1, trgName);
@@ -324,6 +492,7 @@ HltGsfEleAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    unsigned int nPassHeep = 0;
    std::vector<unsigned int> heepEleIndices;
    for (reco::GsfElectronCollection::const_iterator eleIt = gsfElectrons->begin(); eleIt < gsfElectrons->end(); ++eleIt) {
+      h_gsfEle_et->Fill(eleIt->caloEnergy() * sin(eleIt->p4().theta()));
       if (PassHeep(*eleIt, rho)) {
          ++nPassHeep;
          heepEleIndices.push_back(eleIt - gsfElectrons->begin());
@@ -336,6 +505,166 @@ HltGsfEleAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    for (unsigned int trgIndex = 0; trgIndex < trgNames.size(); ++trgIndex) {
       bool triggered = trgRes.accept(trgIndices[trgIndex]) ^ trgInvs[trgIndex];
       bool refTriggered = trgRes.accept(refTrgIndices[trgIndex]);
+      bool tpTriggered = trgRes.accept(tpTrgIndices[trgIndex]);
+
+      // tag and probe
+      if (tpTriggered) {
+         std::vector<unsigned int> tagEleIndices;
+         std::vector<unsigned int> probeEleIndicesHeep;
+         for (unsigned int heepInd = 0; heepInd < heepEleIndices.size(); ++heepInd) {
+            float eleEt = gsfElectrons->at(heepInd).caloEnergy() * sin(gsfElectrons->at(heepInd).p4().theta());
+            if (eleEt > 35. && tagFilterNames[trgIndex].size() == 0) tagEleIndices.push_back(heepInd);
+            else if (eleEt > 35. && MatchTrgFltr(iEvent, gsfElectrons->at(heepInd), tagFilterNames[trgIndex].data())) tagEleIndices.push_back(heepInd);
+            if (probeFilterNames[trgIndex].size() == 0) probeEleIndicesHeep.push_back(heepInd);
+            else if (MatchTrgFltr(iEvent, gsfElectrons->at(heepInd), probeFilterNames[trgIndex].data())) probeEleIndicesHeep.push_back(heepInd);
+         }
+         hTp_tags->Fill(tagEleIndices.size());
+         hTp_probes->Fill(probeEleIndicesHeep.size());
+         for (unsigned int tagInd = 0; tagInd < tagEleIndices.size(); ++tagInd) {
+            // loop over all GSF electrons
+            for (unsigned int gsfInd = 0; gsfInd < gsfElectrons->size(); ++gsfInd) {
+               // continue if it is the tag
+               if (gsfInd == tagInd) continue;
+               // match probe candidate to trigger filter if defined
+               if (!(probeFilterNames[trgIndex].size() == 0 || MatchTrgFltr(iEvent, gsfElectrons->at(gsfInd), probeFilterNames[trgIndex].data()))) continue;
+               float eleEt = gsfElectrons->at(gsfInd).caloEnergy() * sin(gsfElectrons->at(gsfInd).p4().theta());
+               if (eleEt > 100.) {
+                  hTp_allProbesGsf_et100->Fill(trgIndex);
+                  hTp_allProbesGsf_et80->Fill(trgIndex);
+                  hTp_allProbesGsf_et35->Fill(trgIndex);
+                  hTp_allProbesGsf_et33->Fill(trgIndex);
+                  hTp_allProbesGsf_et25->Fill(trgIndex);
+                  hTp_allProbesGsf->Fill(trgIndex);
+               } else if (eleEt > 80.) {
+                  hTp_allProbesGsf_et80->Fill(trgIndex);
+                  hTp_allProbesGsf_et35->Fill(trgIndex);
+                  hTp_allProbesGsf_et33->Fill(trgIndex);
+                  hTp_allProbesGsf_et25->Fill(trgIndex);
+                  hTp_allProbesGsf->Fill(trgIndex);
+               } else if (eleEt > 35.) {
+                  hTp_allProbesGsf_et35->Fill(trgIndex);
+                  hTp_allProbesGsf_et33->Fill(trgIndex);
+                  hTp_allProbesGsf_et25->Fill(trgIndex);
+                  hTp_allProbesGsf->Fill(trgIndex);
+               } else if (eleEt > 33.) {
+                  hTp_allProbesGsf_et33->Fill(trgIndex);
+                  hTp_allProbesGsf_et25->Fill(trgIndex);
+                  hTp_allProbesGsf->Fill(trgIndex);
+               } else if (eleEt > 25.) {
+                  hTp_allProbesGsf_et25->Fill(trgIndex);
+                  hTp_allProbesGsf->Fill(trgIndex);
+               } else {
+                  hTp_allProbesGsf->Fill(trgIndex);
+               }
+               if (eleEt > trgMinEtss.at(trgIndex).front()) hTp_allProbesGsf_withEtCut->Fill(trgIndex);
+               v_hTp_allProbesGsf_et.at(trgIndex)->Fill(eleEt);
+
+               // assume that the last filter hast saveTags == true and use it to see if the candidate fired the trigger
+               std::vector<std::string> saveTagsModules = hltConfig.saveTagsModules(trgIndices[trgIndex]);
+               bool matchLast = MatchTrgFltr(iEvent, gsfElectrons->at(gsfInd), saveTagsModules.back().data());
+
+               if (matchLast) {
+                  if (eleEt > 100.) {
+                     hTp_passProbesGsf_et100->Fill(trgIndex);
+                     hTp_passProbesGsf_et80->Fill(trgIndex);
+                     hTp_passProbesGsf_et35->Fill(trgIndex);
+                     hTp_passProbesGsf_et33->Fill(trgIndex);
+                     hTp_passProbesGsf_et25->Fill(trgIndex);
+                     hTp_passProbesGsf->Fill(trgIndex);
+                  } else if (eleEt > 80.) {
+                     hTp_passProbesGsf_et80->Fill(trgIndex);
+                     hTp_passProbesGsf_et35->Fill(trgIndex);
+                     hTp_passProbesGsf_et33->Fill(trgIndex);
+                     hTp_passProbesGsf_et25->Fill(trgIndex);
+                     hTp_passProbesGsf->Fill(trgIndex);
+                  } else if (eleEt > 35.) {
+                     hTp_passProbesGsf_et35->Fill(trgIndex);
+                     hTp_passProbesGsf_et33->Fill(trgIndex);
+                     hTp_passProbesGsf_et25->Fill(trgIndex);
+                     hTp_passProbesGsf->Fill(trgIndex);
+                  } else if (eleEt > 33.) {
+                     hTp_passProbesGsf_et33->Fill(trgIndex);
+                     hTp_passProbesGsf_et25->Fill(trgIndex);
+                     hTp_passProbesGsf->Fill(trgIndex);
+                  } else if (eleEt > 25.) {
+                     hTp_passProbesGsf_et25->Fill(trgIndex);
+                     hTp_passProbesGsf->Fill(trgIndex);
+                  } else {
+                     hTp_passProbesGsf->Fill(trgIndex);
+                  }
+                  if (eleEt > trgMinEtss.at(trgIndex).front()) hTp_passProbesGsf_withEtCut->Fill(trgIndex);
+                  v_hTp_passProbesGsf_et.at(trgIndex)->Fill(eleEt);
+               }
+
+               // Only HEEP electrons may pass here
+               if (!PassHeep(gsfElectrons->at(gsfInd), rho)) continue;
+
+               if (eleEt > 100.) {
+                  hTp_allProbesHeep_et100->Fill(trgIndex);
+                  hTp_allProbesHeep_et80->Fill(trgIndex);
+                  hTp_allProbesHeep_et35->Fill(trgIndex);
+                  hTp_allProbesHeep_et33->Fill(trgIndex);
+                  hTp_allProbesHeep_et25->Fill(trgIndex);
+                  hTp_allProbesHeep->Fill(trgIndex);
+               } else if (eleEt > 80.) {
+                  hTp_allProbesHeep_et80->Fill(trgIndex);
+                  hTp_allProbesHeep_et35->Fill(trgIndex);
+                  hTp_allProbesHeep_et33->Fill(trgIndex);
+                  hTp_allProbesHeep_et25->Fill(trgIndex);
+                  hTp_allProbesHeep->Fill(trgIndex);
+               } else if (eleEt > 35.) {
+                  hTp_allProbesHeep_et35->Fill(trgIndex);
+                  hTp_allProbesHeep_et33->Fill(trgIndex);
+                  hTp_allProbesHeep_et25->Fill(trgIndex);
+                  hTp_allProbesHeep->Fill(trgIndex);
+               } else if (eleEt > 33.) {
+                  hTp_allProbesHeep_et33->Fill(trgIndex);
+                  hTp_allProbesHeep_et25->Fill(trgIndex);
+                  hTp_allProbesHeep->Fill(trgIndex);
+               } else if (eleEt > 25.) {
+                  hTp_allProbesHeep_et25->Fill(trgIndex);
+                  hTp_allProbesHeep->Fill(trgIndex);
+               } else {
+                  hTp_allProbesHeep->Fill(trgIndex);
+               }
+               if (eleEt > trgMinEtss.at(trgIndex).front()) hTp_allProbesHeep_withEtCut->Fill(trgIndex);
+               v_hTp_allProbesHeep_et.at(trgIndex)->Fill(eleEt);
+
+               if (matchLast) {
+                  if (eleEt > 100.) {
+                     hTp_passProbesHeep_et100->Fill(trgIndex);
+                     hTp_passProbesHeep_et80->Fill(trgIndex);
+                     hTp_passProbesHeep_et35->Fill(trgIndex);
+                     hTp_passProbesHeep_et33->Fill(trgIndex);
+                     hTp_passProbesHeep_et25->Fill(trgIndex);
+                     hTp_passProbesHeep->Fill(trgIndex);
+                  } else if (eleEt > 80.) {
+                     hTp_passProbesHeep_et80->Fill(trgIndex);
+                     hTp_passProbesHeep_et35->Fill(trgIndex);
+                     hTp_passProbesHeep_et33->Fill(trgIndex);
+                     hTp_passProbesHeep_et25->Fill(trgIndex);
+                     hTp_passProbesHeep->Fill(trgIndex);
+                  } else if (eleEt > 35.) {
+                     hTp_passProbesHeep_et35->Fill(trgIndex);
+                     hTp_passProbesHeep_et33->Fill(trgIndex);
+                     hTp_passProbesHeep_et25->Fill(trgIndex);
+                     hTp_passProbesHeep->Fill(trgIndex);
+                  } else if (eleEt > 33.) {
+                     hTp_passProbesHeep_et33->Fill(trgIndex);
+                     hTp_passProbesHeep_et25->Fill(trgIndex);
+                     hTp_passProbesHeep->Fill(trgIndex);
+                  } else if (eleEt > 25.) {
+                     hTp_passProbesHeep_et25->Fill(trgIndex);
+                     hTp_passProbesHeep->Fill(trgIndex);
+                  } else {
+                     hTp_passProbesHeep->Fill(trgIndex);
+                  }
+                  if (eleEt > trgMinEtss.at(trgIndex).front()) hTp_passProbesHeep_withEtCut->Fill(trgIndex);
+                  v_hTp_passProbesHeep_et.at(trgIndex)->Fill(eleEt);
+               }
+            }
+         }
+      }
 
       h_total->Fill(trgIndex);
       if (refTriggered) {
@@ -418,7 +747,8 @@ HltGsfEleAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 }
 
 bool
-HltGsfEleAnalyser::PassHeep(reco::GsfElectron const& ele, double &rho) {
+HltGsfEleAnalyser::PassHeep(reco::GsfElectron const& ele, double &rho) 
+{
    bool pass = 0;
 
    float et = ele.caloEnergy() * sin(ele.p4().theta());
@@ -480,6 +810,31 @@ HltGsfEleAnalyser::PassHeep(reco::GsfElectron const& ele, double &rho) {
    return pass;
 }
 
+bool
+HltGsfEleAnalyser::MatchTrgFltr(const edm::Event& iEvent, reco::GsfElectron const& ele, const char* filterName) 
+{
+   bool pass = 0;
+
+   edm::Handle<trigger::TriggerEvent> trgEvent; 
+   if (!iEvent.getByLabel(trgEventTag_, trgEvent)) return pass;
+
+   trigger::size_type filterIndex = trgEvent->filterIndex(edm::InputTag(filterName, "", trgEventTag_.process())); 
+   if (filterIndex < trgEvent->sizeFilters()){ 
+      const trigger::Keys& trgKeys = trgEvent->filterKeys(filterIndex); 
+      const trigger::TriggerObjectCollection& trgObjColl(trgEvent->getObjects());
+      //now loop of the trigger objects passing filter
+      for(trigger::Keys::const_iterator keyIt = trgKeys.begin(); keyIt != trgKeys.end(); ++keyIt) { 
+         const trigger::TriggerObject& obj = trgObjColl[*keyIt];
+         if (deltaR(ele.eta(), ele.phi(), obj.eta(), obj.phi()) < 0.5) {
+            pass = 1;
+            break;
+         }
+      }   
+   }
+
+   return pass;
+}
+
 // ------------ method called once each job just before starting event loop  ------------
 void 
 HltGsfEleAnalyser::beginJob()
@@ -505,9 +860,25 @@ HltGsfEleAnalyser::endJob()
    hRatio_nPassHeep_nPassEt_trgdVsRefTrgd->Divide(h_nPassHeep_nPassEt_trgd, h_nPassHeep_nPassEt_refTrgd);
    hRatio_nPassHeep_nPassEt_notTrgdVsRefTrgd->Divide(h_nPassHeep_nPassEt_notTrgd, h_nPassHeep_nPassEt_refTrgd);
    hRatio_nPassHeep_nPassEt_notTrgdRefTrgdVsRefTrgd->Divide(h_nPassHeep_nPassEt_notTrgdRefTrgd, h_nPassHeep_nPassEt_refTrgd);
+   hTpRatio_passProbesGsf_vs_allProbesGsf->Divide(hTp_passProbesGsf, hTp_allProbesGsf);
+   hTpRatio_passProbesGsf_et25_vs_allProbesGsf_et25->Divide(hTp_passProbesGsf_et25, hTp_allProbesGsf_et25);
+   hTpRatio_passProbesGsf_et33_vs_allProbesGsf_et33->Divide(hTp_passProbesGsf_et33, hTp_allProbesGsf_et33);
+   hTpRatio_passProbesGsf_et35_vs_allProbesGsf_et35->Divide(hTp_passProbesGsf_et35, hTp_allProbesGsf_et35);
+   hTpRatio_passProbesGsf_et80_vs_allProbesGsf_et80->Divide(hTp_passProbesGsf_et80, hTp_allProbesGsf_et80);
+   hTpRatio_passProbesGsf_et100_vs_allProbesGsf_et100->Divide(hTp_passProbesGsf_et100, hTp_allProbesGsf_et100);
+   hTpRatio_passProbesGsf_withEtCut_vs_allProbesGsf_withEtCut->Divide(hTp_passProbesGsf_withEtCut, hTp_allProbesGsf_withEtCut);
+   hTpRatio_passProbesHeep_vs_allProbesHeep->Divide(hTp_passProbesHeep, hTp_allProbesHeep);
+   hTpRatio_passProbesHeep_et25_vs_allProbesHeep_et25->Divide(hTp_passProbesHeep_et25, hTp_allProbesHeep_et25);
+   hTpRatio_passProbesHeep_et33_vs_allProbesHeep_et33->Divide(hTp_passProbesHeep_et33, hTp_allProbesHeep_et33);
+   hTpRatio_passProbesHeep_et35_vs_allProbesHeep_et35->Divide(hTp_passProbesHeep_et35, hTp_allProbesHeep_et35);
+   hTpRatio_passProbesHeep_et80_vs_allProbesHeep_et80->Divide(hTp_passProbesHeep_et80, hTp_allProbesHeep_et80);
+   hTpRatio_passProbesHeep_et100_vs_allProbesHeep_et100->Divide(hTp_passProbesHeep_et100, hTp_allProbesHeep_et100);
+   hTpRatio_passProbesHeep_withEtCut_vs_allProbesHeep_withEtCut->Divide(hTp_passProbesHeep_withEtCut, hTp_allProbesHeep_withEtCut);
    for (unsigned int i = 0; i < trgNames.size(); ++i) {
       v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsTotal.at(i)->Divide(v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.at(i), v_h_nPassHeep_nMinus1PassEt_vsEt_total.at(i));
       v_hRatio_nPassHeep_nMinus1PassEt_vsEt_trgdVsRefTrgd.at(i)->Divide(v_h_nPassHeep_nMinus1PassEt_vsEt_trgd.at(i), v_h_nPassHeep_nMinus1PassEt_vsEt_refTrgd.at(i));
+      v_hTpRatio_passProbesGsf_et_vs_allProbesGsf_et.at(i)->Divide(v_hTp_passProbesGsf_et.at(i), v_hTp_allProbesGsf_et.at(i));
+      v_hTpRatio_passProbesHeep_et_vs_allProbesHeep_et.at(i)->Divide(v_hTp_passProbesHeep_et.at(i), v_hTp_allProbesHeep_et.at(i));
    }
 
    edm::Service<TFileService> fs;
@@ -610,6 +981,7 @@ HltGsfEleAnalyser::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
          for (unsigned int i = 0; i < trgNames.size(); ++i) {
             trgIndices.push_back(hltConfig.triggerIndex(trgNames[i]));
             refTrgIndices.push_back(hltConfig.triggerIndex(refTrgNames[i]));
+            tpTrgIndices.push_back(hltConfig.triggerIndex(tpTrgNames[i]));
          }
       }
    } else {

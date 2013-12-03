@@ -18,21 +18,25 @@ void macro_plotTpHist()
 {
    TH1::AddDirectory(kFALSE);
 
-   const bool plotHistos = 1;
+   const bool plotHistos = 0;
    const bool plotEtHistos = 0;
-   const bool plotEff = 0;
+   const bool plotEff = 1;
    const bool plotEtEff = 0;
 
    int font = 42;
    const bool saveAsPng = 0;
-   TString plotsDir = "./plots_20130926/";
+   TString plotsDir = "./plots_20131203/";
    //TString fileNameExtra = "_realEle";
    TString fileNameExtra = "";
 
    vector<TString> files;
+   //files.push_back("./histoele.root");
    files.push_back("./histoele_dataZskim.root");
    files.push_back("./histoele_dy_8tev50ns.root");
    files.push_back("./histoele_qcd_8tev50ns.root");
+   //files.push_back("./histoele_dataZskim_lowEtMenu.root");
+   //files.push_back("./histoele_dy_8tev50ns_lowEtMenu.root");
+   //files.push_back("./histoele_qcd_8tev50ns_lowEtMenu.root");
    TString dir("HltGsfEleAna");
    vector<TString> fileTitles;
    fileTitles.push_back("_dataZskim");
@@ -48,6 +52,8 @@ void macro_plotTpHist()
    hNames.push_back("hTp_probes");
    hNames.push_back("hTp_allProbesGsf");
    hNames.push_back("hTp_passProbesGsf");
+   hNames.push_back("hTp_allProbesGsf_et25");
+   hNames.push_back("hTp_passProbesGsf_et25");
    hNames.push_back("hTp_allProbesGsf_et33");
    hNames.push_back("hTp_passProbesGsf_et33");
    hNames.push_back("hTp_allProbesGsf_et35");
@@ -60,6 +66,8 @@ void macro_plotTpHist()
    hNames.push_back("hTp_passProbesGsf_withEtCut");
    hNames.push_back("hTp_allProbesHeep");
    hNames.push_back("hTp_passProbesHeep");
+   hNames.push_back("hTp_allProbesHeep_et25");
+   hNames.push_back("hTp_passProbesHeep_et25");
    hNames.push_back("hTp_allProbesHeep_et33");
    hNames.push_back("hTp_passProbesHeep_et33");
    hNames.push_back("hTp_allProbesHeep_et35");
@@ -70,13 +78,16 @@ void macro_plotTpHist()
    hNames.push_back("hTp_passProbesHeep_et100");
    hNames.push_back("hTp_allProbesHeep_withEtCut");
    hNames.push_back("hTp_passProbesHeep_withEtCut");
+   // done internally now
    //hNames.push_back("hTpRatio_passProbesGsf_vs_allProbesGsf");
+   //hNames.push_back("hTpRatio_passProbesGsf_et25_vs_allProbesGsf_et25");
    //hNames.push_back("hTpRatio_passProbesGsf_et33_vs_allProbesGsf_et33");
    //hNames.push_back("hTpRatio_passProbesGsf_et35_vs_allProbesGsf_et35");
    //hNames.push_back("hTpRatio_passProbesGsf_et80_vs_allProbesGsf_et80");
    //hNames.push_back("hTpRatio_passProbesGsf_et100_vs_allProbesGsf_et100");
    //hNames.push_back("hTpRatio_passProbesGsf_withEtCut_vs_allProbesGsf_withEtCut");
    //hNames.push_back("hTpRatio_passProbesHeep_vs_allProbesHeep");
+   //hNames.push_back("hTpRatio_passProbesHeep_et25_vs_allProbesHeep_et25");
    //hNames.push_back("hTpRatio_passProbesHeep_et33_vs_allProbesHeep_et33");
    //hNames.push_back("hTpRatio_passProbesHeep_et35_vs_allProbesHeep_et35");
    //hNames.push_back("hTpRatio_passProbesHeep_et80_vs_allProbesHeep_et80");
@@ -101,6 +112,7 @@ void macro_plotTpHist()
 
    TFile* inFile;
 
+   ///////////////////////////////////////////////////////////////////////////
    if (plotHistos) {
       for (unsigned int i = 0; i < hNames.size(); ++i) {
       //for (unsigned int i = 1; i < 2; ++i) {
@@ -145,7 +157,7 @@ void macro_plotTpHist()
          }
          h.front()->Draw("sameaxis");
          TLine* l = new TLine(7, minimum, 7, maximum);
-         if (i > 0) l->Draw("same");
+         if (i > 1) l->Draw("same");
          legend->Draw("same");
    
          TLatex *tex = new TLatex();
@@ -155,7 +167,9 @@ void macro_plotTpHist()
          tex->SetTextSize(0.035);
          tex->DrawLatex(0.02, 0.96, h.front()->GetTitle());
          tex->SetTextSize(0.03);
-         tex->DrawLatex(0.10, 0.91, "CMS Preliminary");
+         tex->SetTextAlign(31);
+         tex->DrawLatex(0.84, 0.95, "CMS Preliminary");
+         tex->DrawLatex(0.84, 0.915, "Tag: HEEP electron E_{T} > 35 GeV");
    
          if (saveAsPng) {
             c0->Print(plotsDir + hNames[i] + fileNameExtra + ".png", "png");
@@ -175,6 +189,7 @@ void macro_plotTpHist()
       pathNames.back().ReplaceAll(" [ref]", "");
    }
 
+   ///////////////////////////////////////////////////////////////////////////
    if (plotEtHistos) {
       unsigned int probeInd = 0;
       unsigned int totCtr = 0;
@@ -224,8 +239,6 @@ void macro_plotTpHist()
                legend->AddEntry(h.at(fInd), legTitles[fInd], "l");
             }
             h.front()->Draw("sameaxis");
-            TLine* l = new TLine(7, minimum, 7, maximum);
-            if (i > 0) l->Draw("same");
             legend->Draw("same");
    
             TLatex *tex = new TLatex();
@@ -235,8 +248,10 @@ void macro_plotTpHist()
             tex->SetTextSize(0.035);
             tex->DrawLatex(0.02, 0.96, h.front()->GetTitle());
             tex->SetTextSize(0.03);
-            tex->DrawLatex(0.10, 0.91, "CMS Preliminary");
-            tex->DrawLatex(0.32, 0.91, pathNames[i]);
+            tex->DrawLatex(0.10, 0.915, "CMS Preliminary");
+            tex->SetTextAlign(31);
+            tex->DrawLatex(0.84, 0.95, pathNames[i]);
+            tex->DrawLatex(0.84, 0.915, "Tag: HEEP electron E_{T} > 35 GeV");
    
             if (saveAsPng) {
                c0->Print(plotsDir + histoName + fileNameExtra + ".png", "png");
@@ -247,6 +262,7 @@ void macro_plotTpHist()
       }
    }
 
+   ///////////////////////////////////////////////////////////////////////////
    if (plotEff) {
       for (unsigned int i = 0; i < hNames.size(); ++i) {
          TString hNumName;
@@ -268,7 +284,7 @@ void macro_plotTpHist()
          gEffPad->SetFillColor(0);
          gEffPad->SetFrameFillColor(0);
          gEffPad->SetRightMargin(0.16);
-         gEffPad->SetBottomMargin(0.11);
+         gEffPad->SetBottomMargin(0.18);
          gEffPad->Draw();
          gEffPad->cd();
          gStyle->SetEndErrorSize(0);
@@ -288,6 +304,8 @@ void macro_plotTpHist()
             inFile->cd(dir);
             h.push_back((TH1F*)gDirectory->Get(hNumName));
             hTot.push_back((TH1F*)gDirectory->Get(hDenName));
+            // ignore samples with empty histograms
+            if (h.back()->GetEntries() == 0. || hTot.back()->GetEntries() == 0. ) continue;
             // necessary to plot x axis with labels
             hDiv.push_back((TH1F*)h.back()->Clone("hDiv"));
             hDiv.back()->Divide(hTot.back());
@@ -303,11 +321,16 @@ void macro_plotTpHist()
             }
          }
          TString gEffName = "gEff_" + hNumName + "_vs_" + hDenName;
-         gEffName.ReplaceAll("h_", "");
+         gEffName.ReplaceAll("hTp_", "");
          for (unsigned int fInd = 0; fInd < files.size(); ++fInd) {
+            // ignore samples with empty histograms
+            if (h.at(fInd)->GetEntries() == 0. || hTot.at(fInd)->GetEntries() == 0. ) continue;
+            // ratio histos
             TGraphAsymmErrors* gEff = new TGraphAsymmErrors(h.at(fInd), hTot.at(fInd), "cp");
             hDiv.at(fInd)->SetMinimum(minimum);
             hDiv.at(fInd)->SetMaximum(maximum);
+            hDiv.at(fInd)->GetYaxis()->SetTitle("# passing probes / # probes");
+            hDiv.at(fInd)->GetYaxis()->SetTitleOffset(1.2);
             if (fInd == 0) hDiv.at(fInd)->Draw("hist");
             else hDiv.at(fInd)->Draw("histsame");
             gEff->SetLineColor(colours[fInd]);
@@ -329,8 +352,18 @@ void macro_plotTpHist()
          tex->SetTextSize(0.035);
          //tex->DrawLatex(0.02, 0.96, gEffTitles[i]);
          tex->SetTextSize(0.03);
-         tex->DrawLatex(0.10, 0.91, "CMS Preliminary");
-         tex->DrawLatex(0.62, 0.91, "Errors: Clopper-Pearson");
+         tex->DrawLatex(0.10, 0.95, "CMS Preliminary");
+         tex->DrawLatex(0.10, 0.915, "Tag: HEEP electron E_{T} > 35 GeV");
+         tex->SetTextAlign(31);
+         tex->DrawLatex(0.84, 0.95, "Errors: Clopper-Pearson");
+         TString probeDefTxt = "Probe: ";
+         TString hName(hNames[i]);
+         if (hName.Contains("ProbesGsf")) probeDefTxt.Append("GSF electron");
+         else if (hName.Contains("ProbesHeep")) probeDefTxt.Append("HEEP electron");
+         int pos = hName.Index("_et");
+         if (pos > 0) probeDefTxt.Append(" E_{T} > " + hName(pos+3, hName.Length()-pos) + " GeV");
+         else if (hName.Contains("withEtCut")) probeDefTxt.Append(" with E_{T} cut");
+         tex->DrawLatex(0.84, 0.915, probeDefTxt);
 
          if (saveAsPng) {
             c1->Print(plotsDir + gEffName + fileNameExtra + ".png", "png");
@@ -338,6 +371,7 @@ void macro_plotTpHist()
       }
    }
 
+   ///////////////////////////////////////////////////////////////////////////
    if (plotEtEff) {
       for (unsigned int probeInd = 0; probeInd < gEffHistNamesPrefNum.size(); ++probeInd) {
          for (unsigned int i = 0; i < pathNames.size(); ++i) {
@@ -354,7 +388,8 @@ void macro_plotTpHist()
             gEffPad->SetFillColor(0);
             gEffPad->SetFrameFillColor(0);
             gEffPad->SetRightMargin(0.16);
-            gEffPad->SetBottomMargin(0.18);
+            gEffPad->SetTopMargin(0.13);
+            gEffPad->SetBottomMargin(0.11);
             gEffPad->Draw();
             gEffPad->cd();
             gStyle->SetEndErrorSize(0);
@@ -389,11 +424,13 @@ void macro_plotTpHist()
                }
             }
             TString gEffName = "gEff_" + hNumName + "_vs_" + hDenName;
-            gEffName.ReplaceAll("h_", "");
+            gEffName.ReplaceAll("hTp_", "");
             for (unsigned int fInd = 0; fInd < files.size(); ++fInd) {
                TGraphAsymmErrors* gEff = new TGraphAsymmErrors(h.at(fInd), hTot.at(fInd), "cp");
                hDiv.at(fInd)->SetMinimum(minimum);
                hDiv.at(fInd)->SetMaximum(maximum);
+               hDiv.at(fInd)->GetYaxis()->SetTitle("# passing probes / # probes");
+               hDiv.at(fInd)->GetYaxis()->SetTitleOffset(1.2);
                if (fInd == 0) hDiv.at(fInd)->Draw("hist");
                else hDiv.at(fInd)->Draw("histsame");
                gEff->SetLineColor(colours[fInd]);
@@ -404,8 +441,6 @@ void macro_plotTpHist()
                legend->AddEntry(gEff, legTitles[fInd], "l");
             }
             hDiv.front()->Draw("sameaxis");
-            TLine* l = new TLine(7, minimum, 7, maximum);
-            l->Draw("same");
             legend->Draw("same");
    
             TLatex *tex = new TLatex();
@@ -415,11 +450,20 @@ void macro_plotTpHist()
             tex->SetTextSize(0.035);
             //tex->DrawLatex(0.02, 0.96, gEffTitles[i]);
             tex->SetTextSize(0.03);
-            tex->DrawLatex(0.10, 0.91, "CMS Preliminary");
-            tex->DrawLatex(0.32, 0.91, pathNames[i]);
-            tex->DrawLatex(0.62, 0.91, "Errors: Clopper-Pearson");
+            tex->DrawLatex(0.10, 0.95, "CMS Preliminary");
+            tex->DrawLatex(0.10, 0.915, pathNames[i]);
+            tex->SetTextAlign(31);
+            tex->DrawLatex(0.84, 0.95, "Tag: HEEP electron E_{T} > 35 GeV");
+            TString probeDefTxt = "Probe: ";
+            if (hNumName.Contains("ProbesGsf")) probeDefTxt.Append("GSF electron");
+            else if (hNumName.Contains("ProbesHeep")) probeDefTxt.Append("HEEP electron");
+            tex->DrawLatex(0.84, 0.915, probeDefTxt);
+            tex->DrawLatex(0.84, 0.88, "Errors: Clopper-Pearson");
+
 
             if (saveAsPng) {
+               int posHlt = gEffName.Index("_HLT_");
+               gEffName.Remove(posHlt, gEffName.Index("_vs")-posHlt);
                c1->Print(plotsDir + gEffName + fileNameExtra + ".png", "png");
             }
          }
