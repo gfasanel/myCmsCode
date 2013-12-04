@@ -27,13 +27,21 @@ void macro_plotTpHist()
    const bool saveAsPng = 0;
    TString plotsDir = "./plots_20131203/";
    //TString fileNameExtra = "_realEle";
-   TString fileNameExtra = "";
 
    vector<TString> files;
    //files.push_back("./histoele.root");
    files.push_back("./histoele_dataZskim.root");
    files.push_back("./histoele_dy_8tev50ns.root");
    files.push_back("./histoele_qcd_8tev50ns.root");
+   //TString fileNameExtra = "_doubleele33only";
+   //files.push_back("./histoele_dataZskim_doubleele33only.root");
+   //files.push_back("./histoele_dy_8tev50ns_doubleele33only.root");
+   //files.push_back("./histoele_qcd_8tev50ns_doubleele33only.root");
+   //TString fileNameExtra = "_ele80only";
+   //files.push_back("./histoele_dataZskim_ele80only.root");
+   //files.push_back("./histoele_dy_8tev50ns_ele80only.root");
+   //files.push_back("./histoele_qcd_8tev50ns_ele80only.root");
+   //TString fileNameExtra = "_lowEtMenu";
    //files.push_back("./histoele_dataZskim_lowEtMenu.root");
    //files.push_back("./histoele_dy_8tev50ns_lowEtMenu.root");
    //files.push_back("./histoele_qcd_8tev50ns_lowEtMenu.root");

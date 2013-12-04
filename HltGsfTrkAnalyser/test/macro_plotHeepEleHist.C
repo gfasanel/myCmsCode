@@ -18,20 +18,25 @@ void macro_plotHeepEleHist()
 {
    TH1::AddDirectory(kFALSE);
 
-   const bool plotHistos = 1;
+   const bool plotHistos = 0;
    const bool plotEff = 1;
-   const bool plot2DRatios = 1;
+   const bool plot2DRatios = 0;
 
    int font = 42;
    const bool saveAsPng = 0;
-   TString plotsDir = "./plots_20130917/";
-   TString fileNameExtra = "_realEle";
+   TString plotsDir = "./plots_20130930/";
+   TString fileNameExtra = "";
+   //TString fileNameExtra = "_realEle";
+   //TString fileNameExtra = "_qcd";
 
    vector<TString> files;
    //files.push_back("../hltHeepEleHistos.root");
    files.push_back("./histoele_dataZskim.root");
-   files.push_back("./histoele_dy.root");
-   files.push_back("./histoele_qcd.root");
+   files.push_back("./histoele_dy_8tev50ns.root");
+   files.push_back("./histoele_qcd_8tev50ns.root");
+   //files.push_back("./histoele_dataZskim_lowEtMenu.root");
+   //files.push_back("./histoele_dy_8tev50ns_lowEtMenu.root");
+   //files.push_back("./histoele_qcd_8tev50ns_lowEtMenu.root");
    TString dir("HltGsfEleAna");
    vector<TString> fileTitles;
    fileTitles.push_back("_dataZskim");
@@ -75,10 +80,10 @@ void macro_plotHeepEleHist()
    vector<TString> gEffTitles;
    gEffTitles.push_back("# triggered / # reference triggered events");
    gEffTitles.push_back("# not triggered but reference triggered / # reference triggered events");
-   gEffTitles.push_back("# triggered / # reference triggered n-HEEP events");
-   gEffTitles.push_back("# not triggered but reference triggered / # reference triggered n-HEEP events");
-   gEffTitles.push_back("# triggered / # reference triggered n-HEEP events passing Et cuts");
-   gEffTitles.push_back("# not triggered but reference triggered / # reference triggered n-HEEP events passing Et cuts");
+   gEffTitles.push_back("# triggered n-HEEP events / # reference triggered events");
+   gEffTitles.push_back("# not triggered but reference triggered n-HEEP events / # reference triggered events");
+   gEffTitles.push_back("# triggered n-HEEP events passing Et cuts / # reference triggered events");
+   gEffTitles.push_back("# not triggered but reference triggered n-HEEP events passing Et cuts / # reference triggered events");
 
    // 2D efficiency matrix 
    vector<TString> h2Names;
@@ -111,8 +116,30 @@ void macro_plotHeepEleHist()
    zPlotRanges.push_back(make_pair(0.92, 1.08));
    zPlotRanges.push_back(make_pair(0.97, 1.03));
    zPlotRanges.push_back(make_pair(0.8, 1.2));
+   //// data
+   //zPlotRanges.push_back(make_pair(0.9985, 1.0015));
+   //zPlotRanges.push_back(make_pair(0.95, 1.05));
+   //zPlotRanges.push_back(make_pair(0.99985, 1.00015));
+   //zPlotRanges.push_back(make_pair(0.98, 1.02));
+   //zPlotRanges.push_back(make_pair(0.99975, 1.00025));
+   //zPlotRanges.push_back(make_pair(0.95, 1.05));
+   //// dy
+   //zPlotRanges.push_back(make_pair(0.9996, 1.0004));
+   //zPlotRanges.push_back(make_pair(0.99, 1.01));
+   //zPlotRanges.push_back(make_pair(0.9996, 1.0004));
+   //zPlotRanges.push_back(make_pair(0.96, 1.04));
+   //zPlotRanges.push_back(make_pair(0.9996, 1.0004));
+   //zPlotRanges.push_back(make_pair(0.94, 1.06));
+   //// qcd
+   //zPlotRanges.push_back(make_pair(0.992, 1.008));
+   //zPlotRanges.push_back(make_pair(0.996, 1.004));
+   //zPlotRanges.push_back(make_pair(0.97, 1.03));
+   //zPlotRanges.push_back(make_pair(0.92, 1.08));
+   //zPlotRanges.push_back(make_pair(0.97, 1.03));
+   //zPlotRanges.push_back(make_pair(0.8, 1.2));
 
    int colours[] = {kBlack, kAzure -5, kRed, kGreen, kMagenta, kOrange, kCyan};
+   //int colours[] = {kRed, kGreen, kMagenta, kOrange, kCyan};
 
    TFile* inFile;
 

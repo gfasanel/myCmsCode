@@ -21,11 +21,12 @@ void macro_plotTiming()
 
    int font = 42;
    const bool saveAsPng = 0;
-   TString plotsDir = "plots_20130917/";
+   TString plotsDir = "plots_20130924/";
 
    TString fileDir("/afs/cern.ch/work/t/treis/hlt/gsftracking/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/");
    vector<TString> files;
    files.push_back("./DQM_V0001_R000204113__HLT__FastTimerService__All_vocms110.root");
+   //files.push_back("./DQM_V0001_R000204113__HLT__FastTimerService__All_lowEt_vocms110.root");
    TString dir("DQMData/Run 204113/HLT/Run summary/TimerService/");
    TString subDir("Paths/");
 
@@ -38,10 +39,17 @@ void macro_plotTiming()
       trgNames.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC2");
    } else {
       trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_v2");
+      trgNames.push_back("HLT_Ele80_CaloIdVT_TrkIdT");
       trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC5");
       trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC4");
       trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC3");
       trgNames.push_back("HLT_Ele80_CaloIdVT_GsfTrkIdT_nC2");
+      //trgNames.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_v2");
+      //trgNames.push_back("HLT_Ele25_CaloIdVT_TrkIdT");
+      //trgNames.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC5");
+      //trgNames.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC4");
+      //trgNames.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC3");
+      //trgNames.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC2");
    }
 
    vector<TString> moduleNames;
@@ -53,6 +61,7 @@ void macro_plotTiming()
       moduleNames.push_back("hltActivityElectronGsfTracksNC2");
    } else {
       moduleNames.push_back("hltL1SeededElectronGsfTracks");
+      moduleNames.push_back("hltCtfL1SeededWithMaterialTracks");
       moduleNames.push_back("hltL1SeededElectronGsfTracksNC5");
       moduleNames.push_back("hltL1SeededElectronGsfTracksNC4");
       moduleNames.push_back("hltL1SeededElectronGsfTracksNC3");
@@ -61,6 +70,7 @@ void macro_plotTiming()
 
    vector<TString> legEntries;
    legEntries.push_back("NC6");
+   if (!plotDoubleEleTrg) legEntries.push_back("KF");
    legEntries.push_back("NC5");
    legEntries.push_back("NC4");
    legEntries.push_back("NC3");
@@ -116,12 +126,14 @@ void macro_plotTiming()
       tex->SetTextSize(0.03);
       if (plotDoubleEleTrg) tex->DrawLatex(0.10, 0.91, "Paths: HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_*");
       else tex->DrawLatex(0.10, 0.91, "Paths: HLT_Ele80_CaloIdVT_GsfTrkIdT_*");
+      //else tex->DrawLatex(0.10, 0.91, "Paths: HLT_Ele25_CaloIdVT_GsfTrkIdT_*");
       tex->DrawLatex(0.75, 0.91, "CMS Preliminary");
 
       if (plotDoubleEleTrg) {
          if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7" + histoNames[i] + ".png", "png");
       } else {
-         if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_Ele80_CaloIdVT_GsfTrkIdT" + histoNames[i] + ".png", "png");
+         //if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_Ele80_CaloIdVT_GsfTrkIdT" + histoNames[i] + ".png", "png");
+         if (saveAsPng) c0->Print(plotsDir + "hTrgTime_HLT_Ele25_CaloIdVT_GsfTrkIdT" + histoNames[i] + ".png", "png");
       }
    }
 
@@ -169,7 +181,8 @@ void macro_plotTiming()
             legend->AddEntry(hMod[j], legEntries[j] + Form(", Mean: %.1f ms", hMod[j]->GetMean()), "l");
          }
       }
-      hMod[0]->Draw("sameaxis");
+      hMod.front()->GetXaxis()->SetTitle("processing time [ms]");
+      hMod.front()->Draw("sameaxis");
 
       legend->Draw("same");
 
@@ -179,7 +192,10 @@ void macro_plotTiming()
       tex->SetLineWidth(2);
       tex->SetTextSize(0.03);
       if (plotDoubleEleTrg) tex->DrawLatex(0.10, 0.91, "Modules: hltActivityElectronGsfTracks*");
-      else tex->DrawLatex(0.10, 0.91, "Modules: hltL1SeededElectronGsfTracks*");
+      else {
+         tex->DrawLatex(0.10, 0.91, "Modules: hltL1SeededElectronGsfTracks*");
+         tex->DrawLatex(0.21, 0.79, "For KF: hltCtfL1SeededWithMaterialTracks");
+      }
       tex->DrawLatex(0.75, 0.91, "CMS Preliminary");
 
       if (saveAsPng) c1->Print(plotsDir + "hModTime_" + moduleNames[0] + ".png", "png");

@@ -17,44 +17,43 @@ void macro_plotHist()
 {
    TH1::AddDirectory(kFALSE);
 
-   const bool compToReco = 0;
-   const bool matched = 0; // when comparing to reco
+   const bool compToReco = 1;
+   const bool matched = 1; // when comparing to reco
    int font = 42;
    const bool ratioPlot = 1;
-   const bool saveAsPng = 1;
-   TString plotsDir = "./plots_20130917/";
+   const bool saveAsPng = 0;
+   TString plotsDir = "./plots_20131011/";
    //TString fileNameExtra = "_+nc2-nc6";
-   TString fileNameExtra = ""; 
+   TString fileNameExtra = "_kfTracks"; 
 
    vector<TString> files;
    if (compToReco) {
-      files.push_back("./recoVsNc6_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("./recoVsNc5_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("./recoVsNc4_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("./recoVsNc3_pt10_dr0p5_passHltDEle33.root");
-      files.push_back("./recoVsNc2_pt10_dr0p5_passHltDEle33.root");
+      files.push_back("./recoVsKf_pt10_dr0p5_passHltEle25_narrow.root");
+      //files.push_back("./recoVsNc6_pt10_dr0p5_passHltDEle33.root");
+      //files.push_back("./recoVsNc5_pt10_dr0p5_passHltDEle33.root");
+      //files.push_back("./recoVsNc4_pt10_dr0p5_passHltDEle33.root");
+      //files.push_back("./recoVsNc3_pt10_dr0p5_passHltDEle33.root");
+      //files.push_back("./recoVsNc2_pt10_dr0p5_passHltDEle33.root");
+      //files.push_back("./recoVsNc6_pt10_dr0p5_passHltDEle25_narrow.root");
+      //files.push_back("./recoVsNc5_pt10_dr0p5_passHltDEle25_narrow.root");
+      //files.push_back("./recoVsNc4_pt10_dr0p5_passHltDEle25_narrow.root");
+      //files.push_back("./recoVsNc3_pt10_dr0p5_passHltDEle25_narrow.root");
+      //files.push_back("./recoVsNc2_pt10_dr0p5_passHltDEle25_narrow.root");
    } else {
       files.push_back("./nc6VsNc5_pt10_sharedHits3_passHltDEle33.root");
       files.push_back("./nc6VsNc4_pt10_sharedHits3_passHltDEle33.root");
       files.push_back("./nc6VsNc3_pt10_sharedHits3_passHltDEle33.root");
       files.push_back("./nc6VsNc2_pt10_sharedHits3_passHltDEle33.root");
+      //files.push_back("./nc6VsNc5_pt10_sharedHits3_passHltDEle25_narrow.root");
+      //files.push_back("./nc6VsNc4_pt10_sharedHits3_passHltDEle25_narrow.root");
+      //files.push_back("./nc6VsNc3_pt10_sharedHits3_passHltDEle25_narrow.root");
+      //files.push_back("./nc6VsNc2_pt10_sharedHits3_passHltDEle25_narrow.root");
    }
-   //files.push_back("./nc6VsNc5_pt30_dr0p5_passHltDEle33.root");
-   //files.push_back("./nc6VsNc4_pt30_dr0p5_passHltDEle33.root");
-   //files.push_back("./nc6VsNc3_pt30_dr0p5_passHltDEle33.root");
-   //files.push_back("./nc6VsNc2_pt30_dr0p5_passHltDEle33.root");
-   //files.push_back("./nc6VsNc5_pt30_dr0p5_passHltDEle33TrkNC5_noPassHltDEle33TrkNC6.root");
-   //files.push_back("./nc6VsNc4_pt30_dr0p5_passHltDEle33TrkNC4_noPassHltDEle33TrkNC6.root");
-   //files.push_back("./nc6VsNc3_pt30_dr0p5_passHltDEle33TrkNC3_noPassHltDEle33TrkNC6.root");
-   //files.push_back("./nc6VsNc2_pt30_dr0p5_passHltDEle33TrkNC2_noPassHltDEle33TrkNC6.root");
-   //files.push_back("./nc6VsNc5_pt30_dr0p5_passHltDEle33TrkNC6_noPassHltDEle33TrkNC5.root");
-   //files.push_back("./nc6VsNc4_pt30_dr0p5_passHltDEle33TrkNC6_noPassHltDEle33TrkNC4.root");
-   //files.push_back("./nc6VsNc3_pt30_dr0p5_passHltDEle33TrkNC6_noPassHltDEle33TrkNC3.root");
-   //files.push_back("./nc6VsNc2_pt30_dr0p5_passHltDEle33TrkNC6_noPassHltDEle33TrkNC2.root");
    TString dir("HltGsfTrkAna");
 
    vector<TString> legEntries;
    if (compToReco) legEntries.push_back("RECO");
+   legEntries.push_back("KF");
    legEntries.push_back("NC6");
    legEntries.push_back("NC5");
    legEntries.push_back("NC4");
@@ -203,6 +202,7 @@ void macro_plotHist()
       tex->SetTextSize(0.035);
       if (compToReco) tex->DrawLatex(0.10, 0.91, "CMS Preliminary,   Ref: electronGsfTracks - RECO");
       else tex->DrawLatex(0.10, 0.91, "CMS Preliminary,   Ref Trigger: HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7 (NC6)");
+      //else tex->DrawLatex(0.10, 0.91, "CMS Preliminary,   Ref Trigger: HLT_Ele25_CaloIdVT_GsfTrkIdT_v2 (NC6)");
 
       float fontScaleBot = 1.;
       TPad *pullPad = new TPad("pullPad" + histoNames[i], "(data - bg) / bg" + histoNames[i], 0., 0., 1., 1.);

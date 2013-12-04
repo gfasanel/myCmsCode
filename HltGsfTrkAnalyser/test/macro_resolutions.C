@@ -17,19 +17,24 @@ void macro_resolutions()
 {
    TH1::AddDirectory(kFALSE);
 
-   const bool compToReco = 0;
+   const bool compToReco = 1;
    int font = 42;
    const bool saveAsPng = 0;
    const bool saveFitsAsPng = 1;
-   TString plotsDir = "./plots_20130924/";
+   TString plotsDir = "./plots_20130930/";
 
    vector<TString> files;
    if (compToReco) {
-      files.push_back("./recoVsNc6_pt10_dr0p5_passHltDEle33_narrowDiff.root");
-      files.push_back("./recoVsNc5_pt10_dr0p5_passHltDEle33_narrowDiff.root");
-      files.push_back("./recoVsNc4_pt10_dr0p5_passHltDEle33_narrowDiff.root");
-      files.push_back("./recoVsNc3_pt10_dr0p5_passHltDEle33_narrowDiff.root");
-      files.push_back("./recoVsNc2_pt10_dr0p5_passHltDEle33_narrowDiff.root");
+      files.push_back("./recoVsNc6_pt10_dr0p5_passHltDEle33_narrowerPull.root");
+      files.push_back("./recoVsNc5_pt10_dr0p5_passHltDEle33_narrowerPull.root");
+      files.push_back("./recoVsNc4_pt10_dr0p5_passHltDEle33_narrowerPull.root");
+      files.push_back("./recoVsNc3_pt10_dr0p5_passHltDEle33_narrowerPull.root");
+      files.push_back("./recoVsNc2_pt10_dr0p5_passHltDEle33_narrowerPull.root");
+      //files.push_back("./recoVsNc6_pt10_dr0p5_passHltDEle25_narrowerPull.root");
+      //files.push_back("./recoVsNc5_pt10_dr0p5_passHltDEle25_narrowerPull.root");
+      //files.push_back("./recoVsNc4_pt10_dr0p5_passHltDEle25_narrowerPull.root");
+      //files.push_back("./recoVsNc3_pt10_dr0p5_passHltDEle25_narrowerPull.root");
+      //files.push_back("./recoVsNc2_pt10_dr0p5_passHltDEle25_narrowerPull.root");
    } else {
       files.push_back("./nc6VsNc5_pt10_sharedHits3_passHltDEle33_narrowDiff.root");
       files.push_back("./nc6VsNc4_pt10_sharedHits3_passHltDEle33_narrowDiff.root");
@@ -51,6 +56,11 @@ void macro_resolutions()
    axisLabels.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC4");
    axisLabels.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC3");
    axisLabels.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_nC2");
+   //if (compToReco) axisLabels.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_v2");
+   //axisLabels.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC5");
+   //axisLabels.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC4");
+   //axisLabels.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC3");
+   //axisLabels.push_back("HLT_Ele25_CaloIdVT_GsfTrkIdT_nC2");
 
    vector<TString> histoNames;
    //histoNames.push_back("hMatch_diff_p");
@@ -58,7 +68,7 @@ void macro_resolutions()
    //histoNames.push_back("hMatch_diff_eta");
    //histoNames.push_back("hMatch_diff_phi");
    //histoNames.push_back("hMatch_diff_ptError");
-   histoNames.push_back("hMatch_diff_dPtOverPt");
+   //histoNames.push_back("hMatch_diff_dPtOverPt");
    //histoNames.push_back("hMatch_diff_etaError");
    //histoNames.push_back("hMatch_diff_phiError");
    //histoNames.push_back("hMatch_diff_outerP");
@@ -71,6 +81,20 @@ void macro_resolutions()
    //histoNames.push_back("hMatch_diff_dz");
    //histoNames.push_back("hMatch_diff_dxyError");
    //histoNames.push_back("hMatch_diff_dzError");
+   //histoNames.push_back("hMatch_pull_p");
+   histoNames.push_back("hMatch_pull_pt");
+   //histoNames.push_back("hMatch_pull_eta");
+   //histoNames.push_back("hMatch_pull_ptError");
+   histoNames.push_back("hMatch_pull_dPtOverPt");
+   //histoNames.push_back("hMatch_pull_etaError");
+   //histoNames.push_back("hMatch_pull_phiError");
+   //histoNames.push_back("hMatch_pull_outerP");
+   //histoNames.push_back("hMatch_pull_outerPt");
+   //histoNames.push_back("hMatch_pull_outerEta");
+   //histoNames.push_back("hMatch_pull_outerPOverP");
+   histoNames.push_back("hMatch_pull_outerPtOverPt");
+   //histoNames.push_back("hMatch_pull_dxy");
+   //histoNames.push_back("hMatch_pull_dz");
 
    int colours[] = {kAzure -5, kRed, kGreen, kMagenta, kOrange, kCyan};
 
@@ -159,7 +183,7 @@ void macro_resolutions()
 
          TF1 *gauss = new TF1("gauss", "gaus(0)", h.back()->GetXaxis()->GetXmin(), h.back()->GetXaxis()->GetXmax());
          gauss->SetParameters(1000., h.back()->GetMean(), h.back()->GetRMS());
-         float factor = 0.8;
+         float factor = 0.7;
          h.back()->Fit("gauss", "", "", h.back()->GetMean() - factor*h.back()->GetRMS(), h.back()->GetMean() + factor*h.back()->GetRMS());
          legend->Draw("same");
          if (compToReco) tex->DrawLatex(0.10, 0.91, "CMS Preliminary,   Ref: electronGsfTracks - RECO");
