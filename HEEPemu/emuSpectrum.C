@@ -52,8 +52,8 @@ void EmuSpectrum::Loop()
    TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.9923); // for 0.9<|eta|<1.2
    TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.9949); // for 1.2<|eta|<2.1
    TParameter<float> muScaleFactorHighestEta("muScaleFactorHighestEta", 0.9923); // for 2.1<|eta|<2.4
-   TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.992);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
-   TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.930);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
+   TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.997);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
+   TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.934);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
    // global systematic errors
    TParameter<float> systErrLumi("systErrLumi", 0.026);
