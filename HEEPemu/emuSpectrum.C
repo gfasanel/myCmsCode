@@ -642,9 +642,10 @@ void EmuSpectrum::Loop()
          /////////////////////////////////////////////////////////////////////////////////////////////
          //loop over electrons
          for (int j = 0; j < gsf_size; ++j) {
-            //cleaning: fake electrons from muons
+            //cleaning: fake electrons from muons skim electrons if there is a muon with pt>5 GeV within dR<0.1
             bool fakeEle = false;
             for (int k = 0; k < muon_size; ++k) {
+               if (muon_pt[k] < 5.) continue;
                float DeltaR = deltaR(gsf_eta[j], gsf_phi[j], muon_eta[k], muon_phi[k]);
                if (DeltaR < 0.1) {
                   fakeEle = true;
