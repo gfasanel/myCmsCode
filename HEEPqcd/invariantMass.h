@@ -42,7 +42,7 @@ public :
    bool PassFRPreSel(const int&, const float&);
    bool PassHEEP(const int &);
    int Trigger(int &);
-   double TriggerTurnOn(const int &, const bool &useSecond = false);
+   double TriggerTurnOn(const int &);
    void CorrectEnergy();
 
    // Declaration of leaf types

@@ -59,7 +59,7 @@ void InvariantMass::Loop()
   const int ratioRebin = 50;      // rebinning for FR ratio histograms
                                   // should be chosen compatible with binning
 
-  bool usePUInfo = true;
+  bool usePUInfo = false;
   TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_Photon_RunA_DoublePhotonHighPt_RunBCD_ReReco22Jan2013.root";
   float bar_et = 35.;
   float end_et = 35.;
@@ -461,10 +461,6 @@ void InvariantMass::Loop()
       thetree->GetEntry(jentry);
       if (jentry % 50000 == 0 ) cout << "entry " << jentry << endl;
 
-      // use trigger turn on without online laser correction for a percentage of MC events
-      bool useSecondTurnOn = false;
-      if (p > DATA && jentry < (ratioNoOnlineLaser * nentries)) useSecondTurnOn = true;
-
       // first correct the energy
       //CorrectEnergy(); 
 
@@ -532,7 +528,7 @@ void InvariantMass::Loop()
       ////////////////////////////////////////////////////////////////////////
       // fill the GSF-GSF cases
       double gsfGsfMass = CalcInvariantMass(iGsf1, iGsf2, etShift);
-      if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iGsf1, useSecondTurnOn) * TriggerTurnOn(iGsf2, useSecondTurnOn);
+      if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iGsf1) * TriggerTurnOn(iGsf2);
       if (gsfGsfMass > massCut) {
         if (fabs(gsfsc_eta[iGsf1]) < 2.5 && fabs(gsfsc_eta[iGsf2]) < 2.5) {
           double fakeRate1 = FakeRate(gsf_gsfet[iGsf1], gsfsc_eta[iGsf1]);
@@ -565,7 +561,7 @@ void InvariantMass::Loop()
       if (iGsfNoHeep2 >= 0 && iGsfNoHeep1 >= 0 && iHeep1 < 0 && iHeep2 < 0) {
         // fill the GSF-GSF cases that do not pass the HEEP selection
         double gsfGsfMassNoHeep = CalcInvariantMass(iGsfNoHeep1, iGsfNoHeep2, etShift);
-        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iGsfNoHeep1, useSecondTurnOn) * TriggerTurnOn(iGsfNoHeep2, useSecondTurnOn);
+        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iGsfNoHeep1) * TriggerTurnOn(iGsfNoHeep2);
         if (gsfGsfMassNoHeep > massCut) {
           if (fabs(gsfsc_eta[iGsfNoHeep1]) < 2.5 && fabs(gsfsc_eta[iGsfNoHeep2]) < 2.5) {
             double fakeRate1 = FakeRate(gsf_gsfet[iGsfNoHeep1], gsfsc_eta[iGsfNoHeep1]);
@@ -631,7 +627,7 @@ void InvariantMass::Loop()
         // fill the HEEP-GSF and GSF-HEEP cases
         int iGsf = (iHeep1 == iGsf1) ? iGsf2 : iGsf1;
         float heepGsfMass = CalcInvariantMass(iHeep1, iGsf, etShift);
-        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1, useSecondTurnOn) * TriggerTurnOn(iGsf, useSecondTurnOn);
+        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1) * TriggerTurnOn(iGsf);
         if (heepGsfMass > massCut) {
           if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iGsf]) < 2.5) {
             double fakeRate = FakeRate(gsf_gsfet[iGsf], gsfsc_eta[iGsf]);
@@ -662,7 +658,7 @@ void InvariantMass::Loop()
         // fill the HEEP-GSF and GSF-HEEP cases where the GSF does not pass the HEEP selection
         if (iGsfNoHeep1 >= 0 && iHeep2 < 0) {
           float heepGsfMassNoHeep = CalcInvariantMass(iHeep1, iGsfNoHeep1, etShift);
-          if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1, useSecondTurnOn) * TriggerTurnOn(iGsfNoHeep1, useSecondTurnOn);
+          if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1) * TriggerTurnOn(iGsfNoHeep1);
           if (heepGsfMassNoHeep > massCut) {
             if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iGsfNoHeep1]) < 2.5) {
               double fakeRate = FakeRate(gsf_gsfet[iGsfNoHeep1], gsfsc_eta[iGsfNoHeep1]);
@@ -737,7 +733,7 @@ void InvariantMass::Loop()
       if (iHeep1 >= 0 && iHeep2 >= 0) {
         // fill the HEEP-HEEP cases
         float heepHeepMass = CalcInvariantMass(iHeep1, iHeep2, etShift);
-        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1, useSecondTurnOn) * TriggerTurnOn(iHeep2, useSecondTurnOn);
+        if (p > DATA) trgTurnOnWeight = TriggerTurnOn(iHeep1) * TriggerTurnOn(iHeep2);
         if (heepHeepMass > massCut) {
           if (fabs(gsfsc_eta[iHeep1]) < 2.5 && fabs(gsfsc_eta[iHeep2]) < 2.5) {
             if (fabs(gsfsc_eta[iHeep1]) > 1.56 && fabs(gsfsc_eta[iHeep2]) > 1.56) {
@@ -1354,11 +1350,20 @@ InvariantMass::CalcPz (const int& iEle1, const int& iEle2, bool &etShift)
 double
 InvariantMass::FakeRate (const float& et, const float& eta)
 {
-  // fake rate full 2012 rereco 19.7/fb
-  if (fabs(eta) < 1.5) return 0.0068;
-  else if (abs(eta) < 2.0) return 0.0263;
-  else if (abs(eta) < 2.5) return 0.0533;
-  else return 0.; 
+  // fake rate full 2012 rereco 19.7/fb from AN-13-359 table 10
+  if (fabs(eta) < 1.5) {
+    if (et >= 35. && et < 98.) return 0.0226 - 0.000153*et;
+    else if (et >= 98. && et < 191.9) return 0.0115 - 3.98e-5*et;
+    else if (et >= 191.9) return 0.00382;
+    else return 0.;
+  }
+  else if (fabs(eta) > 1.5) {
+    if (et >= 35. && et < 89.9) return 0.0823 - 0.000522*et + (fabs(eta)-1.9)*0.065;
+    else if (et >= 89.9 && et < 166.4) return 0.0403 - 5.45e-5*et + (fabs(eta)-1.9)*0.065;
+    else if (et >= 166.4) return 0.0290 + 1.32e-5*et + (fabs(eta)-1.9)*0.065;
+    else return 0.;
+  }
+  else return 0.;
 }
 
 bool
@@ -1396,32 +1401,6 @@ InvariantMass::PassHEEP(const int &n)
   //int selection = 0;  // HEEP v4.0
   int selection = 1;  // HEEP v4.1
 
-// HEEP selection v3.2
-//  // barrel
-//  float bar_et = 35.;
-//  float bar_hoE = 0.05;
-//  float bar_DEta = 0.005;
-//  float bar_DPhi = 0.06;
-//  float bar_e2x5e5x5 = 0.94;
-//  float bar_e1x5e5x5 = 0.83;
-//  float bar_isoEcalHcal1_1 = 2.;
-//  float bar_isoEcalHcal1_2 = 0.03;
-//  float bar_isoTrack = 5.;
-//  int bar_missInnerHits = 0;
-//
-//  // endcap
-//  float end_et = 40.;
-//  float end_hoE = 0.05;
-//  float end_DEta = 0.007 ;
-//  float end_DPhi = 0.06;
-//  float end_e2x5e5x5 = 0.;
-//  float end_e1x5e5x5 = 0.;
-//  float end_sigmaietaieta = 0.03;
-//  float end_isoEcalHcal1_1 = 2.5;
-//  float end_isoEcalHcal1_2 = 0.03;
-//  float end_isoTrack = 5.;
-//  int end_missInnerHits = 0;
-
   // HEEP v4.0
   // barrel
   float bar_et = 35.;
@@ -1456,37 +1435,7 @@ InvariantMass::PassHEEP(const int &n)
     end_missInnerHits = 1;
   }
 
-//  HEEP v3.2
-//  // barrel
-//  if (fabs(gsfsc_eta[n]) < 1.442
-//      && gsf_gsfet[n] > bar_et
-//      && gsf_isecaldriven[n]
-//      && gsf_hovere[n] < bar_hoE
-//      && fabs(gsf_deltaeta[n]) < bar_DEta
-//      && fabs(gsf_deltaphi[n]) < bar_DPhi
-//      && (gsf_e2x5overe5x5[n] > bar_e2x5e5x5 || gsf_e1x5overe5x5[n] > bar_e1x5e5x5)
-//      && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (bar_isoEcalHcal1_1 + bar_isoEcalHcal1_2 * gsf_gsfet[n])
-//      && gsf_trackiso[n] < bar_isoTrack
-//      && gsf_nLostInnerHits[n] <= bar_missInnerHits
-//     ) return true;
-//
-//  // endcap
-//  else if ((fabs(gsfsc_eta[n]) > 1.56 && fabs(gsfsc_eta[n]) < 2.5)
-//      && gsf_gsfet[n] > end_et
-//      && gsf_isecaldriven[n]
-//      && gsf_hovere[n] < end_hoE
-//      && fabs(gsf_deltaeta[n]) < end_DEta
-//      && fabs(gsf_deltaphi[n]) < end_DPhi
-//      && (gsf_e2x5overe5x5[n] > end_e2x5e5x5 || gsf_e1x5overe5x5[n] > end_e1x5e5x5)
-//      && gsf_sigmaIetaIeta[n] < end_sigmaietaieta
-//      && ((gsf_gsfet[n] < 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < end_isoEcalHcal1_1)
-//          ||
-//          (gsf_gsfet[n] >= 50. && (gsf_ecaliso[n] + gsf_hcaliso1[n]) < (end_isoEcalHcal1_1 + end_isoEcalHcal1_2 * (gsf_gsfet[n] - 50.))))
-//      && gsf_trackiso[n] < end_isoTrack
-//      && gsf_nLostInnerHits[n] <= end_missInnerHits
-//     ) return true;
-
-  // HEEP v4.0
+  // HEEP 
   // barrel
   if (fabs(gsfsc_eta[n]) < 1.442
       && gsf_gsfet[n] > bar_et
@@ -1539,20 +1488,43 @@ InvariantMass::Trigger(int &prescale)
 }
 
 double 
-InvariantMass::TriggerTurnOn(const int &n, const bool &useSecond)
+InvariantMass::TriggerTurnOn(const int &n)
 {
+  // from AN-13-359 table 3
   float et = gsf_gsfet[n] * cosh(gsf_eta[n]) / cosh(gsfsc_eta[n]);
-  float a0 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.996 : 0.9948;
-  float a1 = (fabs(gsfsc_eta[n]) < 1.5) ? 34.76 : 32.74;
-  float a2 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.85 : 2.36;
+  float a0 = 0.;
+  float a1 = et;
+  float a2 = 1.;
+  float b0 = 0.;
+  float b1 = et;
+  float b2 = 1.;
 
-  if (useSecond) {
-    a0 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.996 : 0.979;
-    a1 = (fabs(gsfsc_eta[n]) < 1.5) ? 34.76 : 37.2;
-    a2 = (fabs(gsfsc_eta[n]) < 1.5) ? 0.85 : 2.3;
+  if (fabs(gsfsc_eta[n]) < 1.442) {
+    a0 = 0.081;
+    a1 = 34.9;
+    a2 = 2.13;
+    b0 = 0.919;
+    b1 = 34.85;
+    b2 = 0.796;
+  }
+  else if (fabs(gsfsc_eta[n]) > 1.56 && fabs(gsfsc_eta[n]) < 2.) {
+    a0 = 0.61;
+    a1 = 32.67;
+    a2 = 0.94;
+    b0 = 0.39;
+    b1 = 33.6;
+    b2 = 2.11;
+  }
+  else if (fabs(gsfsc_eta[n]) > 2. && fabs(gsfsc_eta[n]) < 2.5) {
+    a0 = 0.345;
+    a1 = 35.2;
+    a2 = 3.58;
+    b0 = 0.655;
+    b1 = 33.39;
+    b2 = 1.68;
   }
 
-  return 0.5 * a0 * (1 + erf((et - a1) / (sqrt(2) * a2)));
+  return 0.5 * a0 * (1 + erf((et - a1) / (sqrt(2) * a2))) + 0.5 * b0 * (1 + erf((et - b1) / (sqrt(2) * b2)));
 }
 
 void
