@@ -38,15 +38,15 @@ void EmuSpectrum::Loop()
    TParameter<float> eps_cand_sf_err_1p566to2p0("eps_cand_sf_err_1p566to2p0", 0.005); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) 1.566<|eta|<2.0
    TParameter<float> eps_cand_sf_2p0to2p5("eps_cand_sf_2p0to2p5", 0.998); // data/MC scale for epsilon_cand (>50GeV) 2.0<|eta|<2.5
    TParameter<float> eps_cand_sf_err_2p0to2p5("eps_cand_sf_err_2p0to2p5", 0.006); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) 2.0<|eta|<2.5
-   // HEEP eff scale factors from AN-12-415 Tables 7 and 8
-   TParameter<float> eps_heep_sf_eb_pt35("eps_heep_sf_eb_pt35", 1.001); // HEEP eff scale factor
+   // HEEP eff scale factors from AN-13-359 Table 5 reReco
+   TParameter<float> eps_heep_sf_eb_pt35("eps_heep_sf_eb_pt35", 0.997); // HEEP eff scale factor
    TParameter<float> eps_heep_sf_err_eb_pt35("eps_heep_sf_err_eb_pt35", 0.007); // HEEP eff scale factor error
-   TParameter<float> eps_heep_sf_eb_pt100("eps_heep_sf_eb_pt100", 0.983); // HEEP eff scale factor
-   TParameter<float> eps_heep_sf_err_eb_pt100("eps_heep_sf_err_eb_pt100", 0.015); // HEEP eff scale factor error
-   TParameter<float> eps_heep_sf_ee_pt35("eps_heep_sf_eb_pt35", 1.000); // HEEP eff scale factor
-   TParameter<float> eps_heep_sf_err_ee_pt35("eps_heep_sf_err_eb_pt35", 0.007); // HEEP eff scale factor error
-   TParameter<float> eps_heep_sf_ee_pt100("eps_heep_sf_eb_pt100", 0.984); // HEEP eff scale factor
-   TParameter<float> eps_heep_sf_err_ee_pt100("eps_heep_sf_err_eb_pt100", 0.012); // HEEP eff scale factor error
+   TParameter<float> eps_heep_sf_eb_pt100("eps_heep_sf_eb_pt100", 0.985); // HEEP eff scale factor
+   TParameter<float> eps_heep_sf_err_eb_pt100("eps_heep_sf_err_eb_pt100", 0.014); // HEEP eff scale factor error
+   TParameter<float> eps_heep_sf_ee_pt35("eps_heep_sf_eb_pt35", 0.979); // HEEP eff scale factor
+   TParameter<float> eps_heep_sf_err_ee_pt35("eps_heep_sf_err_eb_pt35", 0.006); // HEEP eff scale factor error
+   TParameter<float> eps_heep_sf_ee_pt100("eps_heep_sf_eb_pt100", 0.981); // HEEP eff scale factor
+   TParameter<float> eps_heep_sf_err_ee_pt100("eps_heep_sf_err_eb_pt100", 0.007); // HEEP eff scale factor error
    // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
    TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.9900); // for |eta|<0.9
    TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.9923); // for 0.9<|eta|<1.2
@@ -1155,10 +1155,19 @@ EmuSpectrum::PassFRPreSel(const int &n)
 double
 EmuSpectrum::FakeRate (const float& et, const float& eta)
 {
-  // fake rate full 2012 rereco 19.7/fb
-  if (fabs(eta) < 1.5) return 0.0068;
-  else if (abs(eta) < 2.0) return 0.0263;
-  else if (abs(eta) < 2.5) return 0.0533;
+  // fake rate full 2012 rereco 19.7/fb from AN-13-359 table 10
+  if (fabs(eta) < 1.5) {
+    if (et >= 35. && et < 98.) return 0.0226 - 0.000153*et;
+    else if (et >= 98. && et < 191.9) return 0.0115 - 3.98e-5*et;
+    else if (et >= 191.9) return 0.00382;
+    else return 0.;
+  }
+  else if (fabs(eta) > 1.5) {
+    if (et >= 35. && et < 89.9) return 0.0823 - 0.000522*et + (fabs(eta)-1.9)*0.065;
+    else if (et >= 89.9 && et < 166.4) return 0.0403 - 5.45e-5*et + (fabs(eta)-1.9)*0.065;
+    else if (et >= 166.4) return 0.0290 + 1.32e-5*et + (fabs(eta)-1.9)*0.065;
+    else return 0.;
+  }
   else return 0.; 
 }
 
