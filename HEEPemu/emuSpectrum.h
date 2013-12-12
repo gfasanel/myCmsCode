@@ -336,8 +336,11 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("ttbar");
    suffix.push_back("ttbar700to1000");
    suffix.push_back("ttbar1000up");
+   suffix.push_back("ttbarPriv600up");
    suffix.push_back("ztautau");
    suffix.push_back("ww");
+   suffix.push_back("wwPriv600upEminusMuPlus");
+   suffix.push_back("wwPriv600upEplusMuMinus");
    suffix.push_back("wz");
    suffix.push_back("tw");
    suffix.push_back("wjets");
@@ -349,6 +352,7 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("ttbarto1l1jet");
    suffix.push_back("ttbarw");
    suffix.push_back("ttbarww");
+   suffix.push_back("sig250");
    suffix.push_back("sig500");
    suffix.push_back("sig750");
    suffix.push_back("sig1000");
@@ -361,6 +365,7 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("sig3500");
    suffix.push_back("sig4000");
    suffix.push_back("sig5000");
+   suffix.push_back("sigNoAccCuts250");
    suffix.push_back("sigNoAccCuts500");
    suffix.push_back("sigNoAccCuts750");
    suffix.push_back("sigNoAccCuts1000");
@@ -373,6 +378,7 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("sigNoAccCuts3500");
    suffix.push_back("sigNoAccCuts4000");
    suffix.push_back("sigNoAccCuts5000");
+   suffix.push_back("sig1000CentralProduction");
 }
 
 EmuSpectrum::~EmuSpectrum()
