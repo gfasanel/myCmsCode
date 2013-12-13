@@ -1014,6 +1014,7 @@ void macro_MakeEMuInvMassPlot()
   cout << "\\begin{table}[tbh]" << endl;
   cout << "\\centering" << endl;
   cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
+  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
@@ -1038,7 +1039,6 @@ void macro_MakeEMuInvMassPlot()
           emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400, -1, calcQcdErr));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
-  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\end{table}" << endl;
 
   cout << endl;
@@ -1048,6 +1048,7 @@ void macro_MakeEMuInvMassPlot()
   cout << "\\begin{table}[tbh]" << endl;
   cout << "\\centering" << endl;
   cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
+  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
@@ -1080,16 +1081,17 @@ void macro_MakeEMuInvMassPlot()
           CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400, -1, calcQcdErr));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
-  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\end{table}" << endl;
 
   cout << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "|Event yield table per sample                                                                             |" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-  cout << "\\begin{table}[b]" << endl;
+  cout << "\\begin{table}[htb]" << endl;
   cout << "\\centering" << endl;
   cout << "\\caption{Number of $e\\mu$ events with invariant mass in different regions and with different charge combinations.}" << endl;
+  cout << "\\label{tab:emu_event_yield_by_source}" << endl;
+  cout << "\\resizebox{16cm}{!}{" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline\\hline" << endl;
   cout << "Source & \\multicolumn{9}{c|}{number of events} \\\\" << endl;
@@ -1097,9 +1099,15 @@ void macro_MakeEMuInvMassPlot()
   cout << " &  OS & SS & Combined & OS & SS & Combined & OS & SS & Combined \\\\\\hline" << endl;
 
   printf("CMS data  & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f \\\\\n", 
-         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200), 
-         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), 
-         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400));
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), 
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), 
+         emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200), 
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400));
   printf("Total Bkg & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
          CalcBgSum(emuMasses, allSamples, OSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OSCUM, bin120, bin200, calcQcdErr), 
          CalcBgSum(emuMasses, allSamples, SSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, SSCUM, bin120, bin200, calcQcdErr), 
@@ -1147,8 +1155,84 @@ void macro_MakeEMuInvMassPlot()
   }
 
   cout << "\\hline\\hline" << endl;
-  cout << "\\end{tabular}" << endl;
-  cout << "\\label{tab:emu_event_yield}" << endl;
+  cout << "\\end{tabular}}" << endl;
+  cout << "\\end{table}" << endl;
+
+  cout << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  cout << "|Event yield table per sample with combined = SS + OS                                                     |" << endl;
+  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+  cout << "\\begin{table}[htb]" << endl;
+  cout << "\\centering" << endl;
+  cout << "\\caption{Number of $e\\mu$ events with invariant mass in different regions and with different charge combinations.}" << endl;
+  cout << "\\label{tab:emu_event_yield_by_source}" << endl;
+  cout << "\\resizebox{16cm}{!}{" << endl;
+  cout << "\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}" << endl;
+  cout << "\\hline\\hline" << endl;
+  cout << "Source & \\multicolumn{9}{c|}{number of events} \\\\" << endl;
+  cout << " &  \\multicolumn{3}{c|}{[$120-200$]~GeV/c$^2$}  & \\multicolumn{3}{c|}{[$200-400$]~GeV/c$^2$} & \\multicolumn{3}{|c|}{$>$ 400~GeV/c$^2$}  \\\\" << endl;
+  cout << " &  OS & SS & Combined & OS & SS & Combined & OS & SS & Combined \\\\\\hline" << endl;
+
+  printf("CMS data  & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f \\\\\n", 
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200), 
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200), 
+         floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin120)) - floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200)) + 
+         floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin120)) - floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200)), 
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200) - emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), 
+         floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin200)) - floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400)) + 
+         floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin200)) - floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400)), 
+         emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400), 
+         emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400), 
+         floor(0.5 + emuMasses.at(DATA).at(OSCUM)->GetBinContent(bin400)) + floor(0.5 + emuMasses.at(DATA).at(SSCUM)->GetBinContent(bin400)));
+  printf("Total Bkg & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OSCUM, bin120, bin200, calcQcdErr), 
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, SSCUM, bin120, bin200, calcQcdErr), 
+         floor(0.5 + CalcBgSum(emuMasses, allSamples, OSCUM, bin120, bin200)) + floor(0.5 + CalcBgSum(emuMasses, allSamples, SSCUM, bin120, bin200)), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALLCUM, bin120, bin200, calcQcdErr),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OSCUM, bin200, bin400, calcQcdErr), 
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, SSCUM, bin200, bin400, calcQcdErr), 
+         floor(0.5 + CalcBgSum(emuMasses, allSamples, OSCUM, bin200, bin400)) + floor(0.5 + CalcBgSum(emuMasses, allSamples, SSCUM, bin200, bin400)), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALLCUM, bin200, bin400, calcQcdErr),
+         CalcBgSum(emuMasses, allSamples, OSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, OSCUM, bin400, -1, calcQcdErr), 
+         CalcBgSum(emuMasses, allSamples, SSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, SSCUM, bin400, -1, calcQcdErr), 
+         floor(0.5 + CalcBgSum(emuMasses, allSamples, OSCUM, bin400)) + floor(0.5 + CalcBgSum(emuMasses, allSamples, SSCUM, bin400)), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, allSamples, 1, ALLCUM, bin400, -1, calcQcdErr)); 
+  cout << "\\hline\\hline" << endl;
+  printf("\\ttbar +  \\ttbar-like & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin120, bin200),
+         floor(0.5 + CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin120, bin200)) + floor(0.5 + CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin120, bin200)), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin120, bin200),
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin200, bin400),
+         floor(0.5 + CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin200, bin400)) + floor(0.5 + CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin200, bin400)), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin200, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, OSCUM, bin400),
+         CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, SSCUM, bin400),
+         floor(0.5 + CalcBgSum(emuMasses, ttLikeSamples, OSCUM, bin400)) + floor(0.5 + CalcBgSum(emuMasses, ttLikeSamples, SSCUM, bin400)), CalcAllErr(emuMasses, systErrMCLuEff, ttLikeSamples, ALLCUM, bin400));
+
+  printf("contaminations        & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
+         CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin120, bin200),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin120, bin200), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin120, bin200),
+         floor(0.5 + CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin120, bin200)) + floor(0.5 + CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin120, bin200)), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin120, bin200),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin200, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin200, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin200, bin400),
+         floor(0.5 + CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin200, bin400)) + floor(0.5 + CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin200, bin400)), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin200, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, OSCUM, bin400),
+         CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin400), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, SSCUM, bin400),
+         floor(0.5 + CalcBgSum(emuMasses, contamSamplesNoQcd, OSCUM, bin400)) + floor(0.5 + CalcBgSum(emuMasses, contamSamplesNoQcd, SSCUM, bin400)), CalcAllErr(emuMasses, systErrMCLuEff, contamSamples, ALLCUM, bin400));
+
+  if (qcdEst > 0) {
+    printf("multi-jet             & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f & %.0f $\\pm$ %.0f \\\\\n", 
+           CalcBgSum(emuMasses, onlyQCD, OSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, OSCUM, bin120, bin200, calcQcdErr),
+           CalcBgSum(emuMasses, onlyQCD, SSCUM, bin120, bin200), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, SSCUM, bin120, bin200, calcQcdErr),
+           floor(0.5 + CalcBgSum(emuMasses, onlyQCD, OSCUM, bin120, bin200)) + floor(0.5 + CalcBgSum(emuMasses, onlyQCD, SSCUM, bin120, bin200)), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, ALLCUM, bin120, bin200, calcQcdErr),
+           CalcBgSum(emuMasses, onlyQCD, OSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, OSCUM, bin200, bin400, calcQcdErr),
+           CalcBgSum(emuMasses, onlyQCD, SSCUM, bin200, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, SSCUM, bin200, bin400, calcQcdErr),
+           floor(0.5 + CalcBgSum(emuMasses, onlyQCD, OSCUM, bin200, bin400)) + floor(0.5 + CalcBgSum(emuMasses, onlyQCD, SSCUM, bin200, bin400)), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, ALLCUM, bin200, bin400, calcQcdErr),
+           CalcBgSum(emuMasses, onlyQCD, OSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, OSCUM, bin400, -1, calcQcdErr),
+           CalcBgSum(emuMasses, onlyQCD, SSCUM, bin400), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, SSCUM, bin400, -1, calcQcdErr),
+           floor(0.5 + CalcBgSum(emuMasses, onlyQCD, OSCUM, bin400)) + floor(0.5 + CalcBgSum(emuMasses, onlyQCD, SSCUM, bin400)), CalcAllErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, qcdInd, ALLCUM, bin400, -1, calcQcdErr));
+  }
+
+  cout << "\\hline\\hline" << endl;
+  cout << "\\end{tabular}}" << endl;
   cout << "\\end{table}" << endl;
 }
 
