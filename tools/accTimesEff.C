@@ -47,12 +47,14 @@ void AccTimesEff::Loop()
    // output file formats
    const bool saveSpec = 0;
    const bool saveAsPdf = 0;
-   const bool saveAsPng = 0;
+   const bool saveAsPng = 1;
    const bool saveAsRoot = 0;
    TString plotDir = "./plots/";
-   //TString fileNameExtra = "_EE";
+   TString fileNameExtra = "";
+   //fileNameExtra = "_test";
 
    unsigned int triggerInd = 0;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
+   unsigned int eleDetRegion = 0;  // electron in subdetector. 0: EB or EE; 1: EB; 2: EE
 
    int font = 42; //62
    // selection cuts /////////////////////////////////////////////////////////
@@ -138,8 +140,8 @@ void AccTimesEff::Loop()
    hFltrMatchEvts_l1SingleEG12->SetTitle("hFltrMatchEvts_l1SingleEG12");
    TH1F *hFltrMatchEvts_l1Mu3p5EG12 = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_l1Mu3p5EG12");
    hFltrMatchEvts_l1Mu3p5EG12->SetTitle("hFltrMatchEvts_l1Mu3p5EG12");
-   TH1F *hFltrMatchEvts_l1Mu16 = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_l1Mu16");
-   hFltrMatchEvts_l1Mu16->SetTitle("hFltrMatchEvts_l1Mu16");
+   TH1F *hFltrMatchEvts_l1Mu16Eta2p1 = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_l1Mu16Eta2p1");
+   hFltrMatchEvts_l1Mu16Eta2p1->SetTitle("hFltrMatchEvts_l1Mu16Eta2p1");
    TH1F *hFltrMatchEvts_mu22ph22_phLeg = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_mu22ph22_phLeg");
    hFltrMatchEvts_mu22ph22_phLeg->SetTitle("hFltrMatchEvts_mu22ph22_phLeg");
    TH1F *hFltrMatchEvts_mu22ph22_muLeg = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_mu22ph22_muLeg");
@@ -206,12 +208,13 @@ void AccTimesEff::Loop()
    TH1F* hTrgRecoVsRecoMu;
    TH1F* hFltrMatchVsReco_l1SingleEG12;
    TH1F* hFltrMatchVsReco_l1Mu3p5EG12;
-   TH1F* hFltrMatchVsReco_l1Mu16;
+   TH1F* hFltrMatchVsReco_l1Mu16Eta2p1;
    TH1F* hFltrMatchVsReco_mu22ph22_phLeg;
    TH1F* hFltrMatchVsReco_mu22ph22_muLeg;
    TH1F* hFltrMatchVsPrev_mu22ph22_phLeg;
    TH1F* hFltrMatchVsPrev_mu22ph22_muLeg;
    TH1F* hFltrMatchVsReco_mu40;
+   TH1F* hFltrMatchVsPrev_mu40;
 
    // output file
    stringstream ssOutfile;
@@ -354,11 +357,11 @@ void AccTimesEff::Loop()
          }
 
          // veto when there are more than one good candidates
-         if (GSF_passHEEP.size() != 1 || MU_passGOOD.size() != 1) continue;
+         if (GSF_passHEEP.size() < 1 || MU_passGOOD.size() < 1) continue;
 
          // detector region
-         //if (fabs(gsf_eta[GSF_passHEEP[0]]) > 1.5) continue;  // EB
-         //if (fabs(gsf_eta[GSF_passHEEP[0]]) < 1.5) continue;  // EE
+         if (eleDetRegion == 1 && fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) continue;  // EB
+         else if (eleDetRegion == 2 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) continue;  // EE
 
          //HEEP ele + GOOD muon
          TLorentzVector ele1;
@@ -372,14 +375,12 @@ void AccTimesEff::Loop()
          //MASS CUT
          if (invMass < minInvMass) continue;
 
-         if (muMatch_hltL1sMu16[MU_passGOOD[0]]) hFltrMatchEvts_l1Mu16->Fill(hardInvMass);
-         if (muMatch_hltL1Mu3p5EG12L3Filtered22[MU_passGOOD[0]]) hFltrMatchEvts_mu22ph22_muLeg->Fill(hardInvMass);
-         if (gsfmatch_hltL1sL1SingleEG12[GSF_passHEEP[0]]) hFltrMatchEvts_l1SingleEG12->Fill(hardInvMass);
-         //if (gsfmatch_hltL1sL1Mu3p5EG12[GSF_passHEEP[0]] && muMatch_hltL1sL1Mu3p5EG12[MU_passGOOD[0]]) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass);
-         if (gsfmatch_hltL1sL1Mu3p5EG12[GSF_passHEEP[0]]) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass);
-         //if (muMatch_hltL1sL1Mu3p5EG12[MU_passGOOD[0]]) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass);
-         if (gsfmatch_hltMu22Photon22CaloIdLHEFilter[GSF_passHEEP[0]]) hFltrMatchEvts_mu22ph22_phLeg->Fill(hardInvMass);
-         if (muMatch_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q[MU_passGOOD[0]]) hFltrMatchEvts_mu40->Fill(hardInvMass);
+         if (hltL1sMu16Eta2p1) hFltrMatchEvts_l1Mu16Eta2p1->Fill(hardInvMass);
+         if (hltL1Mu3p5EG12L3Filtered22) hFltrMatchEvts_mu22ph22_muLeg->Fill(hardInvMass);
+         if (hltL1sL1SingleEG12) hFltrMatchEvts_l1SingleEG12->Fill(hardInvMass);
+         if (hltL1sL1Mu3p5EG12) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass);
+         if (hltMu22Photon22CaloIdLHEFilter) hFltrMatchEvts_mu22ph22_phLeg->Fill(hardInvMass);
+         if (hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q) hFltrMatchEvts_mu40->Fill(hardInvMass);
 
          if (triggerBit) {
             hRecoEvts->Fill(hardInvMass);
@@ -463,18 +464,20 @@ void AccTimesEff::Loop()
    hFltrMatchVsReco_l1SingleEG12->Divide(hRecoNoTrgEvts);
    hFltrMatchVsReco_l1Mu3p5EG12 = (TH1F*)hFltrMatchEvts_l1Mu3p5EG12->Clone("hFltrMatchVsReco_l1Mu3p5EG12");
    hFltrMatchVsReco_l1Mu3p5EG12->Divide(hRecoNoTrgEvts);
-   hFltrMatchVsReco_l1Mu16 = (TH1F*)hFltrMatchEvts_l1Mu16->Clone("hFltrMatchVsReco_l1Mu16");
-   hFltrMatchVsReco_l1Mu16->Divide(hRecoNoTrgEvts);
+   hFltrMatchVsReco_l1Mu16Eta2p1 = (TH1F*)hFltrMatchEvts_l1Mu16Eta2p1->Clone("hFltrMatchVsReco_l1Mu16Eta2p1");
+   hFltrMatchVsReco_l1Mu16Eta2p1->Divide(hRecoNoTrgEvts);
    hFltrMatchVsReco_mu22ph22_phLeg = (TH1F*)hFltrMatchEvts_mu22ph22_phLeg->Clone("hFltrMatchVsReco_mu22ph22_phLeg");
    hFltrMatchVsReco_mu22ph22_phLeg->Divide(hRecoNoTrgEvts);
    hFltrMatchVsReco_mu22ph22_muLeg = (TH1F*)hFltrMatchEvts_mu22ph22_muLeg->Clone("hFltrMatchVsReco_mu22ph22_muLeg");
    hFltrMatchVsReco_mu22ph22_muLeg->Divide(hRecoNoTrgEvts);
-   hFltrMatchVsPrev_mu22ph22_phLeg = (TH1F*)hFltrMatchEvts_mu22ph22_phLeg->Clone("hFltrMatchVsReco_mu22ph22_phLeg");
+   hFltrMatchVsPrev_mu22ph22_phLeg = (TH1F*)hFltrMatchEvts_mu22ph22_phLeg->Clone("hFltrMatchVsPrev_mu22ph22_phLeg");
    hFltrMatchVsPrev_mu22ph22_phLeg->Divide(hFltrMatchEvts_mu22ph22_muLeg);
-   hFltrMatchVsPrev_mu22ph22_muLeg = (TH1F*)hFltrMatchEvts_mu22ph22_muLeg->Clone("hFltrMatchVsReco_mu22ph22_muLeg");
+   hFltrMatchVsPrev_mu22ph22_muLeg = (TH1F*)hFltrMatchEvts_mu22ph22_muLeg->Clone("hFltrMatchVsPrev_mu22ph22_muLeg");
    hFltrMatchVsPrev_mu22ph22_muLeg->Divide(hFltrMatchEvts_l1Mu3p5EG12);
    hFltrMatchVsReco_mu40 = (TH1F*)hFltrMatchEvts_mu40->Clone("hFltrMatchVsReco_mu40");
    hFltrMatchVsReco_mu40->Divide(hRecoNoTrgEvts);
+   hFltrMatchVsPrev_mu40 = (TH1F*)hFltrMatchEvts_mu40->Clone("hFltrMatchVsPrev_mu40");
+   hFltrMatchVsPrev_mu40->Divide(hFltrMatchEvts_l1Mu16Eta2p1);
    hTrgEff = (TH1F*)hTrgEvts->Clone("hTrgEff");
    hTrgEff->Divide(hGenEvts);
    hTrgEff_mu22ph22 = (TH1F*)hTrgEvts_mu22ph22->Clone("hTrgEff_mu22ph22");
@@ -537,13 +540,14 @@ void AccTimesEff::Loop()
    TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]/ (x + [2]) + [3]*x", 10., 5010.);
    //TF1 *fitFuncEB = new TF1("fitFuncEB", "[0] + [1]/ (x + [2])", 10., 5010.);
    TF1 *fitFuncEB = new TF1("fitFuncEB", "[0] + [1]/ (x + [2]) + [3]*x", 10., 5010.);
-   TF1 *fitFuncEE = new TF1("fitFuncEE", "[0] + [1]/ (x*x + [2])", 10., 5010.);
+   //TF1 *fitFuncEE = new TF1("fitFuncEE", "[0] + [1]/ (x*x + [2])", 10., 5010.);
+   TF1 *fitFuncEE = new TF1("fitFuncEE", "[0] + [1]/ (x + [2]) + [3]/ (x*x + [4])", 10., 5010.);
    fitFunc->SetLineColor(kBlue);
    fitFuncEB->SetLineColor(kBlue);
    fitFuncEE->SetLineColor(kBlue);
-   hAccTimesEff->Fit("fitFunc", "", "", 480., 5010.);
-   hAccTimesEffEB->Fit("fitFuncEB", "", "", 480., 5010.);
-   hAccTimesEffEE->Fit("fitFuncEE", "", "", 480., 5010.);
+   hAccTimesEff->Fit("fitFunc", "", "", 240., 5010.);
+   hAccTimesEffEB->Fit("fitFuncEB", "", "", 240., 5010.);
+   hAccTimesEffEE->Fit("fitFuncEE", "", "", 240., 5010.);
    cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF() << ", prob: " << fitFunc->GetProb() << endl;
    cout << "Chi^2 / NDF EB: " << fitFuncEB->GetChisquare() << " / " << fitFuncEB->GetNDF() << ", prob: " << fitFuncEB->GetProb() << endl;
    cout << "Chi^2 / NDF EE: " << fitFuncEE->GetChisquare() << " / " << fitFuncEE->GetNDF() << ", prob: " << fitFuncEE->GetProb() << endl;
@@ -582,7 +586,8 @@ void AccTimesEff::Loop()
    hAccTimesEffEE->GetYaxis()->SetRangeUser(0., 1.);
    hAccTimesEffEE->Draw();
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
-   tex->DrawLatex(0.45, 0.38, "P(M|p0,p1,p2) = p0 + #frac{p1}{M^{2}+p2}");
+   //tex->DrawLatex(0.45, 0.38, "P(M|p0,p1,p2) = p0 + #frac{p1}{M^{2}+p2}");
+   tex->DrawLatex(0.35, 0.55, "P(M|p0,p1,p2,p3,p4) = p0 + #frac{p1}{M+p2} + #frac{p3}{M^{2}+p4}");
    tex->DrawLatex(0.17, 0.85, "trg + endcap electron + muon");
    tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);
 
@@ -936,118 +941,149 @@ void AccTimesEff::Loop()
       hFltrMatchVsReco_mu40->SetMarkerColor(kRed);
       hFltrMatchVsReco_mu40->SetLineColor(kRed);
       hFltrMatchVsReco_mu40->Draw();
-      hFltrMatchVsReco_l1Mu16->SetMarkerStyle(kOpenSquare);
-      hFltrMatchVsReco_l1Mu16->SetMarkerColor(kMagenta);
-      hFltrMatchVsReco_l1Mu16->SetLineColor(kMagenta);
-      hFltrMatchVsReco_l1Mu16->Draw("same");
+      hFltrMatchVsReco_l1Mu16Eta2p1->SetMarkerStyle(kOpenSquare);
+      hFltrMatchVsReco_l1Mu16Eta2p1->SetMarkerColor(kMagenta);
+      hFltrMatchVsReco_l1Mu16Eta2p1->SetLineColor(kMagenta);
+      hFltrMatchVsReco_l1Mu16Eta2p1->Draw("same");
       trgFltrLegend->AddEntry(hFltrMatchVsReco_mu40, "eff #mu-leg HLT_Mu40_eta2p1");
-      trgFltrLegend->AddEntry(hFltrMatchVsReco_l1Mu16, "eff L1 HLT_Mu40_eta2p1");
+      trgFltrLegend->AddEntry(hFltrMatchVsReco_l1Mu16Eta2p1, "eff L1 HLT_Mu40_eta2p1");
    }
    trgFltrLegend->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+   if (eleDetRegion == 1) tex->DrawLatex(0.60, 0.935, "barrel electron");
+   else if (eleDetRegion == 2) tex->DrawLatex(0.60, 0.935, "endcap electron");
 
-   //TCanvas *trgFltrEffPlotByFilter = new TCanvas("trgFltrEffPlotByFilter", "trigger filter eff wrt previous filter", 100, 100, 600, 600);
-   //TPad *trgFltrEffPadByFilter = (TPad*)accTimesEffPad->Clone("trgFltrEffPadByFilter");
-   //trgFltrEffPadByFilter->Draw(); 
-   //trgFltrEffPadByFilter->cd();
-   //TLegend* trgFltrLegendByFilter = (TLegend*)legend->Clone("trgFltrLegendByFilter");
-   //trgFltrLegendByFilter->Clear();
-   //trgFltrLegendByFilter->SetX1(0.33);
-   //trgFltrLegendByFilter->SetX2(0.62);
-   //if (triggerInd == 0) {
-   //   hFltrMatchVsPrev_mu22ph22_muLeg->GetYaxis()->SetTitle("eff");
-   //   hFltrMatchVsPrev_mu22ph22_muLeg->GetYaxis()->SetRangeUser(0.75, 1.);
-   //   hFltrMatchVsPrev_mu22ph22_muLeg->SetMarkerStyle(kFullTriangleUp);
-   //   hFltrMatchVsPrev_mu22ph22_muLeg->SetMarkerColor(kGreen+1);
-   //   hFltrMatchVsPrev_mu22ph22_muLeg->SetLineColor(kGreen+1);
-   //   hFltrMatchVsPrev_mu22ph22_muLeg->Draw();
-   //   hFltrMatchVsPrev_mu22ph22_phLeg->SetMarkerStyle(kFullTriangleDown);
-   //   hFltrMatchVsPrev_mu22ph22_phLeg->SetMarkerColor(kBlue);
-   //   hFltrMatchVsPrev_mu22ph22_phLeg->SetLineColor(kBlue);
-   //   hFltrMatchVsPrev_mu22ph22_phLeg->Draw("same");
-   //   //hFltrMatchVsReco_l1SingleEG12->SetMarkerStyle(kOpenCircle);
-   //   //hFltrMatchVsReco_l1SingleEG12->SetMarkerColor(kCyan);
-   //   //hFltrMatchVsReco_l1SingleEG12->SetLineColor(kCyan);
-   //   //hFltrMatchVsReco_l1SingleEG12->Draw("same");
-   //   hFltrMatchVsReco_l1Mu3p5EG12->SetMarkerStyle(kOpenSquare);
-   //   hFltrMatchVsReco_l1Mu3p5EG12->SetMarkerColor(kMagenta);
-   //   hFltrMatchVsReco_l1Mu3p5EG12->SetLineColor(kMagenta);
-   //   hFltrMatchVsReco_l1Mu3p5EG12->Draw("same");
-   //   trgFltrLegendByFilter->AddEntry(hFltrMatchVsPrev_mu22ph22_muLeg, "eff #mu-leg HLT_Mu22_Photon22_CaloIdL");
-   //   trgFltrLegendByFilter->AddEntry(hFltrMatchVsPrev_mu22ph22_phLeg, "eff #gamma-leg HLT_Mu22_Photon22_CaloIdL");
-   //   //trgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_l1SingleEG12, "eff L1 L1sL1SingleEG12");
-   //   trgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_l1Mu3p5EG12, "eff L1 HLT_Mu22_Photon22_CaloIdL");
-   //} else {
-   //   //HFltrMatchVsReco_mu40->GetYaxis()->SetTitle("eff");
-   //   //HFltrMatchVsReco_mu40->GetYaxis()->SetRangeUser(0.75, 1.);
-   //   //HFltrMatchVsReco_mu40->SetMarkerStyle(21);
-   //   //HFltrMatchVsReco_mu40->SetMarkerColor(kRed);
-   //   //HFltrMatchVsReco_mu40->SetLineColor(kRed);
-   //   //HFltrMatchVsReco_mu40->Draw();
-   //   //HFltrMatchVsReco_l1Mu16->SetMarkerStyle(kOpenSquare);
-   //   //HFltrMatchVsReco_l1Mu16->SetMarkerColor(kMagenta);
-   //   //HFltrMatchVsReco_l1Mu16->SetLineColor(kMagenta);
-   //   //HFltrMatchVsReco_l1Mu16->Draw("same");
-   //   //TrgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_mu40, "eff #mu-leg HLT_Mu40_eta2p1");
-   //   //TrgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_l1Mu16, "eff L1 HLT_Mu40_eta2p1");
-   //}
-   //trgFltrLegendByFilter->Draw("same");
-   //tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+   TCanvas *trgFltrEffPlotByFilter = new TCanvas("trgFltrEffPlotByFilter", "trigger filter eff wrt previous filter", 100, 100, 600, 600);
+   TPad *trgFltrEffPadByFilter = (TPad*)accTimesEffPad->Clone("trgFltrEffPadByFilter");
+   trgFltrEffPadByFilter->Draw(); 
+   trgFltrEffPadByFilter->cd();
+   TLegend* trgFltrLegendByFilter = (TLegend*)legend->Clone("trgFltrLegendByFilter");
+   trgFltrLegendByFilter->Clear();
+   trgFltrLegendByFilter->SetX1(0.33);
+   trgFltrLegendByFilter->SetX2(0.62);
+   if (triggerInd == 0) {
+      hFltrMatchVsPrev_mu22ph22_muLeg->GetYaxis()->SetTitle("filter eff");
+      hFltrMatchVsPrev_mu22ph22_muLeg->GetYaxis()->SetRangeUser(0.75, 1.);
+      hFltrMatchVsPrev_mu22ph22_muLeg->SetMarkerStyle(kFullTriangleUp);
+      hFltrMatchVsPrev_mu22ph22_muLeg->SetMarkerColor(kGreen+1);
+      hFltrMatchVsPrev_mu22ph22_muLeg->SetLineColor(kGreen+1);
+      hFltrMatchVsPrev_mu22ph22_muLeg->Draw();
+      hFltrMatchVsPrev_mu22ph22_phLeg->SetMarkerStyle(kFullTriangleDown);
+      hFltrMatchVsPrev_mu22ph22_phLeg->SetMarkerColor(kBlue);
+      hFltrMatchVsPrev_mu22ph22_phLeg->SetLineColor(kBlue);
+      hFltrMatchVsPrev_mu22ph22_phLeg->Draw("same");
+      //hFltrMatchVsReco_l1SingleEG12->SetMarkerStyle(kOpenCircle);
+      //hFltrMatchVsReco_l1SingleEG12->SetMarkerColor(kCyan);
+      //hFltrMatchVsReco_l1SingleEG12->SetLineColor(kCyan);
+      //hFltrMatchVsReco_l1SingleEG12->Draw("same");
+      hFltrMatchVsReco_l1Mu3p5EG12->SetMarkerStyle(kOpenSquare);
+      hFltrMatchVsReco_l1Mu3p5EG12->SetMarkerColor(kMagenta);
+      hFltrMatchVsReco_l1Mu3p5EG12->SetLineColor(kMagenta);
+      hFltrMatchVsReco_l1Mu3p5EG12->Draw("same");
+      trgFltrLegendByFilter->AddEntry(hFltrMatchVsPrev_mu22ph22_muLeg, "eff #mu-leg HLT_Mu22_Photon22_CaloIdL");
+      trgFltrLegendByFilter->AddEntry(hFltrMatchVsPrev_mu22ph22_phLeg, "eff #gamma-leg HLT_Mu22_Photon22_CaloIdL");
+      //trgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_l1SingleEG12, "eff L1 L1sL1SingleEG12");
+      trgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_l1Mu3p5EG12, "eff L1 HLT_Mu22_Photon22_CaloIdL");
+   } else {
+      hFltrMatchVsPrev_mu40->GetYaxis()->SetTitle("filter eff");
+      hFltrMatchVsPrev_mu40->GetYaxis()->SetRangeUser(0.75, 1.);
+      hFltrMatchVsPrev_mu40->SetMarkerStyle(21);
+      hFltrMatchVsPrev_mu40->SetMarkerColor(kRed);
+      hFltrMatchVsPrev_mu40->SetLineColor(kRed);
+      hFltrMatchVsPrev_mu40->Draw();
+      hFltrMatchVsReco_l1Mu16Eta2p1->SetMarkerStyle(kOpenSquare);
+      hFltrMatchVsReco_l1Mu16Eta2p1->SetMarkerColor(kMagenta);
+      hFltrMatchVsReco_l1Mu16Eta2p1->SetLineColor(kMagenta);
+      hFltrMatchVsReco_l1Mu16Eta2p1->Draw("same");
+      trgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_mu40, "eff #mu-leg HLT_Mu40_eta2p1");
+      trgFltrLegendByFilter->AddEntry(hFltrMatchVsReco_l1Mu16Eta2p1, "eff L1 HLT_Mu40_eta2p1");
+   }
+   trgFltrLegendByFilter->Draw("same");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+   if (eleDetRegion == 1) tex->DrawLatex(0.60, 0.935, "barrel electron");
+   else if (eleDetRegion == 2) tex->DrawLatex(0.60, 0.935, "endcap electron");
 
    // safe in various file formats
    if (saveSpec) {
+     TString eleDetRegSuffix = "";
+     if (eleDetRegion == 1) eleDetRegSuffix = "_EB";
+     else if (eleDetRegion == 2) eleDetRegSuffix = "_EE";
      if (saveAsPdf) {
-        trgEffPlot->Print(plotDir + trgEffPlot->GetName() + fileNameExtra + ".pdf", "pdf");
-        trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + fileNameExtra + ".pdf", "pdf");
-        trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".pdf", "pdf");
-        trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".pdf", "pdf");
-        trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".pdf", "pdf");
-        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
-        accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+        if (eleDetRegion == 0) {
+           trgEffPlot->Print(plotDir + trgEffPlot->GetName() + fileNameExtra + ".pdf", "pdf");
+           trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + fileNameExtra + ".pdf", "pdf");
+           trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".pdf", "pdf");
+           trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".pdf", "pdf");
+           trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".pdf", "pdf");
+           accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+           accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+           accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+           accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+           accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+           effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+           trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+           accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
+        }
+        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + eleDetRegSuffix + fileNameExtra + ".pdf", "pdf");
+        trgFltrEffPlotByFilter->Print(plotDir + trgFltrEffPlotByFilter->GetName() + "_" + triggerName + eleDetRegSuffix + fileNameExtra + ".pdf", "pdf");
      }
      if (saveAsPng) {
-        trgEffPlot->Print(plotDir + trgEffPlot->GetName() + fileNameExtra + ".png", "png");
-        trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + fileNameExtra + ".png", "png");
-        trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".png", "png");
-        trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".png", "png");
-        trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".png", "png");
-        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
-        accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+        if (eleDetRegion == 0) {
+           trgEffPlot->Print(plotDir + trgEffPlot->GetName() + fileNameExtra + ".png", "png");
+           trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + fileNameExtra + ".png", "png");
+           trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".png", "png");
+           trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".png", "png");
+           trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".png", "png");
+           accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+           accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+           accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+           accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+           accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+           effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+           trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+           accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
+        }
+        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + eleDetRegSuffix + fileNameExtra + ".png", "png");
+        trgFltrEffPlotByFilter->Print(plotDir + trgFltrEffPlotByFilter->GetName() + "_" + triggerName + eleDetRegSuffix + fileNameExtra + ".png", "png");
      }
      if (saveAsRoot) {
-        trgEffPlot->Print(plotDir + trgEffPlot->GetName() + fileNameExtra + ".root", "root");
-        trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + fileNameExtra + ".root", "root");
-        trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".root", "root");
-        trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".root", "root");
-        trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".root", "root");
-        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
-        accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+        if (eleDetRegion == 0) {
+           trgEffPlot->Print(plotDir + trgEffPlot->GetName() + fileNameExtra + ".root", "root");
+           trgEffPlot_ele_pt->Print(plotDir + trgEffPlot_ele_pt->GetName() + fileNameExtra + ".root", "root");
+           trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".root", "root");
+           trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".root", "root");
+           trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".root", "root");
+           accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+           accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+           accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+           accTimesEffObjPlot->Print(plotDir + accTimesEffObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+           accTimesEffNoTrgObjPlot->Print(plotDir + accTimesEffNoTrgObjPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+           effAftTrgPlot->Print(plotDir + effAftTrgPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+           trgRecoVsRecoPlot->Print(plotDir + trgRecoVsRecoPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+           accPlot->Print(plotDir + accPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
+        }
+        trgFltrEffPlot->Print(plotDir + trgFltrEffPlot->GetName() + "_" + triggerName + eleDetRegSuffix + fileNameExtra + ".root", "root");
+        trgFltrEffPlotByFilter->Print(plotDir + trgFltrEffPlotByFilter->GetName() + "_" + triggerName + eleDetRegSuffix + fileNameExtra + ".root", "root");
      }
    }
 
-   // write histos to file
+   // write to file
    output->cd();
+   trgEffPlot->Write();
+   trgEffPlot_ele_pt->Write();
+   trgEffPlot_ele_eta->Write();
+   trgEffPlot_mu_pt->Write();
+   trgEffPlot_mu_eta->Write();
+   trgFltrEffPlot->Write();
+   trgFltrEffPlotByFilter->Write();
+   accTimesEffPlot->Write();
+   accTimesEffPlotEB->Write();
+   accTimesEffPlotEE->Write();
+   accTimesEffObjPlot->Write();
+   accTimesEffNoTrgObjPlot->Write();
+   effAftTrgPlot->Write();
+   trgRecoVsRecoPlot->Write();
+   accPlot->Write();
    hGenEvts->Write();
    hGenEvts_ele_pt->Write();
    hGenEvts_ele_eta->Write();
@@ -1085,18 +1121,19 @@ void AccTimesEff::Loop()
    hRecoNoTrgMuEvts->Write();
    hFltrMatchEvts_l1SingleEG12->Write();
    hFltrMatchEvts_l1Mu3p5EG12->Write();
-   hFltrMatchEvts_l1Mu16->Write();
+   hFltrMatchEvts_l1Mu16Eta2p1->Write();
    hFltrMatchEvts_mu22ph22_phLeg->Write();
    hFltrMatchEvts_mu22ph22_muLeg->Write();
    hFltrMatchEvts_mu40->Write();
    hFltrMatchVsReco_l1SingleEG12->Write();
    hFltrMatchVsReco_l1Mu3p5EG12->Write();
-   hFltrMatchVsReco_l1Mu16->Write();
+   hFltrMatchVsReco_l1Mu16Eta2p1->Write();
    hFltrMatchVsReco_mu22ph22_phLeg->Write();
    hFltrMatchVsReco_mu22ph22_muLeg->Write();
    hFltrMatchVsPrev_mu22ph22_phLeg->Write();
    hFltrMatchVsPrev_mu22ph22_muLeg->Write();
    hFltrMatchVsReco_mu40->Write();
+   hFltrMatchVsPrev_mu40->Write();
    hAccEle->Write();
    hAccEleEB->Write();
    hAccEleEE->Write();
