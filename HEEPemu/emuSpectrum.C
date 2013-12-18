@@ -114,7 +114,7 @@ void EmuSpectrum::Loop()
    storeGenMTtbar.push_back(0);
 
    TFile *inWWeMinusMuPlusPriv600up = TFile::Open("file:////user/treis/mcsamples/WW_emu_tail_Muplus_Eminus_25625ev.root");
-   input.push_back(make_pair(inWWeMinusMuPlusPriv600up, 1.531e-3 / 25625.)); //WW to e- mu+ from private production Andreas
+   input.push_back(make_pair(inWWeMinusMuPlusPriv600up, 1.531e-3 * 1.071 / 25625.)); //WW to e- mu+ from private production Andreas with SF to MCFM
    systErrMCs.Add(new TParameter<float>("systErrMcWWeMinusMuPlusPriv600up", 0.05));
    storeGenMTtbar.push_back(0);
 
@@ -716,7 +716,7 @@ void EmuSpectrum::Loop()
             ////cout << MU_passGOOD.size() << " high pt muons found" << endl;
             ++moreMuCounter;
             if (GSF_passHEEP.size() > 1) ++moreHeepMuCounter;
-            continue;
+            //continue;
          }
          //if (GSF_passHEEP.size() > 1 || MU_passGOOD.size() > 1) cout << endl;
 
@@ -841,7 +841,8 @@ void EmuSpectrum::Loop()
                //}
                ////cout << GSF_passHEEP.size() << " HEEP electrons found" << endl;
                //++moreHeepCounter;
-               continue;
+
+               //continue;
             }
 
             ++evCounter;
