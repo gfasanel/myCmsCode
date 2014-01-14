@@ -102,6 +102,13 @@ void macroEmuTree() {
           Float_t         gsf_e2x5overe5x5[100];   //[gsf_size]
           Float_t         gsf_e1x5overe5x5[100];   //[gsf_size]
           Float_t         gsf_gsfet[100];   //[gsf_size]
+          Float_t         genelemom_mass[100];
+          Float_t         genele_pt[100];
+          Float_t         genele_eta[100];
+          Float_t         genele_phi[100];
+          Float_t         genmu_pt[100];
+          Float_t         genmu_eta[100];
+          Float_t         genmu_phi[100];
           Float_t         genPair_mass;
           Int_t           trueNVtx;
        
@@ -166,6 +173,13 @@ void macroEmuTree() {
           TBranch        *b_gsf_e2x5overe5x5;   //!
           TBranch        *b_gsf_e1x5overe5x5;   //!
           TBranch        *b_gsf_gsfet;   //!
+          TBranch        *b_genelemom_mass;   //!
+          TBranch        *b_genele_pt;   //!
+          TBranch        *b_genele_eta;   //!
+          TBranch        *b_genele_phi;   //!
+          TBranch        *b_genmu_pt;   //!
+          TBranch        *b_genmu_eta;   //!
+          TBranch        *b_genmu_phi;   //!
           TBranch        *b_genPair_mass;   //!
           TBranch        *b_trueNVtx;   //!
        
@@ -229,6 +243,13 @@ void macroEmuTree() {
           oldtree->SetBranchAddress("gsf_e2x5overe5x5", gsf_e2x5overe5x5, &b_gsf_e2x5overe5x5);
           oldtree->SetBranchAddress("gsf_e1x5overe5x5", gsf_e1x5overe5x5, &b_gsf_e1x5overe5x5);
           oldtree->SetBranchAddress("gsf_gsfet", gsf_gsfet, &b_gsf_gsfet);
+          oldtree->SetBranchAddress("genelemom_mass", genelemom_mass, &b_genelemom_mass);
+          oldtree->SetBranchAddress("genele_pt", genele_pt, &b_genele_pt);
+          oldtree->SetBranchAddress("genele_eta", genele_eta, &b_genele_eta);
+          oldtree->SetBranchAddress("genele_phi", genele_phi, &b_genele_phi);
+          oldtree->SetBranchAddress("genmu_pt", genmu_pt, &b_genmu_pt);
+          oldtree->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
+          oldtree->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
           oldtree->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
           oldtree->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
        
@@ -294,6 +315,13 @@ void macroEmuTree() {
           oldtree->SetBranchStatus("gsf_e2x5overe5x5", 1);
           oldtree->SetBranchStatus("gsf_e1x5overe5x5", 1);
           oldtree->SetBranchStatus("gsf_gsfet", 1);
+          oldtree->SetBranchStatus("genelemom_mass", 1);
+          oldtree->SetBranchStatus("genele_pt", 1);
+          oldtree->SetBranchStatus("genele_eta", 1);
+          oldtree->SetBranchStatus("genele_phi", 1);
+          oldtree->SetBranchStatus("genmu_pt", 1);
+          oldtree->SetBranchStatus("genmu_eta", 1);
+          oldtree->SetBranchStatus("genmu_phi", 1);
           oldtree->SetBranchStatus("genPair_mass", 1);
           oldtree->SetBranchStatus("trueNVtx", 1);
 
