@@ -112,6 +112,12 @@ public :
    Float_t         gsf_e1x5overe5x5[100];   //[gsf_size]
    Float_t         gsf_gsfet[100];   //[gsf_size]
    Float_t         genelemom_mass[100];
+   Float_t         genele_pt[100];
+   Float_t         genele_eta[100];
+   Float_t         genele_phi[100];
+   Float_t         genmu_pt[100];
+   Float_t         genmu_eta[100];
+   Float_t         genmu_phi[100];
    Float_t         genPair_mass;
    Int_t           trueNVtx;
 
@@ -177,6 +183,12 @@ public :
    TBranch        *b_gsf_e1x5overe5x5;   //!
    TBranch        *b_gsf_gsfet;   //!
    TBranch        *b_genelemom_mass;   //!
+   TBranch        *b_genele_pt;   //!
+   TBranch        *b_genele_eta;   //!
+   TBranch        *b_genele_phi;   //!
+   TBranch        *b_genmu_pt;   //!
+   TBranch        *b_genmu_eta;   //!
+   TBranch        *b_genmu_phi;   //!
    TBranch        *b_genPair_mass;   //!
    TBranch        *b_trueNVtx;   //!
 
@@ -254,6 +266,7 @@ protected :
    bool PassHighPtMu(const int &n);
    bool PassFRPreSel(const int &n);
    double FakeRate (const float& et, const float& eta);
+   double topScaleFactor (const float& top_genpt, const float& atop_genpt);
    int Trigger(int &prescale, unsigned int *trig, const int &selector = 0);
 };
 
@@ -483,6 +496,12 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("gsf_e1x5overe5x5", gsf_e1x5overe5x5, &b_gsf_e1x5overe5x5);
    fChain->SetBranchAddress("gsf_gsfet", gsf_gsfet, &b_gsf_gsfet);
    fChain->SetBranchAddress("genelemom_mass", genelemom_mass, &b_genelemom_mass);
+   fChain->SetBranchAddress("genele_pt", genele_pt, &b_genele_pt);
+   fChain->SetBranchAddress("genele_eta", genele_eta, &b_genele_eta);
+   fChain->SetBranchAddress("genele_phi", genele_phi, &b_genele_phi);
+   fChain->SetBranchAddress("genmu_pt", genmu_pt, &b_genmu_pt);
+   fChain->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
+   fChain->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
    fChain->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
    fChain->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
 
@@ -549,6 +568,12 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("gsf_e1x5overe5x5", 1);
    fChain->SetBranchStatus("gsf_gsfet", 1);
    fChain->SetBranchStatus("genelemom_mass", 1);
+   fChain->SetBranchStatus("genele_pt", 1);
+   fChain->SetBranchStatus("genele_eta", 1);
+   fChain->SetBranchStatus("genele_phi", 1);
+   fChain->SetBranchStatus("genmu_pt", 1);
+   fChain->SetBranchStatus("genmu_eta", 1);
+   fChain->SetBranchStatus("genmu_phi", 1);
    fChain->SetBranchStatus("genPair_mass", 1);
    fChain->SetBranchStatus("trueNVtx", 1);
 

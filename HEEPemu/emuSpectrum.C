@@ -11,10 +11,12 @@ void EmuSpectrum::Loop()
    timer.Start();
    // parameters /////////////////////////////////////////////////////////////
    float LumiFactor = 19703.; //Lumi in pb-1
+   //float LumiFactor = 19706.; //Lumi in pb-1
    TParameter<float> lumi("lumi", LumiFactor);
 
    // DATA file
    TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19703pb-1.root";
+   //TString dataFile = "file:////user/treis/data2013/SingleMu_Run2012ABCD-22Jan2013-v1_AOD_ele20mu20_19706pb-1.root";
    // pile up histogram
    TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
 
@@ -81,19 +83,19 @@ void EmuSpectrum::Loop()
    storeGenMTtbar.push_back(0);
 
    // MC
-   TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root");
+   TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_28150723ev.root");
    //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
    //input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
    input.push_back(make_pair(inTTbar, 245.8 / 28150723.));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3082812ev.root");
+   TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_3082812ev.root");
    input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 245.8/211.));  // ttbar  mtt 700to1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_1249111ev.root");
+   TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_1249111ev.root");
    input.push_back(make_pair(inTTbar1000up, 2.954 / 1249111. * 245.8/211.));  // ttbar  mtt>1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.036));
    storeGenMTtbar.push_back(1);
@@ -103,12 +105,12 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcTtbarPriv600up", 0.15));
    storeGenMTtbar.push_back(1);
 
-   TFile *inZtt = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3295238ev.root");
-   input.push_back(make_pair(inZtt, 1915.1 / 3295238.)); //Ztautau
+   TFile *inZtt = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_52085800ev.root");
+   input.push_back(make_pair(inZtt, 1915.1 / 52085800.)); //Ztautau
    systErrMCs.Add(new TParameter<float>("systErrMcDyTauTau", 0.054));
    storeGenMTtbar.push_back(0);
 
-   TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000431ev.root");
+   TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_10000431ev.root");
    input.push_back(make_pair(inWW, 54.838 / 10000431.)); //WW
    systErrMCs.Add(new TParameter<float>("systErrMcWW", 0.035));
    storeGenMTtbar.push_back(0);
@@ -123,57 +125,57 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcWWePlusMuMinusPriv600up", 0.05));
    storeGenMTtbar.push_back(0);
 
-   TFile *inWZ = TFile::Open("file:////user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000283ev.root");
+   TFile *inWZ = TFile::Open("file:////user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_10000283ev.root");
    input.push_back(make_pair(inWZ, 33.21 / 10000283.)); //WZ
    systErrMCs.Add(new TParameter<float>("systErrMcWZ", 0.038));
    storeGenMTtbar.push_back(0);
 
-   TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_991118ev.root");
+   TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_991118ev.root");
    input.push_back(make_pair(inTW, 22.2 / 991118.)); //tW
    systErrMCs.Add(new TParameter<float>("systErrMcTW", 0.069));
    storeGenMTtbar.push_back(0);
 
-   TFile *inWJet = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_76102995ev.root");
+   TFile *inWJet = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
    input.push_back(make_pair(inWJet, 36257.2 / 76102995.)); //W+jet
    systErrMCs.Add(new TParameter<float>("systErrMcWJets", 0.05));
    storeGenMTtbar.push_back(0);
 
-   TFile *inZmm = TFile::Open("file:////user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3293740ev.root");
-   input.push_back(make_pair(inZmm, 1915. / 3293740.)); //Zmumu
+   TFile *inZmm = TFile::Open("file:////user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_52113126ev.root");
+   input.push_back(make_pair(inZmm, 1915. / 52113126.)); //Zmumu
    systErrMCs.Add(new TParameter<float>("systErrMcDyMuMu", 0.054));
    storeGenMTtbar.push_back(0);
 
-   TFile *inZee = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3297045ev.root");
-   input.push_back(make_pair(inZee, 1915. / 3297045.)); //Zee
+   TFile *inZee = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_46002499ev.root");
+   input.push_back(make_pair(inZee, 1915. / 46002499.)); //Zee
    systErrMCs.Add(new TParameter<float>("systErrMcDyEE", 0.054));
    storeGenMTtbar.push_back(0);
 
-   TFile *inZZ = TFile::Open("file:////user/treis/mcsamples/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_9799908ev.root");
+   TFile *inZZ = TFile::Open("file:////user/treis/mcsamples/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_9799908ev.root");
    input.push_back(make_pair(inZZ, 17.654 / 9799908.)); //ZZ
    systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.025));
    storeGenMTtbar.push_back(0);
 
-   TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_8288533ev.root");
-   input.push_back(make_pair(inTTbarMg, 245.8/ 8288533.)); //TTjets from MadGraph
+   TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_6923652ev.root");
+   input.push_back(make_pair(inTTbarMg, 245.8/ 6923652.)); //TTjets from MadGraph
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_16365457ev.root");
-   input.push_back(make_pair(inTTbar22l, 13.43 / 16365457. * 245.8/(13.43+53.2+53.4))); //TT to 2l
+   TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_4246444ev.root");
+   input.push_back(make_pair(inTTbar22l, 13.43 / 4246444. * 245.8/(13.43+53.2+53.4))); //TT to 2l
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A_ext-v1_AODSIM_gct1_46_25424818ev.root");
-   input.push_back(make_pair(inTTbar21l, 53.2 / 25424818. * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
+   TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v1ext_AODSIM_emuSkim_36654720ev.root");
+   input.push_back(make_pair(inTTbar21l, 53.2 / 36654720. * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_196046ev.root");
+   TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_196046ev.root");
    input.push_back(make_pair(inTTW, 0.232 / 196046.)); //TTW
    systErrMCs.Add(new TParameter<float>("systErrMcTtW", 0.32));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTWW = TFile::Open("file:////user/treis/mcsamples/TTWWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_217820ev.root");
+   TFile *inTTWW = TFile::Open("file:////user/treis/mcsamples/TTWWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_217820ev.root");
    input.push_back(make_pair(inTTWW, 0.002037 / 217820.)); //TTWW
    systErrMCs.Add(new TParameter<float>("systErrMcTtWW", 0.));
    storeGenMTtbar.push_back(1);
@@ -429,6 +431,7 @@ void EmuSpectrum::Loop()
       bool passHeep = false;
       float emuInvMass = 0.;
       float trueMass = 0.;
+      float genEmuMass = 0.;
       int evtRegion;
       int eCharge;
       int muCharge;
@@ -439,13 +442,17 @@ void EmuSpectrum::Loop()
       float eleEffSf = 1.;
       float eleEffSfErr = 0.;
       float muEffSf = 1.;
+      float topRewSf = 1.;
       TTree *emuTree = new TTree("emuTree_" + suffix[p], "emuTree_" + suffix[p]);
       emuTree->Branch("runnr", &runnumber, "runnr/i");
       emuTree->Branch("eventnr", &eventnumber, "eventnr/i");
       emuTree->Branch("lumiSec", &luminosityBlock, "lumiSec/i");
       emuTree->Branch("passTrg", &passTrg, "passTrg/O");
       emuTree->Branch("mass", &emuInvMass, "mass/F");
-      if (p > 0) emuTree->Branch("trueMass", &trueMass, "trueMass/F");
+      if (p > 0) {
+         emuTree->Branch("trueMass", &trueMass, "trueMass/F");
+         emuTree->Branch("genEmuMass", &genEmuMass, "genEmuMass/F");
+      }
       emuTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
       emuTree->Branch("eCharge", &eCharge, "eCharge/I");
       emuTree->Branch("muCharge", &muCharge, "muCharge/I");
@@ -456,7 +463,10 @@ void EmuSpectrum::Loop()
       emuTree->Branch("eleEffSf", &eleEffSf, "eleEffSf/F");
       emuTree->Branch("eleEffSfErr", &eleEffSfErr, "eleEffSfErr/F");
       emuTree->Branch("muEffSf", &muEffSf, "muEffSf/F");
-      if (storeGenMTtbar[p]) emuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
+      if (storeGenMTtbar[p]) {
+        emuTree->Branch("topRewSf", &topRewSf, "topRewSf/F");
+        emuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
+      }
       // control variables
       float nVtx = 0.;
       float eDzMinusMuDz = 0.;
@@ -555,7 +565,10 @@ void EmuSpectrum::Loop()
          frEmuTree->Branch("muCharge", &muCharge, "muCharge/I");
          frEmuTree->Branch("fakeRate", &fakeRate, "fakeRate/F");
          frEmuTree->Branch("puWeight", &puWeight, "puWeight/F");
-         if (storeGenMTtbar[p]) frEmuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
+         if (storeGenMTtbar[p]) {
+           frEmuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
+           frEmuTree->Branch("topRewSf", &genPair_mass, "topRewSf/F");
+         }
          frEmuTree->Branch("pfMet", &pfmet, "pfMet/F");
          frEmuTree->Branch("nVtx", &nVtx, "nVtx/F");
          frEmuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
@@ -720,21 +733,38 @@ void EmuSpectrum::Loop()
          }
          //if (GSF_passHEEP.size() > 1 || MU_passGOOD.size() > 1) cout << endl;
 
+         //topRewSf = topScaleFactor();
+
          //GSF-nonHEEP ele + GOOD muon
          if (GSF_passFrPre.size() > 0 && MU_passGOOD.size() > 0) {
             TLorentzVector ele1;
             TLorentzVector mu1;
-   
-            ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passFrPre[0]], gsf_eta[GSF_passFrPre[0]], gsf_phi[GSF_passFrPre[0]], 0.000511);
-            mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[0]], muon_eta[MU_passGOOD[0]], muon_phi[MU_passGOOD[0]], 0.10566);
-   
-            double invMass = (ele1 + mu1).M();
-   
+            double invMass = 0.;
+
+            // find the e-mu pair with the maximum invariant mass
+            double maxInvMass = 0.;
+            unsigned int eleInd = 0;
+            unsigned int muInd = 0;
+            for (unsigned int eleIt = 0; eleIt < GSF_passFrPre.size(); ++eleIt) {
+               for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                  ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passFrPre[eleIt]], gsf_eta[GSF_passFrPre[eleIt]], gsf_phi[GSF_passFrPre[eleIt]], 0.000511);
+                  mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
+
+                  invMass = (ele1 + mu1).M();
+                  if (invMass > maxInvMass) {
+                     maxInvMass = invMass;
+                     eleInd = eleIt;
+                     muInd = muIt;
+                  }
+               }
+            }
+            invMass = maxInvMass;
+
             //MASS CUT
             if (invMass > minInvMass) {
-               fakeRate = FakeRate(gsf_gsfet[GSF_passFrPre[0]], gsfsc_eta[GSF_passFrPre[0]]);
+               fakeRate = FakeRate(gsf_gsfet[GSF_passFrPre[eleInd]], gsfsc_eta[GSF_passFrPre[eleInd]]);
    
-               float CombRelIso = (muon_emIso03[MU_passGOOD[0]] + muon_hadIso03[MU_passGOOD[0]] + muon_trackIso03[MU_passGOOD[0]]) / muon_pt[MU_passGOOD[0]];
+               float CombRelIso = (muon_emIso03[MU_passGOOD[muInd]] + muon_hadIso03[MU_passGOOD[muInd]] + muon_trackIso03[MU_passGOOD[muInd]]) / muon_pt[MU_passGOOD[muInd]];
    
                int jetsPt20 = 0;
                int jetsPt30 = 0;
@@ -744,59 +774,59 @@ void EmuSpectrum::Loop()
                }
    
                // fill the data tree
-               passHeep = PassHEEP(GSF_passFrPre[0]);
+               passHeep = PassHEEP(GSF_passFrPre[eleInd]);
                emuInvMass = invMass;
                if (p > 0) trueMass = genelemom_mass[0];
-               eCharge = gsf_charge[GSF_passFrPre[0]];
-               muCharge = muon_charge[MU_passGOOD[0]];
+               eCharge = gsf_charge[GSF_passFrPre[eleInd]];
+               muCharge = muon_charge[MU_passGOOD[muInd]];
                totWeight = weight;
                if (p > 0) totWeight *= input[p].second * LumiFactor;
-               if (fabs(gsfsc_eta[GSF_passFrPre[0]]) < 1.442) evtRegion = 0;
-               else if (fabs(gsfsc_eta[GSF_passFrPre[0]]) > 1.56 && fabs(gsfsc_eta[GSF_passFrPre[0]]) < 2.5) evtRegion = 1;
+               if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 1.442) evtRegion = 0;
+               else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 2.5) evtRegion = 1;
                else evtRegion = -1;
                // fill control variables
                nVtx = pvsize;
-               eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passFrPre[0]] - muon_dz_firstPVtx[MU_passGOOD[0]]);
-               eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passFrPre[0]] - muon_dxy_firstPVtx[MU_passGOOD[0]]);
-               if (fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passFrPre[0]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passFrPre[0]]);
-               if (fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passFrPre[0]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passFrPre[0]]);
-               dEta = fabs(muon_eta[MU_passGOOD[0]] - gsf_eta[GSF_passFrPre[0]]);
-               eleEt = gsf_gsfet[GSF_passFrPre[0]];
-               eleEta = gsf_eta[GSF_passFrPre[0]];
-               elePhi = gsf_phi[GSF_passFrPre[0]];
-               eleDEta = gsf_deltaeta[GSF_passFrPre[0]];
-               eleDPhi = gsf_deltaphi[GSF_passFrPre[0]];
-               eleHOE = gsf_hovere[GSF_passFrPre[0]];
-               eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passFrPre[0]];
-               eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passFrPre[0]];
-               eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passFrPre[0]];
-               eleEcalIso = gsf_ecaliso[GSF_passFrPre[0]];
-               eleHcalIso1 = gsf_hcaliso1[GSF_passFrPre[0]];
-               eleHcalIso2 = gsf_hcaliso2[GSF_passFrPre[0]];
-               if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[0]] + gsf_hcaliso1[GSF_passFrPre[0]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passFrPre[0]]);
-               else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[0]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[0]] + gsf_hcaliso1[GSF_passFrPre[0]] - 2.5 - rho * 0.28);
-               else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[0]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[0]] + gsf_hcaliso1[GSF_passFrPre[0]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passFrPre[0]] - 50.));
-               eleTrkIso = gsf_trackiso[GSF_passFrPre[0]];
-               eleLostHits = gsf_nLostInnerHits[GSF_passFrPre[0]];
-               eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passFrPre[0]];
-               eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passFrPre[0]];
-               etEleOPtMu = gsf_gsfet[GSF_passFrPre[0]]/muon_pt[MU_passGOOD[0]];
-               if (gsf_charge[GSF_passFrPre[0]] > 0 && muon_charge[MU_passGOOD[0]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passFrPre[0]]/muon_pt[MU_passGOOD[0]];
-               else if (gsf_charge[GSF_passFrPre[0]] < 0 && muon_charge[MU_passGOOD[0]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[0]]/gsf_gsfet[GSF_passFrPre[0]];
+               eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passFrPre[eleInd]] - muon_dz_firstPVtx[MU_passGOOD[muInd]]);
+               eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passFrPre[eleInd]] - muon_dxy_firstPVtx[MU_passGOOD[muInd]]);
+               if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]);
+               if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]);
+               dEta = fabs(muon_eta[MU_passGOOD[muInd]] - gsf_eta[GSF_passFrPre[eleInd]]);
+               eleEt = gsf_gsfet[GSF_passFrPre[eleInd]];
+               eleEta = gsf_eta[GSF_passFrPre[eleInd]];
+               elePhi = gsf_phi[GSF_passFrPre[eleInd]];
+               eleDEta = gsf_deltaeta[GSF_passFrPre[eleInd]];
+               eleDPhi = gsf_deltaphi[GSF_passFrPre[eleInd]];
+               eleHOE = gsf_hovere[GSF_passFrPre[eleInd]];
+               eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passFrPre[eleInd]];
+               eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passFrPre[eleInd]];
+               eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passFrPre[eleInd]];
+               eleEcalIso = gsf_ecaliso[GSF_passFrPre[eleInd]];
+               eleHcalIso1 = gsf_hcaliso1[GSF_passFrPre[eleInd]];
+               eleHcalIso2 = gsf_hcaliso2[GSF_passFrPre[eleInd]];
+               if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passFrPre[eleInd]]);
+               else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[eleInd]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2.5 - rho * 0.28);
+               else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[eleInd]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passFrPre[eleInd]] - 50.));
+               eleTrkIso = gsf_trackiso[GSF_passFrPre[eleInd]];
+               eleLostHits = gsf_nLostInnerHits[GSF_passFrPre[eleInd]];
+               eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passFrPre[eleInd]];
+               eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passFrPre[eleInd]];
+               etEleOPtMu = gsf_gsfet[GSF_passFrPre[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+               if (gsf_charge[GSF_passFrPre[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passFrPre[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+               else if (gsf_charge[GSF_passFrPre[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[muInd]]/gsf_gsfet[GSF_passFrPre[eleInd]];
                else lepPtPlusOPtMinus = 0.;
                eChTimesMuCh = eCharge * muCharge;
-               muPt = muon_pt[MU_passGOOD[0]];
-               muPtErr = muon_ptError[MU_passGOOD[0]];
-               muEta = muon_eta[MU_passGOOD[0]];
-               muPhi = muon_phi[MU_passGOOD[0]];
-               muHitLayers = muon_nlayerswithhits[MU_passGOOD[0]];
-               muTrkHits = muon_nhitstrack[MU_passGOOD[0]];
-               muPxlHits = muon_nhitspixel[MU_passGOOD[0]];
-               muMuHits = muon_nhitsmuons[MU_passGOOD[0]];
-               muDZFstPVtx = muon_dz_firstPVtx[MU_passGOOD[0]];
-               muDXYFstPVtx = muon_dxy_firstPVtx[MU_passGOOD[0]];
-               muNSeg = muon_nSegmentMatch[MU_passGOOD[0]];
-               muTrkIso03 = muon_trackIso03[MU_passGOOD[0]];
+               muPt = muon_pt[MU_passGOOD[muInd]];
+               muPtErr = muon_ptError[MU_passGOOD[muInd]];
+               muEta = muon_eta[MU_passGOOD[muInd]];
+               muPhi = muon_phi[MU_passGOOD[muInd]];
+               muHitLayers = muon_nlayerswithhits[MU_passGOOD[muInd]];
+               muTrkHits = muon_nhitstrack[MU_passGOOD[muInd]];
+               muPxlHits = muon_nhitspixel[MU_passGOOD[muInd]];
+               muMuHits = muon_nhitsmuons[MU_passGOOD[muInd]];
+               muDZFstPVtx = muon_dz_firstPVtx[MU_passGOOD[muInd]];
+               muDXYFstPVtx = muon_dxy_firstPVtx[MU_passGOOD[muInd]];
+               muNSeg = muon_nSegmentMatch[MU_passGOOD[muInd]];
+               muTrkIso03 = muon_trackIso03[MU_passGOOD[muInd]];
                muIsoCombRel = CombRelIso;
                numOfJets = JetColl_size;
                numOfJetsPt20 = jetsPt20;
@@ -810,14 +840,29 @@ void EmuSpectrum::Loop()
          if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) {
             TLorentzVector ele1;
             TLorentzVector mu1;
+            double invMass = 0.;
 
-            ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[0]], gsf_eta[GSF_passHEEP[0]], gsf_phi[GSF_passHEEP[0]], 0.000511);
-            mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[0]], muon_eta[MU_passGOOD[0]], muon_phi[MU_passGOOD[0]], 0.10566);
+            // find the e-mu pair with the maximum invariant mass
+            double maxInvMass = 0.;
+            unsigned int eleInd = 0;
+            unsigned int muInd = 0;
+            for (unsigned int eleIt = 0; eleIt < GSF_passHEEP.size(); ++eleIt) {
+               for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                  ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[eleIt]], gsf_eta[GSF_passHEEP[eleIt]], gsf_phi[GSF_passHEEP[eleIt]], 0.000511);
+                  mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
 
-            double invMass = (ele1 + mu1).M();
+                  invMass = (ele1 + mu1).M();
+                  if (invMass > maxInvMass) {
+                     maxInvMass = invMass;
+                     eleInd = eleIt;
+                     muInd = muIt;
+                  }
+               }
+            }
+            invMass = maxInvMass;
 
             // vertex matching of tracks by dz
-            //if (fabs(gsf_dz_beamSpot[GSF_passHEEP[0]] - muon_dz_beamSpot[MU_passGOOD[0]]) > 0.05) continue;
+            //if (fabs(gsf_dz_beamSpot[GSF_passHEEP[eleInd]] - muon_dz_beamSpot[MU_passGOOD[muInd]]) > 0.05) continue;
 
             //MASS CUT
             if (invMass < minInvMass) continue;
@@ -847,67 +892,67 @@ void EmuSpectrum::Loop()
 
             ++evCounter;
 
-            float CombRelIso = (muon_emIso03[MU_passGOOD[0]] + muon_hadIso03[MU_passGOOD[0]] + muon_trackIso03[MU_passGOOD[0]]) / muon_pt[MU_passGOOD[0]];
+            float CombRelIso = (muon_emIso03[MU_passGOOD[muInd]] + muon_hadIso03[MU_passGOOD[muInd]] + muon_trackIso03[MU_passGOOD[muInd]]) / muon_pt[MU_passGOOD[muInd]];
 
             // set correction factors according to detector region
             float heepEffSf = 1.;
             float heepEffSfErr = 0.;
             float Lumi_ScaleFactor = 1.;
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.442) {
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) {
               Lumi_ScaleFactor = lumiScaleFactorEB.GetVal();
-              if (gsf_gsfet[GSF_passHEEP[0]] > 35.) {
+              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 35.) {
                 heepEffSf = eps_heep_sf_eb_pt35.GetVal();
                 heepEffSfErr = eps_heep_sf_err_eb_pt35.GetVal();
               }
-              if (gsf_gsfet[GSF_passHEEP[0]] > 100.) {
+              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 100.) {
                 heepEffSf = eps_heep_sf_eb_pt100.GetVal();
                 heepEffSfErr = eps_heep_sf_err_eb_pt100.GetVal();
               }
             }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 2.5) {
+            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) {
               Lumi_ScaleFactor = lumiScaleFactorEE.GetVal();
-              if (gsf_gsfet[GSF_passHEEP[0]] > 35.) {
+              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 35.) {
                 heepEffSf = eps_heep_sf_ee_pt35.GetVal();
                 heepEffSfErr = eps_heep_sf_err_ee_pt35.GetVal();
               }
-              if (gsf_gsfet[GSF_passHEEP[0]] > 100.) {
+              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 100.) {
                 heepEffSf = eps_heep_sf_ee_pt100.GetVal();
                 heepEffSfErr = eps_heep_sf_err_ee_pt100.GetVal();
               }
             }
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 0.8) {
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 0.8) {
               eleEffSf = heepEffSf * eps_cand_sf_0p8.GetVal();
               eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8.GetVal()*eps_cand_sf_err_0p8.GetVal());
             }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.442) {
+            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) {
               eleEffSf = heepEffSf * eps_cand_sf_0p8to1p4442.GetVal();
               eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8to1p4442.GetVal()*eps_cand_sf_err_0p8to1p4442.GetVal());
             }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 2.0) {
+            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.0) {
               eleEffSf = heepEffSf * eps_cand_sf_1p566to2p0.GetVal();
               eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_1p566to2p0.GetVal()*eps_cand_sf_err_1p566to2p0.GetVal());
             }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 2.0 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 2.5) {
+            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 2.0 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) {
               eleEffSf = heepEffSf * eps_cand_sf_2p0to2p5.GetVal();
               eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_2p0to2p5.GetVal()*eps_cand_sf_err_2p0to2p5.GetVal());
             }
             // muon scale factor
-            if (fabs(muon_eta[MU_passGOOD[0]]) < 0.9) {
+            if (fabs(muon_eta[MU_passGOOD[muInd]]) < 0.9) {
               muEffSf = muScaleFactorLowEta.GetVal();
               trgEffSf = trgDataMcScaleFactorLowEta.GetVal();
               trgEff = trgEffLowEta.GetVal();
             }
-            else if (fabs(muon_eta[MU_passGOOD[0]]) < 1.2) {
+            else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 1.2) {
               muEffSf = muScaleFactorMidEta.GetVal();
               trgEffSf = trgDataMcScaleFactorMidEta.GetVal();
               trgEff = trgEffMidEta.GetVal();
             }
-            else if (fabs(muon_eta[MU_passGOOD[0]]) < 2.1) {
+            else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.1) {
               muEffSf = muScaleFactorHighEta.GetVal();
               trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
               trgEff = trgEffHighEta.GetVal();
             }
-            else if (fabs(muon_eta[MU_passGOOD[0]]) < 2.4) {
+            else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.4) {
               muEffSf = muScaleFactorHighestEta.GetVal();
               trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
               trgEff = trgEffHighEta.GetVal();
@@ -923,59 +968,67 @@ void EmuSpectrum::Loop()
                if (Jet_pt[jetIt] > 30.) ++jetsPt30;
             }
 
+            TLorentzVector genEle1;
+            TLorentzVector genMu1;
+            genEle1.SetPtEtaPhiM(genele_pt[0], genele_eta[0], genele_phi[0], 0.000511);
+            genMu1.SetPtEtaPhiM(genmu_pt[0], genmu_eta[0], genmu_phi[0], 0.10566);
+   
             // fill the data tree
             emuInvMass = invMass;
-            if (p > 0) trueMass = genelemom_mass[0];
-            eCharge = gsf_charge[GSF_passHEEP[0]];
-            muCharge = muon_charge[MU_passGOOD[0]];
+            if (p > 0) {
+              trueMass = genelemom_mass[0];
+              genEmuMass = (genEle1 + genMu1).M();
+            }
+            eCharge = gsf_charge[GSF_passHEEP[eleInd]];
+            muCharge = muon_charge[MU_passGOOD[muInd]];
             totWeight = weight;
             if (p > 0) totWeight *= input[p].second * LumiFactor;
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.442) evtRegion = 0;
-            else if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 2.5) evtRegion = 1;
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) evtRegion = 0;
+            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) evtRegion = 1;
             else evtRegion = -1;
             // fill control variables
             nVtx = pvsize;
-            eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passHEEP[0]] - muon_dz_firstPVtx[MU_passGOOD[0]]);
-            eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passHEEP[0]] - muon_dxy_firstPVtx[MU_passGOOD[0]]);
-            if (fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]);
-            if (fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[0]] - gsf_phi[GSF_passHEEP[0]]);
-            dEta = fabs(muon_eta[MU_passGOOD[0]] - gsf_eta[GSF_passHEEP[0]]);
-            eleEt = gsf_gsfet[GSF_passHEEP[0]];
-            eleEta = gsf_eta[GSF_passHEEP[0]];
-            elePhi = gsf_phi[GSF_passHEEP[0]];
-            eleDEta = gsf_deltaeta[GSF_passHEEP[0]];
-            eleDPhi = gsf_deltaphi[GSF_passHEEP[0]];
-            eleHOE = gsf_hovere[GSF_passHEEP[0]];
-            eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passHEEP[0]];
-            eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passHEEP[0]];
-            eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passHEEP[0]];
-            eleEcalIso = gsf_ecaliso[GSF_passHEEP[0]];
-            eleHcalIso1 = gsf_hcaliso1[GSF_passHEEP[0]];
-            eleHcalIso2 = gsf_hcaliso2[GSF_passHEEP[0]];
-            if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[0]] + gsf_hcaliso1[GSF_passHEEP[0]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passHEEP[0]]);
-            else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[0]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[0]] + gsf_hcaliso1[GSF_passHEEP[0]] - 2.5 - rho * 0.28);
-            else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[0]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[0]] + gsf_hcaliso1[GSF_passHEEP[0]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passHEEP[0]] - 50.));
-            eleTrkIso = gsf_trackiso[GSF_passHEEP[0]];
-            eleLostHits = gsf_nLostInnerHits[GSF_passHEEP[0]];
-            eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passHEEP[0]];
-            eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passHEEP[0]];
-            etEleOPtMu = gsf_gsfet[GSF_passHEEP[0]]/muon_pt[MU_passGOOD[0]];
-            if (gsf_charge[GSF_passHEEP[0]] > 0 && muon_charge[MU_passGOOD[0]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passHEEP[0]]/muon_pt[MU_passGOOD[0]];
-            else if (gsf_charge[GSF_passHEEP[0]] < 0 && muon_charge[MU_passGOOD[0]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[0]]/gsf_gsfet[GSF_passHEEP[0]];
+            eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passHEEP[eleInd]] - muon_dz_firstPVtx[MU_passGOOD[muInd]]);
+            eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passHEEP[eleInd]] - muon_dxy_firstPVtx[MU_passGOOD[muInd]]);
+            if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]);
+            if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]);
+            dEta = fabs(muon_eta[MU_passGOOD[muInd]] - gsf_eta[GSF_passHEEP[eleInd]]);
+            eleEt = gsf_gsfet[GSF_passHEEP[eleInd]];
+            eleEta = gsf_eta[GSF_passHEEP[eleInd]];
+            elePhi = gsf_phi[GSF_passHEEP[eleInd]];
+            eleDEta = gsf_deltaeta[GSF_passHEEP[eleInd]];
+            eleDPhi = gsf_deltaphi[GSF_passHEEP[eleInd]];
+            eleHOE = gsf_hovere[GSF_passHEEP[eleInd]];
+            eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passHEEP[eleInd]];
+            eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passHEEP[eleInd]];
+            eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passHEEP[eleInd]];
+            eleEcalIso = gsf_ecaliso[GSF_passHEEP[eleInd]];
+            eleHcalIso1 = gsf_hcaliso1[GSF_passHEEP[eleInd]];
+            eleHcalIso2 = gsf_hcaliso2[GSF_passHEEP[eleInd]];
+            if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passHEEP[eleInd]]);
+            else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[eleInd]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2.5 - rho * 0.28);
+            else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[eleInd]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passHEEP[eleInd]] - 50.));
+            eleTrkIso = gsf_trackiso[GSF_passHEEP[eleInd]];
+            eleLostHits = gsf_nLostInnerHits[GSF_passHEEP[eleInd]];
+            eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passHEEP[eleInd]];
+            eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passHEEP[eleInd]];
+            etEleOPtMu = gsf_gsfet[GSF_passHEEP[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+            if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passHEEP[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+            else if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[muInd]]/gsf_gsfet[GSF_passHEEP[eleInd]];
             else lepPtPlusOPtMinus = 0.;
             eChTimesMuCh = eCharge * muCharge;
-            muPt = muon_pt[MU_passGOOD[0]];
-            muPtErr = muon_ptError[MU_passGOOD[0]];
-            muEta = muon_eta[MU_passGOOD[0]];
-            muPhi = muon_phi[MU_passGOOD[0]];
-            muHitLayers = muon_nlayerswithhits[MU_passGOOD[0]];
-            muTrkHits = muon_nhitstrack[MU_passGOOD[0]];
-            muPxlHits = muon_nhitspixel[MU_passGOOD[0]];
-            muMuHits = muon_nhitsmuons[MU_passGOOD[0]];
-            muDZFstPVtx = muon_dz_firstPVtx[MU_passGOOD[0]];
-            muDXYFstPVtx = muon_dxy_firstPVtx[MU_passGOOD[0]];
-            muNSeg = muon_nSegmentMatch[MU_passGOOD[0]];
-            muTrkIso03 = muon_trackIso03[MU_passGOOD[0]];
+            muPt = muon_pt[MU_passGOOD[muInd]];
+            muPtErr = muon_ptError[MU_passGOOD[muInd]];
+            muEta = muon_eta[MU_passGOOD[muInd]];
+            muPhi = muon_phi[MU_passGOOD[muInd]];
+            muHitLayers = muon_nlayerswithhits[MU_passGOOD[muInd]];
+            muTrkHits = muon_nhitstrack[MU_passGOOD[muInd]];
+            muPxlHits = muon_nhitspixel[MU_passGOOD[muInd]];
+            muMuHits = muon_nhitsmuons[MU_passGOOD[muInd]];
+            muDZFstPVtx = muon_dz_firstPVtx[MU_passGOOD[muInd]];
+            muDXYFstPVtx = muon_dxy_firstPVtx[MU_passGOOD[muInd]];
+            muNSeg = muon_nSegmentMatch[MU_passGOOD[muInd]];
+            muTrkIso03 = muon_trackIso03[MU_passGOOD[muInd]];
             muIsoCombRel = CombRelIso;
             numOfJets = JetColl_size;
             numOfJetsPt20 = jetsPt20;
@@ -991,32 +1044,32 @@ void EmuSpectrum::Loop()
 
             //same sign and opposite sign
             if (p == 0) {
-               if (gsf_charge[GSF_passHEEP[0]] > 0 && muon_charge[MU_passGOOD[0]] > 0) ++nb_plus_plus;
-               if (gsf_charge[GSF_passHEEP[0]] > 0 && muon_charge[MU_passGOOD[0]] < 0) ++nb_plus_minus;
-               if (gsf_charge[GSF_passHEEP[0]] < 0 && muon_charge[MU_passGOOD[0]] > 0) ++nb_minus_plus;
-               if (gsf_charge[GSF_passHEEP[0]] < 0 && muon_charge[MU_passGOOD[0]] < 0) ++nb_minus_minus;
+               if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] > 0) ++nb_plus_plus;
+               if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) ++nb_plus_minus;
+               if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) ++nb_minus_plus;
+               if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] < 0) ++nb_minus_minus;
 
                if (invMass > 600. || invMass < 1.) {
                   if (invMass > 600.) cout << "M_emu > 600 GeV/c^2 event | " << runnumber << ":" << luminosityBlock << ":" << eventnumber << " | "; 
                   if (invMass < 1.) cout << "M_emu < 1 GeV/c^2 event   | " << runnumber << ":" << luminosityBlock << ":" << eventnumber << " | "; 
                        cout << setw(8) << invMass << " | " << 
-                       setw(7) << muon_pt[MU_passGOOD[0]] << " | " <<
-                       setw(8) << muon_eta[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_phi[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_trackIso03[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_emIso03[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_hadIso03[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_normChi2[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_dxy_beamSpot[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_nhitstrack[MU_passGOOD[0]] << " | " <<
-                       //setw(8) << muon_nhitsmuons[MU_passGOOD[0]] << " | " <<
-                       setw(7) << gsf_gsfet[GSF_passHEEP[0]] << " | " << 
-                       setw(8) << gsfsc_eta[GSF_passHEEP[0]] << " | " <<
-                       //setw(8) << gsfsc_phi[GSF_passHEEP[0]] << " | " <<
-                       //setw(8) << gsf_trackiso[GSF_passHEEP[0]] << " | " <<
-                       //setw(8) << gsf_ecaliso[GSF_passHEEP[0]] << " | " <<
-                       //setw(8) << gsf_hcaliso1[GSF_passHEEP[0]] << " | " <<
-                       //setw(8) << gsf_hcaliso2[GSF_passHEEP[0]] << " | " <<
+                       setw(7) << muon_pt[MU_passGOOD[muInd]] << " | " <<
+                       setw(8) << muon_eta[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_phi[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_trackIso03[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_emIso03[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_hadIso03[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_normChi2[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_dxy_beamSpot[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_nhitstrack[MU_passGOOD[muInd]] << " | " <<
+                       //setw(8) << muon_nhitsmuons[MU_passGOOD[muInd]] << " | " <<
+                       setw(7) << gsf_gsfet[GSF_passHEEP[eleInd]] << " | " << 
+                       setw(8) << gsfsc_eta[GSF_passHEEP[eleInd]] << " | " <<
+                       //setw(8) << gsfsc_phi[GSF_passHEEP[eleInd]] << " | " <<
+                       //setw(8) << gsf_trackiso[GSF_passHEEP[eleInd]] << " | " <<
+                       //setw(8) << gsf_ecaliso[GSF_passHEEP[eleInd]] << " | " <<
+                       //setw(8) << gsf_hcaliso1[GSF_passHEEP[eleInd]] << " | " <<
+                       //setw(8) << gsf_hcaliso2[GSF_passHEEP[eleInd]] << " | " <<
                        endl;
                }
             }
@@ -1201,6 +1254,29 @@ EmuSpectrum::FakeRate (const float& et, const float& eta)
     else return 0.;
   }
   else return 0.; 
+
+  //// fake rate 19.3/fb
+  //if (fabs(eta) < 1.5) {
+  //  if (et < 189.3) return 0.0179 - 0.000056 * et;
+  //  return 0.0073;
+  //} else if (abs(eta) < 2.0) {
+  //  if (et < 96.6) return exp(-2.31 - 0.011 * et);
+  //  else if (et < 178.0) return 0.040 - 0.000059 * et;
+  //  return 0.0295;
+  //} else if (abs(eta) < 2.5) {
+  //  if(et < 115.4) return 0.099 - 0.00035 * et;
+  //  else return 0.0586;
+  //} else return 0;
+}
+
+double
+EmuSpectrum::topScaleFactor (const float& top_genpt, const float& atop_genpt)
+{
+  // https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
+  // constants for 8 TeV dilepton
+  float a = 0.148;
+  float b = -0.00129;
+  return sqrt(exp(a+b*top_genpt) + exp(a+b*atop_genpt)); 
 }
 
 int EmuSpectrum::Trigger(int &prescale, unsigned int *trig, const int &selector)
