@@ -49,7 +49,8 @@ TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brNam
 void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
-  TFile input("../forest/emuSpec_19780pb-1.root", "open");
+  TFile input("./emuSpec_19703pb-1.root", "open");
+  //TFile input("./emuSpec_MuEG_19703pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -62,14 +63,14 @@ void macro_MakeEMuInvMassPlot()
 
   bool plotSign[5];
   plotSign[0] = 1;  // all
-  plotSign[1] = 0;  // SS same sign
-  plotSign[2] = 0;  // OS opposite sign
+  plotSign[1] = 1;  // SS same sign
+  plotSign[2] = 1;  // OS opposite sign
   plotSign[3] = 0;  // e-mu+
   plotSign[4] = 0;  // e+mu-
 
   bool plotType[2];
   plotType[0] = 1;  // emu spectrum
-  plotType[1] = 0;  // cumulative emu spectrum
+  plotType[1] = 1;  // cumulative emu spectrum
 
   const float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
   const bool plotPull = 1; // plot (data-bkg)/bkg
@@ -1198,6 +1199,8 @@ void macro_MakeEMuInvMassPlot()
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "\\begin{table}[tbh]" << endl;
   cout << "\\centering" << endl;
+  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
+  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
@@ -1222,8 +1225,6 @@ void macro_MakeEMuInvMassPlot()
           emuMasses.at(DATA).at(ALLCUM)->GetBinContent(bin400), CalcBgSum(emuMasses, allSamples, ALLCUM, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400, -1, calcQcdErr));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
-  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
-  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\end{table}" << endl;
 
   cout << endl;
@@ -1232,6 +1233,8 @@ void macro_MakeEMuInvMassPlot()
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "\\begin{table}[tbh]" << endl;
   cout << "\\centering" << endl;
+  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
+  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline" << endl;
   cout << " & \\multicolumn{6}{c|}{number of events} \\\\" << endl;
@@ -1264,16 +1267,17 @@ void macro_MakeEMuInvMassPlot()
           CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, ALLCUM, bin400, -1, calcQcdErr));
   cout << "\\hline" << endl;
   cout << "\\end{tabular}" << endl;
-  cout << "\\caption{Number of $e\\mu$ events with different charge combinations from data and Monte Carlo simulation. The listed errors are the systematic errors}" << endl;
-  cout << "\\label{tab:emu_event_yield}" << endl;
   cout << "\\end{table}" << endl;
 
   cout << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
   cout << "|Event yield table per sample                                                                             |" << endl;
   cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-  cout << "\\begin{table}[b]" << endl;
+  cout << "\\begin{table}[htb]" << endl;
   cout << "\\centering" << endl;
+  cout << "\\caption{Number of $e\\mu$ events with invariant mass in different regions and with different charge combinations.}" << endl;
+  cout << "\\label{tab:emu_event_yield_by_source}" << endl;
+  cout << "\\resizebox{16cm}{!}{" << endl;
   cout << "\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}" << endl;
   cout << "\\hline\\hline" << endl;
   cout << "Source & \\multicolumn{9}{c|}{number of events} \\\\" << endl;
@@ -1331,9 +1335,7 @@ void macro_MakeEMuInvMassPlot()
   }
 
   cout << "\\hline\\hline" << endl;
-  cout << "\\end{tabular}" << endl;
-  cout << "\\caption{Number of $e\\mu$ events with invariant mass in different regions and with different charge combinations.}" << endl;
-  cout << "\\label{tab:emu_event_yield}" << endl;
+  cout << "\\end{tabular}}" << endl;
   cout << "\\end{table}" << endl;
 }
 
@@ -1468,11 +1470,6 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (flags & 1<<9) charOffset += 2;
     userScale *= ((TParameter<float> *)mcWeights->FindObject(treeName + charOffset))->GetVal();
   }
-  if (flags & 1<<5) userScale *= ((TParameter<float> *)input->Get("trgEff"))->GetVal();
-  if (flags & 1<<4) userScale *= ((TParameter<float> *)input->Get("trgDataMcScaleFactor"))->GetVal();
-  if (flags & 1<<1) userScale *= ((TParameter<float> *)input->Get("muScaleFactor"))->GetVal();
-  float eleScaleFactorEB = ((TParameter<float> *)input->Get("eleScaleFactorEB"))->GetVal();
-  float eleScaleFactorEE = ((TParameter<float> *)input->Get("eleScaleFactorEE"))->GetVal();
   float lumiScaleFactorEB = ((TParameter<float> *)input->Get("lumiScaleFactorEB"))->GetVal();
   float lumiScaleFactorEE = ((TParameter<float> *)input->Get("lumiScaleFactorEE"))->GetVal();
 
@@ -1492,6 +1489,10 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   int evtRegion;
   float cutVar = 0.;
   float fakeRate = 0.;
+  float trgEff = 1.;
+  float trgEffSf = 1.;
+  float eleEffSf = 1.;
+  float muEffSf = 1.;
   tree->SetBranchStatus("*",0); //disable all branches
   tree->SetBranchStatus(brName,1);
   tree->SetBranchAddress(brName, &var);
@@ -1517,6 +1518,22 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     tree->SetBranchStatus(cutVariable,1);
     tree->SetBranchAddress(cutVariable, &cutVar);
   }
+  if (flags & 1<<5) {
+    tree->SetBranchStatus("trgEff",1);
+    tree->SetBranchAddress("trgEff", &trgEff);
+  }
+  if (flags & 1<<4) {
+    tree->SetBranchStatus("trgEffSf",1);
+    tree->SetBranchAddress("trgEffSf", &trgEffSf);
+  }
+  if (flags & 1<<2) {
+    tree->SetBranchStatus("eleEffSf",1);
+    tree->SetBranchAddress("eleEffSf", &eleEffSf);
+  }
+  if (flags & 1<<1) {
+    tree->SetBranchStatus("muEffSf",1);
+    tree->SetBranchAddress("muEffSf", &muEffSf);
+  }
   if (flags & 1<<9) {
     tree->SetBranchStatus("passHeep",1);
     tree->SetBranchStatus("fakeRate",1);
@@ -1536,9 +1553,11 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (evtRegion == 1 && region == 0) continue;
 
     float scaleFactor = userScale;
-    // set lumi and electron scalefactor according to detector region
-    if (evtRegion == 0 && flags & 1<<2) scaleFactor *= eleScaleFactorEB;
-    if (evtRegion == 1 && flags & 1<<2) scaleFactor *= eleScaleFactorEE;
+    if (flags & 1<<5) scaleFactor *= trgEff;
+    if (flags & 1<<4) scaleFactor *= trgEffSf;
+    if (flags & 1<<2) scaleFactor *= eleEffSf;
+    if (flags & 1<<1) scaleFactor *= muEffSf;
+    // set lumi according to detector region
     if (evtRegion == 0 && flags & 1<<3) scaleFactor *= lumiScaleFactorEB;
     if (evtRegion == 1 && flags & 1<<3) scaleFactor *= lumiScaleFactorEE;
 
@@ -1554,8 +1573,7 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     // user defined cut
     if (cutVariable[0] != '\0')
       if (cutVar < cutLow || cutVar >= cutHigh) continue;
-
-    // fake rate 
+    
     if (flags & 1<<9) {
       if (!passHeep) scaleFactor *= fakeRate / (1 - fakeRate);
       else continue;
