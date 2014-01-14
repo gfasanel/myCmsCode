@@ -48,15 +48,12 @@ TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brNam
 void macro_MakeQcdClosureTest()
 {
   // parameters //////////////////////////////////////////////////////////////
-  //TFile input("./emuSpec_19619pb-1.root", "open");
-  TFile input("test_19619pb-1.root", "open");
+  TFile input("../forest/emuSpec_19703pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
   const int nBins = 75;
-  const bool usePu = 1;
-  const bool useWeight = 1;
   const int qcdEst = 1; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
 
   int eRegion = 2; // electron region EB(0), EE(1), EB+EE(2)
@@ -70,12 +67,11 @@ void macro_MakeQcdClosureTest()
   plotType[0] = 1;  // emu spectrum
   plotType[1] = 1;  // cumulative emu spectrum
 
-  const bool plotPull = 0; // plot (data-bkg)/bkg
-  const bool plotPullBelowSpec = 0; // plot (data-bkg)/bkg below spectrum
+  const bool plotRatio = 1; // plot frMethod/ssMethod
+  const bool plotRatioBelowSpec = 1; // plot frMethod/ssMethod below spectrum
   const bool logPlotX = 0;
   const bool logPlotY = 1;
   const bool prelim = 1;
-  const bool groupedPlot = 0;
   const bool overflowBin = 1;
 
   float xRangeMin = 60.;
@@ -83,19 +79,19 @@ void macro_MakeQcdClosureTest()
   //float xRangeMin = 0.;
   //float xRangeMax = 1500.;
   float yRangeMin[6] = {0.002, 0.002, 0.002, 0.4, 0.4, 0.4};
-  float yRangeMax[6] = {30, 10, 30, 3000, 1000, 3000};
-  float yRangeMinRatio[3] = {-0.7, -0.7, -0.7};
-  float yRangeMaxRatio[3] = {0.7, 0.7, 0.7};
+  float yRangeMax[6] = {30, 10, 30, 3000, 2000, 3000};
+  float yRangeMinRatio[3] = {0.3, 0.3, 0.3};
+  float yRangeMaxRatio[3] = {1.7, 1.7, 1.7};
   float fitMin = xRangeMin;
-  float fitMax = 1100.; // set to highest bin with a data point
+  float fitMax = xRangeMax; // set to highest bin with a data point
   float xRangeMinRatio = fitMin;
   float xRangeMaxRatio = fitMax;
 
   // output file formats
-  const bool savePull = 0;
+  const bool saveRatio = 0;
   const bool saveSpec = 0;
   const bool saveCumSpec = 0;
-  const bool saveAsPdf = 0;
+  const bool saveAsPdf = 1;
   const bool saveAsPng = 1;
   const bool saveAsRoot = 0;
   const char *fileNameExtra = "";
@@ -140,6 +136,7 @@ void macro_MakeQcdClosureTest()
   vector<TH1F *> emuMass_wjets;
   vector<TH1F *> emuMass_qcd;
   vector<TH1F *> emuMass_qcdFromFake;
+  vector<TH1F *> dataOverBgHist;
 
   // define the binning
   vector<float> binning;
@@ -248,8 +245,11 @@ void macro_MakeQcdClosureTest()
       }
       if (k == -1) k = 2;
 
+      dataOverBgHist.push_back((TH1F*)emuMass_qcdFromFake.back()->Clone("dataOverBgHist"));
+
       // add overflow in last bin
       if (j == 0 && overflowBin) {
+        dataOverBgHist.back()->SetBinContent(dataOverBgHist.back()->GetNbinsX(), dataOverBgHist.back()->GetBinContent(dataOverBgHist.back()->GetNbinsX()) + dataOverBgHist.back()->GetBinContent(dataOverBgHist.back()->GetNbinsX() + 1));
         emuMass_wjets.back()->SetBinContent(emuMass_wjets.back()->GetNbinsX(), emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX()) + emuMass_wjets.back()->GetBinContent(emuMass_wjets.back()->GetNbinsX() + 1));
         emuMass_qcd.back()->SetBinContent(emuMass_qcd.back()->GetNbinsX(), emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX()) + emuMass_qcd.back()->GetBinContent(emuMass_qcd.back()->GetNbinsX() + 1));
         emuMass_qcdFromFake.back()->SetBinContent(emuMass_qcdFromFake.back()->GetNbinsX(), emuMass_qcdFromFake.back()->GetBinContent(emuMass_qcdFromFake.back()->GetNbinsX()) + emuMass_qcdFromFake.back()->GetBinContent(emuMass_qcdFromFake.back()->GetNbinsX() + 1));
@@ -274,8 +274,8 @@ void macro_MakeQcdClosureTest()
 
       TCanvas *emuPlot;
       TPad *specPad;
-      if (plotPullBelowSpec && j == 0) {
-        emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 900);
+      if (plotRatioBelowSpec && j == 0) {
+        emuPlot = new TCanvas("emuPlot" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 100, 100, 900, 720);
         specPad = new TPad("specPad" + histoSign[k] + nameSuffix[j], "emu Spectrum" + titleSuffix[j], 0., 0.33, 1., 1.);
         specPad->SetBottomMargin(0.06);
       } else {
@@ -328,7 +328,7 @@ void macro_MakeQcdClosureTest()
       emuMass_qcdFromFake.back()->SetLineWidth(2);
       emuMass_qcdFromFake.back()->Draw("esame");
 
-      if (plotPullBelowSpec && j == 0) {
+      if (plotRatioBelowSpec && j == 0) {
         bgStack->GetXaxis()->SetTitle("");
       } else {
         bgStack->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
@@ -340,8 +340,8 @@ void macro_MakeQcdClosureTest()
       bgStack->GetXaxis()->SetLabelSize(0.05);
       bgStack->GetXaxis()->SetMoreLogLabels();
       bgStack->GetXaxis()->SetNoExponent();
-      //bgStack->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
-      bgStack->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
+      bgStack->GetXaxis()->SetRangeUser(xRangeMin, xRangeMax); 
+      //bgStack->GetXaxis()->SetLimits(xRangeMin, xRangeMax); 
       if (j == 1) bgStack->GetYaxis()->SetTitle("Events #geq " + xAxisTitle[k]);
       else bgStack->GetYaxis()->SetTitle("Events / GeV");
       bgStack->GetYaxis()->SetTitleFont(font);
@@ -375,14 +375,17 @@ void macro_MakeQcdClosureTest()
       tex->SetTextFont(font);
       tex->SetLineWidth(2);
       tex->SetTextSize(0.042);
-      if (prelim) tex->DrawLatex(0.325, 0.853, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-      else tex->DrawLatex(0.405, 0.853, "CMS, 8 TeV, 19.6 fb^{-1}");
+      if (prelim) tex->DrawLatex(0.325, 0.853, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+      else tex->DrawLatex(0.405, 0.853, "CMS, 8 TeV, 19.7 fb^{-1}");
       if (eRegion == 0) tex->DrawLatex(0.325, 0.775, "e in barrel");
       if (eRegion == 1) tex->DrawLatex(0.325, 0.775, "e in endcap");
 
-      // safe in various file formats
+      // denominator histogram for frMethod/ssMethod plot
+      TH1F *denHist = (TH1F *)emuMass_wjets.back()->Clone("denHist");
+      denHist->Add(emuMass_qcd.back());
+
       stringstream sStream;
-      if (!plotPullBelowSpec || j > 0) {
+      if (!plotRatioBelowSpec || j > 0) {
         sStream << plotDir << "qcdClosureTestSpec";
         if (k == 0) sStream << "_";
         sStream << histoSign[k];
@@ -390,7 +393,113 @@ void macro_MakeQcdClosureTest()
         if (eRegion == 1) sStream << "EE_";
         sStream << fileNameExtra << nameSuffix[j];
         if (j > 0) sStream << "_";
-        if (groupedPlot) sStream << "grouped_";
+        if (!logPlotY) sStream << "lin_";
+        sStream << lumi->GetVal() << "pb-1";
+        TString saveFileName = sStream.str();
+        if ((j == 0 && saveSpec) || (j > 0 && saveCumSpec)) {
+          if (saveAsPdf) emuPlot->Print(saveFileName + ".pdf", "pdf");
+          if (saveAsPng) emuPlot->Print(saveFileName + ".png", "png");
+          if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
+        }
+      }
+
+      if (j > 0 || !plotRatio) continue;
+      // plot a frMethod/ssMethod histogram
+      dataOverBgHist.back()->Divide(denHist);
+
+      float fontScaleBot = 1.;
+      TPad *pullPad = new TPad("pullPad" + histoSign[k] + nameSuffix[j], "Ratio" + titleSuffix[j], 0., 0., 1., 1.);
+      TCanvas *dataOverBgPlot;
+      if (plotRatioBelowSpec) {
+        emuPlot->cd();
+        pullPad->SetPad(0., 0., 1., 0.33);
+        pullPad->SetBottomMargin(0.22);
+        pullPad->SetTopMargin(0.);
+        fontScaleBot = specPad->GetHNDC() / pullPad->GetHNDC();
+      } else {
+        dataOverBgPlot = new TCanvas("dataOverBgPlot" + histoSign[k] + nameSuffix[j], "Ratio" + titleSuffix[j], 100, 100, 900, 600);
+        pullPad->SetBottomMargin(0.12);
+        pullPad->SetTopMargin(0.08);
+      }
+      pullPad->Draw();
+      pullPad->cd();
+      pullPad->SetBorderMode(0);
+      pullPad->SetBorderSize(2);
+      pullPad->SetFrameBorderMode(0);
+      pullPad->SetFillColor(0);
+      pullPad->SetFrameFillColor(0);
+      if (logPlotX) pullPad->SetLogx();
+      pullPad->SetLeftMargin(0.11);
+      pullPad->SetRightMargin(0.09);
+      pullPad->SetTickx(1);
+      pullPad->SetTicky(1);
+      pullPad->SetGridy(1);
+
+      dataOverBgHist.back()->SetLineWidth(2);
+      dataOverBgHist.back()->SetLineColor(kRed);
+      //dataOverBgHist.back()->SetMarkerStyle(20);
+      //dataOverBgHist.back()->SetMarkerSize(1.1);
+
+      dataOverBgHist.back()->GetXaxis()->SetTitle(xAxisTitle[k] + " [GeV]");
+      dataOverBgHist.back()->GetXaxis()->SetTitleFont(font);
+      dataOverBgHist.back()->GetXaxis()->SetTitleSize(0.047 * fontScaleBot);
+      dataOverBgHist.back()->GetXaxis()->SetTitleOffset(0.9);
+      dataOverBgHist.back()->GetXaxis()->SetLabelFont(font);
+      dataOverBgHist.back()->GetXaxis()->SetLabelSize(0.05 * fontScaleBot);
+      dataOverBgHist.back()->GetXaxis()->SetMoreLogLabels();
+      dataOverBgHist.back()->GetXaxis()->SetNoExponent();
+      dataOverBgHist.back()->GetXaxis()->SetRangeUser(xRangeMinRatio, xRangeMaxRatio - 0.1);
+      dataOverBgHist.back()->GetYaxis()->SetTitle("Ratio ");
+      dataOverBgHist.back()->GetYaxis()->SetTitleFont(font);
+      dataOverBgHist.back()->GetYaxis()->SetTitleSize(0.047 * fontScaleBot);
+      dataOverBgHist.back()->GetYaxis()->SetTitleOffset(1.1 / fontScaleBot);
+      dataOverBgHist.back()->GetYaxis()->SetLabelFont(font);
+      dataOverBgHist.back()->GetYaxis()->SetLabelSize(0.05 * fontScaleBot);
+      dataOverBgHist.back()->GetYaxis()->SetRangeUser(yRangeMinRatio[k], yRangeMaxRatio[k]);
+
+      dataOverBgHist.back()->Draw();
+
+      //TF1 *f0 = new TF1("f0" + histoSign[k], "[0]");
+      //dataOverBgHist.back()->Fit("f0" + histoSign[k], "", "", fitMin, fitMax);
+
+      if (!plotRatioBelowSpec) {
+        tex->SetTextSize(0.042 * fontScaleBot);
+        if (prelim) tex->DrawLatex(0.150, 0.853, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+        else tex->DrawLatex(0.150, 0.853, "CMS, 8 TeV, 19.7 fb^{-1}");
+        tex->SetTextSize(0.042 * fontScaleBot);
+        //tex->DrawLatex(0.150, 0.764, Form("#chi^{2} / ndf: %.2f / %i", f0->GetChisquare(), f0->GetNDF()));
+        //tex->DrawLatex(0.150, 0.720, Form("p0: %.4f #pm %0.4f", f0->GetParameter(0), f0->GetParError(0)));
+        if (eRegion == 0) tex->DrawLatex(0.708, 0.853, "e in barrel");
+        if (eRegion == 1) tex->DrawLatex(0.708, 0.853, "e in endcap");
+      } else {
+        tex->SetTextSize(0.042 * fontScaleBot);
+        //tex->DrawLatex(0.150, 0.875, Form("#chi^{2} / ndf: %.2f / %i", f0->GetChisquare(), f0->GetNDF()));
+        //tex->DrawLatex(0.150, 0.775, Form("p0: %.4f #pm %0.4f", f0->GetParameter(0), f0->GetParError(0)));
+      }
+
+      // safe in various file formats
+      if (saveRatio && !plotRatioBelowSpec) {
+        sStream.str("");
+        sStream << plotDir << "qcdClosureTestRatio";
+        if (k == 0) sStream << "_";
+        sStream << histoSign[k];
+        if (eRegion == 0) sStream << "EB_";
+        if (eRegion == 1) sStream << "EE_";
+        sStream << fileNameExtra << lumi->GetVal() << "pb-1";
+        TString saveFileName = sStream.str();
+        if (saveAsPdf) dataOverBgPlot->Print(saveFileName + ".pdf", "pdf");
+        if (saveAsPng) dataOverBgPlot->Print(saveFileName + ".png", "png");
+        if (saveAsRoot) dataOverBgPlot->Print(saveFileName + ".root", "root");
+      }
+      if ((saveSpec || saveRatio) && plotRatioBelowSpec) {
+        sStream.str("");
+        sStream << plotDir << "qcdClosureTestSpec";
+        if (k == 0) sStream << "_";
+        sStream << histoSign[k];
+        if (eRegion == 0) sStream << "EB_";
+        if (eRegion == 1) sStream << "EE_";
+        sStream << fileNameExtra << nameSuffix[j];
+        if (j > 0) sStream << "_";
         if (!logPlotY) sStream << "lin_";
         sStream << lumi->GetVal() << "pb-1";
         TString saveFileName = sStream.str();
@@ -408,237 +517,6 @@ void macro_MakeQcdClosureTest()
   emuMasses.push_back(emuMass_wjets);
   emuMasses.push_back(emuMass_qcd);
 
-//  // define groups of MC samples
-//  vector<bool> ttLikeSamples(6, true);
-//  vector<bool> contamSamples(6, false);
-//  contamSamples.push_back(true); // Zmm
-//  contamSamples.push_back(true); // Zee
-//  contamSamples.push_back(true); // WJets or QCD
-//  vector<bool> contamSamplesNoQcd(contamSamples);
-//  vector<bool> allSamples(9, true);
-//  vector<bool> onlyQCD(emuMasses.size() - 1, false);
-//  if (qcdEst > 0) {
-//    onlyQCD.back() = true;
-//    if (qcdEst != 2) {
-//      allSamples.push_back(true);
-//      contamSamples.push_back(true);
-//      contamSamplesNoQcd.push_back(false);
-//      systErrMC.push_back(0.); // QCD error will be calculated later
-//    } else {
-//      contamSamplesNoQcd.back() = false;
-//    }
-//  }
-//  vector<bool> allSamplesNoQcd(allSamples);
-//  if (qcdEst > 0) allSamplesNoQcd.back() = false;
-//  unsigned int qcdInd = onlyQCD.size();
-//  unsigned int qcdErrInd = qcdInd - 1;
-//
-//  // calculate rate of syst errors
-//  float systErrLuEff = sqrt(systErrLumi*systErrLumi + systErrEff*systErrEff);
-//  vector<float> systErrMCLuEff;
-//  for (unsigned int it = 0; it < systErrMC.size(); ++it)
-//     systErrMCLuEff.push_back(sqrt(systErrMC[it]*systErrMC[it] + systErrLuEff*systErrLuEff));
-//
-//  bool calcQcdErr = false;
-//  if (qcdEst == 1) calcQcdErr = true;
-//
-//  //cout << "qcdInd " << qcdInd << ", emuMasses.size() " << emuMasses.size() << ", systErrMC.size() " << systErrMC.size() 
-//  //     << ", systErrMCLuEff.size() " << systErrMCLuEff.size() << ", allSamples.size() " << allSamples.size() 
-//  //     << ", allSamplesNoQcd.size() " << allSamplesNoQcd.size() << ", contamSamplesNoQcd.size() " << contamSamplesNoQcd.size() 
-//  //     << ", contamSamples.size() " << contamSamples.size() << ", onlyQCD.size() " << onlyQCD.size() << endl;
-//  //for (unsigned int sIt = 0; sIt < emuMasses.size() - 1; ++sIt) {
-//  //   cout << "allSamples " << allSamples[sIt] << ", allSamplesNoQcd " << allSamplesNoQcd[sIt] 
-//  //        << ", contamSamples " << contamSamples[sIt] << ", contamSamplesNoQcd " << contamSamplesNoQcd[sIt] 
-//  //        << ", onlyQCD " << onlyQCD[sIt] << ", systErrMC " << systErrMC[sIt] << ", systErrMCLuEff " << systErrMCLuEff[sIt] << endl;
-//  //}
-//
-//  // define special bins corresponding to specific masses
-//  int bin60 = emuMass_data.at(ALL)->FindBin(60.);
-//  int bin120 = emuMass_data.at(ALL)->FindBin(120.);
-//  int bin200 = emuMass_data.at(ALL)->FindBin(200.); 
-//  int bin400 = emuMass_data.at(ALL)->FindBin(400.); 
-//  int bin500 = emuMass_data.at(ALL)->FindBin(500.); 
-//
-//  vector<const char *> sampleNames;
-//  sampleNames.push_back("data   ");
-//  sampleNames.push_back("ttbar  ");
-//  sampleNames.push_back("Ztautau");
-//  sampleNames.push_back("WW     ");
-//  sampleNames.push_back("WZ     ");
-//  sampleNames.push_back("ZZ     ");
-//  sampleNames.push_back("tW     ");
-//  sampleNames.push_back("Zmumu  ");
-//  sampleNames.push_back("Zee    ");
-//  if (qcdEst != 2) sampleNames.push_back("WJets  ");
-//  if (qcdEst > 0) sampleNames.push_back("QCD    ");
-//
-//  // write numbers
-//  cout << endl;
-//  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-//  cout << "HEEP - TIGHT MU        Lumi        = " << lumi->GetVal() << "pb-1" << endl;
-//  //cout << "                       e pT EB     > " << bar_et << "GeV/c" << endl;
-//  //cout << "                       e pT EE     > " << end_et << "GeV/c" << endl;
-//  //cout << "                       mu pT       > " << muon_et << "GeV/c" << endl;
-//  //cout << "                       mu |eta|    < " << muon_etaMax << endl;
-//  cout << endl;
-//  cout << "Systematic errors" << endl;
-//  cout << " Luminosity:  " << systErrLumi * 100 << "%" << endl;
-//  cout << " Efficiency:  " << systErrEff * 100 << "%" << endl;
-//  cout << " ttbar:       " << systErrMC[TTBAR-1] * 100 << "%" << endl;
-//  cout << " Z->tautau:   " << systErrMC[ZTT-1] * 100 << "%" << endl;
-//  cout << " WW:          " << systErrMC[WW-1] * 100 << "%" << endl;
-//  cout << " WZ:          " << systErrMC[WZ-1] * 100 << "%" << endl;
-//  cout << " ZZ:          " << systErrMC[ZZ-1] * 100 << "%" << endl;
-//  cout << " tW, tbarW:   " << systErrMC[TW-1] * 100 << "%" << endl;
-//  cout << " Z->mumu:     " << systErrMC[ZMM-1] * 100 << "%" << endl;
-//  cout << " Z->ee:       " << systErrMC[ZEE-1] * 100 << "%" << endl;
-//  if (qcdEst != 2) cout << " W+Jets:      " << systErrMC[WJET-1] * 100 << "%" << endl;
-//  else cout << " QCD:        " << systErrMC.back() * 100 << "%" << endl;
-//  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-//  for (unsigned int signIt = 1; signIt < 6; signIt += 2) {
-//    if (signIt == 3) cout << "-SS--------------------------------------------------------------------------------------------------------" << endl;
-//    if (signIt == 5) cout << "-OS--------------------------------------------------------------------------------------------------------" << endl;
-//    cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    cout << "M_emu         |         >  60GeV/c^2          |        > 120GeV/c^2          |        > 200GeV/c^2         |        > 400GeV/c^2          |" << endl;
-//    cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//  
-//    printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n", 
-//           emuMass_data.at(signIt)->GetBinContent(bin60), sqrt(emuMass_data.at(signIt)->GetBinContent(bin60)),         
-//           emuMass_data.at(signIt)->GetBinContent(bin120), sqrt(emuMass_data.at(signIt)->GetBinContent(bin120)),
-//           emuMass_data.at(signIt)->GetBinContent(bin200), sqrt(emuMass_data.at(signIt)->GetBinContent(bin200)),
-//           emuMass_data.at(signIt)->GetBinContent(bin400), sqrt(emuMass_data.at(signIt)->GetBinContent(bin400)));
-//    cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    for (unsigned int sampleIt = 1; sampleIt < sampleNames.size(); ++sampleIt) {
-//      if (sampleIt == 7) cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-//      if (qcdEst == 1 && sampleIt == sampleNames.size() - 1) {
-//        printf("nb %7s    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", sampleNames[sampleIt],
-//               emuMass_qcd.at(signIt)->GetBinContent(bin60), emuMass_qcd.at(signIt)->GetBinContent(bin60) * CalcSSQcdErr(emuMasses, systErrMCLuEff, bin60), 
-//               emuMass_qcd.at(signIt)->GetBinContent(bin120), emuMass_qcd.at(signIt)->GetBinContent(bin120) * CalcSSQcdErr(emuMasses, systErrMCLuEff, bin120), 
-//               emuMass_qcd.at(signIt)->GetBinContent(bin200), emuMass_qcd.at(signIt)->GetBinContent(bin200) * CalcSSQcdErr(emuMasses, systErrMCLuEff, bin200),
-//               emuMass_qcd.at(signIt)->GetBinContent(bin400), emuMass_qcd.at(signIt)->GetBinContent(bin400) * CalcSSQcdErr(emuMasses, systErrMCLuEff, bin400));
-//      } else {
-//        printf("nb %7s    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n", sampleNames[sampleIt],
-//               emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin60), emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin60) * systErrMCLuEff[sampleIt-1], 
-//               emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin120), emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin120) * systErrMCLuEff[sampleIt-1], 
-//               emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin200), emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin200) * systErrMCLuEff[sampleIt-1],
-//               emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin400), emuMasses.at(sampleIt).at(signIt)->GetBinContent(bin400) * systErrMCLuEff[sampleIt-1]);
-//      }
-//    }
-//    cout << endl;
-//    cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    printf("TOT ttlike    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-//           CalcBgSum(emuMasses, ttLikeSamples, signIt, bin60), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, signIt, bin60),
-//           CalcBgSum(emuMasses, ttLikeSamples, signIt, bin120), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, signIt, bin120),
-//           CalcBgSum(emuMasses, ttLikeSamples, signIt, bin200), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, signIt, bin200),
-//           CalcBgSum(emuMasses, ttLikeSamples, signIt, bin400), CalcSystErr(emuMasses, systErrMCLuEff, ttLikeSamples, signIt, bin400));
-//    printf("TOT contam    | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-//           CalcBgSum(emuMasses, contamSamples, signIt, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, contamSamples, signIt, bin60, -1, calcQcdErr),
-//           CalcBgSum(emuMasses, contamSamples, signIt, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, contamSamples, signIt, bin120, -1, calcQcdErr),
-//           CalcBgSum(emuMasses, contamSamples, signIt, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, contamSamples, signIt, bin200, -1, calcQcdErr),
-//           CalcBgSum(emuMasses, contamSamples, signIt, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, contamSamples, signIt, bin400, -1, calcQcdErr));
-//    cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//  
-//    printf("TOT Bkg       | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-//           CalcBgSum(emuMasses, allSamples, signIt, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin60, -1, calcQcdErr),
-//           CalcBgSum(emuMasses, allSamples, signIt, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin120, -1, calcQcdErr),
-//           CalcBgSum(emuMasses, allSamples, signIt, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin200, -1, calcQcdErr),
-//           CalcBgSum(emuMasses, allSamples, signIt, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin400, -1, calcQcdErr));
-//    cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    cout << endl << endl;
-//  }
-//  cout << endl;
-//
-//  cout << "--Without adding QCD contribution:--------------------------------------------------------------------------------------------------------" << endl;
-//  cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//  cout << "M_emu         |         > 60GeV/c^2          |        > 120GeV/c^2          |         > 200GeV/c^2         |         > 400GeV/c^2         |" << endl;
-//  cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//  for (unsigned int signIt = 1; signIt < 6; signIt += 2) {
-//    if (signIt == 3) cout << "-SS-------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    if (signIt == 5) cout << "-OS-------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
-//           emuMasses.at(DATA).at(signIt)->GetBinContent(bin60), sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin60)),
-//           emuMasses.at(DATA).at(signIt)->GetBinContent(bin120), sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin120)),
-//           emuMasses.at(DATA).at(signIt)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin200)),
-//           emuMasses.at(DATA).at(signIt)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin400)));
-//    printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-//           CalcBgSum(emuMasses, allSamplesNoQcd, signIt, bin60), CalcSystErr(emuMasses, systErrMCLuEff, allSamplesNoQcd, signIt, bin60),
-//           CalcBgSum(emuMasses, allSamplesNoQcd, signIt, bin120), CalcSystErr(emuMasses, systErrMCLuEff, allSamplesNoQcd, signIt, bin120),
-//           CalcBgSum(emuMasses, allSamplesNoQcd, signIt, bin200), CalcSystErr(emuMasses, systErrMCLuEff, allSamplesNoQcd, signIt, bin200),
-//           CalcBgSum(emuMasses, allSamplesNoQcd, signIt, bin400), CalcSystErr(emuMasses, systErrMCLuEff, allSamplesNoQcd, signIt, bin400));
-//  }
-//  cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//
-//  if (qcdEst == 1) {
-//    //systErrMC.back() = 2 * sqrt(emuMasses.at(DATA).at(SS)->Integral() + pow(CalcSystErr(emuMasses, systErrMCLuEff, allSamplesNoQcd, SS, 1), 2)) / emuMasses.at(qcdInd).at(ALL)->Integral();
-//    //systErrMC.back() = CalcSystErr(emuMasses, systErrMCLuEff, allSamplesNoQcd, SSCUM, 1) / emuMass_qcd.at(SSCUM)->GetBinContent(1);
-//    //systErrMCLuEff.back() = systErrMC[qcdErrInd];
-//
-//    cout << endl;
-//      cout << "---QCD events from SS spectrum:----------------------------------------------------------------------------------------------------------------------------------" << endl;
-//      cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//      printf("nb QCD SS+OS  | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) | %9.3f +- %8.3f (%.1f%%) (syst) |\n",
-//             emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin60, -1, calcQcdErr), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin60, -1, calcQcdErr) / emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin60),
-//             emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin120, -1, calcQcdErr), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin120, -1, calcQcdErr) / emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin120),
-//             emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin200, -1, calcQcdErr), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin200, -1, calcQcdErr) / emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin200),
-//             emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin400, -1, calcQcdErr), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin400, -1, calcQcdErr) / emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin400));
-//      printf("%% of total MC |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |  %7.3f%% +- %7.3f%% (syst)         |\n",
-//             100 * emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin60) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin60), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin60, -1, calcQcdErr) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin60),
-//             100 * emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin120) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin120), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin120, -1, calcQcdErr) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin120),
-//             100 * emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin200) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin200), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin200, -1, calcQcdErr) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin200),
-//             100 * emuMasses.at(qcdInd).at(ALLCUM)->GetBinContent(bin400) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin400), 
-//             100 * CalcSystErrWithQCD(emuMasses, systErrMCLuEff, onlyQCD, ALLCUM, bin400, -1, calcQcdErr) / CalcBgSum(emuMasses, allSamplesNoQcd, ALLCUM, bin400));
-//      cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//  }
-//
-//  // top up bg contribution with qcd
-//  if (qcdEst > 0) {
-//    cout << endl;
-//    cout << "--After adding QCD contribution:----------------------------------------------------------------------------------------------------------" << endl;
-//    cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    cout << "M_emu         |         > 60GeV/c^2          |        > 120GeV/c^2          |         > 200GeV/c^2         |         > 400GeV/c^2         |" << endl;
-//    cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//    for (unsigned int signIt = 1; signIt < 6; signIt += 2) {
-//      if (signIt == 3) cout << "-SS-------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//      if (signIt == 5) cout << "-OS-------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//      printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)        |\n",
-//              emuMasses.at(DATA).at(signIt)->GetBinContent(bin60), sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin60)),
-//              emuMasses.at(DATA).at(signIt)->GetBinContent(bin120), sqrt((emuMasses.at(DATA).at(signIt))->GetBinContent(bin120)),
-//              emuMasses.at(DATA).at(signIt)->GetBinContent(bin200), sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin200)),
-//              emuMasses.at(DATA).at(signIt)->GetBinContent(bin400), sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin400)));
-//      printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-//              CalcBgSum(emuMasses, allSamples, signIt, bin60), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin60, -1, calcQcdErr),
-//              CalcBgSum(emuMasses, allSamples, signIt, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin120, -1, calcQcdErr),
-//              CalcBgSum(emuMasses, allSamples, signIt, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin200, -1, calcQcdErr),
-//              CalcBgSum(emuMasses, allSamples, signIt, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin400, -1, calcQcdErr));
-//    }
-//    cout << "------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-//  }
-//
-//  cout << endl;
-//  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-//  cout << "M_emu         |        60 - 120GeV/c^2       |      120 - 200GeV/c^2        |       200 - 400GeV/c^2       |" << endl;
-//  cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-//  for (unsigned int signIt = 1; signIt < 6; signIt += 2) {
-//    printf("nb data       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       | %5.0f +- %-.3f (stat)       |\n",
-//            emuMasses.at(DATA).at(signIt)->GetBinContent(bin60) - emuMasses.at(DATA).at(signIt)->GetBinContent(bin120), 
-//            sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin60) - emuMasses.at(DATA).at(signIt)->GetBinContent(bin120)),
-//            emuMasses.at(DATA).at(signIt)->GetBinContent(bin120) - emuMasses.at(DATA).at(signIt)->GetBinContent(bin200), 
-//            sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin120) - emuMasses.at(DATA).at(signIt)->GetBinContent(bin200)),
-//            emuMasses.at(DATA).at(signIt)->GetBinContent(bin200) - emuMasses.at(DATA).at(signIt)->GetBinContent(bin400), 
-//            sqrt(emuMasses.at(DATA).at(signIt)->GetBinContent(bin200) - emuMasses.at(DATA).at(signIt)->GetBinContent(bin400)));
-//    printf("nb MC         | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) | %9.3f +- %8.3f (syst) |\n",
-//            CalcBgSum(emuMasses, allSamples, signIt, bin60, bin120), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin60, bin120, calcQcdErr),
-//            CalcBgSum(emuMasses, allSamples, signIt, bin120, bin200), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin120, bin200, calcQcdErr),
-//            CalcBgSum(emuMasses, allSamples, signIt, bin200, bin400), CalcSystErrWithQCD(emuMasses, systErrMCLuEff, allSamples, signIt, bin200, bin400, calcQcdErr));
-//    cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-//  }
 }
 
 // calculate the sum of several cumulated background histograms
@@ -737,11 +615,6 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (flags & 1<<9) charOffset += 2;
     userScale *= ((TParameter<float> *)mcWeights->FindObject(treeName + charOffset))->GetVal();
   }
-  if (flags & 1<<5) userScale *= ((TParameter<float> *)input->Get("trgEff"))->GetVal();
-  if (flags & 1<<4) userScale *= ((TParameter<float> *)input->Get("trgDataMcScaleFactor"))->GetVal();
-  if (flags & 1<<1) userScale *= ((TParameter<float> *)input->Get("muScaleFactor"))->GetVal();
-  float eleScaleFactorEB = ((TParameter<float> *)input->Get("eleScaleFactorEB"))->GetVal();
-  float eleScaleFactorEE = ((TParameter<float> *)input->Get("eleScaleFactorEE"))->GetVal();
   float lumiScaleFactorEB = ((TParameter<float> *)input->Get("lumiScaleFactorEB"))->GetVal();
   float lumiScaleFactorEE = ((TParameter<float> *)input->Get("lumiScaleFactorEE"))->GetVal();
 
@@ -761,6 +634,10 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   int evtRegion;
   float cutVar = 0.;
   float fakeRate = 0.;
+  float trgEff = 1.;
+  float trgEffSf = 1.;
+  float eleEffSf = 1.;
+  float muEffSf = 1.;
   tree->SetBranchStatus("*",0); //disable all branches
   tree->SetBranchStatus(brName,1);
   tree->SetBranchAddress(brName, &var);
@@ -786,6 +663,22 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     tree->SetBranchStatus(cutVariable,1);
     tree->SetBranchAddress(cutVariable, &cutVar);
   }
+  if (flags & 1<<5) {
+    tree->SetBranchStatus("trgEff",1);
+    tree->SetBranchAddress("trgEff", &trgEff);
+  }
+  if (flags & 1<<4) {
+    tree->SetBranchStatus("trgEffSf",1);
+    tree->SetBranchAddress("trgEffSf", &trgEffSf);
+  }
+  if (flags & 1<<2) {
+    tree->SetBranchStatus("eleEffSf",1);
+    tree->SetBranchAddress("eleEffSf", &eleEffSf);
+  }
+  if (flags & 1<<1) {
+    tree->SetBranchStatus("muEffSf",1);
+    tree->SetBranchAddress("muEffSf", &muEffSf);
+  }
   if (flags & 1<<9) {
     tree->SetBranchStatus("passHeep",1);
     tree->SetBranchStatus("fakeRate",1);
@@ -805,9 +698,11 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (evtRegion == 1 && region == 0) continue;
 
     float scaleFactor = userScale;
-    // set lumi and electron scalefactor according to detector region
-    if (evtRegion == 0 && flags & 1<<2) scaleFactor *= eleScaleFactorEB;
-    if (evtRegion == 1 && flags & 1<<2) scaleFactor *= eleScaleFactorEE;
+    if (flags & 1<<5) scaleFactor *= trgEff;
+    if (flags & 1<<4) scaleFactor *= trgEffSf;
+    if (flags & 1<<2) scaleFactor *= eleEffSf;
+    if (flags & 1<<1) scaleFactor *= muEffSf;
+    // set lumi according to detector region
     if (evtRegion == 0 && flags & 1<<3) scaleFactor *= lumiScaleFactorEB;
     if (evtRegion == 1 && flags & 1<<3) scaleFactor *= lumiScaleFactorEE;
 
