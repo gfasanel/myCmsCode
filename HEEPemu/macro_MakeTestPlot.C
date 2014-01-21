@@ -40,7 +40,8 @@ class ContVarPlot {
 void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
-  TFile input("../forest/emuSpec_19780pb-1.root", "open");
+  TFile input("./emuSpec_19703pb-1.root", "open");
+  //TFile input("./emuSpec_MuEG_19703pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -701,11 +702,6 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (flags & 1<<9) charOffset += 2;
     userScale *= ((TParameter<float> *)mcWeights->FindObject(treeName + charOffset))->GetVal();
   }
-  if (flags & 1<<5) userScale *= ((TParameter<float> *)input->Get("trgEff"))->GetVal();
-  if (flags & 1<<4) userScale *= ((TParameter<float> *)input->Get("trgDataMcScaleFactor"))->GetVal();
-  if (flags & 1<<1) userScale *= ((TParameter<float> *)input->Get("muScaleFactor"))->GetVal();
-  float eleScaleFactorEB = ((TParameter<float> *)input->Get("eleScaleFactorEB"))->GetVal();
-  float eleScaleFactorEE = ((TParameter<float> *)input->Get("eleScaleFactorEE"))->GetVal();
   float lumiScaleFactorEB = ((TParameter<float> *)input->Get("lumiScaleFactorEB"))->GetVal();
   float lumiScaleFactorEE = ((TParameter<float> *)input->Get("lumiScaleFactorEE"))->GetVal();
 
@@ -729,6 +725,10 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   int evtRegion;
   float cutVar = 0.;
   float fakeRate = 0.;
+  float trgEff = 1.;
+  float trgEffSf = 1.;
+  float eleEffSf = 1.;
+  float muEffSf = 1.;
   TBranch *bPassTrg;
   TBranch *bPuWeight;
   TBranch *bECharge;
@@ -750,6 +750,44 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   tree->SetBranchStatus("muCharge",1);
   tree->SetBranchStatus("evtRegion",1);
   if (cutVariable[0] != '\0') tree->SetBranchStatus(cutVariable,1);
+  if (flags & 1<<8) {
+    tree->SetBranchStatus("passTrg",1);
+    tree->SetBranchAddress("passTrg", &passTrg);
+  }
+  if (signs != 0) {
+    tree->SetBranchStatus("eCharge",1);
+    tree->SetBranchStatus("muCharge",1);
+    tree->SetBranchAddress("eCharge", &eCharge);
+    tree->SetBranchAddress("muCharge", &muCharge);
+  }
+  if (region < 2) {
+    tree->SetBranchStatus("evtRegion",1);
+    tree->SetBranchAddress("evtRegion", &evtRegion);
+  }
+  if (flags & 1) {
+    tree->SetBranchStatus("puWeight",1);
+    tree->SetBranchAddress("puWeight", &puWeight);
+  }
+  if (cutVariable[0] != '\0') {
+    tree->SetBranchStatus(cutVariable,1);
+    tree->SetBranchAddress(cutVariable, &cutVar);
+  }
+  if (flags & 1<<5) {
+    tree->SetBranchStatus("trgEff",1);
+    tree->SetBranchAddress("trgEff", &trgEff);
+  }
+  if (flags & 1<<4) {
+    tree->SetBranchStatus("trgEffSf",1);
+    tree->SetBranchAddress("trgEffSf", &trgEffSf);
+  }
+  if (flags & 1<<2) {
+    tree->SetBranchStatus("eleEffSf",1);
+    tree->SetBranchAddress("eleEffSf", &eleEffSf);
+  }
+  if (flags & 1<<1) {
+    tree->SetBranchStatus("muEffSf",1);
+    tree->SetBranchAddress("muEffSf", &muEffSf);
+  }
   if (flags & 1<<9) {
     tree->SetBranchStatus("passHeep",1);
     tree->SetBranchStatus("fakeRate",1);
@@ -764,10 +802,16 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     // trigger fired?
     if ((flags & 1<<8) && passTrg == false) continue;
 
+    // select electron region
+    if (evtRegion == 0 && region == 1) continue;
+    if (evtRegion == 1 && region == 0) continue;
+
     float scaleFactor = userScale;
-    // set lumi and electron scalefactor according to detector region
-    if (evtRegion == 0 && flags & 1<<2) scaleFactor *= eleScaleFactorEB;
-    if (evtRegion == 1 && flags & 1<<2) scaleFactor *= eleScaleFactorEE;
+    if (flags & 1<<5) scaleFactor *= trgEff;
+    if (flags & 1<<4) scaleFactor *= trgEffSf;
+    if (flags & 1<<2) scaleFactor *= eleEffSf;
+    if (flags & 1<<1) scaleFactor *= muEffSf;
+    // set lumi according to detector region
     if (evtRegion == 0 && flags & 1<<3) scaleFactor *= lumiScaleFactorEB;
     if (evtRegion == 1 && flags & 1<<3) scaleFactor *= lumiScaleFactorEE;
 
@@ -780,15 +824,10 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (abs(signs) == 3 && eCharge > 0) continue; // e-mu+ or e-mu-
     if (abs(signs) == 2 && eCharge < 0) continue; // e+mu- or e+mu+
 
-    // get only desired detector region events. Scheme: EB+EE=0, EB=1, EE=2
-    if (region == 1 && evtRegion == 1) continue;
-    if (region == 2 && evtRegion == 0) continue;
-
     // user defined cut
     if (cutVariable[0] != '\0')
       if (cutVar < cutLow || cutVar >= cutHigh) continue;
-
-    // fake rate 
+    
     if (flags & 1<<9) {
       if (!passHeep) scaleFactor *= fakeRate / (1 - fakeRate);
       else continue;
