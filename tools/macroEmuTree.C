@@ -36,8 +36,8 @@ void macroEmuTree() {
 	  //Get old file, old tree and set top branch address
 	  TString inputfilepath =inputline; 
 	  TString outputfilepath = outputline; 
-	  //TDCacheFile *oldfile = new TDCacheFile(inputfilepath);
-	  TFile *oldfile = new TFile(inputfilepath);
+	  TDCacheFile *oldfile = new TDCacheFile(inputfilepath);
+	  //TFile *oldfile = new TFile(inputfilepath);
 	  TTree *oldtree = (TTree*)oldfile->Get("gsfcheckerjob/tree");
 	  Long64_t nentries = oldtree->GetEntries();
 
@@ -46,11 +46,19 @@ void macroEmuTree() {
           UInt_t          eventnumber;
           UInt_t          luminosityBlock;
           Int_t           HLT_Mu22_Photon22_CaloIdL;
+          Int_t           HLT_Mu40_eta2p1;
           Int_t           HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
           Int_t           HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
           Int_t           prescale_HLT_Mu22_Photon22_CaloIdL;
+          Int_t           prescale_HLT_Mu40_eta2p1;
           Int_t           prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
           Int_t           prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+          Bool_t           hltL1sMu16Eta2p1;
+          Bool_t           hltL1sL1Mu3p5EG12;
+          Bool_t           hltL1sL1SingleEG12;
+          Bool_t           hltMu22Photon22CaloIdLHEFilter;
+          Bool_t           hltL1Mu3p5EG12L3Filtered22;
+          Bool_t           hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
           Float_t         rho;
           Float_t         pfmet;
           Int_t           pvsize;
@@ -103,12 +111,23 @@ void macroEmuTree() {
           Float_t         gsf_e1x5overe5x5[100];   //[gsf_size]
           Float_t         gsf_gsfet[100];   //[gsf_size]
           Float_t         genelemom_mass[100];
+          Int_t           genelemom_pdgid[100];
           Float_t         genele_pt[100];
           Float_t         genele_eta[100];
           Float_t         genele_phi[100];
           Float_t         genmu_pt[100];
           Float_t         genmu_eta[100];
           Float_t         genmu_phi[100];
+          Float_t         hardGenEle_pt[100];
+          Float_t         hardGenEle_eta[100];
+          Float_t         hardGenEle_phi[100];
+          Float_t         hardGenMu_pt[100];
+          Float_t         hardGenMu_eta[100];
+          Float_t         hardGenMu_phi[100];
+          Float_t         genPart_pt[100];
+          Float_t         genPart_mass[100];
+          Int_t           genPart_pdgid[100];
+          Int_t           genPart_status[100];
           Float_t         genPair_mass;
           Int_t           trueNVtx;
        
@@ -117,11 +136,19 @@ void macroEmuTree() {
           TBranch        *b_eventnumber;   //!
           TBranch        *b_luminosityBlock;   //!
           TBranch        *b_HLT_Mu22_Photon22_CaloIdL;   //!
+          TBranch        *b_HLT_Mu40_eta2p1;   //!
           TBranch        *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
           TBranch        *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
           TBranch        *b_prescale_HLT_Mu22_Photon22_CaloIdL;   //!
+          TBranch        *b_prescale_HLT_Mu40_eta2p1;   //!
           TBranch        *b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
           TBranch        *b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
+          TBranch        *b_hltL1sMu16Eta2p1;
+          TBranch        *b_hltL1sL1Mu3p5EG12;
+          TBranch        *b_hltL1sL1SingleEG12;
+          TBranch        *b_hltMu22Photon22CaloIdLHEFilter;
+          TBranch        *b_hltL1Mu3p5EG12L3Filtered22;
+          TBranch        *b_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
           TBranch        *b_rho;   //!
           TBranch        *b_pfmet;   //!
           TBranch        *b_pvsize;   //!
@@ -174,12 +201,23 @@ void macroEmuTree() {
           TBranch        *b_gsf_e1x5overe5x5;   //!
           TBranch        *b_gsf_gsfet;   //!
           TBranch        *b_genelemom_mass;   //!
+          TBranch        *b_genelemom_pdgid;   //!
           TBranch        *b_genele_pt;   //!
           TBranch        *b_genele_eta;   //!
           TBranch        *b_genele_phi;   //!
           TBranch        *b_genmu_pt;   //!
           TBranch        *b_genmu_eta;   //!
           TBranch        *b_genmu_phi;   //!
+          TBranch        *b_hardGenEle_pt;   //!
+          TBranch        *b_hardGenEle_eta;   //!
+          TBranch        *b_hardGenEle_phi;   //!
+          TBranch        *b_hardGenMu_pt;   //!
+          TBranch        *b_hardGenMu_eta;   //!
+          TBranch        *b_hardGenMu_phi;   //!
+          TBranch        *b_genPart_pt;   //!
+          TBranch        *b_genPart_mass;   //!
+          TBranch        *b_genPart_pdgid;   //!
+          TBranch        *b_genPart_status;   //!
           TBranch        *b_genPair_mass;   //!
           TBranch        *b_trueNVtx;   //!
        
@@ -187,11 +225,19 @@ void macroEmuTree() {
           oldtree->SetBranchAddress("eventnumber", &eventnumber, &b_eventnumber);
           oldtree->SetBranchAddress("luminosityBlock", &luminosityBlock, &b_luminosityBlock);
           oldtree->SetBranchAddress("HLT_Mu22_Photon22_CaloIdL", &HLT_Mu22_Photon22_CaloIdL, &b_HLT_Mu22_Photon22_CaloIdL);
+          oldtree->SetBranchAddress("HLT_Mu40_eta2p1", &HLT_Mu40_eta2p1, &b_HLT_Mu40_eta2p1);
           oldtree->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
           oldtree->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
           oldtree->SetBranchAddress("prescale_HLT_Mu22_Photon22_CaloIdL", &prescale_HLT_Mu22_Photon22_CaloIdL, &b_prescale_HLT_Mu22_Photon22_CaloIdL);
+          oldtree->SetBranchAddress("prescale_HLT_Mu40_eta2p1", &prescale_HLT_Mu40_eta2p1, &b_prescale_HLT_Mu40_eta2p1);
           oldtree->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
           oldtree->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
+          oldtree->SetBranchAddress("hltL1sMu16Eta2p1", &hltL1sMu16Eta2p1, &b_hltL1sMu16Eta2p1);
+          oldtree->SetBranchAddress("hltL1sL1Mu3p5EG12", &hltL1sL1Mu3p5EG12, &b_hltL1sL1Mu3p5EG12);
+          oldtree->SetBranchAddress("hltL1sL1SingleEG12", &hltL1sL1SingleEG12, &b_hltL1sL1SingleEG12);
+          oldtree->SetBranchAddress("hltMu22Photon22CaloIdLHEFilter", &hltMu22Photon22CaloIdLHEFilter, &b_hltMu22Photon22CaloIdLHEFilter);
+          oldtree->SetBranchAddress("hltL1Mu3p5EG12L3Filtered22", &hltL1Mu3p5EG12L3Filtered22, &b_hltL1Mu3p5EG12L3Filtered22);
+          oldtree->SetBranchAddress("hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q", &hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q, &b_hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q);
           oldtree->SetBranchAddress("rho", &rho, &b_rho);
           oldtree->SetBranchAddress("pfmet", &pfmet, &b_pfmet);
           oldtree->SetBranchAddress("pvsize", &pvsize, &b_pvsize);
@@ -244,12 +290,23 @@ void macroEmuTree() {
           oldtree->SetBranchAddress("gsf_e1x5overe5x5", gsf_e1x5overe5x5, &b_gsf_e1x5overe5x5);
           oldtree->SetBranchAddress("gsf_gsfet", gsf_gsfet, &b_gsf_gsfet);
           oldtree->SetBranchAddress("genelemom_mass", genelemom_mass, &b_genelemom_mass);
+          oldtree->SetBranchAddress("genelemom_pdgid", genelemom_pdgid, &b_genelemom_pdgid);
           oldtree->SetBranchAddress("genele_pt", genele_pt, &b_genele_pt);
           oldtree->SetBranchAddress("genele_eta", genele_eta, &b_genele_eta);
           oldtree->SetBranchAddress("genele_phi", genele_phi, &b_genele_phi);
           oldtree->SetBranchAddress("genmu_pt", genmu_pt, &b_genmu_pt);
           oldtree->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
           oldtree->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
+          oldtree->SetBranchAddress("hardGenEle_pt", hardGenEle_pt, &b_hardGenEle_pt);
+          oldtree->SetBranchAddress("hardGenEle_eta", hardGenEle_eta, &b_hardGenEle_eta);
+          oldtree->SetBranchAddress("hardGenEle_phi", hardGenEle_phi, &b_hardGenEle_phi);
+          oldtree->SetBranchAddress("hardGenMu_pt", hardGenMu_pt, &b_hardGenMu_pt);
+          oldtree->SetBranchAddress("hardGenMu_eta", hardGenMu_eta, &b_hardGenMu_eta);
+          oldtree->SetBranchAddress("hardGenMu_phi", hardGenMu_phi, &b_hardGenMu_phi);
+          oldtree->SetBranchAddress("genPart_pt", genPart_pt, &b_genPart_pt);
+          oldtree->SetBranchAddress("genPart_mass", genPart_mass, &b_genPart_mass);
+          oldtree->SetBranchAddress("genPart_pdgid", genPart_pdgid, &b_genPart_pdgid);
+          oldtree->SetBranchAddress("genPart_status", genPart_status, &b_genPart_status);
           oldtree->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
           oldtree->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
        
@@ -259,11 +316,19 @@ void macroEmuTree() {
           oldtree->SetBranchStatus("eventnumber", 1);
           oldtree->SetBranchStatus("luminosityBlock", 1);
           oldtree->SetBranchStatus("HLT_Mu22_Photon22_CaloIdL", 1);
+          oldtree->SetBranchStatus("HLT_Mu40_eta2p1", 1);
           oldtree->SetBranchStatus("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
           oldtree->SetBranchStatus("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
           oldtree->SetBranchStatus("prescale_HLT_Mu22_Photon22_CaloIdL", 1);
+          oldtree->SetBranchStatus("prescale_HLT_Mu40_eta2p1", 1);
           oldtree->SetBranchStatus("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
           oldtree->SetBranchStatus("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
+          oldtree->SetBranchStatus("hltL1sMu16Eta2p1", 1);
+          oldtree->SetBranchStatus("hltL1sL1Mu3p5EG12", 1);
+          oldtree->SetBranchStatus("hltL1sL1SingleEG12", 1);
+          oldtree->SetBranchStatus("hltMu22Photon22CaloIdLHEFilter", 1);
+          oldtree->SetBranchStatus("hltL1Mu3p5EG12L3Filtered22", 1);
+          oldtree->SetBranchStatus("hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q", 1);
           oldtree->SetBranchStatus("rho", 1);
           oldtree->SetBranchStatus("pfmet", 1);
           oldtree->SetBranchStatus("pvsize", 1);
@@ -316,12 +381,23 @@ void macroEmuTree() {
           oldtree->SetBranchStatus("gsf_e1x5overe5x5", 1);
           oldtree->SetBranchStatus("gsf_gsfet", 1);
           oldtree->SetBranchStatus("genelemom_mass", 1);
+          oldtree->SetBranchStatus("genelemom_pdgid", 1);
           oldtree->SetBranchStatus("genele_pt", 1);
           oldtree->SetBranchStatus("genele_eta", 1);
           oldtree->SetBranchStatus("genele_phi", 1);
           oldtree->SetBranchStatus("genmu_pt", 1);
           oldtree->SetBranchStatus("genmu_eta", 1);
           oldtree->SetBranchStatus("genmu_phi", 1);
+          oldtree->SetBranchStatus("hardGenEle_pt", 1);
+          oldtree->SetBranchStatus("hardGenEle_eta", 1);
+          oldtree->SetBranchStatus("hardGenEle_phi", 1);
+          oldtree->SetBranchStatus("hardGenMu_pt", 1);
+          oldtree->SetBranchStatus("hardGenMu_eta", 1);
+          oldtree->SetBranchStatus("hardGenMu_phi", 1);
+          oldtree->SetBranchStatus("genPart_pt", 1);
+          oldtree->SetBranchStatus("genPart_mass", 1);
+          oldtree->SetBranchStatus("genPart_pdgid", 1);
+          oldtree->SetBranchStatus("genPart_status", 1);
           oldtree->SetBranchStatus("genPair_mass", 1);
           oldtree->SetBranchStatus("trueNVtx", 1);
 
