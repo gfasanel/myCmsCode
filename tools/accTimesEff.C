@@ -16,32 +16,19 @@ void AccTimesEff::Loop()
    timer.Start();
    // parameters /////////////////////////////////////////////////////////////
    vector<TString> files;
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-250_noAccCuts_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_10000ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeLFVToEMu_M-1000_TuneZ2star_8TeV_madgraph_Summer12_DR53X-PU_S10_START53_V19E-v1_AODSIM_9996ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9966ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9400ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9999ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9993ev.root");
-   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9959ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-250_noAccCuts_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_10000ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
+   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9966ev.root");
    string outfileName = "accTimesEffHistos";
 
    // output file formats
@@ -81,6 +68,7 @@ void AccTimesEff::Loop()
    }
 
    TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 145, 0., 5010.);
+   //TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 125, 0., 3510.);
    hGenEvts->GetXaxis()->SetTitle("M_{Z'}^{truth}");
    hGenEvts->GetXaxis()->SetTitleFont(font);
    hGenEvts->GetXaxis()->SetLabelFont(font);
@@ -341,17 +329,43 @@ void AccTimesEff::Loop()
             if (PassHighPtMu(j)) MU_passGOOD.push_back(j);
          }
 
-         if (GSF_passHEEP.size() == 1) {
+         // find the e-mu pair with the maximum invariant mass if it exists
+         unsigned int eleInd = 0;
+         unsigned int muInd = 0;
+         double invMass = 0.;
+         if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) {
+            TLorentzVector ele1;
+            TLorentzVector mu1;
+
+            // find the e-mu pair with the maximum invariant mass
+            double maxInvMass = 0.;
+            for (unsigned int eleIt = 0; eleIt < GSF_passHEEP.size(); ++eleIt) {
+               for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                  ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[eleIt]], gsf_eta[GSF_passHEEP[eleIt]], gsf_phi[GSF_passHEEP[eleIt]], 0.000511);
+                  mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
+
+                  invMass = (ele1 + mu1).M();
+                  if (invMass > maxInvMass) {
+                     maxInvMass = invMass;
+                     eleInd = eleIt;
+                     muInd = muIt;
+                  }
+               }
+            }
+            invMass = maxInvMass;
+         }
+
+         if (GSF_passHEEP.size() > 0) {
             if (triggerBit) {
                hRecoEleEvts->Fill(hardInvMass);
-               if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoEleEvtsEB->Fill(hardInvMass);
-               if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoEleEvtsEE->Fill(hardInvMass);
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEleEvtsEB->Fill(hardInvMass);
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEleEvtsEE->Fill(hardInvMass);
             }
             hRecoNoTrgEleEvts->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(hardInvMass);
          } 
-         if (MU_passGOOD.size() == 1) {
+         if (MU_passGOOD.size() > 0) {
             if (triggerBit) hRecoMuEvts->Fill(hardInvMass);
             hRecoNoTrgMuEvts->Fill(hardInvMass);
          }
@@ -360,17 +374,8 @@ void AccTimesEff::Loop()
          if (GSF_passHEEP.size() < 1 || MU_passGOOD.size() < 1) continue;
 
          // detector region
-         if (eleDetRegion == 1 && fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) continue;  // EB
-         else if (eleDetRegion == 2 && fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) continue;  // EE
-
-         //HEEP ele + GOOD muon
-         TLorentzVector ele1;
-         TLorentzVector mu1;
-
-         ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[0]], gsf_eta[GSF_passHEEP[0]], gsf_phi[GSF_passHEEP[0]], 0.000511);
-         mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[0]], muon_eta[MU_passGOOD[0]], muon_phi[MU_passGOOD[0]], 0.10566);
-
-         double invMass = (ele1 + mu1).M();
+         if (eleDetRegion == 1 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) continue;  // EB
+         else if (eleDetRegion == 2 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) continue;  // EE
 
          //MASS CUT
          if (invMass < minInvMass) continue;
@@ -384,12 +389,12 @@ void AccTimesEff::Loop()
 
          if (triggerBit) {
             hRecoEvts->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoEvtsEB->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoEvtsEE->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEvtsEB->Fill(hardInvMass);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEvtsEE->Fill(hardInvMass);
          }
          hRecoNoTrgEvts->Fill(hardInvMass);
-         if (fabs(gsfsc_eta[GSF_passHEEP[0]]) < 1.5) hRecoNoTrgEvtsEB->Fill(hardInvMass);
-         if (fabs(gsfsc_eta[GSF_passHEEP[0]]) > 1.5) hRecoNoTrgEvtsEE->Fill(hardInvMass);
+         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEvtsEB->Fill(hardInvMass);
+         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEvtsEE->Fill(hardInvMass);
          ++evCounter;
         ///////////////////////////////////////////////////////////////////////
       } //END LOOP OVER EVENTS
@@ -537,30 +542,40 @@ void AccTimesEff::Loop()
 
    TH1F* hAccTimesEff2 = (TH1F*)hAccTimesEff->Clone("hAccTimesEff2");
 
+   TF1 *andreasFunc = new TF1("andreasFunc", "0.61 + 280.1/ (x + 2008.7) - 30537.3/(x*x + 75925.2)", 200., 5010.);
+   andreasFunc->SetLineColor(kGreen);
    TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]/ (x + [2]) + [3]*x", 10., 5010.);
+   TF1 *fitFunc2 = new TF1("fitFunc2", "[0] + [1]/ (x + [2]) + [3]/ (x*x + [4])", 10., 5010.);
    //TF1 *fitFuncEB = new TF1("fitFuncEB", "[0] + [1]/ (x + [2])", 10., 5010.);
    TF1 *fitFuncEB = new TF1("fitFuncEB", "[0] + [1]/ (x + [2]) + [3]*x", 10., 5010.);
    //TF1 *fitFuncEE = new TF1("fitFuncEE", "[0] + [1]/ (x*x + [2])", 10., 5010.);
    TF1 *fitFuncEE = new TF1("fitFuncEE", "[0] + [1]/ (x + [2]) + [3]/ (x*x + [4])", 10., 5010.);
    fitFunc->SetLineColor(kBlue);
+   fitFunc2->SetLineColor(kRed);
    fitFuncEB->SetLineColor(kBlue);
    fitFuncEE->SetLineColor(kBlue);
-   hAccTimesEff->Fit("fitFunc", "", "", 240., 5010.);
-   hAccTimesEffEB->Fit("fitFuncEB", "", "", 240., 5010.);
-   hAccTimesEffEE->Fit("fitFuncEE", "", "", 240., 5010.);
-   cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF() << ", prob: " << fitFunc->GetProb() << endl;
+   hAccTimesEff->Fit("fitFunc", "", "", 200., 5010.);
+   //hAccTimesEff->Fit("fitFunc2", "", "", 200., 3510.);
+   hAccTimesEffEB->Fit("fitFuncEB", "", "", 200., 5010.);
+   hAccTimesEffEE->Fit("fitFuncEE", "", "", 200., 5010.);
+   cout << "Chi^2 / NDF F1: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF() << ", prob: " << fitFunc->GetProb() << endl;
+   cout << "Chi^2 / NDF F2: " << fitFunc2->GetChisquare() << " / " << fitFunc2->GetNDF() << ", prob: " << fitFunc2->GetProb() << endl;
    cout << "Chi^2 / NDF EB: " << fitFuncEB->GetChisquare() << " / " << fitFuncEB->GetNDF() << ", prob: " << fitFuncEB->GetProb() << endl;
    cout << "Chi^2 / NDF EE: " << fitFuncEE->GetChisquare() << " / " << fitFuncEE->GetNDF() << ", prob: " << fitFuncEE->GetProb() << endl;
 
    hAccTimesEff->GetYaxis()->SetTitle("acc x eff");
    hAccTimesEff->GetYaxis()->SetRangeUser(0., 1.);
    hAccTimesEff->Draw();
-   TLatex *tex = new TLatex(0.22, 0.21, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
+   fitFunc->Draw("same");
+   //fitFunc2->Draw("same");
+   //andreasFunc->Draw("same");
+   TLatex *tex = new TLatex(0.15, 0.25, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
    tex->SetNDC();
    tex->SetTextFont(font);
    tex->SetLineWidth(2);
    tex->SetTextSize(0.03);
    tex->Draw();
+   //tex->DrawLatex(0.15, 0.17, "Andreas (green): A#dot#epsilon(M) = 0.61 + #frac{280.1}{M + 2008.7} - #frac{30537.3}{M^{2} + 75925.2}");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
    tex->DrawLatex(0.17, 0.85, "trg + electron + muon");
    tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);

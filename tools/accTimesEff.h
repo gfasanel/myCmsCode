@@ -60,12 +60,12 @@ public :
    Int_t           prescale_HLT_Mu40_eta2p1;
    Int_t           prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
-   Int_t           hltL1sMu16Eta2p1;
-   Int_t           hltL1sL1Mu3p5EG12;
-   Int_t           hltL1sL1SingleEG12;
-   Int_t           hltMu22Photon22CaloIdLHEFilter;
-   Int_t           hltL1Mu3p5EG12L3Filtered22;
-   Int_t           hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
+   Bool_t          hltL1sMu16Eta2p1;
+   Bool_t          hltL1sL1Mu3p5EG12;
+   Bool_t          hltL1sL1SingleEG12;
+   Bool_t          hltMu22Photon22CaloIdLHEFilter;
+   Bool_t          hltL1Mu3p5EG12L3Filtered22;
+   Bool_t          hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q;
    Float_t         rho;
    Float_t         pfmet;
    Int_t           pvsize;
