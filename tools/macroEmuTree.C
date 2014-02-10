@@ -19,10 +19,12 @@ using namespace std;
 
 
 void macroEmuTree() {
+  bool noCuts = 0;
   string inputline;
   string outputline;
   string blankline;
   ifstream myfile ("listofsamples.txt");
+  //ifstream myfile ("listofsigsamples.txt");
   if (myfile.is_open())
     {
       while ( myfile.good() )
@@ -129,6 +131,7 @@ void macroEmuTree() {
           Int_t           genPart_pdgid[100];
           Int_t           genPart_status[100];
           Float_t         genPair_mass;
+          Float_t         emu_mass;
           Int_t           trueNVtx;
        
           // List of branches
@@ -219,6 +222,7 @@ void macroEmuTree() {
           TBranch        *b_genPart_pdgid;   //!
           TBranch        *b_genPart_status;   //!
           TBranch        *b_genPair_mass;   //!
+          TBranch        *b_emu_mass;   //!
           TBranch        *b_trueNVtx;   //!
        
           oldtree->SetBranchAddress("runnumber", &runnumber, &b_runnumber);
@@ -308,6 +312,7 @@ void macroEmuTree() {
           oldtree->SetBranchAddress("genPart_pdgid", genPart_pdgid, &b_genPart_pdgid);
           oldtree->SetBranchAddress("genPart_status", genPart_status, &b_genPart_status);
           oldtree->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
+          oldtree->SetBranchAddress("emu_mass", &emu_mass, &b_emu_mass);
           oldtree->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
        
           // enable only used branches
@@ -399,6 +404,7 @@ void macroEmuTree() {
           oldtree->SetBranchStatus("genPart_pdgid", 1);
           oldtree->SetBranchStatus("genPart_status", 1);
           oldtree->SetBranchStatus("genPair_mass", 1);
+          oldtree->SetBranchStatus("emu_mass", 1);
           oldtree->SetBranchStatus("trueNVtx", 1);
 
   
@@ -412,20 +418,23 @@ void macroEmuTree() {
 	  for (Long64_t i = 0; i < nentries; ++i) {
 	    if (i %100000 == 0) cout << "entry nb: " <<i << endl;
 	    oldtree->GetEntry(i);
-	    if(gsf_size < 1) continue;
-	    if(muon_size < 1) continue;
-	    bool passEleSelection = false;
-	    bool passMuSelection = false;
-	    for (int it = 0; it < gsf_size; ++it) {
-	      if (gsf_gsfet[it] < 35.) continue;
-		passEleSelection = true;
-	    }
-	    for (int muIt = 0; muIt < muon_size; ++muIt) {
-	      if (muon_pt[muIt] < 35.) continue;
-		passMuSelection = true;
-	    }
-	    if (passEleSelection && passMuSelection) newtree->Fill();
-     
+            if (noCuts) {
+	      newtree->Fill();
+            } else {
+	      if(gsf_size < 1) continue;
+	      if(muon_size < 1) continue;
+	      bool passEleSelection = false;
+	      bool passMuSelection = false;
+	      for (int it = 0; it < gsf_size; ++it) {
+	        if (gsf_gsfet[it] < 35.) continue;
+	          passEleSelection = true;
+	      }
+	      for (int muIt = 0; muIt < muon_size; ++muIt) {
+	        if (muon_pt[muIt] < 35.) continue;
+	          passMuSelection = true;
+	      }
+	      if (passEleSelection && passMuSelection) newtree->Fill();
+            }
 	  }
 
 
