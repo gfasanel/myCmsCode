@@ -24,7 +24,7 @@ void macro_plotHeepEleHist()
 
    int font = 42;
    const bool saveAsPng = 0;
-   TString plotsDir = "./plots_20130930/";
+   TString plotsDir = "./plots_20140318/";
    TString fileNameExtra = "";
    //TString fileNameExtra = "_realEle";
    //TString fileNameExtra = "_qcd";
@@ -73,17 +73,31 @@ void macro_plotHeepEleHist()
    vector<TString> gEffHistNamesDen;
    gEffHistNamesDen.push_back("h_refTrgd");
    gEffHistNamesDen.push_back("h_refTrgd");
-   gEffHistNamesDen.push_back("h_refTrgd");
-   gEffHistNamesDen.push_back("h_refTrgd");
-   gEffHistNamesDen.push_back("h_refTrgd");
-   gEffHistNamesDen.push_back("h_refTrgd");
+   gEffHistNamesDen.push_back("h_nPassHeep_refTrgd");
+   gEffHistNamesDen.push_back("h_nPassHeep_refTrgd");
+   gEffHistNamesDen.push_back("h_nPassHeep_nPassEt_refTrgd");
+   gEffHistNamesDen.push_back("h_nPassHeep_nPassEt_refTrgd");
    vector<TString> gEffTitles;
    gEffTitles.push_back("# triggered / # reference triggered events");
    gEffTitles.push_back("# not triggered but reference triggered / # reference triggered events");
-   gEffTitles.push_back("# triggered n-HEEP events / # reference triggered events");
-   gEffTitles.push_back("# not triggered but reference triggered n-HEEP events / # reference triggered events");
-   gEffTitles.push_back("# triggered n-HEEP events passing Et cuts / # reference triggered events");
-   gEffTitles.push_back("# not triggered but reference triggered n-HEEP events passing Et cuts / # reference triggered events");
+   gEffTitles.push_back("# triggered / # reference triggered n-HEEP events");
+   gEffTitles.push_back("# not triggered but reference triggered / # reference triggered n-HEEP events");
+   gEffTitles.push_back("# triggered / # reference triggered n-HEEP events passing Et cuts");
+   gEffTitles.push_back("# not triggered but reference triggered / # reference triggered n-HEEP events passing Et cuts");
+   //vector<TString> gEffHistNamesDen;
+   //gEffHistNamesDen.push_back("h_refTrgd");
+   //gEffHistNamesDen.push_back("h_refTrgd");
+   //gEffHistNamesDen.push_back("h_refTrgd");
+   //gEffHistNamesDen.push_back("h_refTrgd");
+   //gEffHistNamesDen.push_back("h_refTrgd");
+   //gEffHistNamesDen.push_back("h_refTrgd");
+   //vector<TString> gEffTitles;
+   //gEffTitles.push_back("# triggered / # reference triggered events");
+   //gEffTitles.push_back("# not triggered but reference triggered / # reference triggered events");
+   //gEffTitles.push_back("# triggered n-HEEP events / # reference triggered events");
+   //gEffTitles.push_back("# not triggered but reference triggered n-HEEP events / # reference triggered events");
+   //gEffTitles.push_back("# triggered n-HEEP events passing Et cuts / # reference triggered events");
+   //gEffTitles.push_back("# not triggered but reference triggered n-HEEP events passing Et cuts / # reference triggered events");
 
    // 2D efficiency matrix 
    vector<TString> h2Names;
