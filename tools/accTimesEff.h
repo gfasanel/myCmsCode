@@ -131,6 +131,7 @@ public :
    Float_t         genmu_phi[100];
    Float_t         genelemom_mass[100];
    Int_t           genelemom_pdgid[100];
+   Float_t         emu_mass;
    Int_t           trueNVtx;
 
    // List of branches
@@ -216,6 +217,7 @@ public :
    TBranch        *b_genmu_phi;   //!
    TBranch        *b_genelemom_mass;   //!
    TBranch        *b_genelemom_pdgid;   //!
+   TBranch        *b_emu_mass;   //!
    TBranch        *b_trueNVtx;   //!
 
    AccTimesEff(TTree *tree=0);
@@ -271,7 +273,7 @@ protected :
    int muon_nHitsMinMuon;
    int muon_nLayersMin; 
    float muon_impactParamMaxXY;   // in cm
-   //float muon_impactParamMaxZ;   // in cm , not used
+   float muon_impactParamMaxZ;   // in cm , not used
    int muon_nSegMatchMin;
    float muon_relIsoCutMax;
 
@@ -296,7 +298,7 @@ AccTimesEff::AccTimesEff(TTree *tree) : fChain(0)
    runs_HLT_Mu40_eta2p1 = make_pair(999999999, 0);
    runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL = make_pair(999999999, 0);
    runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL = make_pair(999999999, 0);
-   
+  
    // HEEP v4.1
    // barrel
    bar_et = 35.;
@@ -334,7 +336,7 @@ AccTimesEff::AccTimesEff(TTree *tree) : fChain(0)
    muon_nHitsMinMuon = 1;
    muon_nLayersMin = 6; 
    muon_impactParamMaxXY = 0.2;   // in cm
-   //muon_impactParamMaxZ = 0.5;   // in cm , not used
+   muon_impactParamMaxZ = 0.5;   // in cm , not used
    muon_nSegMatchMin = 2;
    muon_relIsoCutMax = 0.1;
 }
@@ -462,6 +464,7 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
    fChain->SetBranchAddress("genelemom_mass", genelemom_mass, &b_genelemom_mass);
    fChain->SetBranchAddress("genelemom_pdgid", genelemom_pdgid, &b_genelemom_pdgid);
+   fChain->SetBranchAddress("emu_mass", &emu_mass, &b_emu_mass);
    fChain->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
 
    // enable only used branches
@@ -548,6 +551,7 @@ void AccTimesEff::Init(TTree *tree)
    fChain->SetBranchStatus("genmu_phi", 1);
    fChain->SetBranchStatus("genelemom_mass", 1);
    fChain->SetBranchStatus("genelemom_pdgid", 1);
+   fChain->SetBranchStatus("emu_mass", 1);
    fChain->SetBranchStatus("trueNVtx", 1);
 
    Notify();

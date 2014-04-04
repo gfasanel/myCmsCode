@@ -42,6 +42,7 @@ void AccTimesEff::Loop()
 
    unsigned int triggerInd = 0;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
    unsigned int eleDetRegion = 0;  // electron in subdetector. 0: EB or EE; 1: EB; 2: EE
+   const bool useScaleFactors = 1;
 
    int font = 42; //62
    // selection cuts /////////////////////////////////////////////////////////
@@ -50,6 +51,27 @@ void AccTimesEff::Loop()
    float muEtaCut = 2.4;
    float minInvMass = 0.;
 
+   // scale factors
+   // muon factors: mu high_pt id trk iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
+   float trgDataMcScaleFactorLowEta = 0.976; // scale factor between data and mc measured by Z' to mumu for Mu40 for |eta|<0.9
+   float trgDataMcScaleFactorMidEta = 0.954; // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
+   float trgDataMcScaleFactorHighEta = 0.983; // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
+   // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
+   float eps_cand_sf_0p8 = 0.990; // data/MC scale for epsilon_cand (>50GeV) |eta|<0.8
+   float eps_cand_sf_0p8to1p4442 = 0.991; // data/MC scale for epsilon_cand (>50GeV) 0.8<|eta|<1.4442
+   float eps_cand_sf_1p566to2p0 = 0.990; // data/MC scale for epsilon_cand (>50GeV) 1.566<|eta|<2.0
+   float eps_cand_sf_2p0to2p5 = 0.998; // data/MC scale for epsilon_cand (>50GeV) 2.0<|eta|<2.5
+   // HEEP eff scale factors from AN-13-359 Table 5 reReco
+   float eps_heep_sf_eb_pt35 = 0.997; // HEEP eff scale factor
+   float eps_heep_sf_eb_pt100 = 0.985; // HEEP eff scale factor
+   float eps_heep_sf_ee_pt35 = 0.979; // HEEP eff scale factor
+   float eps_heep_sf_ee_pt100 = 0.981; // HEEP eff scale factor
+   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
+   float muScaleFactorLowEta = 0.9900; // for |eta|<0.9
+   float muScaleFactorMidEta = 0.9923; // for 0.9<|eta|<1.2
+   float muScaleFactorHighEta = 0.9949; // for 1.2<|eta|<2.1
+   float muScaleFactorHighestEta = 0.9923; // for 2.1<|eta|<2.4
+ 
    TH1::SetDefaultSumw2(kTRUE);
 
    ///////////////////////////////////////////////////////////////////////////
@@ -69,7 +91,7 @@ void AccTimesEff::Loop()
 
    TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 145, 0., 5010.);
    //TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 125, 0., 3510.);
-   hGenEvts->GetXaxis()->SetTitle("M_{Z'}^{truth}");
+   hGenEvts->GetXaxis()->SetTitle("M_{Z'}^{truth} (GeV)");
    hGenEvts->GetXaxis()->SetTitleFont(font);
    hGenEvts->GetXaxis()->SetLabelFont(font);
    hGenEvts->GetYaxis()->SetTitle("Events");
@@ -102,6 +124,7 @@ void AccTimesEff::Loop()
    TH1F *hGenEvtsEleInAccEE = (TH1F*)hGenEvts->Clone("hGenEvtsEleInAccEE");
    TH1F *hGenEvtsMuInAcc = (TH1F*)hGenEvts->Clone("hGenEvtsMuInAcc");
    TH1F *hGenEvtsInAcc = (TH1F*)hGenEvts->Clone("hGenEvtsInAcc");
+   TH1F *hRecoEvtsLepInAcc = (TH1F*)hGenEvts->Clone("hRecoEvtsLepInAcc");
    TH1F *hTrgEvts = (TH1F*)hGenEvts->Clone("hTrgEvts");
    hTrgEvts->SetTitle("hTrgEvts");
    TH1F *hTrgEvts_mu22ph22 = (TH1F*)hGenEvts->Clone("hTrgEvts_mu22ph22");
@@ -153,6 +176,7 @@ void AccTimesEff::Loop()
    TH1F *hRecoNoTrgEleEvtsEE = (TH1F*)hRecoNoTrgEvts->Clone("hRecoNoTrgEleEvtsEE");
    TH1F *hRecoNoTrgMuEvts = (TH1F*)hRecoNoTrgEvts->Clone("hRecoNoTrgMuEvts");
    TH1F* hAcc;
+   TH1F* hRecoLepAcc;
    TH1F* hAccEle;
    TH1F* hAccEleEB;
    TH1F* hAccEleEE;
@@ -281,24 +305,36 @@ void AccTimesEff::Loop()
             }
          }
 
+         // dummy scale factors
+         float eleSf = 1.;
+         float muSf = 1.;
+         float trgSf = 1.;
+
+         if (useScaleFactors) {
+            // set trg scale factor according to generated muon
+            if (fabs(genmu_eta[0]) < 0.9) trgSf = trgDataMcScaleFactorLowEta;
+            else if (fabs(genmu_eta[0]) < 1.2) trgSf = trgDataMcScaleFactorMidEta;
+            else trgSf = trgDataMcScaleFactorHighEta;
+         }
+
          // trigger?
          if (triggerInd == 0) triggerBit = HLT_Mu22_Photon22_CaloIdL;
          else triggerBit = HLT_Mu40_eta2p1;
 
          if (triggerBit) hTrgEvts->Fill(hardInvMass);
          if (HLT_Mu22_Photon22_CaloIdL) {
-            hTrgEvts_mu22ph22->Fill(hardInvMass);
-            hTrgEvts_mu22ph22_ele_pt->Fill(genele_pt[0]);
-            hTrgEvts_mu22ph22_ele_eta->Fill(genele_eta[0]);
-            hTrgEvts_mu22ph22_mu_pt->Fill(genmu_pt[0]);
-            hTrgEvts_mu22ph22_mu_eta->Fill(genmu_eta[0]);
+            hTrgEvts_mu22ph22->Fill(hardInvMass, trgSf);
+            hTrgEvts_mu22ph22_ele_pt->Fill(genele_pt[0], trgSf);
+            hTrgEvts_mu22ph22_ele_eta->Fill(genele_eta[0], trgSf);
+            hTrgEvts_mu22ph22_mu_pt->Fill(genmu_pt[0], trgSf);
+            hTrgEvts_mu22ph22_mu_eta->Fill(genmu_eta[0], trgSf);
          }
          if (HLT_Mu40_eta2p1) {
-            hTrgEvts_mu40->Fill(hardInvMass);
-            hTrgEvts_mu40_ele_pt->Fill(genele_pt[0]);
-            hTrgEvts_mu40_ele_eta->Fill(genele_eta[0]);
-            hTrgEvts_mu40_mu_pt->Fill(genmu_pt[0]);
-            hTrgEvts_mu40_mu_eta->Fill(genmu_eta[0]);
+            hTrgEvts_mu40->Fill(hardInvMass, trgSf);
+            hTrgEvts_mu40_ele_pt->Fill(genele_pt[0], trgSf);
+            hTrgEvts_mu40_ele_eta->Fill(genele_eta[0], trgSf);
+            hTrgEvts_mu40_mu_pt->Fill(genmu_pt[0], trgSf);
+            hTrgEvts_mu40_mu_eta->Fill(genmu_eta[0], trgSf);
          }
 
          // at least one gsf electron and one muon above the threshold
@@ -306,6 +342,8 @@ void AccTimesEff::Loop()
 
          vector<int> GSF_passHEEP;
          vector<int> MU_passGOOD;
+         bool recoElePassAcc = false;
+         bool recoMuPassAcc = false;
          /////////////////////////////////////////////////////////////////////////////////////////////
          //loop over electrons
          for (int j = 0; j < gsf_size; ++j) {
@@ -319,6 +357,9 @@ void AccTimesEff::Loop()
                   break;
                }
             }
+            if (fabs(gsf_eta[j]) < 1.442 || (fabs(gsf_eta[j]) > 1.56 && fabs(gsf_eta[j]) < 2.5)) 
+               if (gsf_gsfet[j] > elePtCut) recoElePassAcc = true;
+
             if (fakeEle) continue;
 
             if (PassHEEP(j)) GSF_passHEEP.push_back(j);
@@ -326,8 +367,13 @@ void AccTimesEff::Loop()
 
          //loop over muons
          for (int j = 0; j < muon_size; ++j) {
+            if (fabs(muon_eta[j]) < muEtaCut && muon_pt[j] > muPtCut) recoMuPassAcc = true;
+
             if (PassHighPtMu(j)) MU_passGOOD.push_back(j);
          }
+
+         // reco leptons in acceptance
+         if (recoElePassAcc && recoMuPassAcc) hRecoEvtsLepInAcc->Fill(hardInvMass);
 
          // find the e-mu pair with the maximum invariant mass if it exists
          unsigned int eleInd = 0;
@@ -355,19 +401,58 @@ void AccTimesEff::Loop()
             invMass = maxInvMass;
          }
 
-         if (GSF_passHEEP.size() > 0) {
-            if (triggerBit) {
-               hRecoEleEvts->Fill(hardInvMass);
-               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEleEvtsEB->Fill(hardInvMass);
-               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEleEvtsEE->Fill(hardInvMass);
+         if (useScaleFactors && MU_passGOOD.size() > 0) {
+            // set trg and muon scale factor according to selected muon
+            if (fabs(MU_passGOOD[muInd]) < 0.9) {
+               muSf = muScaleFactorLowEta;
+               trgSf = trgDataMcScaleFactorLowEta;
             }
-            hRecoNoTrgEleEvts->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(hardInvMass);
+            else if (fabs(MU_passGOOD[muInd]) < 1.2) {
+               muSf = muScaleFactorMidEta;
+               trgSf = trgDataMcScaleFactorMidEta;
+            }
+            else if (fabs(MU_passGOOD[muInd]) < 2.1) {
+               muSf = muScaleFactorHighEta;
+               trgSf = trgDataMcScaleFactorHighEta;
+            }
+            else {
+               muSf = muScaleFactorHighestEta;
+               trgSf = trgDataMcScaleFactorHighEta;
+            }
+         }
+         float sf = trgSf*muSf;
+         float leptSf = muSf;
+
+         if (GSF_passHEEP.size() > 0) {
+            if (useScaleFactors) {
+               // set ele scale factor according to selected electron
+               if (fabs(GSF_passHEEP[eleInd]) < 0.8) eleSf = eps_cand_sf_0p8;
+               else if (fabs(GSF_passHEEP[eleInd]) < 1.4442) eleSf = eps_cand_sf_0p8to1p4442;
+               else if (fabs(GSF_passHEEP[eleInd]) > 1.566 && fabs(GSF_passHEEP[eleInd]) < 2.) eleSf = eps_cand_sf_1p566to2p0;
+               else if (fabs(GSF_passHEEP[eleInd]) > 2. && fabs(GSF_passHEEP[eleInd]) < 2.5) eleSf = eps_cand_sf_2p0to2p5;
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) {
+                  if (gsfsc_eta[GSF_passHEEP[eleInd]] < 100.) eleSf *= eps_heep_sf_eb_pt35;
+                  else eleSf *= eps_heep_sf_eb_pt100;
+               } else {
+                  if (gsfsc_eta[GSF_passHEEP[eleInd]] < 100.) eleSf *= eps_heep_sf_ee_pt35;
+                  else eleSf *= eps_heep_sf_ee_pt100;
+               }
+               sf *= eleSf;
+               leptSf *= eleSf;
+            }
+
+            if (triggerBit) {
+               hRecoEleEvts->Fill(hardInvMass, sf);
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEleEvtsEB->Fill(hardInvMass, sf);
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEleEvtsEE->Fill(hardInvMass, sf);
+            }
+            hRecoNoTrgEleEvts->Fill(hardInvMass, leptSf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(hardInvMass, leptSf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(hardInvMass, leptSf);
          } 
          if (MU_passGOOD.size() > 0) {
-            if (triggerBit) hRecoMuEvts->Fill(hardInvMass);
-            hRecoNoTrgMuEvts->Fill(hardInvMass);
+            if (triggerBit) hRecoMuEvts->Fill(hardInvMass, sf);
+            hRecoNoTrgMuEvts->Fill(hardInvMass, leptSf);
          }
 
          // veto when there are more than one good candidates
@@ -380,21 +465,21 @@ void AccTimesEff::Loop()
          //MASS CUT
          if (invMass < minInvMass) continue;
 
-         if (hltL1sMu16Eta2p1) hFltrMatchEvts_l1Mu16Eta2p1->Fill(hardInvMass);
-         if (hltL1Mu3p5EG12L3Filtered22) hFltrMatchEvts_mu22ph22_muLeg->Fill(hardInvMass);
-         if (hltL1sL1SingleEG12) hFltrMatchEvts_l1SingleEG12->Fill(hardInvMass);
-         if (hltL1sL1Mu3p5EG12) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass);
-         if (hltMu22Photon22CaloIdLHEFilter) hFltrMatchEvts_mu22ph22_phLeg->Fill(hardInvMass);
-         if (hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q) hFltrMatchEvts_mu40->Fill(hardInvMass);
+         if (hltL1sMu16Eta2p1) hFltrMatchEvts_l1Mu16Eta2p1->Fill(hardInvMass, sf);
+         if (hltL1Mu3p5EG12L3Filtered22) hFltrMatchEvts_mu22ph22_muLeg->Fill(hardInvMass, sf);
+         if (hltL1sL1SingleEG12) hFltrMatchEvts_l1SingleEG12->Fill(hardInvMass, sf);
+         if (hltL1sL1Mu3p5EG12) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass, sf);
+         if (hltMu22Photon22CaloIdLHEFilter) hFltrMatchEvts_mu22ph22_phLeg->Fill(hardInvMass, sf);
+         if (hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q) hFltrMatchEvts_mu40->Fill(hardInvMass, sf);
 
          if (triggerBit) {
-            hRecoEvts->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEvtsEB->Fill(hardInvMass);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEvtsEE->Fill(hardInvMass);
+            hRecoEvts->Fill(hardInvMass, sf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEvtsEB->Fill(hardInvMass, sf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEvtsEE->Fill(hardInvMass, sf);
          }
-         hRecoNoTrgEvts->Fill(hardInvMass);
-         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEvtsEB->Fill(hardInvMass);
-         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEvtsEE->Fill(hardInvMass);
+         hRecoNoTrgEvts->Fill(hardInvMass, leptSf);
+         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEvtsEB->Fill(hardInvMass, leptSf);
+         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEvtsEE->Fill(hardInvMass, leptSf);
          ++evCounter;
         ///////////////////////////////////////////////////////////////////////
       } //END LOOP OVER EVENTS
@@ -413,6 +498,8 @@ void AccTimesEff::Loop()
    hAccEleEE->Divide(hGenEvts);
    hAccMu = (TH1F*)hGenEvtsMuInAcc->Clone("hAccMu");
    hAccMu->Divide(hGenEvts);
+   hRecoLepAcc = (TH1F*)hRecoEvtsLepInAcc->Clone("hRecoLepAcc");
+   hRecoLepAcc->Divide(hGenEvts);
    hAccTimesEff = (TH1F*)hRecoEvts->Clone("hAccTimesEff");
    hAccTimesEff->Divide(hGenEvts);
    hAccTimesEffEB = (TH1F*)hRecoEvtsEB->Clone("hAccTimesEffEB");
@@ -540,12 +627,14 @@ void AccTimesEff::Loop()
    gPad->SetTicks(1, 1);
    gPad->SetGrid(1, 1);
 
+   TH1F* hAccTimesEffNote = (TH1F*)hAccTimesEff->Clone("hAccTimesEffNote");
    TH1F* hAccTimesEff2 = (TH1F*)hAccTimesEff->Clone("hAccTimesEff2");
 
-   TF1 *andreasFunc = new TF1("andreasFunc", "0.61 + 280.1/ (x + 2008.7) - 30537.3/(x*x + 75925.2)", 200., 5010.);
+   //TF1 *andreasFunc = new TF1("andreasFunc", "0.61 + 280.1/ (x + 2008.7) - 30537.3/(x*x + 75925.2)", 200., 5010.);
+   TF1 *andreasFunc = new TF1("andreasFunc", "0.78 - 74.4/ (x + 46.7) - 3.5e-5*x", 200., 5010.);
    andreasFunc->SetLineColor(kGreen);
-   TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]/ (x + [2]) + [3]*x", 10., 5010.);
-   TF1 *fitFunc2 = new TF1("fitFunc2", "[0] + [1]/ (x + [2]) + [3]/ (x*x + [4])", 10., 5010.);
+   TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]/ (x + [2]) + [3]*x", 200., 5010.);
+   TF1 *fitFunc2 = new TF1("fitFunc2", "[0] + [1]/ (x + [2]) + [3]/ (x*x + [4])", 200., 5010.);
    //TF1 *fitFuncEB = new TF1("fitFuncEB", "[0] + [1]/ (x + [2])", 10., 5010.);
    TF1 *fitFuncEB = new TF1("fitFuncEB", "[0] + [1]/ (x + [2]) + [3]*x", 10., 5010.);
    //TF1 *fitFuncEE = new TF1("fitFuncEE", "[0] + [1]/ (x*x + [2])", 10., 5010.);
@@ -568,7 +657,7 @@ void AccTimesEff::Loop()
    hAccTimesEff->Draw();
    fitFunc->Draw("same");
    //fitFunc2->Draw("same");
-   //andreasFunc->Draw("same");
+   andreasFunc->Draw("same");
    TLatex *tex = new TLatex(0.15, 0.25, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
    tex->SetNDC();
    tex->SetTextFont(font);
@@ -579,6 +668,50 @@ void AccTimesEff::Loop()
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
    tex->DrawLatex(0.17, 0.85, "trg + electron + muon");
    tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);
+
+   // plot
+   TCanvas *accTimesEffPlotNote = new TCanvas("accTimesEffPlotNote", "Ax#epsilon", 100, 100, 600, 600);
+   TPad *accTimesEffPadNote = (TPad*)accTimesEffPad->Clone("accTimesEffPadNote");
+   accTimesEffPadNote->Draw();
+   accTimesEffPadNote->cd();
+
+   gStyle->SetOptFit(0);
+   gPad->SetTicks(1, 1);
+   gPad->SetGrid(0, 0);
+
+   TH1F* hAccNote = (TH1F*)hAcc->Clone("hAccNote");
+   TH1F* hAccTimesEffNoTrgNote = (TH1F*)hAccTimesEffNoTrg->Clone("hAccTimesEffNoTrgNote");
+   TF1* fitFuncNote = (TF1 *)fitFunc->Clone("fitFuncNote");
+
+   hAccTimesEffNote->GetYaxis()->SetTitle("Ax#epsilon");
+   hAccTimesEffNote->GetYaxis()->SetRangeUser(0., 1.);
+   hAccTimesEffNote->GetXaxis()->SetRangeUser(0., 3500.);
+   hAccTimesEffNote->SetLineColor(kWhite);
+   hAccTimesEffNote->Draw();
+   hAccTimesEffNote->Fit("fitFuncNote", "", "", 200., 3600.);
+   hAccNote->SetMarkerColor(kBlue);
+   hAccNote->Draw("histpsame");
+   hAccTimesEffNoTrgNote->SetMarkerColor(kRed);
+   hAccTimesEffNoTrgNote->Draw("histpsame");
+   //andreasFunc->Draw("same");
+   TLegend* legendNote = new TLegend(0.223, 0.120, 0.910, 0.521);
+   legendNote->SetTextFont(font);
+   legendNote->SetTextSize(0.035);
+   legendNote->SetBorderSize(1);
+   legendNote->SetLineColor(1);
+   legendNote->SetLineStyle(1);
+   legendNote->SetLineWidth(1);
+   legendNote->SetFillColor(0);
+   //legendNote->SetFillStyle(0);
+   legendNote->AddEntry(hAccNote, "gen leptons within acceptance", "p");
+   legendNote->AddEntry(hAccTimesEffNoTrgNote, "reco leptons within acceptance", "p");
+   legendNote->AddEntry(hAccTimesEffNote, "full selection with trigger", "p");
+   legendNote->AddEntry(fitFuncNote, "#splitline{fit 200 GeV < M_{Z'}^{truth} < 3.6 TeV}{A+B/(M+C)+DxM}", "l");
+   legendNote->Draw("same");
+   //tex->DrawLatex(0.15, 0.17, "Andreas (green): A#dot#epsilon(M) = 0.61 + #frac{280.1}{M + 2008.7} - #frac{30537.3}{M^{2} + 75925.2}");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+   //tex->DrawLatex(0.17, 0.85, "trg + electron + muon");
+   //tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);
 
    TCanvas *accTimesEffPlotEB = new TCanvas("accTimesEffPlotEB", "acc x eff, barrel electron + muon", 100, 100, 600, 600);
    TPad *accTimesEffPadEB = (TPad*)accTimesEffPad->Clone("accTimesEffPadEB");
@@ -1235,7 +1368,7 @@ bool AccTimesEff::PassHighPtMu(const int &n)
        && muon_nhitsmuons[n] >= muon_nHitsMinMuon
        && muon_nlayerswithhits[n] >= muon_nLayersMin
        && fabs(muon_dxy_firstPVtx[n]) < muon_impactParamMaxXY
-       //&& fabs(muon_dz_firstPVtx[n]) < muon_impactParamMaxZ
+       && fabs(muon_dz_firstPVtx[n]) < muon_impactParamMaxZ
        && muon_nSegmentMatch[n] >= muon_nSegMatchMin
        && muon_isTrackerMuon[n]
        && muon_trackIso03[n] / muon_pt[n] < muon_relIsoCutMax
