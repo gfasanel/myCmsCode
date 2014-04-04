@@ -260,12 +260,16 @@ protected :
 
    // strings for histogram names
    vector<TString> suffix;
+   // strings for shape uncertainty names
+   vector<TString> shapeUncNames;
 
    // Functions
    bool PassHEEP(const int &n);
    bool PassHighPtMu(const int &n);
    bool PassFRPreSel(const int &n);
    double FakeRate (const float& et, const float& eta);
+   void scaleEle (const bool up);
+   void scaleMu (const bool up);
    double topScaleFactor (const float& top_genpt, const float& atop_genpt);
    int Trigger(int &prescale, unsigned int *trig, const int &selector = 0);
 };
@@ -360,9 +364,9 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("zmumu");
    suffix.push_back("zee");
    suffix.push_back("zz");
-   suffix.push_back("ttbarMg");
-   suffix.push_back("ttbarto2l");
-   suffix.push_back("ttbarto1l1jet");
+   //suffix.push_back("ttbarMg");
+   //suffix.push_back("ttbarto2l");
+   //suffix.push_back("ttbarto1l1jet");
    suffix.push_back("ttbarw");
    suffix.push_back("ttbarww");
    suffix.push_back("sig250");
@@ -392,6 +396,14 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("sigNoAccCuts4000");
    suffix.push_back("sigNoAccCuts5000");
    suffix.push_back("sig1000CentralProduction");
+   suffix.push_back("sigMz1000Ma20000");
+
+   shapeUncNames.reserve(4);
+   shapeUncNames.push_back("");
+   shapeUncNames.push_back("eleScaleUp");
+   shapeUncNames.push_back("eleScaleDown");
+   shapeUncNames.push_back("muScaleUp");
+   shapeUncNames.push_back("muScaleDown");
 }
 
 EmuSpectrum::~EmuSpectrum()

@@ -87,7 +87,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   std::vector<ContVarPlot> testPlots;
   testPlots.reserve(40);
   // flags: plotQCD | logPlot | underflow in first bin | overflow in last bin
-  testPlots.push_back(ContVarPlot("mass", "e-mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 150, 1, 1, 0, 0));
+  testPlots.push_back(ContVarPlot("mass", "e-mu invariant mass", "m(e#mu) [GeV]", 0., 2500., 2500, 1, 1, 0, 0));
   testPlots.push_back(ContVarPlot("pfMet", "PF MET", "E^{T}_{miss} [GeV]", 0., 500., 50, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("nVtx", "Number of primary vertices", "# PV", 0., 50., 50, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("rho", "rho", "#rho", 0., 50., 50, 1, 0, 1, 1));
@@ -135,6 +135,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TString nameSign[7] = {" e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
   TString region[3] = {"", "_EB", "_EE"};
   TString nameReg[3] = {"", " EB", " EE"};
+  TString shapeUncNames[5] = {"", "eleScaleUp", "eleScaleDown", "muScaleUp", "muScaleDown"};
 
   // plot a list with possible test histograms
   if (var > testPlots.size()) var = 0;
@@ -201,473 +202,488 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TParameter<float> *mcWeight700to1000 = (TParameter<float> *)mcWeights->FindObject("ttbar700to1000");
   TParameter<float> *mcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
 
-  // determine qcd contribution
-  TH1F *ssData;
-  TH1F *ssBg;
-  TH1F *qcdContrib;
-  if (plotQcd && qcdEst == 1) {
-    ssData = MakeHistoFromBranch(&input, "emuTree_data", testVar, 1, reg, "", 0., 0., binning, 0x100);
-    ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, 1, reg, "genMTtbar", 0., 700., binning, 0x1DF);
-    totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, 1, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, 1, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-    totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, 1, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, 1, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-    //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, 1, reg, "", 0., 0., binning, 0x1DF);
-    //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l", testVar, 1, reg, "", 0., 0., binning, 0x1DF);
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", testVar, 1, reg, "", 0., 0., binning, 0x1DF));
-    qcdContrib = (TH1F *)ssData->Clone("qcdContrib_SS");
-    qcdContrib->Add(ssBg, -1);
-    for (int i = 0; i < qcdContrib->GetNbinsX() + 2; ++i) {
-      if (qcdContrib->GetBinContent(i) < 0) qcdContrib->SetBinContent(i, 0.);
-    }
-    cout << "Expected SS QCD events: " << ssData->Integral() - ssBg->Integral();
-    cout << "; Derived SS QCD events: " << qcdContrib->Integral();
-    cout << "; scale factor: " << (ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral()<< endl;
-    qcdContrib->Scale((ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral());
+  TFile* outFile;
+  if (writeHistosToFile) outFile = new TFile("histograms.root", "recreate");
 
-    emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig] + nameReg[reg] + "qcd"));
-    if (sig == 0) emuTest_qcd.back()->Scale(2.);
-    else if (abs(sig) > 1) emuTest_qcd.back()->Scale(0.5);
+  // loop over shape uncertainty up and downscalings
+  for (unsigned int shUnc = 0; shUnc < 5; ++shUnc) {
+     TString shapeUncName = shapeUncNames[shUnc];
+     input.cd(shapeUncNames[shUnc]);
+     if (shUnc > 0) {
+        shapeUncName.Prepend("_");
+        sig-=3;
+     }
+ 
+     // determine qcd contribution
+     TH1F *ssData;
+     TH1F *ssBg;
+     TH1F *qcdContrib;
+     if (plotQcd && qcdEst == 1) {
+       ssData = MakeHistoFromBranch(&input, "emuTree_data" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x100);
+       ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, 1, reg, "genMTtbar", 0., 700., binning, 0x1DF);
+       totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, 1, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000" + shapeUncName, testVar, 1, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+       totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, 1, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up" + shapeUncName, testVar, 1, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+       //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF);
+       //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF);
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets" + shapeUncName, testVar, 1, reg, "", 0., 0., binning, 0x1DF));
+       qcdContrib = (TH1F *)ssData->Clone("qcdContrib_SS");
+       qcdContrib->Add(ssBg, -1);
+       for (int i = 0; i < qcdContrib->GetNbinsX() + 2; ++i) {
+         if (qcdContrib->GetBinContent(i) < 0) qcdContrib->SetBinContent(i, 0.);
+       }
+       cout << "Expected SS QCD events: " << ssData->Integral() - ssBg->Integral();
+       cout << "; Derived SS QCD events: " << qcdContrib->Integral();
+       cout << "; scale factor: " << (ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral()<< endl;
+       qcdContrib->Scale((ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral());
+
+       emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig] + nameReg[reg] + "qcd"));
+       if (sig == 0) emuTest_qcd.back()->Scale(2.);
+       else if (abs(sig) > 1) emuTest_qcd.back()->Scale(0.5);
+     }
+
+     // get the histograms
+     TH1F *dataOverBgHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_data" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x100);
+     if (shUnc == 0) emuTest_data.push_back((TH1F *)dataOverBgHist->Clone("mass_data_obs"));
+     else emuTest_data.push_back((TH1F *)dataOverBgHist->Clone());
+     TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, sig, reg, "genMTtbar", 0., 700., binning, 0x1DF);
+     totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
+     ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, sig, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+     ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000" + shapeUncName, testVar, sig, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
+     totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
+     ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, sig, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+     ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up" + shapeUncName, testVar, sig, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
+     emuTest_ttbar.push_back(ttbarComb);
+     //emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     //emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarto2l" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     emuTest_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     emuTest_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     emuTest_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     emuTest_zz.push_back(MakeHistoFromBranch(&input, "emuTree_zz" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     emuTest_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     emuTest_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     emuTest_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     if (qcdEst != 2) emuTest_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+     if (plotSignal[0] > 0.) {
+       emuTest_sig1.push_back(MakeHistoFromBranch(&input, "emuTree_sig500" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+       emuTest_sig1.back()->Scale(plotSignal[0]);
+     }
+     if (plotSignal[1] > 0.) {
+       emuTest_sig2.push_back(MakeHistoFromBranch(&input, "emuTree_sig750" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+       emuTest_sig2.back()->Scale(plotSignal[1]);
+     }
+     if (plotSignal[2] > 0.) {
+       emuTest_sig3.push_back(MakeHistoFromBranch(&input, "emuTree_sig1000" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+       emuTest_sig3.back()->Scale(plotSignal[2]);
+     }
+     if (plotSignal[3] > 0.) {
+       emuTest_sig4.push_back(MakeHistoFromBranch(&input, "emuTree_sig1250" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x1DF));
+       emuTest_sig4.back()->Scale(plotSignal[3]);
+     }
+
+     // qcd contribution
+     if (plotQcd && qcdEst == 2) {
+       qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data" + shapeUncName, testVar, sig, reg, "", 0., 0., binning, 0x300);
+       emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig] + nameReg[reg] + "qcd"));
+       // normalize to bin width
+       //for (int i = 1; i < emuTest_qcd.back()->GetNbinsX() + 1; ++i) {
+       //  emuTest_qcd.back()->SetBinContent(i, emuTest_qcd.back()->GetBinContent(i) / emuTest_qcd.back()->GetBinWidth(i));
+       //  emuTest_qcd.back()->SetBinError(i, emuTest_qcd.back()->GetBinError(i) / emuTest_qcd.back()->GetBinWidth(i));
+       //}
+     }
+
+     // write histograms in a file
+     if (writeHistosToFile) {
+       outFile->cd();
+       TH1F* emuTest_allBkg = (TH1F*)emuTest_ttbar.back()->Clone("emuTree_allBkg" + shapeUncName);
+       emuTest_allBkg->Add(emuTest_ztautau.back());
+       emuTest_allBkg->Add(emuTest_ww.back());
+       emuTest_allBkg->Add(emuTest_wz.back());
+       emuTest_allBkg->Add(emuTest_zz.back());
+       emuTest_allBkg->Add(emuTest_tw.back());
+       emuTest_allBkg->Add(emuTest_zmumu.back());
+       emuTest_allBkg->Add(emuTest_zee.back());
+       if (qcdEst != 2) emuTest_allBkg->Add(emuTest_wjets.back());
+       if (plotQcd) emuTest_allBkg->Add(emuTest_qcd.back());
+       emuTest_data.back()->Write();
+       emuTest_ttbar.back()->Write();
+       emuTest_ztautau.back()->Write();
+       emuTest_ww.back()->Write();
+       emuTest_wz.back()->Write();
+       emuTest_zz.back()->Write();
+       emuTest_tw.back()->Write();
+       emuTest_zmumu.back()->Write();
+       emuTest_zee.back()->Write();
+       if (qcdEst != 2) emuTest_wjets.back()->Write();
+       if (plotQcd) emuTest_qcd.back()->Write(testVar + "_qcd" + shapeUncName);
+       emuTest_allBkg->Write(testVar + "_allBkg" + shapeUncName);
+       if (var == 0) {
+         TF1 *bgParamFunc = new TF1("bgParamFunc" + shapeUncName, "1/[1]*(1+([2]*(x-[0]))/([1]))**(-1/[2]-1)", 0., 6000.);
+         bgParamFunc->SetParLimits(0, 100., 1.e5);
+         bgParamFunc->SetParLimits(1, 10., 1000.);
+         bgParamFunc->SetParLimits(2, 0.01, 1.);
+         bgParamFunc->SetParNames("m_{min}", "#alpha", "#beta");
+         emuTest_allBkg->Fit("bgParamFunc" + shapeUncName, "", "", 150., 1500.);
+         bgParamFunc->Write();
+       }
+     }
+
+     sig+=3;
+
+     // add overflow to last bin
+     if (overflowBin) {
+       dataOverBgHist->SetBinContent(dataOverBgHist->GetNbinsX(), dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX()) + dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX() + 1));
+       emuTest_data.back()->SetBinContent(emuTest_data.back()->GetNbinsX(), emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX()) + emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX() + 1));
+       emuTest_ttbar.back()->SetBinContent(emuTest_ttbar.back()->GetNbinsX(), emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX()) + emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX() + 1));
+       emuTest_ztautau.back()->SetBinContent(emuTest_ztautau.back()->GetNbinsX(), emuTest_ztautau.back()->GetBinContent(emuTest_ztautau.back()->GetNbinsX()) + emuTest_ztautau.back()->GetBinContent(emuTest_ztautau.back()->GetNbinsX() + 1));
+       emuTest_ww.back()->SetBinContent(emuTest_ww.back()->GetNbinsX(), emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX()) + emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX() + 1));
+       emuTest_wz.back()->SetBinContent(emuTest_wz.back()->GetNbinsX(), emuTest_wz.back()->GetBinContent(emuTest_wz.back()->GetNbinsX()) + emuTest_wz.back()->GetBinContent(emuTest_wz.back()->GetNbinsX() + 1));
+       emuTest_zz.back()->SetBinContent(emuTest_zz.back()->GetNbinsX(), emuTest_zz.back()->GetBinContent(emuTest_zz.back()->GetNbinsX()) + emuTest_zz.back()->GetBinContent(emuTest_zz.back()->GetNbinsX() + 1));
+       emuTest_tw.back()->SetBinContent(emuTest_tw.back()->GetNbinsX(), emuTest_tw.back()->GetBinContent(emuTest_tw.back()->GetNbinsX()) + emuTest_tw.back()->GetBinContent(emuTest_tw.back()->GetNbinsX() + 1));
+       emuTest_zmumu.back()->SetBinContent(emuTest_zmumu.back()->GetNbinsX(), emuTest_zmumu.back()->GetBinContent(emuTest_zmumu.back()->GetNbinsX()) + emuTest_zmumu.back()->GetBinContent(emuTest_zmumu.back()->GetNbinsX() + 1));
+       emuTest_zee.back()->SetBinContent(emuTest_zee.back()->GetNbinsX(), emuTest_zee.back()->GetBinContent(emuTest_zee.back()->GetNbinsX()) + emuTest_zee.back()->GetBinContent(emuTest_zee.back()->GetNbinsX() + 1));
+       if (qcdEst != 2) emuTest_wjets.back()->SetBinContent(emuTest_wjets.back()->GetNbinsX(), emuTest_wjets.back()->GetBinContent(emuTest_wjets.back()->GetNbinsX()) + emuTest_wjets.back()->GetBinContent(emuTest_wjets.back()->GetNbinsX() + 1));
+       if (plotQcd) emuTest_qcd.back()->SetBinContent(emuTest_qcd.back()->GetNbinsX(), emuTest_qcd.back()->GetBinContent(emuTest_qcd.back()->GetNbinsX()) + emuTest_qcd.back()->GetBinContent(emuTest_qcd.back()->GetNbinsX() + 1));
+       if (plotSignal[0] > 0.) emuTest_sig1.back()->SetBinContent(emuTest_sig1.back()->GetNbinsX(), emuTest_sig1.back()->GetBinContent(emuTest_sig1.back()->GetNbinsX()) + emuTest_sig1.back()->GetBinContent(emuTest_sig1.back()->GetNbinsX() + 1));
+       if (plotSignal[1] > 0.) emuTest_sig2.back()->SetBinContent(emuTest_sig2.back()->GetNbinsX(), emuTest_sig2.back()->GetBinContent(emuTest_sig2.back()->GetNbinsX()) + emuTest_sig2.back()->GetBinContent(emuTest_sig2.back()->GetNbinsX() + 1));
+       if (plotSignal[2] > 0.) emuTest_sig3.back()->SetBinContent(emuTest_sig3.back()->GetNbinsX(), emuTest_sig3.back()->GetBinContent(emuTest_sig3.back()->GetNbinsX()) + emuTest_sig3.back()->GetBinContent(emuTest_sig3.back()->GetNbinsX() + 1));
+       if (plotSignal[3] > 0.) emuTest_sig4.back()->SetBinContent(emuTest_sig4.back()->GetNbinsX(), emuTest_sig4.back()->GetBinContent(emuTest_sig4.back()->GetNbinsX()) + emuTest_sig4.back()->GetBinContent(emuTest_sig4.back()->GetNbinsX() + 1));
+
+       dataOverBgHist->SetBinError(dataOverBgHist->GetNbinsX(), sqrt(dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX())));
+       emuTest_data.back()->SetBinError(emuTest_data.back()->GetNbinsX(), sqrt(emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX())));
+       emuTest_ttbar.back()->SetBinError(emuTest_ttbar.back()->GetNbinsX(), sqrt(emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX())));
+       emuTest_ztautau.back()->SetBinError(emuTest_ztautau.back()->GetNbinsX(), sqrt(emuTest_ztautau.back()->GetBinContent(emuTest_ztautau.back()->GetNbinsX())));
+       emuTest_ww.back()->SetBinError(emuTest_ww.back()->GetNbinsX(), sqrt(emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX())));
+       emuTest_wz.back()->SetBinError(emuTest_wz.back()->GetNbinsX(), sqrt(emuTest_wz.back()->GetBinContent(emuTest_wz.back()->GetNbinsX())));
+       emuTest_zz.back()->SetBinError(emuTest_zz.back()->GetNbinsX(), sqrt(emuTest_zz.back()->GetBinContent(emuTest_zz.back()->GetNbinsX())));
+       emuTest_tw.back()->SetBinError(emuTest_tw.back()->GetNbinsX(), sqrt(emuTest_tw.back()->GetBinContent(emuTest_tw.back()->GetNbinsX())));
+       emuTest_zmumu.back()->SetBinError(emuTest_zmumu.back()->GetNbinsX(), sqrt(emuTest_zmumu.back()->GetBinContent(emuTest_zmumu.back()->GetNbinsX())));
+       emuTest_zee.back()->SetBinError(emuTest_zee.back()->GetNbinsX(), sqrt(emuTest_zee.back()->GetBinContent(emuTest_zee.back()->GetNbinsX())));
+       if (qcdEst != 2) emuTest_wjets.back()->SetBinError(emuTest_wjets.back()->GetNbinsX(), sqrt(emuTest_wjets.back()->GetBinContent(emuTest_wjets.back()->GetNbinsX())));
+       if (plotQcd) emuTest_qcd.back()->SetBinError(emuTest_qcd.back()->GetNbinsX(), sqrt(emuTest_qcd.back()->GetBinContent(emuTest_qcd.back()->GetNbinsX())));
+       if (plotSignal[0]) emuTest_sig1.back()->SetBinError(emuTest_sig1.back()->GetNbinsX(), sqrt(emuTest_sig1.back()->GetBinContent(emuTest_sig1.back()->GetNbinsX())));
+       if (plotSignal[1]) emuTest_sig2.back()->SetBinError(emuTest_sig2.back()->GetNbinsX(), sqrt(emuTest_sig2.back()->GetBinContent(emuTest_sig2.back()->GetNbinsX())));
+       if (plotSignal[2]) emuTest_sig3.back()->SetBinError(emuTest_sig3.back()->GetNbinsX(), sqrt(emuTest_sig3.back()->GetBinContent(emuTest_sig3.back()->GetNbinsX())));
+       if (plotSignal[3]) emuTest_sig4.back()->SetBinError(emuTest_sig4.back()->GetNbinsX(), sqrt(emuTest_sig4.back()->GetBinContent(emuTest_sig4.back()->GetNbinsX())));
+     }
+     // add underflow to first bin
+     if (underflowBin) {
+       dataOverBgHist->SetBinContent(1, dataOverBgHist->GetBinContent(1) + dataOverBgHist->GetBinContent(0));
+       emuTest_data.back()->SetBinContent(1, emuTest_data.back()->GetBinContent(1) + emuTest_data.back()->GetBinContent(0));
+       emuTest_ttbar.back()->SetBinContent(1, emuTest_ttbar.back()->GetBinContent(1) + emuTest_ttbar.back()->GetBinContent(0));
+       emuTest_ztautau.back()->SetBinContent(1, emuTest_ztautau.back()->GetBinContent(1) + emuTest_ztautau.back()->GetBinContent(0));
+       emuTest_ww.back()->SetBinContent(1, emuTest_ww.back()->GetBinContent(1) + emuTest_ww.back()->GetBinContent(0));
+       emuTest_wz.back()->SetBinContent(1, emuTest_wz.back()->GetBinContent(1) + emuTest_wz.back()->GetBinContent(0));
+       emuTest_zz.back()->SetBinContent(1, emuTest_zz.back()->GetBinContent(1) + emuTest_zz.back()->GetBinContent(0));
+       emuTest_tw.back()->SetBinContent(1, emuTest_tw.back()->GetBinContent(1) + emuTest_tw.back()->GetBinContent(0));
+       emuTest_zmumu.back()->SetBinContent(1, emuTest_zmumu.back()->GetBinContent(1) + emuTest_zmumu.back()->GetBinContent(0));
+       emuTest_zee.back()->SetBinContent(1, emuTest_zee.back()->GetBinContent(1) + emuTest_zee.back()->GetBinContent(0));
+       if (qcdEst != 2) emuTest_wjets.back()->SetBinContent(1, emuTest_wjets.back()->GetBinContent(1) + emuTest_wjets.back()->GetBinContent(0));
+       if (plotQcd) emuTest_qcd.back()->SetBinContent(1, emuTest_qcd.back()->GetBinContent(1) + emuTest_qcd.back()->GetBinContent(0));
+       if (plotSignal[0]) emuTest_sig1.back()->SetBinContent(1, emuTest_sig1.back()->GetBinContent(1) + emuTest_sig1.back()->GetBinContent(0));
+       if (plotSignal[1]) emuTest_sig2.back()->SetBinContent(1, emuTest_sig2.back()->GetBinContent(1) + emuTest_sig2.back()->GetBinContent(0));
+       if (plotSignal[2]) emuTest_sig3.back()->SetBinContent(1, emuTest_sig3.back()->GetBinContent(1) + emuTest_sig3.back()->GetBinContent(0));
+       if (plotSignal[3]) emuTest_sig4.back()->SetBinContent(1, emuTest_sig4.back()->GetBinContent(1) + emuTest_sig4.back()->GetBinContent(0));
+
+       dataOverBgHist->SetBinError(1, sqrt(dataOverBgHist->GetBinContent(1)));
+       emuTest_data.back()->SetBinError(1, sqrt(emuTest_data.back()->GetBinContent(1)));
+       emuTest_ttbar.back()->SetBinError(1, sqrt(emuTest_ttbar.back()->GetBinContent(1)));
+       emuTest_ztautau.back()->SetBinError(1, sqrt(emuTest_ztautau.back()->GetBinContent(1)));
+       emuTest_ww.back()->SetBinError(1, sqrt(emuTest_ww.back()->GetBinContent(1)));
+       emuTest_wz.back()->SetBinError(1, sqrt(emuTest_wz.back()->GetBinContent(1)));
+       emuTest_zz.back()->SetBinError(1, sqrt(emuTest_zz.back()->GetBinContent(1)));
+       emuTest_tw.back()->SetBinError(1, sqrt(emuTest_tw.back()->GetBinContent(1)));
+       emuTest_zmumu.back()->SetBinError(1, sqrt(emuTest_zmumu.back()->GetBinContent(1)));
+       emuTest_zee.back()->SetBinError(1, sqrt(emuTest_zee.back()->GetBinContent(1)));
+       if (qcdEst != 2) emuTest_wjets.back()->SetBinError(1, sqrt(emuTest_wjets.back()->GetBinContent(1)));
+       if (plotQcd) emuTest_qcd.back()->SetBinError(1, sqrt(emuTest_qcd.back()->GetBinContent(1)));
+       if (plotSignal[0]) emuTest_sig1.back()->SetBinError(1, sqrt(emuTest_sig1.back()->GetBinContent(1)));
+       if (plotSignal[1]) emuTest_sig2.back()->SetBinError(1, sqrt(emuTest_sig2.back()->GetBinContent(1)));
+       if (plotSignal[2]) emuTest_sig3.back()->SetBinError(1, sqrt(emuTest_sig3.back()->GetBinContent(1)));
+       if (plotSignal[3]) emuTest_sig4.back()->SetBinError(1, sqrt(emuTest_sig4.back()->GetBinContent(1)));
+     }
+
+     // make a histogram stack with the bg 
+     THStack *bgStack = new THStack("bgStack" + sign[sig] + region[reg], testVar + sign[sig] + nameReg[reg]);
+     if (plotQcd) bgStack->Add(emuTest_qcd.back());
+     if (qcdEst != 2) bgStack->Add(emuTest_wjets.back());
+     bgStack->Add(emuTest_zee.back());
+     bgStack->Add(emuTest_zmumu.back());
+     bgStack->Add(emuTest_tw.back());
+     bgStack->Add(emuTest_zz.back());
+     bgStack->Add(emuTest_wz.back());
+     bgStack->Add(emuTest_ww.back());
+     bgStack->Add(emuTest_ztautau.back());
+     bgStack->Add(emuTest_ttbar.back());
+
+     // bkg histogram for (data-bkg)/bkg plot
+     TH1F *bgHist;
+     if (plotQcd) {
+       bgHist = (TH1F *)emuTest_qcd.back()->Clone();
+       if (qcdEst != 2) bgHist->Add(emuTest_wjets.back());
+       bgHist->Add(emuTest_zee.back());
+     } else {
+       if (emuTest_wjets.size() > 0) {
+         bgHist = (TH1F *)emuTest_wjets.back()->Clone();
+         bgHist->Add(emuTest_zee.back());
+       } else {
+         bgHist = (TH1F *)emuTest_zee.back()->Clone();
+       }    
+     }
+     bgHist->Add(emuTest_zmumu.back());
+     bgHist->Add(emuTest_tw.back());
+     bgHist->Add(emuTest_zz.back());
+     bgHist->Add(emuTest_wz.back());
+     bgHist->Add(emuTest_ww.back());
+     bgHist->Add(emuTest_ztautau.back());
+     bgHist->Add(emuTest_ttbar.back());
+
+     if (plotSignal[0] > 0.) {
+       emuTest_sig1.back()->SetLineColor(kGreen);
+       emuTest_sig1.back()->SetLineWidth(2);
+     }
+     if (plotSignal[1] > 0.) {
+       emuTest_sig2.back()->SetLineColor(kBlue);
+       emuTest_sig2.back()->SetLineWidth(2);
+     }
+     if (plotSignal[2] > 0.) {
+       emuTest_sig3.back()->SetLineColor(kCyan);
+       emuTest_sig3.back()->SetLineWidth(2);
+     }
+     if (plotSignal[3] > 0.) {
+       emuTest_sig4.back()->SetLineColor(kMagenta);
+       emuTest_sig4.back()->SetLineWidth(2);
+     }
+     //cout << "underflow (data/bkg): " << emuTest_data.back()->GetBinContent(0) << "/" << bgHist->GetBinContent(0) << "  overflow: " << emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX()+1) << "/" << bgHist->GetBinContent(bgHist->GetNbinsX()+1) << endl;
+
+     TCanvas *emuPlot;
+     TPad *specPad;
+     if (plotPull) {
+       emuPlot = new TCanvas("emuPlot" + testVar + sign[sig] + region[reg] + shapeUncName, "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg] + shapeUncName, 100, 100, 900, 740);
+       specPad = new TPad("specPad" + testVar + + sign[sig] + region[reg] + shapeUncName, "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg] + shapeUncName, 0., 0.33, 1., 1.);
+       specPad->SetBottomMargin(0.06);
+     } else {
+       emuPlot = new TCanvas("emuPlot" + testVar + sign[sig] + region[reg] + shapeUncName, "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg] + shapeUncName, 100, 100, 900, 600);
+       specPad = new TPad("specPad" + testVar + sign[sig] + region[reg] + shapeUncName, "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg] + shapeUncName, 0., 0., 1., 1.);
+       specPad->SetBottomMargin(0.12);
+     }
+     specPad->SetBorderMode(0);
+     specPad->SetBorderSize(2);
+     specPad->SetFrameBorderMode(0);
+     specPad->SetFillColor(0);
+     specPad->SetFrameFillColor(0);
+     if (logPlot) specPad->SetLogy();
+     specPad->SetLeftMargin(0.11);
+     specPad->SetRightMargin(0.09);
+     specPad->SetTopMargin(0.08);
+     specPad->SetTickx(1);
+     specPad->SetTicky(1);
+     specPad->Draw();
+     specPad->cd();
+
+     gStyle->SetTitleFont(font);
+     gStyle->SetLabelFont(font);
+     gStyle->SetLegendFont(font);
+     gStyle->SetOptStat(0);
+     gStyle->SetOptTitle(0);
+     gStyle->SetTitleXOffset(1.);
+     gStyle->SetTitleYOffset(1.3);
+     gPad->SetTicks(1, 1);
+
+     // make sure that data and bkg are visible on plot
+     if (emuTest_data.back()->GetMaximum() > bgHist->GetMaximum()) {
+       if (!logPlot) bgStack->SetMaximum(emuTest_data.back()->GetMaximum() * 1.1);
+       else bgStack->SetMaximum(emuTest_data.back()->GetMaximum() * 1.3);
+     }
+
+     //// plot spectrum
+     emuTest_ttbar.back()->SetFillColor(ttbarColour);
+     emuTest_ttbar.back()->SetLineColor(kBlack);
+     emuTest_ttbar.back()->SetLineWidth(2);
+     emuTest_ztautau.back()->SetFillColor(zttColour);
+     emuTest_ztautau.back()->SetMarkerColor(zttColour);
+     emuTest_ztautau.back()->SetLineColor(kBlack);
+     emuTest_ztautau.back()->SetLineWidth(2);
+     emuTest_ww.back()->SetFillColor(wwColour);
+     emuTest_ww.back()->SetMarkerColor(wwColour);
+     emuTest_ww.back()->SetLineColor(kBlack);
+     emuTest_ww.back()->SetLineWidth(2);
+     emuTest_wz.back()->SetFillColor(wzColour);
+     emuTest_wz.back()->SetMarkerColor(wzColour);
+     emuTest_wz.back()->SetLineColor(kBlack);
+     emuTest_wz.back()->SetLineWidth(2);
+     emuTest_zz.back()->SetFillColor(zzColour);
+     emuTest_zz.back()->SetMarkerColor(zzColour);
+     emuTest_zz.back()->SetLineColor(kBlack);
+     emuTest_zz.back()->SetLineWidth(2);
+     emuTest_tw.back()->SetFillColor(twColour);
+     emuTest_tw.back()->SetMarkerColor(twColour);
+     emuTest_tw.back()->SetLineColor(kBlack);
+     emuTest_tw.back()->SetLineWidth(2);
+     emuTest_zmumu.back()->SetFillColor(zmmColour);
+     emuTest_zmumu.back()->SetMarkerColor(zmmColour);
+     emuTest_zmumu.back()->SetLineColor(kBlack);
+     emuTest_zmumu.back()->SetLineWidth(2);
+     emuTest_zee.back()->SetFillColor(zeeColour);
+     emuTest_zee.back()->SetMarkerColor(zeeColour);
+     emuTest_zee.back()->SetLineColor(kBlack);
+     emuTest_zee.back()->SetLineWidth(2);
+     if (qcdEst != 2) {
+       emuTest_wjets.back()->SetFillColor(wjetColour);
+       emuTest_wjets.back()->SetMarkerColor(wjetColour);
+       emuTest_wjets.back()->SetLineColor(kBlack);
+       emuTest_wjets.back()->SetLineWidth(2);
+     }
+     if (plotQcd) {
+       emuTest_qcd.back()->SetFillColor(jetBkgColour);
+       emuTest_qcd.back()->SetMarkerColor(jetBkgColour);
+       emuTest_qcd.back()->SetLineColor(kBlack);
+       emuTest_qcd.back()->SetLineWidth(2);
+     }
+
+     bgStack->Draw("hist");
+     if (!plotPull) bgStack->GetXaxis()->SetTitle(testPlots[var].fXaxisTitle);
+     bgStack->GetXaxis()->SetTitleFont(font);
+     bgStack->GetXaxis()->SetTitleSize(0.047);
+     bgStack->GetXaxis()->SetLabelSize(0.05);
+     bgStack->GetXaxis()->SetLabelFont(font);
+     bgStack->GetXaxis()->SetMoreLogLabels();
+     bgStack->GetXaxis()->SetNoExponent();
+     bgStack->GetYaxis()->SetTitle("Events");
+     bgStack->GetYaxis()->SetTitleFont(font);
+     bgStack->GetYaxis()->SetTitleSize(0.047);
+     bgStack->GetYaxis()->SetTitleOffset(1.1);
+     bgStack->GetYaxis()->SetLabelFont(font);
+     bgStack->GetYaxis()->SetLabelSize(0.05);
+     if (!logPlot) bgStack->SetMinimum(0.);
+     else bgStack->SetMinimum(0.5);
+     bgStack->Draw("hist");
+
+     emuTest_data.back()->SetLineWidth(2);
+     emuTest_data.back()->SetLineColor(kBlack);
+     emuTest_data.back()->SetMarkerStyle(8);
+     emuTest_data.back()->SetMarkerSize(0.8);
+     emuTest_data.back()->Draw("same");
+
+     if (plotSignal[0] > 0.) emuTest_sig1.back()->Draw("histsame");
+     if (plotSignal[1] > 0.) emuTest_sig2.back()->Draw("histsame");
+     if (plotSignal[2] > 0.) emuTest_sig3.back()->Draw("histsame");
+     if (plotSignal[3] > 0.) emuTest_sig4.back()->Draw("histsame");
+     
+     // legent and labels
+     TLegend legend(0.700, 0.346, 0.891, 0.885);
+     legend.SetTextFont(font);
+     legend.SetTextSize(0.042);
+     legend.SetBorderSize(0);
+     legend.SetLineColor(1);
+     legend.SetLineStyle(1);
+     legend.SetLineWidth(1);
+     legend.SetFillColor(19);
+     legend.SetFillStyle(0);
+     legend.AddEntry(emuTest_data.back(), "DATA");
+     legend.AddEntry(emuTest_ttbar.back(), "t#bar{t}", "F");
+     legend.AddEntry(emuTest_ztautau.back(), "#gamma/Z#rightarrow#tau#tau", "F");
+     legend.AddEntry(emuTest_ww.back(), "WW", "F");
+     legend.AddEntry(emuTest_wz.back(), "WZ", "F");
+     legend.AddEntry(emuTest_zz.back(), "ZZ", "F");
+     legend.AddEntry(emuTest_tw.back(), "tW", "F");
+     legend.AddEntry(emuTest_zmumu.back(), "#gamma/Z#rightarrow#mu#mu", "F");
+     legend.AddEntry(emuTest_zee.back(), "#gamma/Z #rightarrow ee", "F");
+     if (qcdEst != 2) legend.AddEntry(emuTest_wjets.back(), "W+jets", "F");
+     if (plotQcd) legend.AddEntry(emuTest_qcd.back(), "jets (data)", "F");
+     if (plotSignal[0] > 0.) legend.AddEntry(emuTest_sig1.back(), Form("Z'/#gamma'500 (x%.0f)", plotSignal[0]) ,"l");
+     if (plotSignal[1] > 0.) legend.AddEntry(emuTest_sig2.back(), Form("Z'/#gamma'750 (x%.0f)", plotSignal[1]) ,"l");
+     if (plotSignal[2] > 0.) legend.AddEntry(emuTest_sig3.back(), Form("Z'/#gamma'1000 (x%.0f)", plotSignal[2]) ,"l");
+     if (plotSignal[3] > 0.) legend.AddEntry(emuTest_sig4.back(), Form("Z'/#gamma'1250 (x%.0f)", plotSignal[3]) ,"l");
+     legend.SetBorderSize(0);
+     legend.DrawClone("same");
+     
+     TLatex *tex = new TLatex();
+     tex->SetNDC();
+     tex->SetTextFont(font);
+     tex->SetLineWidth(2);
+     tex->SetTextSize(0.042);
+     if (prelim) tex->DrawLatex(0.596, 0.937, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
+     else tex->DrawLatex(0.596, 0.937, "CMS, 8 TeV, 19.6 fb^{-1}");
+     //if (m == 1) tex->DrawLatex(0.430, 0.849, "e in barrel");
+     //if (m == 2) tex->DrawLatex(0.430, 0.849, "e in endcap");
+     stringstream sStream;
+     sStream << testPlots[var].fTitle << nameSign[sig].Data() << nameReg[reg].Data();
+     tex->DrawLatex(0.109, 0.937, sStream.str().c_str());
+
+     // plot a (data - bg)/bg histogram below the spectrum
+     if (plotPull) {
+       dataOverBgHist->Add(bgHist, -1.);
+       dataOverBgHist->Divide(bgHist);
+
+       float fontScaleBot = 1.;
+       TPad *pullPad = new TPad("pullPad" + testVar + + sign[sig] + region[reg] + shapeUncName, "(data - bg) / bg" + testVar + nameSign[sig] + nameReg[reg], 0., 0., 1., 0.33);
+       emuPlot->cd();
+       fontScaleBot = specPad->GetHNDC() / pullPad->GetHNDC();
+       pullPad->Draw();
+       pullPad->cd();
+       pullPad->SetBorderMode(0);
+       pullPad->SetBorderSize(2);
+       pullPad->SetFrameBorderMode(0);
+       pullPad->SetFillColor(0);
+       pullPad->SetFrameFillColor(0);
+       pullPad->SetTopMargin(0.);
+       pullPad->SetBottomMargin(0.22);
+       pullPad->SetLeftMargin(0.11);
+       pullPad->SetRightMargin(0.09);
+       pullPad->SetTickx(1);
+       pullPad->SetTicky(1);
+       if (pullGridY) pullPad->SetGridy();
+
+       dataOverBgHist->SetLineWidth(1);
+       dataOverBgHist->SetLineColor(kBlack);
+       dataOverBgHist->SetMarkerStyle(20);
+       dataOverBgHist->SetMarkerSize(1.1);
+
+       dataOverBgHist->GetXaxis()->SetTitle(testPlots[var].fXaxisTitle);
+       dataOverBgHist->GetXaxis()->SetTitleFont(font);
+       dataOverBgHist->GetXaxis()->SetTitleSize(0.047 * fontScaleBot);
+       dataOverBgHist->GetXaxis()->SetTitleOffset(1.);
+       dataOverBgHist->GetXaxis()->SetLabelFont(font);
+       dataOverBgHist->GetXaxis()->SetLabelSize(0.05 * fontScaleBot);
+       dataOverBgHist->GetXaxis()->SetMoreLogLabels();
+       dataOverBgHist->GetXaxis()->SetNoExponent();
+       //dataOverBgHist->GetXaxis()->SetRangeUser(xRangeMinRatio, xRangeMaxRatio);
+       dataOverBgHist->GetYaxis()->SetTitle("(data-bkg)/bkg");
+       dataOverBgHist->GetYaxis()->SetTitleFont(font);
+       dataOverBgHist->GetYaxis()->SetTitleSize(0.047 * fontScaleBot);
+       dataOverBgHist->GetYaxis()->SetTitleOffset(1.1 / fontScaleBot);
+       dataOverBgHist->GetYaxis()->SetLabelFont(font);
+       dataOverBgHist->GetYaxis()->SetLabelSize(0.05 * fontScaleBot);
+       dataOverBgHist->GetYaxis()->SetRangeUser(yRangeMinRatio, yRangeMaxRatio);
+
+       dataOverBgHist->Draw();
+     }
+
+     // safe in various file formats
+     if (saveSpec) {
+       sStream.str("");
+       sStream << plotDir << "emuControlSpec_" << testVar << sign[sig] << region[reg] << "_" << fileNameExtra << lumi->GetVal() << "pb-1";
+       TString saveFileName = sStream.str();
+       if (saveAsPdf) emuPlot->Print(saveFileName + ".pdf", "pdf");
+       if (saveAsPng) emuPlot->Print(saveFileName + ".png", "png");
+       if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
+     }
+
+     cout << testVar.Data() << nameSign[sig].Data() << nameReg[reg].Data() << " plotted" << endl;
+     if (shUnc > 0) input.cd("..");
   }
-
-  // get the histograms
-  TH1F *dataOverBgHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_data", testVar, sig, reg, "", 0., 0., binning, 0x100);
-  emuTest_data.push_back((TH1F *)dataOverBgHist->Clone());
-  TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, "genMTtbar", 0., 700., binning, 0x1DF);
-  totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-  ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-  ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, sig, reg, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-  totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-  ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-  ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, sig, reg, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-  emuTest_ttbar.push_back(ttbarComb);
-  //emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  //emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarto2l", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  emuTest_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  emuTest_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  emuTest_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  emuTest_zz.push_back(MakeHistoFromBranch(&input, "emuTree_zz", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  emuTest_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  emuTest_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  emuTest_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  if (qcdEst != 2) emuTest_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-  if (plotSignal[0] > 0.) {
-    emuTest_sig1.push_back(MakeHistoFromBranch(&input, "emuTree_sig500", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-    emuTest_sig1.back()->Scale(plotSignal[0]);
-  }
-  if (plotSignal[1] > 0.) {
-    emuTest_sig2.push_back(MakeHistoFromBranch(&input, "emuTree_sig750", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-    emuTest_sig2.back()->Scale(plotSignal[1]);
-  }
-  if (plotSignal[2] > 0.) {
-    emuTest_sig3.push_back(MakeHistoFromBranch(&input, "emuTree_sig1000", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-    emuTest_sig3.back()->Scale(plotSignal[2]);
-  }
-  if (plotSignal[3] > 0.) {
-    emuTest_sig4.push_back(MakeHistoFromBranch(&input, "emuTree_sig1250", testVar, sig, reg, "", 0., 0., binning, 0x1DF));
-    emuTest_sig4.back()->Scale(plotSignal[3]);
-  }
-
-  // qcd contribution
-  if (plotQcd && qcdEst == 2) {
-    qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", testVar, sig, reg, "", 0., 0., binning, 0x300);
-    emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig] + nameReg[reg] + "qcd"));
-    // normalize to bin width
-    //for (int i = 1; i < emuTest_qcd.back()->GetNbinsX() + 1; ++i) {
-    //  emuTest_qcd.back()->SetBinContent(i, emuTest_qcd.back()->GetBinContent(i) / emuTest_qcd.back()->GetBinWidth(i));
-    //  emuTest_qcd.back()->SetBinError(i, emuTest_qcd.back()->GetBinError(i) / emuTest_qcd.back()->GetBinWidth(i));
-    //}
-  }
-
-  // write histograms in a file
-  if (writeHistosToFile) {
-    TFile* outFile = new TFile("histograms.root", "recreate");
-    TH1F* emuTest_allBkg = (TH1F*)emuTest_ttbar.back()->Clone("emuTree_allBkg");
-    emuTest_allBkg->Add(emuTest_ztautau.back());
-    emuTest_allBkg->Add(emuTest_ww.back());
-    emuTest_allBkg->Add(emuTest_wz.back());
-    emuTest_allBkg->Add(emuTest_zz.back());
-    emuTest_allBkg->Add(emuTest_tw.back());
-    emuTest_allBkg->Add(emuTest_zmumu.back());
-    emuTest_allBkg->Add(emuTest_zee.back());
-    if (qcdEst != 2) emuTest_allBkg->Add(emuTest_wjets.back());
-    if (plotQcd) emuTest_allBkg->Add(emuTest_qcd.back());
-    emuTest_data.back()->Write();
-    emuTest_ttbar.back()->Write();
-    emuTest_ztautau.back()->Write();
-    emuTest_ww.back()->Write();
-    emuTest_wz.back()->Write();
-    emuTest_zz.back()->Write();
-    emuTest_tw.back()->Write();
-    emuTest_zmumu.back()->Write();
-    emuTest_zee.back()->Write();
-    if (qcdEst != 2) emuTest_wjets.back()->Write();
-    if (plotQcd) emuTest_qcd.back()->Write(testVar + "_qcd");
-    emuTest_allBkg->Write(testVar + "_allBkg");
-    if (var == 0) {
-      TF1 *bgParamFunc = new TF1("bgParamFunc", "1/[1]*(1+([2]*(x-[0]))/([1]))**(-1/[2]-1)", 0., 6000.);
-      bgParamFunc->SetParLimits(0, 100., 1.e5);
-      bgParamFunc->SetParLimits(1, 10., 1000.);
-      bgParamFunc->SetParLimits(2, 0.01, 1.);
-      bgParamFunc->SetParNames("m_{min}", "#alpha", "#beta");
-      emuTest_allBkg->Fit("bgParamFunc", "", "", 150., 1500.);
-      bgParamFunc->Write();
-    }
-    outFile->Close();
-  }
-
-  sig+=3;
-
-  // add overflow to last bin
-  if (overflowBin) {
-    dataOverBgHist->SetBinContent(dataOverBgHist->GetNbinsX(), dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX()) + dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX() + 1));
-    emuTest_data.back()->SetBinContent(emuTest_data.back()->GetNbinsX(), emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX()) + emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX() + 1));
-    emuTest_ttbar.back()->SetBinContent(emuTest_ttbar.back()->GetNbinsX(), emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX()) + emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX() + 1));
-    emuTest_ztautau.back()->SetBinContent(emuTest_ztautau.back()->GetNbinsX(), emuTest_ztautau.back()->GetBinContent(emuTest_ztautau.back()->GetNbinsX()) + emuTest_ztautau.back()->GetBinContent(emuTest_ztautau.back()->GetNbinsX() + 1));
-    emuTest_ww.back()->SetBinContent(emuTest_ww.back()->GetNbinsX(), emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX()) + emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX() + 1));
-    emuTest_wz.back()->SetBinContent(emuTest_wz.back()->GetNbinsX(), emuTest_wz.back()->GetBinContent(emuTest_wz.back()->GetNbinsX()) + emuTest_wz.back()->GetBinContent(emuTest_wz.back()->GetNbinsX() + 1));
-    emuTest_zz.back()->SetBinContent(emuTest_zz.back()->GetNbinsX(), emuTest_zz.back()->GetBinContent(emuTest_zz.back()->GetNbinsX()) + emuTest_zz.back()->GetBinContent(emuTest_zz.back()->GetNbinsX() + 1));
-    emuTest_tw.back()->SetBinContent(emuTest_tw.back()->GetNbinsX(), emuTest_tw.back()->GetBinContent(emuTest_tw.back()->GetNbinsX()) + emuTest_tw.back()->GetBinContent(emuTest_tw.back()->GetNbinsX() + 1));
-    emuTest_zmumu.back()->SetBinContent(emuTest_zmumu.back()->GetNbinsX(), emuTest_zmumu.back()->GetBinContent(emuTest_zmumu.back()->GetNbinsX()) + emuTest_zmumu.back()->GetBinContent(emuTest_zmumu.back()->GetNbinsX() + 1));
-    emuTest_zee.back()->SetBinContent(emuTest_zee.back()->GetNbinsX(), emuTest_zee.back()->GetBinContent(emuTest_zee.back()->GetNbinsX()) + emuTest_zee.back()->GetBinContent(emuTest_zee.back()->GetNbinsX() + 1));
-    if (qcdEst != 2) emuTest_wjets.back()->SetBinContent(emuTest_wjets.back()->GetNbinsX(), emuTest_wjets.back()->GetBinContent(emuTest_wjets.back()->GetNbinsX()) + emuTest_wjets.back()->GetBinContent(emuTest_wjets.back()->GetNbinsX() + 1));
-    if (plotQcd) emuTest_qcd.back()->SetBinContent(emuTest_qcd.back()->GetNbinsX(), emuTest_qcd.back()->GetBinContent(emuTest_qcd.back()->GetNbinsX()) + emuTest_qcd.back()->GetBinContent(emuTest_qcd.back()->GetNbinsX() + 1));
-    if (plotSignal[0] > 0.) emuTest_sig1.back()->SetBinContent(emuTest_sig1.back()->GetNbinsX(), emuTest_sig1.back()->GetBinContent(emuTest_sig1.back()->GetNbinsX()) + emuTest_sig1.back()->GetBinContent(emuTest_sig1.back()->GetNbinsX() + 1));
-    if (plotSignal[1] > 0.) emuTest_sig2.back()->SetBinContent(emuTest_sig2.back()->GetNbinsX(), emuTest_sig2.back()->GetBinContent(emuTest_sig2.back()->GetNbinsX()) + emuTest_sig2.back()->GetBinContent(emuTest_sig2.back()->GetNbinsX() + 1));
-    if (plotSignal[2] > 0.) emuTest_sig3.back()->SetBinContent(emuTest_sig3.back()->GetNbinsX(), emuTest_sig3.back()->GetBinContent(emuTest_sig3.back()->GetNbinsX()) + emuTest_sig3.back()->GetBinContent(emuTest_sig3.back()->GetNbinsX() + 1));
-    if (plotSignal[3] > 0.) emuTest_sig4.back()->SetBinContent(emuTest_sig4.back()->GetNbinsX(), emuTest_sig4.back()->GetBinContent(emuTest_sig4.back()->GetNbinsX()) + emuTest_sig4.back()->GetBinContent(emuTest_sig4.back()->GetNbinsX() + 1));
-
-    dataOverBgHist->SetBinError(dataOverBgHist->GetNbinsX(), sqrt(dataOverBgHist->GetBinContent(dataOverBgHist->GetNbinsX())));
-    emuTest_data.back()->SetBinError(emuTest_data.back()->GetNbinsX(), sqrt(emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX())));
-    emuTest_ttbar.back()->SetBinError(emuTest_ttbar.back()->GetNbinsX(), sqrt(emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX())));
-    emuTest_ztautau.back()->SetBinError(emuTest_ztautau.back()->GetNbinsX(), sqrt(emuTest_ztautau.back()->GetBinContent(emuTest_ztautau.back()->GetNbinsX())));
-    emuTest_ww.back()->SetBinError(emuTest_ww.back()->GetNbinsX(), sqrt(emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX())));
-    emuTest_wz.back()->SetBinError(emuTest_wz.back()->GetNbinsX(), sqrt(emuTest_wz.back()->GetBinContent(emuTest_wz.back()->GetNbinsX())));
-    emuTest_zz.back()->SetBinError(emuTest_zz.back()->GetNbinsX(), sqrt(emuTest_zz.back()->GetBinContent(emuTest_zz.back()->GetNbinsX())));
-    emuTest_tw.back()->SetBinError(emuTest_tw.back()->GetNbinsX(), sqrt(emuTest_tw.back()->GetBinContent(emuTest_tw.back()->GetNbinsX())));
-    emuTest_zmumu.back()->SetBinError(emuTest_zmumu.back()->GetNbinsX(), sqrt(emuTest_zmumu.back()->GetBinContent(emuTest_zmumu.back()->GetNbinsX())));
-    emuTest_zee.back()->SetBinError(emuTest_zee.back()->GetNbinsX(), sqrt(emuTest_zee.back()->GetBinContent(emuTest_zee.back()->GetNbinsX())));
-    if (qcdEst != 2) emuTest_wjets.back()->SetBinError(emuTest_wjets.back()->GetNbinsX(), sqrt(emuTest_wjets.back()->GetBinContent(emuTest_wjets.back()->GetNbinsX())));
-    if (plotQcd) emuTest_qcd.back()->SetBinError(emuTest_qcd.back()->GetNbinsX(), sqrt(emuTest_qcd.back()->GetBinContent(emuTest_qcd.back()->GetNbinsX())));
-    if (plotSignal[0]) emuTest_sig1.back()->SetBinError(emuTest_sig1.back()->GetNbinsX(), sqrt(emuTest_sig1.back()->GetBinContent(emuTest_sig1.back()->GetNbinsX())));
-    if (plotSignal[1]) emuTest_sig2.back()->SetBinError(emuTest_sig2.back()->GetNbinsX(), sqrt(emuTest_sig2.back()->GetBinContent(emuTest_sig2.back()->GetNbinsX())));
-    if (plotSignal[2]) emuTest_sig3.back()->SetBinError(emuTest_sig3.back()->GetNbinsX(), sqrt(emuTest_sig3.back()->GetBinContent(emuTest_sig3.back()->GetNbinsX())));
-    if (plotSignal[3]) emuTest_sig4.back()->SetBinError(emuTest_sig4.back()->GetNbinsX(), sqrt(emuTest_sig4.back()->GetBinContent(emuTest_sig4.back()->GetNbinsX())));
-  }
-  // add underflow to first bin
-  if (underflowBin) {
-    dataOverBgHist->SetBinContent(1, dataOverBgHist->GetBinContent(1) + dataOverBgHist->GetBinContent(0));
-    emuTest_data.back()->SetBinContent(1, emuTest_data.back()->GetBinContent(1) + emuTest_data.back()->GetBinContent(0));
-    emuTest_ttbar.back()->SetBinContent(1, emuTest_ttbar.back()->GetBinContent(1) + emuTest_ttbar.back()->GetBinContent(0));
-    emuTest_ztautau.back()->SetBinContent(1, emuTest_ztautau.back()->GetBinContent(1) + emuTest_ztautau.back()->GetBinContent(0));
-    emuTest_ww.back()->SetBinContent(1, emuTest_ww.back()->GetBinContent(1) + emuTest_ww.back()->GetBinContent(0));
-    emuTest_wz.back()->SetBinContent(1, emuTest_wz.back()->GetBinContent(1) + emuTest_wz.back()->GetBinContent(0));
-    emuTest_zz.back()->SetBinContent(1, emuTest_zz.back()->GetBinContent(1) + emuTest_zz.back()->GetBinContent(0));
-    emuTest_tw.back()->SetBinContent(1, emuTest_tw.back()->GetBinContent(1) + emuTest_tw.back()->GetBinContent(0));
-    emuTest_zmumu.back()->SetBinContent(1, emuTest_zmumu.back()->GetBinContent(1) + emuTest_zmumu.back()->GetBinContent(0));
-    emuTest_zee.back()->SetBinContent(1, emuTest_zee.back()->GetBinContent(1) + emuTest_zee.back()->GetBinContent(0));
-    if (qcdEst != 2) emuTest_wjets.back()->SetBinContent(1, emuTest_wjets.back()->GetBinContent(1) + emuTest_wjets.back()->GetBinContent(0));
-    if (plotQcd) emuTest_qcd.back()->SetBinContent(1, emuTest_qcd.back()->GetBinContent(1) + emuTest_qcd.back()->GetBinContent(0));
-    if (plotSignal[0]) emuTest_sig1.back()->SetBinContent(1, emuTest_sig1.back()->GetBinContent(1) + emuTest_sig1.back()->GetBinContent(0));
-    if (plotSignal[1]) emuTest_sig2.back()->SetBinContent(1, emuTest_sig2.back()->GetBinContent(1) + emuTest_sig2.back()->GetBinContent(0));
-    if (plotSignal[2]) emuTest_sig3.back()->SetBinContent(1, emuTest_sig3.back()->GetBinContent(1) + emuTest_sig3.back()->GetBinContent(0));
-    if (plotSignal[3]) emuTest_sig4.back()->SetBinContent(1, emuTest_sig4.back()->GetBinContent(1) + emuTest_sig4.back()->GetBinContent(0));
-
-    dataOverBgHist->SetBinError(1, sqrt(dataOverBgHist->GetBinContent(1)));
-    emuTest_data.back()->SetBinError(1, sqrt(emuTest_data.back()->GetBinContent(1)));
-    emuTest_ttbar.back()->SetBinError(1, sqrt(emuTest_ttbar.back()->GetBinContent(1)));
-    emuTest_ztautau.back()->SetBinError(1, sqrt(emuTest_ztautau.back()->GetBinContent(1)));
-    emuTest_ww.back()->SetBinError(1, sqrt(emuTest_ww.back()->GetBinContent(1)));
-    emuTest_wz.back()->SetBinError(1, sqrt(emuTest_wz.back()->GetBinContent(1)));
-    emuTest_zz.back()->SetBinError(1, sqrt(emuTest_zz.back()->GetBinContent(1)));
-    emuTest_tw.back()->SetBinError(1, sqrt(emuTest_tw.back()->GetBinContent(1)));
-    emuTest_zmumu.back()->SetBinError(1, sqrt(emuTest_zmumu.back()->GetBinContent(1)));
-    emuTest_zee.back()->SetBinError(1, sqrt(emuTest_zee.back()->GetBinContent(1)));
-    if (qcdEst != 2) emuTest_wjets.back()->SetBinError(1, sqrt(emuTest_wjets.back()->GetBinContent(1)));
-    if (plotQcd) emuTest_qcd.back()->SetBinError(1, sqrt(emuTest_qcd.back()->GetBinContent(1)));
-    if (plotSignal[0]) emuTest_sig1.back()->SetBinError(1, sqrt(emuTest_sig1.back()->GetBinContent(1)));
-    if (plotSignal[1]) emuTest_sig2.back()->SetBinError(1, sqrt(emuTest_sig2.back()->GetBinContent(1)));
-    if (plotSignal[2]) emuTest_sig3.back()->SetBinError(1, sqrt(emuTest_sig3.back()->GetBinContent(1)));
-    if (plotSignal[3]) emuTest_sig4.back()->SetBinError(1, sqrt(emuTest_sig4.back()->GetBinContent(1)));
-  }
-
-  // make a histogram stack with the bg 
-  THStack *bgStack = new THStack("bgStack" + sign[sig] + region[reg], testVar + sign[sig] + nameReg[reg]);
-  if (plotQcd) bgStack->Add(emuTest_qcd.back());
-  if (qcdEst != 2) bgStack->Add(emuTest_wjets.back());
-  bgStack->Add(emuTest_zee.back());
-  bgStack->Add(emuTest_zmumu.back());
-  bgStack->Add(emuTest_tw.back());
-  bgStack->Add(emuTest_zz.back());
-  bgStack->Add(emuTest_wz.back());
-  bgStack->Add(emuTest_ww.back());
-  bgStack->Add(emuTest_ztautau.back());
-  bgStack->Add(emuTest_ttbar.back());
-
-  // bkg histogram for (data-bkg)/bkg plot
-  TH1F *bgHist;
-  if (plotQcd) {
-    bgHist = (TH1F *)emuTest_qcd.back()->Clone();
-    if (qcdEst != 2) bgHist->Add(emuTest_wjets.back());
-    bgHist->Add(emuTest_zee.back());
-  } else {
-    if (emuTest_wjets.size() > 0) {
-      bgHist = (TH1F *)emuTest_wjets.back()->Clone();
-      bgHist->Add(emuTest_zee.back());
-    } else {
-      bgHist = (TH1F *)emuTest_zee.back()->Clone();
-    }    
-  }
-  bgHist->Add(emuTest_zmumu.back());
-  bgHist->Add(emuTest_tw.back());
-  bgHist->Add(emuTest_zz.back());
-  bgHist->Add(emuTest_wz.back());
-  bgHist->Add(emuTest_ww.back());
-  bgHist->Add(emuTest_ztautau.back());
-  bgHist->Add(emuTest_ttbar.back());
-
-  if (plotSignal[0] > 0.) {
-    emuTest_sig1.back()->SetLineColor(kGreen);
-    emuTest_sig1.back()->SetLineWidth(2);
-  }
-  if (plotSignal[1] > 0.) {
-    emuTest_sig2.back()->SetLineColor(kBlue);
-    emuTest_sig2.back()->SetLineWidth(2);
-  }
-  if (plotSignal[2] > 0.) {
-    emuTest_sig3.back()->SetLineColor(kCyan);
-    emuTest_sig3.back()->SetLineWidth(2);
-  }
-  if (plotSignal[3] > 0.) {
-    emuTest_sig4.back()->SetLineColor(kMagenta);
-    emuTest_sig4.back()->SetLineWidth(2);
-  }
-  //cout << "underflow (data/bkg): " << emuTest_data.back()->GetBinContent(0) << "/" << bgHist->GetBinContent(0) << "  overflow: " << emuTest_data.back()->GetBinContent(emuTest_data.back()->GetNbinsX()+1) << "/" << bgHist->GetBinContent(bgHist->GetNbinsX()+1) << endl;
-
-  TCanvas *emuPlot;
-  TPad *specPad;
-  if (plotPull) {
-    emuPlot = new TCanvas("emuPlot" + testVar + sign[sig] + region[reg], "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg], 100, 100, 900, 740);
-    specPad = new TPad("specPad" + testVar + + sign[sig] + region[reg], "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg], 0., 0.33, 1., 1.);
-    specPad->SetBottomMargin(0.06);
-  } else {
-    emuPlot = new TCanvas("emuPlot" + testVar + sign[sig] + region[reg], "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg], 100, 100, 900, 600);
-    specPad = new TPad("specPad" + testVar + sign[sig] + region[reg], "emu Spectrum" + testVar + nameSign[sig] + nameReg[reg], 0., 0., 1., 1.);
-    specPad->SetBottomMargin(0.12);
-  }
-  specPad->SetBorderMode(0);
-  specPad->SetBorderSize(2);
-  specPad->SetFrameBorderMode(0);
-  specPad->SetFillColor(0);
-  specPad->SetFrameFillColor(0);
-  if (logPlot) specPad->SetLogy();
-  specPad->SetLeftMargin(0.11);
-  specPad->SetRightMargin(0.09);
-  specPad->SetTopMargin(0.08);
-  specPad->SetTickx(1);
-  specPad->SetTicky(1);
-  specPad->Draw();
-  specPad->cd();
-
-  gStyle->SetTitleFont(font);
-  gStyle->SetLabelFont(font);
-  gStyle->SetLegendFont(font);
-  gStyle->SetOptStat(0);
-  gStyle->SetOptTitle(0);
-  gStyle->SetTitleXOffset(1.);
-  gStyle->SetTitleYOffset(1.3);
-  gPad->SetTicks(1, 1);
-
-  // make sure that data and bkg are visible on plot
-  if (emuTest_data.back()->GetMaximum() > bgHist->GetMaximum()) {
-    if (!logPlot) bgStack->SetMaximum(emuTest_data.back()->GetMaximum() * 1.1);
-    else bgStack->SetMaximum(emuTest_data.back()->GetMaximum() * 1.3);
-  }
-
-  //// plot spectrum
-  emuTest_ttbar.back()->SetFillColor(ttbarColour);
-  emuTest_ttbar.back()->SetLineColor(kBlack);
-  emuTest_ttbar.back()->SetLineWidth(2);
-  emuTest_ztautau.back()->SetFillColor(zttColour);
-  emuTest_ztautau.back()->SetMarkerColor(zttColour);
-  emuTest_ztautau.back()->SetLineColor(kBlack);
-  emuTest_ztautau.back()->SetLineWidth(2);
-  emuTest_ww.back()->SetFillColor(wwColour);
-  emuTest_ww.back()->SetMarkerColor(wwColour);
-  emuTest_ww.back()->SetLineColor(kBlack);
-  emuTest_ww.back()->SetLineWidth(2);
-  emuTest_wz.back()->SetFillColor(wzColour);
-  emuTest_wz.back()->SetMarkerColor(wzColour);
-  emuTest_wz.back()->SetLineColor(kBlack);
-  emuTest_wz.back()->SetLineWidth(2);
-  emuTest_zz.back()->SetFillColor(zzColour);
-  emuTest_zz.back()->SetMarkerColor(zzColour);
-  emuTest_zz.back()->SetLineColor(kBlack);
-  emuTest_zz.back()->SetLineWidth(2);
-  emuTest_tw.back()->SetFillColor(twColour);
-  emuTest_tw.back()->SetMarkerColor(twColour);
-  emuTest_tw.back()->SetLineColor(kBlack);
-  emuTest_tw.back()->SetLineWidth(2);
-  emuTest_zmumu.back()->SetFillColor(zmmColour);
-  emuTest_zmumu.back()->SetMarkerColor(zmmColour);
-  emuTest_zmumu.back()->SetLineColor(kBlack);
-  emuTest_zmumu.back()->SetLineWidth(2);
-  emuTest_zee.back()->SetFillColor(zeeColour);
-  emuTest_zee.back()->SetMarkerColor(zeeColour);
-  emuTest_zee.back()->SetLineColor(kBlack);
-  emuTest_zee.back()->SetLineWidth(2);
-  if (qcdEst != 2) {
-    emuTest_wjets.back()->SetFillColor(wjetColour);
-    emuTest_wjets.back()->SetMarkerColor(wjetColour);
-    emuTest_wjets.back()->SetLineColor(kBlack);
-    emuTest_wjets.back()->SetLineWidth(2);
-  }
-  if (plotQcd) {
-    emuTest_qcd.back()->SetFillColor(jetBkgColour);
-    emuTest_qcd.back()->SetMarkerColor(jetBkgColour);
-    emuTest_qcd.back()->SetLineColor(kBlack);
-    emuTest_qcd.back()->SetLineWidth(2);
-  }
-
-  bgStack->Draw("hist");
-  if (!plotPull) bgStack->GetXaxis()->SetTitle(testPlots[var].fXaxisTitle);
-  bgStack->GetXaxis()->SetTitleFont(font);
-  bgStack->GetXaxis()->SetTitleSize(0.047);
-  bgStack->GetXaxis()->SetLabelSize(0.05);
-  bgStack->GetXaxis()->SetLabelFont(font);
-  bgStack->GetXaxis()->SetMoreLogLabels();
-  bgStack->GetXaxis()->SetNoExponent();
-  bgStack->GetYaxis()->SetTitle("Events");
-  bgStack->GetYaxis()->SetTitleFont(font);
-  bgStack->GetYaxis()->SetTitleSize(0.047);
-  bgStack->GetYaxis()->SetTitleOffset(1.1);
-  bgStack->GetYaxis()->SetLabelFont(font);
-  bgStack->GetYaxis()->SetLabelSize(0.05);
-  if (!logPlot) bgStack->SetMinimum(0.);
-  else bgStack->SetMinimum(0.5);
-  bgStack->Draw("hist");
-
-  emuTest_data.back()->SetLineWidth(2);
-  emuTest_data.back()->SetLineColor(kBlack);
-  emuTest_data.back()->SetMarkerStyle(8);
-  emuTest_data.back()->SetMarkerSize(0.8);
-  emuTest_data.back()->Draw("same");
-
-  if (plotSignal[0] > 0.) emuTest_sig1.back()->Draw("histsame");
-  if (plotSignal[1] > 0.) emuTest_sig2.back()->Draw("histsame");
-  if (plotSignal[2] > 0.) emuTest_sig3.back()->Draw("histsame");
-  if (plotSignal[3] > 0.) emuTest_sig4.back()->Draw("histsame");
-  
-  // legent and labels
-  TLegend legend(0.700, 0.346, 0.891, 0.885);
-  legend.SetTextFont(font);
-  legend.SetTextSize(0.042);
-  legend.SetBorderSize(0);
-  legend.SetLineColor(1);
-  legend.SetLineStyle(1);
-  legend.SetLineWidth(1);
-  legend.SetFillColor(19);
-  legend.SetFillStyle(0);
-  legend.AddEntry(emuTest_data.back(), "DATA");
-  legend.AddEntry(emuTest_ttbar.back(), "t#bar{t}", "F");
-  legend.AddEntry(emuTest_ztautau.back(), "#gamma/Z#rightarrow#tau#tau", "F");
-  legend.AddEntry(emuTest_ww.back(), "WW", "F");
-  legend.AddEntry(emuTest_wz.back(), "WZ", "F");
-  legend.AddEntry(emuTest_zz.back(), "ZZ", "F");
-  legend.AddEntry(emuTest_tw.back(), "tW", "F");
-  legend.AddEntry(emuTest_zmumu.back(), "#gamma/Z#rightarrow#mu#mu", "F");
-  legend.AddEntry(emuTest_zee.back(), "#gamma/Z #rightarrow ee", "F");
-  if (qcdEst != 2) legend.AddEntry(emuTest_wjets.back(), "W+jets", "F");
-  if (plotQcd) legend.AddEntry(emuTest_qcd.back(), "jets (data)", "F");
-  if (plotSignal[0] > 0.) legend.AddEntry(emuTest_sig1.back(), Form("Z'/#gamma'500 (x%.0f)", plotSignal[0]) ,"l");
-  if (plotSignal[1] > 0.) legend.AddEntry(emuTest_sig2.back(), Form("Z'/#gamma'750 (x%.0f)", plotSignal[1]) ,"l");
-  if (plotSignal[2] > 0.) legend.AddEntry(emuTest_sig3.back(), Form("Z'/#gamma'1000 (x%.0f)", plotSignal[2]) ,"l");
-  if (plotSignal[3] > 0.) legend.AddEntry(emuTest_sig4.back(), Form("Z'/#gamma'1250 (x%.0f)", plotSignal[3]) ,"l");
-  legend.SetBorderSize(0);
-  legend.DrawClone("same");
-  
-  TLatex *tex = new TLatex();
-  tex->SetNDC();
-  tex->SetTextFont(font);
-  tex->SetLineWidth(2);
-  tex->SetTextSize(0.042);
-  if (prelim) tex->DrawLatex(0.596, 0.937, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-  else tex->DrawLatex(0.596, 0.937, "CMS, 8 TeV, 19.6 fb^{-1}");
-  //if (m == 1) tex->DrawLatex(0.430, 0.849, "e in barrel");
-  //if (m == 2) tex->DrawLatex(0.430, 0.849, "e in endcap");
-  stringstream sStream;
-  sStream << testPlots[var].fTitle << nameSign[sig].Data() << nameReg[reg].Data();
-  tex->DrawLatex(0.109, 0.937, sStream.str().c_str());
-
-  // plot a (data - bg)/bg histogram below the spectrum
-  if (plotPull) {
-    dataOverBgHist->Add(bgHist, -1.);
-    dataOverBgHist->Divide(bgHist);
-
-    float fontScaleBot = 1.;
-    TPad *pullPad = new TPad("pullPad" + testVar + + sign[sig] + region[reg], "(data - bg) / bg" + testVar + nameSign[sig] + nameReg[reg], 0., 0., 1., 0.33);
-    emuPlot->cd();
-    fontScaleBot = specPad->GetHNDC() / pullPad->GetHNDC();
-    pullPad->Draw();
-    pullPad->cd();
-    pullPad->SetBorderMode(0);
-    pullPad->SetBorderSize(2);
-    pullPad->SetFrameBorderMode(0);
-    pullPad->SetFillColor(0);
-    pullPad->SetFrameFillColor(0);
-    pullPad->SetTopMargin(0.);
-    pullPad->SetBottomMargin(0.22);
-    pullPad->SetLeftMargin(0.11);
-    pullPad->SetRightMargin(0.09);
-    pullPad->SetTickx(1);
-    pullPad->SetTicky(1);
-    if (pullGridY) pullPad->SetGridy();
-
-    dataOverBgHist->SetLineWidth(1);
-    dataOverBgHist->SetLineColor(kBlack);
-    dataOverBgHist->SetMarkerStyle(20);
-    dataOverBgHist->SetMarkerSize(1.1);
-
-    dataOverBgHist->GetXaxis()->SetTitle(testPlots[var].fXaxisTitle);
-    dataOverBgHist->GetXaxis()->SetTitleFont(font);
-    dataOverBgHist->GetXaxis()->SetTitleSize(0.047 * fontScaleBot);
-    dataOverBgHist->GetXaxis()->SetTitleOffset(1.);
-    dataOverBgHist->GetXaxis()->SetLabelFont(font);
-    dataOverBgHist->GetXaxis()->SetLabelSize(0.05 * fontScaleBot);
-    dataOverBgHist->GetXaxis()->SetMoreLogLabels();
-    dataOverBgHist->GetXaxis()->SetNoExponent();
-    //dataOverBgHist->GetXaxis()->SetRangeUser(xRangeMinRatio, xRangeMaxRatio);
-    dataOverBgHist->GetYaxis()->SetTitle("(data-bkg)/bkg");
-    dataOverBgHist->GetYaxis()->SetTitleFont(font);
-    dataOverBgHist->GetYaxis()->SetTitleSize(0.047 * fontScaleBot);
-    dataOverBgHist->GetYaxis()->SetTitleOffset(1.1 / fontScaleBot);
-    dataOverBgHist->GetYaxis()->SetLabelFont(font);
-    dataOverBgHist->GetYaxis()->SetLabelSize(0.05 * fontScaleBot);
-    dataOverBgHist->GetYaxis()->SetRangeUser(yRangeMinRatio, yRangeMaxRatio);
-
-    dataOverBgHist->Draw();
-  }
-
-  // safe in various file formats
-  if (saveSpec) {
-    sStream.str("");
-    sStream << plotDir << "emuControlSpec_" << testVar << sign[sig] << region[reg] << "_" << fileNameExtra << lumi->GetVal() << "pb-1";
-    TString saveFileName = sStream.str();
-    if (saveAsPdf) emuPlot->Print(saveFileName + ".pdf", "pdf");
-    if (saveAsPng) emuPlot->Print(saveFileName + ".png", "png");
-    if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
-  }
-
-  cout << testVar.Data() << nameSign[sig].Data() << nameReg[reg].Data() << " plotted" << endl;
+  outFile->Close();
 }
 
 // plot a range of control variables
@@ -683,7 +699,7 @@ void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, uns
 TH1F *
 MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int signs, int region, const char *cutVariable, float cutLow, float cutHigh, vector<float> &binning, unsigned int flags, bool normToBinWidth, float userScale)
 {
-  input->cd();
+  TDirectory *dir = gDirectory->CurrentDirectory();
   // prepare the histogram
   TH1F *histo = new TH1F("dummy", "dummy", 3000, 0., 3000.);
   histo->Sumw2();
@@ -709,7 +725,7 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
 
   // get the tree
   TTree *tree;
-  tree = (TTree *)input->Get(treeName);
+  tree = (TTree *)dir->Get(treeName);
 
   // get the branch
   float var;

@@ -155,20 +155,20 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.025));
    storeGenMTtbar.push_back(0);
 
-   TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_6923652ev.root");
-   input.push_back(make_pair(inTTbarMg, 245.8/ 6923652.)); //TTjets from MadGraph
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
-   storeGenMTtbar.push_back(1);
+   //TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_6923652ev.root");
+   //input.push_back(make_pair(inTTbarMg, 245.8/ 6923652.)); //TTjets from MadGraph
+   //systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
+   //storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_4246444ev.root");
-   input.push_back(make_pair(inTTbar22l, 13.43 / 4246444. * 245.8/(13.43+53.2+53.4))); //TT to 2l
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
-   storeGenMTtbar.push_back(1);
+   //TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_4246444ev.root");
+   //input.push_back(make_pair(inTTbar22l, 13.43 / 4246444. * 245.8/(13.43+53.2+53.4))); //TT to 2l
+   //systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
+   //storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v1ext_AODSIM_emuSkim_36654720ev.root");
-   input.push_back(make_pair(inTTbar21l, 53.2 / 36654720. * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
-   storeGenMTtbar.push_back(1);
+   //TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v1ext_AODSIM_emuSkim_36654720ev.root");
+   //input.push_back(make_pair(inTTbar21l, 53.2 / 36654720. * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
+   //systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
+   //storeGenMTtbar.push_back(1);
 
    TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_196046ev.root");
    input.push_back(make_pair(inTTW, 0.232 / 196046.)); //TTW
@@ -189,139 +189,144 @@ void EmuSpectrum::Loop()
    //systErrMCs.Add(new TParameter<float>("systErrMcWJets100up", 0.05));
    //storeGenMTtbar.push_back(0);
 
-   TFile *inSig0 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9999ev.root");
+   TFile *inSig0 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig0, 0.000947 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig0", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig1 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9400ev.root");
+   TFile *inSig1 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9400ev.root");
    input.push_back(make_pair(inSig1, 0.000239 / 9400.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig1", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig2 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig2 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig2, 8.956e-5 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig2", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig3 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9999ev.root");
+   TFile *inSig3 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig3, 3.867e-5 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig3", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig4 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig4 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig4, 1.778e-5 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig4", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig5 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig5 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig5, 8.501e-6 / 10000.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig5", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig6 = TFile::Open("file://///user/treis/mcsamples/ZprimeToEMu_M-1750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig6 = TFile::Open("file://///user/treis/mcsamples/ZprimeToEMu_M-1750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig6, 4.124e-6 / 10000.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig6", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig7 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig7 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig7, 2.014e-6 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig7", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig8 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig8 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig8, 4.724e-7 / 10000.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig8", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig9 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig9 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig9, 1.059e-7 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig9", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig10 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
+   TFile *inSig10 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
    input.push_back(make_pair(inSig10, 2.198e-8 / 9997.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig10", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig11 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9993ev.root");
+   TFile *inSig11 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9993ev.root");
    input.push_back(make_pair(inSig11, 4.157e-9 / 9993.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig11", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig12 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9959ev.root");
+   TFile *inSig12 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9959ev.root");
    input.push_back(make_pair(inSig12, 1.359e-10 / 9959.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig12", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig13 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_noAccCuts_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_10000ev.root");
+   TFile *inSig13 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_noAccCuts_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig13, 0.000953 / 10000.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig13", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig13a = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig13a = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig13a, 0.000239 / 9999.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig13a", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig14 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig14 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig14, 8.956e-5 / 10000.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig14", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig15 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
+   TFile *inSig15 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig15, 3.862e-5 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig15", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig16 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
+   TFile *inSig16 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig16, 1.781e-5 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig16", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig17 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
+   TFile *inSig17 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
    input.push_back(make_pair(inSig17, 8.503e-6 / 9997.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig17", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig18 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
+   TFile *inSig18 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
    input.push_back(make_pair(inSig18, 4.127e-6 / 9997.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig18", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig19 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig19 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig19, 2.014e-6 / 9999.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig19", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig20 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
+   TFile *inSig20 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig20, 4.735e-7 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig20", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig21 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig21 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig21, 1.059e-7 / 10000.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig21", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig22 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
+   TFile *inSig22 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig22, 2.197e-8 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig22", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig23 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
+   TFile *inSig23 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig23, 4.155e-9 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig23", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig24 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9966ev.root");
+   TFile *inSig24 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9966ev.root");
    input.push_back(make_pair(inSig24, 1.293e-10 / 9966.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig24", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig25 = TFile::Open("file:////user/treis/mcsamples/ZprimeLFVToEMu_M-1000_TuneZ2star_8TeV_madgraph_Summer12_DR53X-PU_S10_START53_V19E-v1_AODSIM_9996ev.root");
-   input.push_back(make_pair(inSig25, 3.87e-5 / 9996.)); //Signal with no acceptance cuts
+   TFile *inSig25 = TFile::Open("file:////user/treis/mcsamples/ZprimeLFVToEMu_M-1000_TuneZ2star_8TeV_madgraph_Summer12_DR53X-PU_S10_START53_V19E-v1_AODSIM_emuSkim_9996ev.root");
+   input.push_back(make_pair(inSig25, 3.87e-5 / 9996.)); //Signal with no acceptance cuts, central production
    systErrMCs.Add(new TParameter<float>("systErrMcSig25", 0.));
+   storeGenMTtbar.push_back(0);
+
+   TFile *inSig26 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_Mz-1000_Ma-20000_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9999ev.root");
+   input.push_back(make_pair(inSig26, 1.018e-5 / 9999.)); //Signal with different masses for Z' and a'
+   systErrMCs.Add(new TParameter<float>("systErrMcSig26", 0.));
    storeGenMTtbar.push_back(0);
 
    int nbFile = input.size();
@@ -426,393 +431,622 @@ void EmuSpectrum::Loop()
       TH1F *puWeights = new TH1F("puWeight" + suffix[p], "puWeight" + suffix[p], 100, 0., 100.);
       if (p > 0) puWeights->Divide(puDataNorm, puMcNorm);
 
-      // tree with event data
-      bool passTrg = false;
-      bool passHeep = false;
-      float emuInvMass = 0.;
-      float trueMass = 0.;
-      float genEmuMass = 0.;
-      int evtRegion;
-      int eCharge;
-      int muCharge;
-      float totWeight = 1.;
-      float puWeight = 1.;
-      float trgEff = 1.;
-      float trgEffSf = 1.;
-      float eleEffSf = 1.;
-      float eleEffSfErr = 0.;
-      float muEffSf = 1.;
-      float topRewSf = 1.;
-      TTree *emuTree = new TTree("emuTree_" + suffix[p], "emuTree_" + suffix[p]);
-      emuTree->Branch("runnr", &runnumber, "runnr/i");
-      emuTree->Branch("eventnr", &eventnumber, "eventnr/i");
-      emuTree->Branch("lumiSec", &luminosityBlock, "lumiSec/i");
-      emuTree->Branch("passTrg", &passTrg, "passTrg/O");
-      emuTree->Branch("mass", &emuInvMass, "mass/F");
-      if (p > 0) {
-         emuTree->Branch("trueMass", &trueMass, "trueMass/F");
-         emuTree->Branch("genEmuMass", &genEmuMass, "genEmuMass/F");
-      }
-      emuTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
-      emuTree->Branch("eCharge", &eCharge, "eCharge/I");
-      emuTree->Branch("muCharge", &muCharge, "muCharge/I");
-      emuTree->Branch("weight", &totWeight, "weight/F");
-      emuTree->Branch("puWeight", &puWeight, "puWeight/F");
-      emuTree->Branch("trgEff", &trgEff, "trgEff/F");
-      emuTree->Branch("trgEffSf", &trgEffSf, "trgEffSf/F");
-      emuTree->Branch("eleEffSf", &eleEffSf, "eleEffSf/F");
-      emuTree->Branch("eleEffSfErr", &eleEffSfErr, "eleEffSfErr/F");
-      emuTree->Branch("muEffSf", &muEffSf, "muEffSf/F");
-      if (storeGenMTtbar[p]) {
-        emuTree->Branch("topRewSf", &topRewSf, "topRewSf/F");
-        emuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
-      }
-      // control variables
-      float nVtx = 0.;
-      float eDzMinusMuDz = 0.;
-      float eDxyMinusMuDxy = 0.;
-      float dPhi = 0.;
-      float dEta = 0.;
-      float eleEt = 0.;
-      float eleEta = 0.;
-      float elePhi = 0.;
-      float eleDEta = 0.;
-      float eleDPhi = 0.;
-      float eleHOE = 0.;
-      float eleE1x5overE5x5 = 0.;
-      float eleE2x5overE5x5 = 0.;
-      float eleSigmaIEIE = 0.;
-      float eleEcalIso = 0.;
-      float eleHcalIso1 = 0.;
-      float eleHcalIso2 = 0.;
-      float eleHeepIso = -1.;
-      float eleTrkIso = 0.;
-      float eleLostHits = 0.;
-      float eleDZFstPVtx = 0.;
-      float eleDXYFstPVtx = 0.;
-      float etEleOPtMu = 0.;
-      float lepPtPlusOPtMinus = 0.;
-      float eChTimesMuCh = 0;
-      float muPt = 0.;
-      float muPtErr = 0.;
-      float muEta = 0.;
-      float muPhi = 0.;
-      float muHitLayers = 0.;
-      float muTrkHits = 0.;
-      float muPxlHits = 0.;
-      float muMuHits = 0.;
-      float muDZFstPVtx = 0.;
-      float muDXYFstPVtx = 0.;
-      float muNSeg = 0.;
-      float muIsoCombRel = 0.;
-      float muTrkIso03 = 0.;
-      float numOfJets = 0.;
-      float numOfJetsPt20 = 0.;
-      float numOfJetsPt30 = 0.;
-      emuTree->Branch("pfMet", &pfmet, "pfMet/F");
-      emuTree->Branch("nVtx", &nVtx, "nVtx/F");
-      emuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
-      emuTree->Branch("eDxyMinusMuDxy", &eDxyMinusMuDxy, "eDxyMinusMuDxy/F");
-      emuTree->Branch("rho", &rho, "rho/F");
-      emuTree->Branch("dPhi", &dPhi, "dPhi/F");
-      emuTree->Branch("dEta", &dEta, "dEta/F");
-      emuTree->Branch("eleEt", &eleEt, "eleEt/F");
-      emuTree->Branch("eleEta", &eleEta, "eleEta/F");
-      emuTree->Branch("elePhi", &elePhi, "elePhi/F");
-      emuTree->Branch("eleDEta", &eleDEta, "eleDEta/F");
-      emuTree->Branch("eleDPhi", &eleDPhi, "eleDPhi/F");
-      emuTree->Branch("eleHOE", &eleHOE, "eleHOE/F");
-      emuTree->Branch("eleE1x5overE5x5", &eleE1x5overE5x5, "eleE1x5overE5x5/F");
-      emuTree->Branch("eleE2x5overE5x5", &eleE2x5overE5x5, "eleE2x5overE5x5/F");
-      emuTree->Branch("eleSigmaIEIE", &eleSigmaIEIE, "eleSigmaIEIE/F");
-      emuTree->Branch("eleEcalIso", &eleEcalIso, "eleEcalIso/F");
-      emuTree->Branch("eleHcalIso1", &eleHcalIso1, "eleHcalIso1/F");
-      emuTree->Branch("eleHcalIso2", &eleHcalIso2, "eleHcalIso2/F");
-      emuTree->Branch("eleHeepIso", &eleHeepIso, "eleHeepIso/F");
-      emuTree->Branch("eleTrkIso", &eleTrkIso, "eleTrkIso/F");
-      emuTree->Branch("eleLostHits", &eleLostHits, "eleLostHits/F");
-      emuTree->Branch("eleDZFstPVtx", &eleDZFstPVtx, "eleDZFstPVtx/F");
-      emuTree->Branch("eleDXYFstPVtx", &eleDXYFstPVtx, "eleDXYFstPVtx/F");
-      emuTree->Branch("etEleOPtMu", &etEleOPtMu, "etEleOPtMu/F");
-      emuTree->Branch("lepPtPlusOPtMinus", &lepPtPlusOPtMinus, "lepPtPlusOPtMinus/F");
-      emuTree->Branch("eChTimesMuCh", &eChTimesMuCh, "eChTimesMuCh/F");
-      emuTree->Branch("muPt", &muPt, "muPt/F");
-      emuTree->Branch("muPtErr", &muPtErr, "muPtErr/F");
-      emuTree->Branch("muEta", &muEta, "muEta/F");
-      emuTree->Branch("muPhi", &muPhi, "muPhi/F");
-      emuTree->Branch("muHitLayers", &muHitLayers, "muHitLayers/F");
-      emuTree->Branch("muTrkHits", &muTrkHits, "muTrkHits/F");
-      emuTree->Branch("muPxlHits", &muPxlHits, "muPxlHits/F");
-      emuTree->Branch("muMuHits", &muMuHits, "muMuHits/F");
-      emuTree->Branch("muDZFstPVtx", &muDZFstPVtx, "muDZFstPVtx/F");
-      emuTree->Branch("muDXYFstPVtx", &muDXYFstPVtx, "muDXYFstPVtx/F");
-      emuTree->Branch("muNSeg", &muNSeg, "muNSeg/F");
-      emuTree->Branch("muTrkIso03", &muTrkIso03, "muTrkIso03/F");
-      emuTree->Branch("muIsoCombRel", &muIsoCombRel, "muIsoCombRel/F");
-      emuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
-      emuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
-      emuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
+      
+      ///////////////////////////////////////////////////////////////////////////
+      //LOOP OVER SHAPE UNCERTAINTIES 
+      ///////////////////////////////////////////////////////////////////////////
+      for (unsigned int shUnc = 0; shUnc < shapeUncNames.size(); ++shUnc) {
+         TString shapeUncName = shapeUncNames[shUnc];
+         if (shUnc > 0) {
+            if (p == 0) output->mkdir(shapeUncName);
+            shapeUncName.Prepend("_");
+         }
 
-      TTree *frEmuTree = new TTree("frEmuTree_" + suffix[p], "frEmuTree_" + suffix[p]);
-      float fakeRate = 0.;
-      {
-         frEmuTree->Branch("passTrg", &passTrg, "passTrg/O");
-         frEmuTree->Branch("passHeep", &passHeep, "passHeep/O");
-         frEmuTree->Branch("mass", &emuInvMass, "mass/F");
-         frEmuTree->Branch("trueMass", &trueMass, "trueMass/F");
-         frEmuTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
-         frEmuTree->Branch("eCharge", &eCharge, "eCharge/I");
-         frEmuTree->Branch("muCharge", &muCharge, "muCharge/I");
-         frEmuTree->Branch("fakeRate", &fakeRate, "fakeRate/F");
-         frEmuTree->Branch("puWeight", &puWeight, "puWeight/F");
+         // tree with event data
+         bool passTrg = false;
+         bool passHeep = false;
+         float emuInvMass = 0.;
+         float trueMass = 0.;
+         float genEmuMass = 0.;
+         int evtRegion;
+         int eCharge;
+         int muCharge;
+         float totWeight = 1.;
+         float puWeight = 1.;
+         float trgEff = 1.;
+         float trgEffSf = 1.;
+         float eleEffSf = 1.;
+         float eleEffSfErr = 0.;
+         float muEffSf = 1.;
+         float topRewSf = 1.;
+         TTree *emuTree = new TTree("emuTree_" + suffix[p] + shapeUncName, "emuTree_" + suffix[p] + shapeUncName);
+         emuTree->Branch("runnr", &runnumber, "runnr/i");
+         emuTree->Branch("eventnr", &eventnumber, "eventnr/i");
+         emuTree->Branch("lumiSec", &luminosityBlock, "lumiSec/i");
+         emuTree->Branch("passTrg", &passTrg, "passTrg/O");
+         emuTree->Branch("mass", &emuInvMass, "mass/F");
+         if (p > 0) {
+            emuTree->Branch("trueMass", &trueMass, "trueMass/F");
+            emuTree->Branch("genEmuMass", &genEmuMass, "genEmuMass/F");
+         }
+         emuTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
+         emuTree->Branch("eCharge", &eCharge, "eCharge/I");
+         emuTree->Branch("muCharge", &muCharge, "muCharge/I");
+         emuTree->Branch("weight", &totWeight, "weight/F");
+         emuTree->Branch("puWeight", &puWeight, "puWeight/F");
+         emuTree->Branch("trgEff", &trgEff, "trgEff/F");
+         emuTree->Branch("trgEffSf", &trgEffSf, "trgEffSf/F");
+         emuTree->Branch("eleEffSf", &eleEffSf, "eleEffSf/F");
+         emuTree->Branch("eleEffSfErr", &eleEffSfErr, "eleEffSfErr/F");
+         emuTree->Branch("muEffSf", &muEffSf, "muEffSf/F");
          if (storeGenMTtbar[p]) {
-           frEmuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
-           frEmuTree->Branch("topRewSf", &genPair_mass, "topRewSf/F");
+           emuTree->Branch("topRewSf", &topRewSf, "topRewSf/F");
+           emuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
          }
-         frEmuTree->Branch("pfMet", &pfmet, "pfMet/F");
-         frEmuTree->Branch("nVtx", &nVtx, "nVtx/F");
-         frEmuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
-         frEmuTree->Branch("eDxyMinusMuDxy", &eDxyMinusMuDxy, "eDxyMinusMuDxy/F");
-         frEmuTree->Branch("rho", &rho, "rho/F");
-         frEmuTree->Branch("dPhi", &dPhi, "dPhi/F");
-         frEmuTree->Branch("dEta", &dEta, "dEta/F");
-         frEmuTree->Branch("eleEt", &eleEt, "eleEt/F");
-         frEmuTree->Branch("eleEta", &eleEta, "eleEta/F");
-         frEmuTree->Branch("elePhi", &elePhi, "elePhi/F");
-         frEmuTree->Branch("eleDEta", &eleDEta, "eleDEta/F");
-         frEmuTree->Branch("eleDPhi", &eleDPhi, "eleDPhi/F");
-         frEmuTree->Branch("eleHOE", &eleHOE, "eleHOE/F");
-         frEmuTree->Branch("eleE1x5overE5x5", &eleE1x5overE5x5, "eleE1x5overE5x5/F");
-         frEmuTree->Branch("eleE2x5overE5x5", &eleE2x5overE5x5, "eleE2x5overE5x5/F");
-         frEmuTree->Branch("eleSigmaIEIE", &eleSigmaIEIE, "eleSigmaIEIE/F");
-         frEmuTree->Branch("eleEcalIso", &eleEcalIso, "eleEcalIso/F");
-         frEmuTree->Branch("eleHcalIso1", &eleHcalIso1, "eleHcalIso1/F");
-         frEmuTree->Branch("eleHcalIso2", &eleHcalIso2, "eleHcalIso2/F");
-         frEmuTree->Branch("eleHeepIso", &eleHeepIso, "eleHeepIso/F");
-         frEmuTree->Branch("eleTrkIso", &eleTrkIso, "eleTrkIso/F");
-         frEmuTree->Branch("eleLostHits", &eleLostHits, "eleLostHits/F");
-         frEmuTree->Branch("eleDZFstPVtx", &eleDZFstPVtx, "eleDZFstPVtx/F");
-         frEmuTree->Branch("eleDXYFstPVtx", &eleDXYFstPVtx, "eleDXYFstPVtx/F");
-         frEmuTree->Branch("etEleOPtMu", &etEleOPtMu, "etEleOPtMu/F");
-         frEmuTree->Branch("lepPtPlusOPtMinus", &lepPtPlusOPtMinus, "lepPtPlusOPtMinus/F");
-         frEmuTree->Branch("eChTimesMuCh", &eChTimesMuCh, "eChTimesMuCh/F");
-         frEmuTree->Branch("muPt", &muPt, "muPt/F");
-         frEmuTree->Branch("muPtErr", &muPtErr, "muPtErr/F");
-         frEmuTree->Branch("muEta", &muEta, "muEta/F");
-         frEmuTree->Branch("muPhi", &muPhi, "muPhi/F");
-         frEmuTree->Branch("muHitLayers", &muHitLayers, "muHitLayers/F");
-         frEmuTree->Branch("muTrkHits", &muTrkHits, "muTrkHits/F");
-         frEmuTree->Branch("muPxlHits", &muPxlHits, "muPxlHits/F");
-         frEmuTree->Branch("muMuHits", &muMuHits, "muMuHits/F");
-         frEmuTree->Branch("muDZFstPVtx", &muDZFstPVtx, "muDZFstPVtx/F");
-         frEmuTree->Branch("muDXYFstPVtx", &muDXYFstPVtx, "muDXYFstPVtx/F");
-         frEmuTree->Branch("muNSeg", &muNSeg, "muNSeg/F");
-         frEmuTree->Branch("muTrkIso03", &muTrkIso03, "muTrkIso03/F");
-         frEmuTree->Branch("muIsoCombRel", &muIsoCombRel, "muIsoCombRel/F");
-         frEmuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
-         frEmuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
-         frEmuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
+         // control variables
+         float nVtx = 0.;
+         float eDzMinusMuDz = 0.;
+         float eDxyMinusMuDxy = 0.;
+         float dPhi = 0.;
+         float dEta = 0.;
+         float eleEt = 0.;
+         float eleEta = 0.;
+         float elePhi = 0.;
+         float eleDEta = 0.;
+         float eleDPhi = 0.;
+         float eleHOE = 0.;
+         float eleE1x5overE5x5 = 0.;
+         float eleE2x5overE5x5 = 0.;
+         float eleSigmaIEIE = 0.;
+         float eleEcalIso = 0.;
+         float eleHcalIso1 = 0.;
+         float eleHcalIso2 = 0.;
+         float eleHeepIso = -1.;
+         float eleTrkIso = 0.;
+         float eleLostHits = 0.;
+         float eleDZFstPVtx = 0.;
+         float eleDXYFstPVtx = 0.;
+         float etEleOPtMu = 0.;
+         float lepPtPlusOPtMinus = 0.;
+         float eChTimesMuCh = 0;
+         float muPt = 0.;
+         float muPtErr = 0.;
+         float muEta = 0.;
+         float muPhi = 0.;
+         float muHitLayers = 0.;
+         float muTrkHits = 0.;
+         float muPxlHits = 0.;
+         float muMuHits = 0.;
+         float muDZFstPVtx = 0.;
+         float muDXYFstPVtx = 0.;
+         float muNSeg = 0.;
+         float muIsoCombRel = 0.;
+         float muTrkIso03 = 0.;
+         float numOfJets = 0.;
+         float numOfJetsPt20 = 0.;
+         float numOfJetsPt30 = 0.;
+         emuTree->Branch("pfMet", &pfmet, "pfMet/F");
+         emuTree->Branch("nVtx", &nVtx, "nVtx/F");
+         emuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
+         emuTree->Branch("eDxyMinusMuDxy", &eDxyMinusMuDxy, "eDxyMinusMuDxy/F");
+         emuTree->Branch("rho", &rho, "rho/F");
+         emuTree->Branch("dPhi", &dPhi, "dPhi/F");
+         emuTree->Branch("dEta", &dEta, "dEta/F");
+         emuTree->Branch("eleEt", &eleEt, "eleEt/F");
+         emuTree->Branch("eleEta", &eleEta, "eleEta/F");
+         emuTree->Branch("elePhi", &elePhi, "elePhi/F");
+         emuTree->Branch("eleDEta", &eleDEta, "eleDEta/F");
+         emuTree->Branch("eleDPhi", &eleDPhi, "eleDPhi/F");
+         emuTree->Branch("eleHOE", &eleHOE, "eleHOE/F");
+         emuTree->Branch("eleE1x5overE5x5", &eleE1x5overE5x5, "eleE1x5overE5x5/F");
+         emuTree->Branch("eleE2x5overE5x5", &eleE2x5overE5x5, "eleE2x5overE5x5/F");
+         emuTree->Branch("eleSigmaIEIE", &eleSigmaIEIE, "eleSigmaIEIE/F");
+         emuTree->Branch("eleEcalIso", &eleEcalIso, "eleEcalIso/F");
+         emuTree->Branch("eleHcalIso1", &eleHcalIso1, "eleHcalIso1/F");
+         emuTree->Branch("eleHcalIso2", &eleHcalIso2, "eleHcalIso2/F");
+         emuTree->Branch("eleHeepIso", &eleHeepIso, "eleHeepIso/F");
+         emuTree->Branch("eleTrkIso", &eleTrkIso, "eleTrkIso/F");
+         emuTree->Branch("eleLostHits", &eleLostHits, "eleLostHits/F");
+         emuTree->Branch("eleDZFstPVtx", &eleDZFstPVtx, "eleDZFstPVtx/F");
+         emuTree->Branch("eleDXYFstPVtx", &eleDXYFstPVtx, "eleDXYFstPVtx/F");
+         emuTree->Branch("etEleOPtMu", &etEleOPtMu, "etEleOPtMu/F");
+         emuTree->Branch("lepPtPlusOPtMinus", &lepPtPlusOPtMinus, "lepPtPlusOPtMinus/F");
+         emuTree->Branch("eChTimesMuCh", &eChTimesMuCh, "eChTimesMuCh/F");
+         emuTree->Branch("muPt", &muPt, "muPt/F");
+         emuTree->Branch("muPtErr", &muPtErr, "muPtErr/F");
+         emuTree->Branch("muEta", &muEta, "muEta/F");
+         emuTree->Branch("muPhi", &muPhi, "muPhi/F");
+         emuTree->Branch("muHitLayers", &muHitLayers, "muHitLayers/F");
+         emuTree->Branch("muTrkHits", &muTrkHits, "muTrkHits/F");
+         emuTree->Branch("muPxlHits", &muPxlHits, "muPxlHits/F");
+         emuTree->Branch("muMuHits", &muMuHits, "muMuHits/F");
+         emuTree->Branch("muDZFstPVtx", &muDZFstPVtx, "muDZFstPVtx/F");
+         emuTree->Branch("muDXYFstPVtx", &muDXYFstPVtx, "muDXYFstPVtx/F");
+         emuTree->Branch("muNSeg", &muNSeg, "muNSeg/F");
+         emuTree->Branch("muTrkIso03", &muTrkIso03, "muTrkIso03/F");
+         emuTree->Branch("muIsoCombRel", &muIsoCombRel, "muIsoCombRel/F");
+         emuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
+         emuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
+         emuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
 
-         if (p == 0) {
-            cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-            cout << "M_emu > 600 GeV/c^2       |     run:lumi:event    |   M_emu  |"
-                 << " muon pt |"
-                 << " muon eta |"
-                 //<< "  muon phi  |"
-                 //<< "  muon trackIso3  |"
-                 //<< "  muon emIso03  |"
-                 //<< "  muon hadIso03  |"
-                 //<< "  muon normChi2  |"
-                 //<< "  muon dxy_beamSpot  |"
-                 //<< "  muon nhitstrack  |"
-                 //<< "  muon nhitsmuons  |"
-                 << " ele pt  |"
-                 << "  ele eta |"
-                 //<< "  ele phi  |"
-                 //<< "  ele trackIso  |"
-                 //<< "  ele ecalIso  |"
-                 //<< "  ele hcalIso1  |"
-                 //<< "  ele hcalIso2  |"
-                 << endl;;
-            cout << "-----------------------------------------------------------------------------------------------------------" << endl;
-         }
-      }
-      unsigned int trig[3] = {0, 0, 0};
-      unsigned int evCounter = 0;
-      unsigned int goodHeepCounter = 0;
-      unsigned int goodMuCounter = 0;
-      unsigned int moreHeepCounter = 0;
-      unsigned int moreMuCounter = 0;
-      unsigned int moreHeepMuCounter = 0;
-      /////////////////////////////////////////////////////////////////////////////////////////////
-      //LOOP OVER EVENTS
-      /////////////////////////////////////////////////////////////////////////////////////////////
-      Long64_t nbytes = 0, nb = 0;
-      //nentries = 10000;
-      for (Long64_t jentry = 0; jentry < nentries; ++jentry) {
-         emuMass = 0.;
-         Long64_t ientry = LoadTree(jentry);
-         if (ientry < 0) break;
-         nb = fChain->GetEntry(jentry);   nbytes += nb;
-         // if (Cut(ientry) < 0) continue;
-         if (jentry % 50000 == 0) cout << "Processing event " << jentry << endl;
-         thetree->GetEntry(jentry);
+         TTree *frEmuTree = new TTree("frEmuTree_" + suffix[p] + shapeUncName, "frEmuTree_" + suffix[p] + shapeUncName);
+         float fakeRate = 0.;
+         {
+            frEmuTree->Branch("passTrg", &passTrg, "passTrg/O");
+            frEmuTree->Branch("passHeep", &passHeep, "passHeep/O");
+            frEmuTree->Branch("mass", &emuInvMass, "mass/F");
+            frEmuTree->Branch("trueMass", &trueMass, "trueMass/F");
+            frEmuTree->Branch("evtRegion", &evtRegion, "evtRegion/I");
+            frEmuTree->Branch("eCharge", &eCharge, "eCharge/I");
+            frEmuTree->Branch("muCharge", &muCharge, "muCharge/I");
+            frEmuTree->Branch("fakeRate", &fakeRate, "fakeRate/F");
+            frEmuTree->Branch("puWeight", &puWeight, "puWeight/F");
+            if (storeGenMTtbar[p]) {
+              frEmuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
+              frEmuTree->Branch("topRewSf", &genPair_mass, "topRewSf/F");
+            }
+            frEmuTree->Branch("pfMet", &pfmet, "pfMet/F");
+            frEmuTree->Branch("nVtx", &nVtx, "nVtx/F");
+            frEmuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
+            frEmuTree->Branch("eDxyMinusMuDxy", &eDxyMinusMuDxy, "eDxyMinusMuDxy/F");
+            frEmuTree->Branch("rho", &rho, "rho/F");
+            frEmuTree->Branch("dPhi", &dPhi, "dPhi/F");
+            frEmuTree->Branch("dEta", &dEta, "dEta/F");
+            frEmuTree->Branch("eleEt", &eleEt, "eleEt/F");
+            frEmuTree->Branch("eleEta", &eleEta, "eleEta/F");
+            frEmuTree->Branch("elePhi", &elePhi, "elePhi/F");
+            frEmuTree->Branch("eleDEta", &eleDEta, "eleDEta/F");
+            frEmuTree->Branch("eleDPhi", &eleDPhi, "eleDPhi/F");
+            frEmuTree->Branch("eleHOE", &eleHOE, "eleHOE/F");
+            frEmuTree->Branch("eleE1x5overE5x5", &eleE1x5overE5x5, "eleE1x5overE5x5/F");
+            frEmuTree->Branch("eleE2x5overE5x5", &eleE2x5overE5x5, "eleE2x5overE5x5/F");
+            frEmuTree->Branch("eleSigmaIEIE", &eleSigmaIEIE, "eleSigmaIEIE/F");
+            frEmuTree->Branch("eleEcalIso", &eleEcalIso, "eleEcalIso/F");
+            frEmuTree->Branch("eleHcalIso1", &eleHcalIso1, "eleHcalIso1/F");
+            frEmuTree->Branch("eleHcalIso2", &eleHcalIso2, "eleHcalIso2/F");
+            frEmuTree->Branch("eleHeepIso", &eleHeepIso, "eleHeepIso/F");
+            frEmuTree->Branch("eleTrkIso", &eleTrkIso, "eleTrkIso/F");
+            frEmuTree->Branch("eleLostHits", &eleLostHits, "eleLostHits/F");
+            frEmuTree->Branch("eleDZFstPVtx", &eleDZFstPVtx, "eleDZFstPVtx/F");
+            frEmuTree->Branch("eleDXYFstPVtx", &eleDXYFstPVtx, "eleDXYFstPVtx/F");
+            frEmuTree->Branch("etEleOPtMu", &etEleOPtMu, "etEleOPtMu/F");
+            frEmuTree->Branch("lepPtPlusOPtMinus", &lepPtPlusOPtMinus, "lepPtPlusOPtMinus/F");
+            frEmuTree->Branch("eChTimesMuCh", &eChTimesMuCh, "eChTimesMuCh/F");
+            frEmuTree->Branch("muPt", &muPt, "muPt/F");
+            frEmuTree->Branch("muPtErr", &muPtErr, "muPtErr/F");
+            frEmuTree->Branch("muEta", &muEta, "muEta/F");
+            frEmuTree->Branch("muPhi", &muPhi, "muPhi/F");
+            frEmuTree->Branch("muHitLayers", &muHitLayers, "muHitLayers/F");
+            frEmuTree->Branch("muTrkHits", &muTrkHits, "muTrkHits/F");
+            frEmuTree->Branch("muPxlHits", &muPxlHits, "muPxlHits/F");
+            frEmuTree->Branch("muMuHits", &muMuHits, "muMuHits/F");
+            frEmuTree->Branch("muDZFstPVtx", &muDZFstPVtx, "muDZFstPVtx/F");
+            frEmuTree->Branch("muDXYFstPVtx", &muDXYFstPVtx, "muDXYFstPVtx/F");
+            frEmuTree->Branch("muNSeg", &muNSeg, "muNSeg/F");
+            frEmuTree->Branch("muTrkIso03", &muTrkIso03, "muTrkIso03/F");
+            frEmuTree->Branch("muIsoCombRel", &muIsoCombRel, "muIsoCombRel/F");
+            frEmuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
+            frEmuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
+            frEmuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
 
-         // at least one gsf electron and one muon above the threshold
-         if (gsf_size < 1 || muon_size < 1) continue;
-
-         // get trigger info
-         int prescale = 0;
-         passTrg = true;
-         if (p == 0 && Trigger(prescale, dataTrig) < 1) passTrg = false;
-         if (p != 0) {
-            if (jentry < nentries * dataTrig[0] / dataEntries) {
-               if (Trigger(prescale, trig, 1) < 1) passTrg = false;
-            } else if (jentry < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
-               if (Trigger(prescale, trig, 2) < 1) passTrg = false;
-            } else {
-               if (Trigger(prescale, trig, 3) < 1) passTrg = false;
+            if (p == 0) {
+               cout << "-----------------------------------------------------------------------------------------------------------" << endl;
+               cout << "M_emu > 600 GeV/c^2       |     run:lumi:event    |   M_emu  |"
+                    << " muon pt |"
+                    << " muon eta |"
+                    //<< "  muon phi  |"
+                    //<< "  muon trackIso3  |"
+                    //<< "  muon emIso03  |"
+                    //<< "  muon hadIso03  |"
+                    //<< "  muon normChi2  |"
+                    //<< "  muon dxy_beamSpot  |"
+                    //<< "  muon nhitstrack  |"
+                    //<< "  muon nhitsmuons  |"
+                    << " ele pt  |"
+                    << "  ele eta |"
+                    //<< "  ele phi  |"
+                    //<< "  ele trackIso  |"
+                    //<< "  ele ecalIso  |"
+                    //<< "  ele hcalIso1  |"
+                    //<< "  ele hcalIso2  |"
+                    << endl;;
+               cout << "-----------------------------------------------------------------------------------------------------------" << endl;
             }
          }
-
-         // set the PU weight
-         if (usePUInfo && p > 0) puWeight = puWeights->GetBinContent(puWeights->FindBin(trueNVtx));
-         float weight = puWeight;
-
-         vector<int> GSF_passHEEP;
-         vector<int> GSF_passFrPre;
-         vector<int> MU_passGOOD;
+         unsigned int trig[3] = {0, 0, 0};
+         unsigned int evCounter = 0;
+         unsigned int goodHeepCounter = 0;
+         unsigned int goodMuCounter = 0;
+         unsigned int moreHeepCounter = 0;
+         unsigned int moreMuCounter = 0;
+         unsigned int moreHeepMuCounter = 0;
          /////////////////////////////////////////////////////////////////////////////////////////////
-         //loop over electrons
-         for (int j = 0; j < gsf_size; ++j) {
-            //cleaning: fake electrons from muons skim electrons if there is a muon with pt>5 GeV within dR<0.1
-            bool fakeEle = false;
-            for (int k = 0; k < muon_size; ++k) {
-               if (muon_pt[k] < 5.) continue;
-               float DeltaR = deltaR(gsf_eta[j], gsf_phi[j], muon_eta[k], muon_phi[k]);
-               if (DeltaR < 0.1) {
-                  fakeEle = true;
+         //LOOP OVER EVENTS
+         /////////////////////////////////////////////////////////////////////////////////////////////
+         Long64_t nbytes = 0, nb = 0;
+         //nentries = 10000;
+         for (Long64_t jentry = 0; jentry < nentries; ++jentry) {
+            emuMass = 0.;
+            Long64_t ientry = LoadTree(jentry);
+            if (ientry < 0) break;
+            nb = fChain->GetEntry(jentry);   nbytes += nb;
+            // if (Cut(ientry) < 0) continue;
+            if (jentry % 50000 == 0) cout << "Processing event " << jentry << endl;
+            thetree->GetEntry(jentry);
+
+            // modify eleScale, muScale by +/-1 sigma for shape uncertainties
+            switch (shUnc) {
+               case 1:
+                  scaleEle(true);
                   break;
+               case 2:
+                  scaleEle(false);
+                  break;
+               case 3:
+                  scaleMu(true);
+                  break;
+               case 4:
+                  scaleMu(false);
+                  break;
+            }
+ 
+            // at least one gsf electron and one muon above the threshold
+            if (gsf_size < 1 || muon_size < 1) continue;
+
+            // get trigger info
+            int prescale = 0;
+            passTrg = true;
+            if (p == 0 && Trigger(prescale, dataTrig) < 1) passTrg = false;
+            if (p != 0) {
+               if (jentry < nentries * dataTrig[0] / dataEntries) {
+                  if (Trigger(prescale, trig, 1) < 1) passTrg = false;
+               } else if (jentry < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
+                  if (Trigger(prescale, trig, 2) < 1) passTrg = false;
+               } else {
+                  if (Trigger(prescale, trig, 3) < 1) passTrg = false;
                }
             }
-            if (fakeEle) continue;
 
-            if (PassHEEP(j)) GSF_passHEEP.push_back(j);
-            if ((fabs(gsfsc_eta[j]) < 1.442 && gsf_gsfet[j] > bar_et) || (fabs(gsfsc_eta[j]) > 1.56 && fabs(gsfsc_eta[j]) < 2.5 && gsf_gsfet[j] > end_et)) {
-               if (PassFRPreSel(j)) GSF_passFrPre.push_back(j);
-            }
-         }
+            // set the PU weight
+            if (usePUInfo && p > 0) puWeight = puWeights->GetBinContent(puWeights->FindBin(trueNVtx));
+            float weight = puWeight;
 
-         //loop over muons
-         for (int j = 0; j < muon_size; ++j) {
-            if (PassHighPtMu(j)) MU_passGOOD.push_back(j);
-         }
-
-         if (GSF_passHEEP.size() > 1) ++moreHeepCounter;
-
-         // veto when there are more than one good muon
-         if (MU_passGOOD.size() > 1) {
-            //cout << "Muon masses: ";
-            //vector<double> muInvMasses;
-            //for (unsigned int mu1It = 0; mu1It < MU_passGOOD.size(); ++mu1It) {
-            //   for (unsigned int mu2It = MU_passGOOD.size()-1; mu2It > mu1It; --mu2It) {
-            //      TLorentzVector mu1;
-            //      TLorentzVector mu2;
-
-            //      mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[mu1It]], muon_eta[MU_passGOOD[mu1It]], muon_phi[MU_passGOOD[mu1It]], 0.10566);
-            //      mu2.SetPtEtaPhiM(muon_pt[MU_passGOOD[mu2It]], muon_eta[MU_passGOOD[mu2It]], muon_phi[MU_passGOOD[mu2It]], 0.10566);
-
-            //      muInvMasses.push_back((mu1 + mu2).M());
-            //      cout << muInvMasses.back() << " ";
-            //   }
-            //}
-            ////cout << MU_passGOOD.size() << " high pt muons found" << endl;
-            ++moreMuCounter;
-            if (GSF_passHEEP.size() > 1) ++moreHeepMuCounter;
-            //continue;
-         }
-         //if (GSF_passHEEP.size() > 1 || MU_passGOOD.size() > 1) cout << endl;
-
-         //topRewSf = topScaleFactor();
-
-         //GSF-nonHEEP ele + GOOD muon
-         if (GSF_passFrPre.size() > 0 && MU_passGOOD.size() > 0) {
-            TLorentzVector ele1;
-            TLorentzVector mu1;
-            double invMass = 0.;
-
-            // find the e-mu pair with the maximum invariant mass
-            double maxInvMass = 0.;
-            unsigned int eleInd = 0;
-            unsigned int muInd = 0;
-            for (unsigned int eleIt = 0; eleIt < GSF_passFrPre.size(); ++eleIt) {
-               for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
-                  ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passFrPre[eleIt]], gsf_eta[GSF_passFrPre[eleIt]], gsf_phi[GSF_passFrPre[eleIt]], 0.000511);
-                  mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
-
-                  invMass = (ele1 + mu1).M();
-                  if (invMass > maxInvMass) {
-                     maxInvMass = invMass;
-                     eleInd = eleIt;
-                     muInd = muIt;
+            vector<int> GSF_passHEEP;
+            vector<int> GSF_passFrPre;
+            vector<int> MU_passGOOD;
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            //loop over electrons
+            for (int j = 0; j < gsf_size; ++j) {
+               //cleaning: fake electrons from muons skim electrons if there is a muon with pt>5 GeV within dR<0.1
+               bool fakeEle = false;
+               for (int k = 0; k < muon_size; ++k) {
+                  if (muon_pt[k] < 5.) continue;
+                  float DeltaR = deltaR(gsf_eta[j], gsf_phi[j], muon_eta[k], muon_phi[k]);
+                  if (DeltaR < 0.1) {
+                     fakeEle = true;
+                     break;
                   }
                }
-            }
-            invMass = maxInvMass;
+               if (fakeEle) continue;
 
-            //MASS CUT
-            if (invMass > minInvMass) {
-               fakeRate = FakeRate(gsf_gsfet[GSF_passFrPre[eleInd]], gsfsc_eta[GSF_passFrPre[eleInd]]);
+               if (PassHEEP(j)) GSF_passHEEP.push_back(j);
+               if ((fabs(gsfsc_eta[j]) < 1.442 && gsf_gsfet[j] > bar_et) || (fabs(gsfsc_eta[j]) > 1.56 && fabs(gsfsc_eta[j]) < 2.5 && gsf_gsfet[j] > end_et)) {
+                  if (PassFRPreSel(j)) GSF_passFrPre.push_back(j);
+               }
+            }
+
+            //loop over muons
+            for (int j = 0; j < muon_size; ++j) {
+               if (PassHighPtMu(j)) MU_passGOOD.push_back(j);
+            }
+
+            if (GSF_passHEEP.size() > 1) ++moreHeepCounter;
+
+            // veto when there are more than one good muon
+            if (MU_passGOOD.size() > 1) {
+               //cout << "Muon masses: ";
+               //vector<double> muInvMasses;
+               //for (unsigned int mu1It = 0; mu1It < MU_passGOOD.size(); ++mu1It) {
+               //   for (unsigned int mu2It = MU_passGOOD.size()-1; mu2It > mu1It; --mu2It) {
+               //      TLorentzVector mu1;
+               //      TLorentzVector mu2;
+
+               //      mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[mu1It]], muon_eta[MU_passGOOD[mu1It]], muon_phi[MU_passGOOD[mu1It]], 0.10566);
+               //      mu2.SetPtEtaPhiM(muon_pt[MU_passGOOD[mu2It]], muon_eta[MU_passGOOD[mu2It]], muon_phi[MU_passGOOD[mu2It]], 0.10566);
+
+               //      muInvMasses.push_back((mu1 + mu2).M());
+               //      cout << muInvMasses.back() << " ";
+               //   }
+               //}
+               ////cout << MU_passGOOD.size() << " high pt muons found" << endl;
+               ++moreMuCounter;
+               if (GSF_passHEEP.size() > 1) ++moreHeepMuCounter;
+               //continue;
+            }
+            //if (GSF_passHEEP.size() > 1 || MU_passGOOD.size() > 1) cout << endl;
+
+            //topRewSf = topScaleFactor();
+
+            //GSF-nonHEEP ele + GOOD muon
+            if (GSF_passFrPre.size() > 0 && MU_passGOOD.size() > 0) {
+               TLorentzVector ele1;
+               TLorentzVector mu1;
+               double invMass = 0.;
+
+               // find the e-mu pair with the maximum invariant mass
+               double maxInvMass = 0.;
+               unsigned int eleInd = 0;
+               unsigned int muInd = 0;
+               for (unsigned int eleIt = 0; eleIt < GSF_passFrPre.size(); ++eleIt) {
+                  for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                     ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passFrPre[eleIt]], gsf_eta[GSF_passFrPre[eleIt]], gsf_phi[GSF_passFrPre[eleIt]], 0.000511);
+                     mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
+
+                     invMass = (ele1 + mu1).M();
+                     if (invMass > maxInvMass) {
+                        maxInvMass = invMass;
+                        eleInd = eleIt;
+                        muInd = muIt;
+                     }
+                  }
+               }
+               invMass = maxInvMass;
+
+               //MASS CUT
+               if (invMass > minInvMass) {
+                  fakeRate = FakeRate(gsf_gsfet[GSF_passFrPre[eleInd]], gsfsc_eta[GSF_passFrPre[eleInd]]);
    
+                  float CombRelIso = (muon_emIso03[MU_passGOOD[muInd]] + muon_hadIso03[MU_passGOOD[muInd]] + muon_trackIso03[MU_passGOOD[muInd]]) / muon_pt[MU_passGOOD[muInd]];
+   
+                  int jetsPt20 = 0;
+                  int jetsPt30 = 0;
+                  for (int jetIt = 0; jetIt < JetColl_size; ++jetIt) {
+                     if (Jet_pt[jetIt] > 20.) ++jetsPt20;
+                     if (Jet_pt[jetIt] > 30.) ++jetsPt30;
+                  }
+   
+                  // fill the data tree
+                  passHeep = PassHEEP(GSF_passFrPre[eleInd]);
+                  emuInvMass = invMass;
+                  if (p > 0) trueMass = genelemom_mass[0];
+                  eCharge = gsf_charge[GSF_passFrPre[eleInd]];
+                  muCharge = muon_charge[MU_passGOOD[muInd]];
+                  totWeight = weight;
+                  if (p > 0) totWeight *= input[p].second * LumiFactor;
+                  if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 1.442) evtRegion = 0;
+                  else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 2.5) evtRegion = 1;
+                  else evtRegion = -1;
+                  // fill control variables
+                  nVtx = pvsize;
+                  eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passFrPre[eleInd]] - muon_dz_firstPVtx[MU_passGOOD[muInd]]);
+                  eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passFrPre[eleInd]] - muon_dxy_firstPVtx[MU_passGOOD[muInd]]);
+                  if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]);
+                  if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]);
+                  dEta = fabs(muon_eta[MU_passGOOD[muInd]] - gsf_eta[GSF_passFrPre[eleInd]]);
+                  eleEt = gsf_gsfet[GSF_passFrPre[eleInd]];
+                  eleEta = gsf_eta[GSF_passFrPre[eleInd]];
+                  elePhi = gsf_phi[GSF_passFrPre[eleInd]];
+                  eleDEta = gsf_deltaeta[GSF_passFrPre[eleInd]];
+                  eleDPhi = gsf_deltaphi[GSF_passFrPre[eleInd]];
+                  eleHOE = gsf_hovere[GSF_passFrPre[eleInd]];
+                  eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passFrPre[eleInd]];
+                  eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passFrPre[eleInd]];
+                  eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passFrPre[eleInd]];
+                  eleEcalIso = gsf_ecaliso[GSF_passFrPre[eleInd]];
+                  eleHcalIso1 = gsf_hcaliso1[GSF_passFrPre[eleInd]];
+                  eleHcalIso2 = gsf_hcaliso2[GSF_passFrPre[eleInd]];
+                  if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passFrPre[eleInd]]);
+                  else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[eleInd]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2.5 - rho * 0.28);
+                  else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[eleInd]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passFrPre[eleInd]] - 50.));
+                  eleTrkIso = gsf_trackiso[GSF_passFrPre[eleInd]];
+                  eleLostHits = gsf_nLostInnerHits[GSF_passFrPre[eleInd]];
+                  eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passFrPre[eleInd]];
+                  eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passFrPre[eleInd]];
+                  etEleOPtMu = gsf_gsfet[GSF_passFrPre[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+                  if (gsf_charge[GSF_passFrPre[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passFrPre[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+                  else if (gsf_charge[GSF_passFrPre[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[muInd]]/gsf_gsfet[GSF_passFrPre[eleInd]];
+                  else lepPtPlusOPtMinus = 0.;
+                  eChTimesMuCh = eCharge * muCharge;
+                  muPt = muon_pt[MU_passGOOD[muInd]];
+                  muPtErr = muon_ptError[MU_passGOOD[muInd]];
+                  muEta = muon_eta[MU_passGOOD[muInd]];
+                  muPhi = muon_phi[MU_passGOOD[muInd]];
+                  muHitLayers = muon_nlayerswithhits[MU_passGOOD[muInd]];
+                  muTrkHits = muon_nhitstrack[MU_passGOOD[muInd]];
+                  muPxlHits = muon_nhitspixel[MU_passGOOD[muInd]];
+                  muMuHits = muon_nhitsmuons[MU_passGOOD[muInd]];
+                  muDZFstPVtx = muon_dz_firstPVtx[MU_passGOOD[muInd]];
+                  muDXYFstPVtx = muon_dxy_firstPVtx[MU_passGOOD[muInd]];
+                  muNSeg = muon_nSegmentMatch[MU_passGOOD[muInd]];
+                  muTrkIso03 = muon_trackIso03[MU_passGOOD[muInd]];
+                  muIsoCombRel = CombRelIso;
+                  numOfJets = JetColl_size;
+                  numOfJetsPt20 = jetsPt20;
+                  numOfJetsPt30 = jetsPt30;
+   
+                  frEmuTree->Fill();
+               }
+            }
+
+            //HEEP ele + GOOD muon
+            if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) {
+               TLorentzVector ele1;
+               TLorentzVector mu1;
+               double invMass = 0.;
+
+               // find the e-mu pair with the maximum invariant mass
+               double maxInvMass = 0.;
+               unsigned int eleInd = 0;
+               unsigned int muInd = 0;
+               for (unsigned int eleIt = 0; eleIt < GSF_passHEEP.size(); ++eleIt) {
+                  for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                     ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[eleIt]], gsf_eta[GSF_passHEEP[eleIt]], gsf_phi[GSF_passHEEP[eleIt]], 0.000511);
+                     mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
+
+                     invMass = (ele1 + mu1).M();
+                     if (invMass > maxInvMass) {
+                        maxInvMass = invMass;
+                        eleInd = eleIt;
+                        muInd = muIt;
+                     }
+                  }
+               }
+               invMass = maxInvMass;
+
+               // vertex matching of tracks by dz
+               //if (fabs(gsf_dz_beamSpot[GSF_passHEEP[eleInd]] - muon_dz_beamSpot[MU_passGOOD[muInd]]) > 0.05) continue;
+
+               //MASS CUT
+               if (invMass < minInvMass) continue;
+               ++goodHeepCounter;
+               ++goodMuCounter;
+
+               if (GSF_passHEEP.size() > 1) {
+                  //cout << "Electron masses: ";
+                  //vector<double> eleInvMasses;
+                  //for (unsigned int heep1It = 0; heep1It < GSF_passHEEP.size(); ++heep1It) {
+                  //   for (unsigned int heep2It = GSF_passHEEP.size()-1; heep2It > heep1It; --heep2It) {
+                  //      TLorentzVector ele1;
+                  //      TLorentzVector ele2;
+
+                  //      ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[heep1It]], gsf_eta[GSF_passHEEP[heep1It]], gsf_phi[GSF_passHEEP[heep1It]], 0.000511);
+                  //      ele2.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[heep2It]], gsf_eta[GSF_passHEEP[heep2It]], gsf_phi[GSF_passHEEP[heep2It]], 0.000511);
+
+                  //      eleInvMasses.push_back((ele1 + ele2).M());
+                  //      cout << eleInvMasses.back() << " ";
+                  //   }
+                  //}
+                  ////cout << GSF_passHEEP.size() << " HEEP electrons found" << endl;
+                  //++moreHeepCounter;
+
+                  //continue;
+               }
+
+               ++evCounter;
+
                float CombRelIso = (muon_emIso03[MU_passGOOD[muInd]] + muon_hadIso03[MU_passGOOD[muInd]] + muon_trackIso03[MU_passGOOD[muInd]]) / muon_pt[MU_passGOOD[muInd]];
-   
+
+               // set correction factors according to detector region
+               float heepEffSf = 1.;
+               float heepEffSfErr = 0.;
+               float Lumi_ScaleFactor = 1.;
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) {
+                 Lumi_ScaleFactor = lumiScaleFactorEB.GetVal();
+                 if (gsf_gsfet[GSF_passHEEP[eleInd]] > 35.) {
+                   heepEffSf = eps_heep_sf_eb_pt35.GetVal();
+                   heepEffSfErr = eps_heep_sf_err_eb_pt35.GetVal();
+                 }
+                 if (gsf_gsfet[GSF_passHEEP[eleInd]] > 100.) {
+                   heepEffSf = eps_heep_sf_eb_pt100.GetVal();
+                   heepEffSfErr = eps_heep_sf_err_eb_pt100.GetVal();
+                 }
+               }
+               else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) {
+                 Lumi_ScaleFactor = lumiScaleFactorEE.GetVal();
+                 if (gsf_gsfet[GSF_passHEEP[eleInd]] > 35.) {
+                   heepEffSf = eps_heep_sf_ee_pt35.GetVal();
+                   heepEffSfErr = eps_heep_sf_err_ee_pt35.GetVal();
+                 }
+                 if (gsf_gsfet[GSF_passHEEP[eleInd]] > 100.) {
+                   heepEffSf = eps_heep_sf_ee_pt100.GetVal();
+                   heepEffSfErr = eps_heep_sf_err_ee_pt100.GetVal();
+                 }
+               }
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 0.8) {
+                 eleEffSf = heepEffSf * eps_cand_sf_0p8.GetVal();
+                 eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8.GetVal()*eps_cand_sf_err_0p8.GetVal());
+               }
+               else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) {
+                 eleEffSf = heepEffSf * eps_cand_sf_0p8to1p4442.GetVal();
+                 eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8to1p4442.GetVal()*eps_cand_sf_err_0p8to1p4442.GetVal());
+               }
+               else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.0) {
+                 eleEffSf = heepEffSf * eps_cand_sf_1p566to2p0.GetVal();
+                 eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_1p566to2p0.GetVal()*eps_cand_sf_err_1p566to2p0.GetVal());
+               }
+               else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 2.0 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) {
+                 eleEffSf = heepEffSf * eps_cand_sf_2p0to2p5.GetVal();
+                 eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_2p0to2p5.GetVal()*eps_cand_sf_err_2p0to2p5.GetVal());
+               }
+               // muon scale factor
+               if (fabs(muon_eta[MU_passGOOD[muInd]]) < 0.9) {
+                 muEffSf = muScaleFactorLowEta.GetVal();
+                 trgEffSf = trgDataMcScaleFactorLowEta.GetVal();
+                 trgEff = trgEffLowEta.GetVal();
+               }
+               else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 1.2) {
+                 muEffSf = muScaleFactorMidEta.GetVal();
+                 trgEffSf = trgDataMcScaleFactorMidEta.GetVal();
+                 trgEff = trgEffMidEta.GetVal();
+               }
+               else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.1) {
+                 muEffSf = muScaleFactorHighEta.GetVal();
+                 trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
+                 trgEff = trgEffHighEta.GetVal();
+               }
+               else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.4) {
+                 muEffSf = muScaleFactorHighestEta.GetVal();
+                 trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
+                 trgEff = trgEffHighEta.GetVal();
+               }
+
+               if (lowMassPuOnly && invMass > puMassCut) weight = 1.;
+               if (p > 0) weight *= eleEffSf * muEffSf * Lumi_ScaleFactor * trgEffSf;
+
                int jetsPt20 = 0;
                int jetsPt30 = 0;
-               for (int jetIt = 0; jetIt < JetColl_size; ++jetIt) {
+               for (int jetIt = 0; jetIt < JetColl_size; ++ jetIt) {
                   if (Jet_pt[jetIt] > 20.) ++jetsPt20;
                   if (Jet_pt[jetIt] > 30.) ++jetsPt30;
                }
+
+               TLorentzVector genEle1;
+               TLorentzVector genMu1;
+               genEle1.SetPtEtaPhiM(genele_pt[0], genele_eta[0], genele_phi[0], 0.000511);
+               genMu1.SetPtEtaPhiM(genmu_pt[0], genmu_eta[0], genmu_phi[0], 0.10566);
    
                // fill the data tree
-               passHeep = PassHEEP(GSF_passFrPre[eleInd]);
                emuInvMass = invMass;
-               if (p > 0) trueMass = genelemom_mass[0];
-               eCharge = gsf_charge[GSF_passFrPre[eleInd]];
+               if (p > 0) {
+                 trueMass = genelemom_mass[0];
+                 genEmuMass = (genEle1 + genMu1).M();
+               }
+               eCharge = gsf_charge[GSF_passHEEP[eleInd]];
                muCharge = muon_charge[MU_passGOOD[muInd]];
                totWeight = weight;
                if (p > 0) totWeight *= input[p].second * LumiFactor;
-               if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 1.442) evtRegion = 0;
-               else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 2.5) evtRegion = 1;
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) evtRegion = 0;
+               else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) evtRegion = 1;
                else evtRegion = -1;
                // fill control variables
                nVtx = pvsize;
-               eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passFrPre[eleInd]] - muon_dz_firstPVtx[MU_passGOOD[muInd]]);
-               eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passFrPre[eleInd]] - muon_dxy_firstPVtx[MU_passGOOD[muInd]]);
-               if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]);
-               if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passFrPre[eleInd]]);
-               dEta = fabs(muon_eta[MU_passGOOD[muInd]] - gsf_eta[GSF_passFrPre[eleInd]]);
-               eleEt = gsf_gsfet[GSF_passFrPre[eleInd]];
-               eleEta = gsf_eta[GSF_passFrPre[eleInd]];
-               elePhi = gsf_phi[GSF_passFrPre[eleInd]];
-               eleDEta = gsf_deltaeta[GSF_passFrPre[eleInd]];
-               eleDPhi = gsf_deltaphi[GSF_passFrPre[eleInd]];
-               eleHOE = gsf_hovere[GSF_passFrPre[eleInd]];
-               eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passFrPre[eleInd]];
-               eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passFrPre[eleInd]];
-               eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passFrPre[eleInd]];
-               eleEcalIso = gsf_ecaliso[GSF_passFrPre[eleInd]];
-               eleHcalIso1 = gsf_hcaliso1[GSF_passFrPre[eleInd]];
-               eleHcalIso2 = gsf_hcaliso2[GSF_passFrPre[eleInd]];
-               if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passFrPre[eleInd]]);
-               else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[eleInd]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2.5 - rho * 0.28);
-               else if (evtRegion == 1 && gsf_gsfet[GSF_passFrPre[eleInd]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passFrPre[eleInd]] + gsf_hcaliso1[GSF_passFrPre[eleInd]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passFrPre[eleInd]] - 50.));
-               eleTrkIso = gsf_trackiso[GSF_passFrPre[eleInd]];
-               eleLostHits = gsf_nLostInnerHits[GSF_passFrPre[eleInd]];
-               eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passFrPre[eleInd]];
-               eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passFrPre[eleInd]];
-               etEleOPtMu = gsf_gsfet[GSF_passFrPre[eleInd]]/muon_pt[MU_passGOOD[muInd]];
-               if (gsf_charge[GSF_passFrPre[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passFrPre[eleInd]]/muon_pt[MU_passGOOD[muInd]];
-               else if (gsf_charge[GSF_passFrPre[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[muInd]]/gsf_gsfet[GSF_passFrPre[eleInd]];
+               eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passHEEP[eleInd]] - muon_dz_firstPVtx[MU_passGOOD[muInd]]);
+               eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passHEEP[eleInd]] - muon_dxy_firstPVtx[MU_passGOOD[muInd]]);
+               if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]);
+               if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]);
+               dEta = fabs(muon_eta[MU_passGOOD[muInd]] - gsf_eta[GSF_passHEEP[eleInd]]);
+               eleEt = gsf_gsfet[GSF_passHEEP[eleInd]];
+               eleEta = gsf_eta[GSF_passHEEP[eleInd]];
+               elePhi = gsf_phi[GSF_passHEEP[eleInd]];
+               eleDEta = gsf_deltaeta[GSF_passHEEP[eleInd]];
+               eleDPhi = gsf_deltaphi[GSF_passHEEP[eleInd]];
+               eleHOE = gsf_hovere[GSF_passHEEP[eleInd]];
+               eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passHEEP[eleInd]];
+               eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passHEEP[eleInd]];
+               eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passHEEP[eleInd]];
+               eleEcalIso = gsf_ecaliso[GSF_passHEEP[eleInd]];
+               eleHcalIso1 = gsf_hcaliso1[GSF_passHEEP[eleInd]];
+               eleHcalIso2 = gsf_hcaliso2[GSF_passHEEP[eleInd]];
+               if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passHEEP[eleInd]]);
+               else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[eleInd]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2.5 - rho * 0.28);
+               else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[eleInd]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passHEEP[eleInd]] - 50.));
+               eleTrkIso = gsf_trackiso[GSF_passHEEP[eleInd]];
+               eleLostHits = gsf_nLostInnerHits[GSF_passHEEP[eleInd]];
+               eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passHEEP[eleInd]];
+               eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passHEEP[eleInd]];
+               etEleOPtMu = gsf_gsfet[GSF_passHEEP[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+               if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passHEEP[eleInd]]/muon_pt[MU_passGOOD[muInd]];
+               else if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[muInd]]/gsf_gsfet[GSF_passHEEP[eleInd]];
                else lepPtPlusOPtMinus = 0.;
                eChTimesMuCh = eCharge * muCharge;
                muPt = muon_pt[MU_passGOOD[muInd]];
@@ -831,293 +1065,97 @@ void EmuSpectrum::Loop()
                numOfJets = JetColl_size;
                numOfJetsPt20 = jetsPt20;
                numOfJetsPt30 = jetsPt30;
-   
-               frEmuTree->Fill();
-            }
-         }
 
-         //HEEP ele + GOOD muon
-         if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) {
-            TLorentzVector ele1;
-            TLorentzVector mu1;
-            double invMass = 0.;
+               emuTree->Fill();
 
-            // find the e-mu pair with the maximum invariant mass
-            double maxInvMass = 0.;
-            unsigned int eleInd = 0;
-            unsigned int muInd = 0;
-            for (unsigned int eleIt = 0; eleIt < GSF_passHEEP.size(); ++eleIt) {
-               for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
-                  ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[eleIt]], gsf_eta[GSF_passHEEP[eleIt]], gsf_phi[GSF_passHEEP[eleIt]], 0.000511);
-                  mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
+               // fill the good emu events tree
+               evRegion = evtRegion;
+               emuMass = invMass;
+               if (passTrg) eleDataTree->Fill();
+               
 
-                  invMass = (ele1 + mu1).M();
-                  if (invMass > maxInvMass) {
-                     maxInvMass = invMass;
-                     eleInd = eleIt;
-                     muInd = muIt;
+               //same sign and opposite sign
+               if (p == 0) {
+                  if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] > 0) ++nb_plus_plus;
+                  if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) ++nb_plus_minus;
+                  if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) ++nb_minus_plus;
+                  if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] < 0) ++nb_minus_minus;
+
+                  if (invMass > 600. || invMass < 1.) {
+                     if (invMass > 600.) cout << "M_emu > 600 GeV/c^2 event | " << runnumber << ":" << luminosityBlock << ":" << eventnumber << " | "; 
+                     if (invMass < 1.) cout << "M_emu < 1 GeV/c^2 event   | " << runnumber << ":" << luminosityBlock << ":" << eventnumber << " | "; 
+                          cout << setw(8) << invMass << " | " << 
+                          setw(7) << muon_pt[MU_passGOOD[muInd]] << " | " <<
+                          setw(8) << muon_eta[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_phi[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_trackIso03[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_emIso03[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_hadIso03[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_normChi2[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_dxy_beamSpot[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_nhitstrack[MU_passGOOD[muInd]] << " | " <<
+                          //setw(8) << muon_nhitsmuons[MU_passGOOD[muInd]] << " | " <<
+                          setw(7) << gsf_gsfet[GSF_passHEEP[eleInd]] << " | " << 
+                          setw(8) << gsfsc_eta[GSF_passHEEP[eleInd]] << " | " <<
+                          //setw(8) << gsfsc_phi[GSF_passHEEP[eleInd]] << " | " <<
+                          //setw(8) << gsf_trackiso[GSF_passHEEP[eleInd]] << " | " <<
+                          //setw(8) << gsf_ecaliso[GSF_passHEEP[eleInd]] << " | " <<
+                          //setw(8) << gsf_hcaliso1[GSF_passHEEP[eleInd]] << " | " <<
+                          //setw(8) << gsf_hcaliso2[GSF_passHEEP[eleInd]] << " | " <<
+                          endl;
                   }
                }
             }
-            invMass = maxInvMass;
+           ///////////////////////////////////////////////////////////////////////
+         } //END LOOP OVER EVENTS
+           //////////////////////////////////////////////////////////////////////
 
-            // vertex matching of tracks by dz
-            //if (fabs(gsf_dz_beamSpot[GSF_passHEEP[eleInd]] - muon_dz_beamSpot[MU_passGOOD[muInd]]) > 0.05) continue;
+         cout << "Number of selected events: " << evCounter << endl;
+         cout << "moreHeep/goodHeep: " << moreHeepCounter << " / " << goodHeepCounter << " = " << (float)moreHeepCounter/(float)goodHeepCounter << endl;
+         cout << "moreMu/goodMu: " << moreMuCounter << " / " << goodMuCounter << " = " << (float)moreMuCounter/(float)goodMuCounter << endl;
+         cout << "moreHeepMu: " << moreHeepMuCounter << endl;
 
-            //MASS CUT
-            if (invMass < minInvMass) continue;
-            ++goodHeepCounter;
-            ++goodMuCounter;
+         if (p == 0) {
+            //write root file with good emu events
+            goodEvFile->cd();
+            eleDataTree->Write();
 
-            if (GSF_passHEEP.size() > 1) {
-               //cout << "Electron masses: ";
-               //vector<double> eleInvMasses;
-               //for (unsigned int heep1It = 0; heep1It < GSF_passHEEP.size(); ++heep1It) {
-               //   for (unsigned int heep2It = GSF_passHEEP.size()-1; heep2It > heep1It; --heep2It) {
-               //      TLorentzVector ele1;
-               //      TLorentzVector ele2;
-
-               //      ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[heep1It]], gsf_eta[GSF_passHEEP[heep1It]], gsf_phi[GSF_passHEEP[heep1It]], 0.000511);
-               //      ele2.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[heep2It]], gsf_eta[GSF_passHEEP[heep2It]], gsf_phi[GSF_passHEEP[heep2It]], 0.000511);
-
-               //      eleInvMasses.push_back((ele1 + ele2).M());
-               //      cout << eleInvMasses.back() << " ";
-               //   }
-               //}
-               ////cout << GSF_passHEEP.size() << " HEEP electrons found" << endl;
-               //++moreHeepCounter;
-
-               //continue;
-            }
-
-            ++evCounter;
-
-            float CombRelIso = (muon_emIso03[MU_passGOOD[muInd]] + muon_hadIso03[MU_passGOOD[muInd]] + muon_trackIso03[MU_passGOOD[muInd]]) / muon_pt[MU_passGOOD[muInd]];
-
-            // set correction factors according to detector region
-            float heepEffSf = 1.;
-            float heepEffSfErr = 0.;
-            float Lumi_ScaleFactor = 1.;
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) {
-              Lumi_ScaleFactor = lumiScaleFactorEB.GetVal();
-              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 35.) {
-                heepEffSf = eps_heep_sf_eb_pt35.GetVal();
-                heepEffSfErr = eps_heep_sf_err_eb_pt35.GetVal();
-              }
-              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 100.) {
-                heepEffSf = eps_heep_sf_eb_pt100.GetVal();
-                heepEffSfErr = eps_heep_sf_err_eb_pt100.GetVal();
-              }
-            }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) {
-              Lumi_ScaleFactor = lumiScaleFactorEE.GetVal();
-              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 35.) {
-                heepEffSf = eps_heep_sf_ee_pt35.GetVal();
-                heepEffSfErr = eps_heep_sf_err_ee_pt35.GetVal();
-              }
-              if (gsf_gsfet[GSF_passHEEP[eleInd]] > 100.) {
-                heepEffSf = eps_heep_sf_ee_pt100.GetVal();
-                heepEffSfErr = eps_heep_sf_err_ee_pt100.GetVal();
-              }
-            }
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 0.8) {
-              eleEffSf = heepEffSf * eps_cand_sf_0p8.GetVal();
-              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8.GetVal()*eps_cand_sf_err_0p8.GetVal());
-            }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) {
-              eleEffSf = heepEffSf * eps_cand_sf_0p8to1p4442.GetVal();
-              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_0p8to1p4442.GetVal()*eps_cand_sf_err_0p8to1p4442.GetVal());
-            }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.0) {
-              eleEffSf = heepEffSf * eps_cand_sf_1p566to2p0.GetVal();
-              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_1p566to2p0.GetVal()*eps_cand_sf_err_1p566to2p0.GetVal());
-            }
-            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 2.0 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) {
-              eleEffSf = heepEffSf * eps_cand_sf_2p0to2p5.GetVal();
-              eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_2p0to2p5.GetVal()*eps_cand_sf_err_2p0to2p5.GetVal());
-            }
-            // muon scale factor
-            if (fabs(muon_eta[MU_passGOOD[muInd]]) < 0.9) {
-              muEffSf = muScaleFactorLowEta.GetVal();
-              trgEffSf = trgDataMcScaleFactorLowEta.GetVal();
-              trgEff = trgEffLowEta.GetVal();
-            }
-            else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 1.2) {
-              muEffSf = muScaleFactorMidEta.GetVal();
-              trgEffSf = trgDataMcScaleFactorMidEta.GetVal();
-              trgEff = trgEffMidEta.GetVal();
-            }
-            else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.1) {
-              muEffSf = muScaleFactorHighEta.GetVal();
-              trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
-              trgEff = trgEffHighEta.GetVal();
-            }
-            else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.4) {
-              muEffSf = muScaleFactorHighestEta.GetVal();
-              trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
-              trgEff = trgEffHighEta.GetVal();
-            }
-
-            if (lowMassPuOnly && invMass > puMassCut) weight = 1.;
-            if (p > 0) weight *= eleEffSf * muEffSf * Lumi_ScaleFactor * trgEffSf;
-
-            int jetsPt20 = 0;
-            int jetsPt30 = 0;
-            for (int jetIt = 0; jetIt < JetColl_size; ++ jetIt) {
-               if (Jet_pt[jetIt] > 20.) ++jetsPt20;
-               if (Jet_pt[jetIt] > 30.) ++jetsPt30;
-            }
-
-            TLorentzVector genEle1;
-            TLorentzVector genMu1;
-            genEle1.SetPtEtaPhiM(genele_pt[0], genele_eta[0], genele_phi[0], 0.000511);
-            genMu1.SetPtEtaPhiM(genmu_pt[0], genmu_eta[0], genmu_phi[0], 0.10566);
-   
-            // fill the data tree
-            emuInvMass = invMass;
-            if (p > 0) {
-              trueMass = genelemom_mass[0];
-              genEmuMass = (genEle1 + genMu1).M();
-            }
-            eCharge = gsf_charge[GSF_passHEEP[eleInd]];
-            muCharge = muon_charge[MU_passGOOD[muInd]];
-            totWeight = weight;
-            if (p > 0) totWeight *= input[p].second * LumiFactor;
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.442) evtRegion = 0;
-            else if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 2.5) evtRegion = 1;
-            else evtRegion = -1;
-            // fill control variables
-            nVtx = pvsize;
-            eDzMinusMuDz = fabs(gsf_dz_firstPVtx[GSF_passHEEP[eleInd]] - muon_dz_firstPVtx[MU_passGOOD[muInd]]);
-            eDxyMinusMuDxy = fabs(gsf_dxy_firstPVtx[GSF_passHEEP[eleInd]] - muon_dxy_firstPVtx[MU_passGOOD[muInd]]);
-            if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]) < 3.14) dPhi = fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]);
-            if (fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]) > 3.14) dPhi = 6.28 - fabs(muon_phi[MU_passGOOD[muInd]] - gsf_phi[GSF_passHEEP[eleInd]]);
-            dEta = fabs(muon_eta[MU_passGOOD[muInd]] - gsf_eta[GSF_passHEEP[eleInd]]);
-            eleEt = gsf_gsfet[GSF_passHEEP[eleInd]];
-            eleEta = gsf_eta[GSF_passHEEP[eleInd]];
-            elePhi = gsf_phi[GSF_passHEEP[eleInd]];
-            eleDEta = gsf_deltaeta[GSF_passHEEP[eleInd]];
-            eleDPhi = gsf_deltaphi[GSF_passHEEP[eleInd]];
-            eleHOE = gsf_hovere[GSF_passHEEP[eleInd]];
-            eleE1x5overE5x5 = gsf_e1x5overe5x5[GSF_passHEEP[eleInd]];
-            eleE2x5overE5x5 = gsf_e2x5overe5x5[GSF_passHEEP[eleInd]];
-            eleSigmaIEIE = gsf_sigmaIetaIeta[GSF_passHEEP[eleInd]];
-            eleEcalIso = gsf_ecaliso[GSF_passHEEP[eleInd]];
-            eleHcalIso1 = gsf_hcaliso1[GSF_passHEEP[eleInd]];
-            eleHcalIso2 = gsf_hcaliso2[GSF_passHEEP[eleInd]];
-            if (evtRegion == 0) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2. - rho * 0.28 - 0.03 * gsf_gsfet[GSF_passHEEP[eleInd]]);
-            else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[eleInd]] < 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2.5 - rho * 0.28);
-            else if (evtRegion == 1 && gsf_gsfet[GSF_passHEEP[eleInd]] >= 50.) eleHeepIso = -1. * (gsf_ecaliso[GSF_passHEEP[eleInd]] + gsf_hcaliso1[GSF_passHEEP[eleInd]] - 2.5 - rho * 0.28 - 0.03 * (gsf_gsfet[GSF_passHEEP[eleInd]] - 50.));
-            eleTrkIso = gsf_trackiso[GSF_passHEEP[eleInd]];
-            eleLostHits = gsf_nLostInnerHits[GSF_passHEEP[eleInd]];
-            eleDXYFstPVtx = gsf_dxy_firstPVtx[GSF_passHEEP[eleInd]];
-            eleDZFstPVtx = gsf_dz_firstPVtx[GSF_passHEEP[eleInd]];
-            etEleOPtMu = gsf_gsfet[GSF_passHEEP[eleInd]]/muon_pt[MU_passGOOD[muInd]];
-            if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) lepPtPlusOPtMinus = gsf_gsfet[GSF_passHEEP[eleInd]]/muon_pt[MU_passGOOD[muInd]];
-            else if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) lepPtPlusOPtMinus = muon_pt[MU_passGOOD[muInd]]/gsf_gsfet[GSF_passHEEP[eleInd]];
-            else lepPtPlusOPtMinus = 0.;
-            eChTimesMuCh = eCharge * muCharge;
-            muPt = muon_pt[MU_passGOOD[muInd]];
-            muPtErr = muon_ptError[MU_passGOOD[muInd]];
-            muEta = muon_eta[MU_passGOOD[muInd]];
-            muPhi = muon_phi[MU_passGOOD[muInd]];
-            muHitLayers = muon_nlayerswithhits[MU_passGOOD[muInd]];
-            muTrkHits = muon_nhitstrack[MU_passGOOD[muInd]];
-            muPxlHits = muon_nhitspixel[MU_passGOOD[muInd]];
-            muMuHits = muon_nhitsmuons[MU_passGOOD[muInd]];
-            muDZFstPVtx = muon_dz_firstPVtx[MU_passGOOD[muInd]];
-            muDXYFstPVtx = muon_dxy_firstPVtx[MU_passGOOD[muInd]];
-            muNSeg = muon_nSegmentMatch[MU_passGOOD[muInd]];
-            muTrkIso03 = muon_trackIso03[MU_passGOOD[muInd]];
-            muIsoCombRel = CombRelIso;
-            numOfJets = JetColl_size;
-            numOfJetsPt20 = jetsPt20;
-            numOfJetsPt30 = jetsPt30;
-
-            emuTree->Fill();
-
-            // fill the good emu events tree
-            evRegion = evtRegion;
-            emuMass = invMass;
-            if (passTrg) eleDataTree->Fill();
-            
-
-            //same sign and opposite sign
-            if (p == 0) {
-               if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] > 0) ++nb_plus_plus;
-               if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) ++nb_plus_minus;
-               if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] > 0) ++nb_minus_plus;
-               if (gsf_charge[GSF_passHEEP[eleInd]] < 0 && muon_charge[MU_passGOOD[muInd]] < 0) ++nb_minus_minus;
-
-               if (invMass > 600. || invMass < 1.) {
-                  if (invMass > 600.) cout << "M_emu > 600 GeV/c^2 event | " << runnumber << ":" << luminosityBlock << ":" << eventnumber << " | "; 
-                  if (invMass < 1.) cout << "M_emu < 1 GeV/c^2 event   | " << runnumber << ":" << luminosityBlock << ":" << eventnumber << " | "; 
-                       cout << setw(8) << invMass << " | " << 
-                       setw(7) << muon_pt[MU_passGOOD[muInd]] << " | " <<
-                       setw(8) << muon_eta[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_phi[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_trackIso03[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_emIso03[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_hadIso03[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_normChi2[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_dxy_beamSpot[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_nhitstrack[MU_passGOOD[muInd]] << " | " <<
-                       //setw(8) << muon_nhitsmuons[MU_passGOOD[muInd]] << " | " <<
-                       setw(7) << gsf_gsfet[GSF_passHEEP[eleInd]] << " | " << 
-                       setw(8) << gsfsc_eta[GSF_passHEEP[eleInd]] << " | " <<
-                       //setw(8) << gsfsc_phi[GSF_passHEEP[eleInd]] << " | " <<
-                       //setw(8) << gsf_trackiso[GSF_passHEEP[eleInd]] << " | " <<
-                       //setw(8) << gsf_ecaliso[GSF_passHEEP[eleInd]] << " | " <<
-                       //setw(8) << gsf_hcaliso1[GSF_passHEEP[eleInd]] << " | " <<
-                       //setw(8) << gsf_hcaliso2[GSF_passHEEP[eleInd]] << " | " <<
-                       endl;
-               }
-            }
+            dataEntries = dataTrig[0] + dataTrig[1] + dataTrig[2];
+            cout << "HLT_Mu22_Photon22_CaloIdL: " << dataTrig[0] 
+                 << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[1] 
+                 << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[2] 
+                 << " , sum: " << dataTrig[0]+dataTrig[1]+dataTrig[2] << endl;
+            cout << "Runrange HLT_Mu22_Photon22_CaloIdL: " << runs_HLT_Mu22_Photon22_CaloIdL.first 
+                 << " - " << runs_HLT_Mu22_Photon22_CaloIdL.second << endl;
+            cout << "Runrange HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " 
+                 << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " 
+                 << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
+            cout << "Runrange HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " 
+                 << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " 
+                 << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
          }
-        ///////////////////////////////////////////////////////////////////////
-      } //END LOOP OVER EVENTS
-        //////////////////////////////////////////////////////////////////////
+         else {
+            cout << "HLT_Mu22_Photon22_CaloIdL: " << trig[0] 
+                   << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[1] 
+                   << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[2] 
+                   << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
+         }
+         if (shUnc > 0) output->cd(shapeUncNames[shUnc]);
+         else output->cd();
 
-      cout << "Number of selected events: " << evCounter << endl;
-      cout << "moreHeep/goodHeep: " << moreHeepCounter << " / " << goodHeepCounter << " = " << (float)moreHeepCounter/(float)goodHeepCounter << endl;
-      cout << "moreMu/goodMu: " << moreMuCounter << " / " << goodMuCounter << " = " << (float)moreMuCounter/(float)goodMuCounter << endl;
-      cout << "moreHeepMu: " << moreHeepMuCounter << endl;
+         TParameter<float> *mcWeight = new TParameter<float>((const char *)(suffix[p] + shapeUncName), input[p].second);
+         mcWeights.Add(mcWeight);
 
-      if (p == 0) {
-         //write root file with good emu events
-         goodEvFile->cd();
-         eleDataTree->Write();
+         TParameter<float> *eleVetoRatio = new TParameter<float>((const char *)(suffix[p] + shapeUncName), (float)moreHeepCounter/(float)goodHeepCounter);
+         eleVetoRatios.Add(eleVetoRatio);
 
-         dataEntries = dataTrig[0] + dataTrig[1] + dataTrig[2];
-         cout << "HLT_Mu22_Photon22_CaloIdL: " << dataTrig[0] 
-              << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[1] 
-              << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << dataTrig[2] 
-              << " , sum: " << dataTrig[0]+dataTrig[1]+dataTrig[2] << endl;
-         cout << "Runrange HLT_Mu22_Photon22_CaloIdL: " << runs_HLT_Mu22_Photon22_CaloIdL.first 
-              << " - " << runs_HLT_Mu22_Photon22_CaloIdL.second << endl;
-         cout << "Runrange HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " 
-              << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " 
-              << runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
-         cout << "Runrange HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " 
-              << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.first << " - " 
-              << runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL.second << endl;
-      }
-      else {
-         cout << "HLT_Mu22_Photon22_CaloIdL: " << trig[0] 
-                << " , HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[1] 
-                << " , HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL: " << trig[2] 
-                << " , sum: " << trig[0]+trig[1]+trig[2] << endl;
-      }
+         emuTree->Write();
+         frEmuTree->Write();
+         if (shUnc > 0) output->cd("..");
+        //////////////////////////////////////////////////////////////////////////
+      } //END LOOP OVER SHAPE UNCERTAINTIES
+        //////////////////////////////////////////////////////////////////////////
       output->cd();
-
-      TParameter<float> *mcWeight = new TParameter<float>((const char *)suffix[p], input[p].second);
-      mcWeights.Add(mcWeight);
-
-      TParameter<float> *eleVetoRatio = new TParameter<float>((const char *)suffix[p], (float)moreHeepCounter/(float)goodHeepCounter);
-      eleVetoRatios.Add(eleVetoRatio);
-
-      emuTree->Write();
-      frEmuTree->Write();
       puMc->Write();
       puMcNorm->Write();
       puWeights->Write();
@@ -1267,6 +1305,27 @@ EmuSpectrum::FakeRate (const float& et, const float& eta)
   //  if(et < 115.4) return 0.099 - 0.00035 * et;
   //  else return 0.0586;
   //} else return 0;
+}
+
+void
+EmuSpectrum::scaleEle (const bool up)
+{
+   int sign = 1;
+   if (up) sign = -1;
+   for (int i = 0; i < gsf_size; ++i) {
+      if (fabs(gsfsc_eta[i]) < 1.442) gsf_gsfet[i] += sign*gsf_gsfet[i]*0.006;
+      else if (fabs(gsfsc_eta[i]) > 1.56) gsf_gsfet[i] += sign*gsf_gsfet[i]*0.015;
+   }
+}
+
+void
+EmuSpectrum::scaleMu (const bool up)
+{
+   int sign = 1;
+   if (up) sign = -1;
+   for (int i = 0; i < muon_size; ++i) {
+      muon_pt[i] += sign*muon_pt[i]*0.00005*muon_pt[i]; // 5%/TeV
+   }
 }
 
 double
