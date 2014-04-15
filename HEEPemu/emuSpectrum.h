@@ -119,6 +119,7 @@ public :
    Float_t         genmu_eta[100];
    Float_t         genmu_phi[100];
    Float_t         genPair_mass;
+   Float_t         emu_mass;
    Int_t           trueNVtx;
 
    // List of branches
@@ -190,6 +191,7 @@ public :
    TBranch        *b_genmu_eta;   //!
    TBranch        *b_genmu_phi;   //!
    TBranch        *b_genPair_mass;   //!
+   TBranch        *b_emu_mass;   //!
    TBranch        *b_trueNVtx;   //!
 
    EmuSpectrum(TTree *tree=0);
@@ -515,6 +517,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
    fChain->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
    fChain->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
+   fChain->SetBranchAddress("emu_mass", &emu_mass, &b_emu_mass);
    fChain->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
 
    // enable only used branches
@@ -587,6 +590,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("genmu_eta", 1);
    fChain->SetBranchStatus("genmu_phi", 1);
    fChain->SetBranchStatus("genPair_mass", 1);
+   fChain->SetBranchStatus("emu_mass", 1);
    fChain->SetBranchStatus("trueNVtx", 1);
 
    Notify();
