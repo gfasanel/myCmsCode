@@ -19,6 +19,8 @@
 #include "TLatex.h"
 #include "Math/QuantFuncMathCore.h"
 
+#include "makeHistoFromBranch.C"
+
 #define DATA 0
 #define TTBAR 1
 #define ZTT 2
@@ -43,12 +45,11 @@ float CalcAllErr(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<
 float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int region, int lowerBin, int upperBin = -1, bool calcQcdErr = 0);
 float CalcSSQcdErr(vector<vector<TH1F *> > &histos, vector<float> &errors, int lowerBin, int upperBin = -1);
 float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int sample, int region, int lowerBin, int upperBin = -1, bool calcQcdErr = 0);
-TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int signs, int &region, const char *cutVariable, float cutLow, float cutHigh, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.);
 
 void macro_MakeQcdClosureTest()
 {
   // parameters //////////////////////////////////////////////////////////////
-  TFile input("../forest/emuSpec_19703pb-1.root", "open");
+  TFile input("./emuSpec_19703pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -179,31 +180,72 @@ void macro_MakeQcdClosureTest()
   }
 
   THashList *mcWeights = (THashList *)input.Get("mcWeights");
-  TParameter<float> *mcWeight = (TParameter<float> *)mcWeights->FindObject("ttbar");
-  TParameter<float> *mcWeight700to1000 = (TParameter<float> *)mcWeights->FindObject("ttbar700to1000");
-  TParameter<float> *mcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
+  THashList *nGenEvents = (THashList *)input.Get("nGenEvents");
+  TParameter<float> *ttbarMcWeight = (TParameter<float> *)mcWeights->FindObject("ttbar");
+  TParameter<float> *ttbarMcWeight700to1000 = (TParameter<float> *)mcWeights->FindObject("ttbar700to1000");
+  TParameter<float> *ttbarMcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
+  TParameter<float> *ttbarMcWeight600up = (TParameter<float> *)mcWeights->FindObject("ttbarPriv600up");
+  TParameter<float> *wwMcWeight = (TParameter<float> *)mcWeights->FindObject("ww");
+  TParameter<float> *wwMcWeight600upEminusMuPlus = (TParameter<float> *)mcWeights->FindObject("wwPriv600upEminusMuPlus");
+  TParameter<float> *wwMcWeight600upEplusMuMinus = (TParameter<float> *)mcWeights->FindObject("wwPriv600upEplusMuMinus");
+  TParameter<float> *wwNGen600upEminusMuPlus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEminusMuPlus");
+  TParameter<float> *wwNGen600upEplusMuMinus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEplusMuMinus");
 
-  float totMcWeight = 1.;
+  // vectors for processes with multiple samples 
+  vector<const char *> cutVarsTtbar;
+  vector<float> lowCutsTtbar;
+  vector<float> highCutsTtbar;
+  vector<float> mcWeightsForCutRangesTtbar;
+  cutVarsTtbar.push_back("");
+  lowCutsTtbar.push_back(0.);
+  highCutsTtbar.push_back(1.e9);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight->GetVal());
+  cutVarsTtbar.push_back("genMTtbar");
+  lowCutsTtbar.push_back(700.);
+  highCutsTtbar.push_back(1000.);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight700to1000->GetVal());
+  cutVarsTtbar.push_back("genMTtbar");
+  lowCutsTtbar.push_back(1000.);
+  highCutsTtbar.push_back(1.e9);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight1000up->GetVal());
+  cutVarsTtbar.push_back("emu_mass");
+  lowCutsTtbar.push_back(600.);
+  highCutsTtbar.push_back(1.e9);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight600up->GetVal());
+  vector<const char *> cutVarsWw;
+  vector<float> lowCutsWw;
+  vector<float> highCutsWw;
+  vector<float> mcWeightsForCutRangesWw;
+  cutVarsWw.push_back("");
+  lowCutsWw.push_back(0.);
+  highCutsWw.push_back(1.e9);
+  mcWeightsForCutRangesWw.push_back(wwMcWeight->GetVal());
+  cutVarsWw.push_back("emu_mass");
+  lowCutsWw.push_back(600.);
+  highCutsWw.push_back(1.e9);
+  mcWeightsForCutRangesWw.push_back((wwMcWeight600upEminusMuPlus->GetVal()*wwNGen600upEminusMuPlus->GetVal() + wwMcWeight600upEplusMuMinus->GetVal()*wwNGen600upEplusMuMinus->GetVal())/(wwNGen600upEminusMuPlus->GetVal()+wwNGen600upEplusMuMinus->GetVal()));
+  vector<const char *> cutVarsEmpty;
+  vector<float> lowCutsEmpty;
+  vector<float> highCutsEmpty;
+  vector<float> mcWeightsForCutRangesEmpty;
+
   // determine qcd contribution
   TH1F *qcdContrib;
-  TH1F *ssData = MakeHistoFromBranch(&input, "emuTree_data", "mass", SS, eRegion, "", 0., 0., binning, 0x100);
-  TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 0., 700., binning, 0x1DF);
-  totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", SS, eRegion, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-  totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF);
-  //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF);
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+  TH1F *ssData = MakeHistoFromBranch(&input, "emuTree_data", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x100);
+  TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF);
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", "mass", SS, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", "mass", SS, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+  ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
   qcdContrib = (TH1F *)ssData->Clone("qcdContrib_SS");
   qcdContrib->Add(ssBg, -1);
   for (int i = 0; i < qcdContrib->GetNbinsX() + 2; ++i) {
@@ -225,13 +267,13 @@ void macro_MakeQcdClosureTest()
 
       if (k == 2) k = -1;
       // make the histograms
-      emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
       if (k == -1) k = 2;
       emuMass_wjets.back()->SetName("emuMass_" + histoSign[k] + "wjets" + nameSuffix[j]);
 
       // qcd contribution
       if (k == 2) k = -1;
-      emuMass_qcdFromFake.push_back((TH1F *)MakeHistoFromBranch(&input, "frEmuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x300));
+      emuMass_qcdFromFake.push_back(MakeHistoFromBranch(&input, "frEmuTree_data", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x300));
       emuMass_qcd.push_back((TH1F *)qcdContrib->Clone("emuMass_" + histoSign[k] + "qcd"));
       if (k == ALL) emuMass_qcd.back()->Scale(2.);
       // normalize to bin width
@@ -593,142 +635,5 @@ float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, 
 
    //return sqrt(statErr * statErr + systErr * systErr);
    return sqrt(systErr * systErr);
-}
-
-// flags: [apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
-TH1F *
-MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int signs, int &region, const char *cutVariable, float cutLow, float cutHigh, vector<float> &binning, unsigned int flags, bool normToBinWidth, float userScale)
-{
-  input->cd();
-  // prepare the histogram
-  TH1F *histo = new TH1F("dummy", "dummy", 150, 0., 1500.);
-  histo->Sumw2();
-  histo->SetName(brName);
-  histo->SetTitle(brName);
-  float *bins = &binning[0];
-  histo->GetXaxis()->Set(binning.size() - 1, bins);
-
-  if (flags & 1<<7) userScale *= ((TParameter<float> *)input->Get("lumi"))->GetVal();
-  if (flags & 1<<6) {
-    THashList *mcWeights = (THashList *)input->Get("mcWeights");
-    unsigned int charOffset = 8;
-    if (flags & 1<<9) charOffset += 2;
-    userScale *= ((TParameter<float> *)mcWeights->FindObject(treeName + charOffset))->GetVal();
-  }
-  float lumiScaleFactorEB = ((TParameter<float> *)input->Get("lumiScaleFactorEB"))->GetVal();
-  float lumiScaleFactorEE = ((TParameter<float> *)input->Get("lumiScaleFactorEE"))->GetVal();
-
-  //cout << "Scalefactor = " << userScale << endl;
-
-  // get the tree
-  TTree *tree;
-  tree = (TTree *)input->Get(treeName);
-
-  // get branches
-  float var;
-  bool passTrg;
-  bool passHeep;
-  float puWeight = 1.;
-  int eCharge;
-  int muCharge;
-  int evtRegion;
-  float cutVar = 0.;
-  float fakeRate = 0.;
-  float trgEff = 1.;
-  float trgEffSf = 1.;
-  float eleEffSf = 1.;
-  float muEffSf = 1.;
-  tree->SetBranchStatus("*",0); //disable all branches
-  tree->SetBranchStatus(brName,1);
-  tree->SetBranchAddress(brName, &var);
-  if (flags & 1<<8) {
-    tree->SetBranchStatus("passTrg",1);
-    tree->SetBranchAddress("passTrg", &passTrg);
-  }
-  if (signs != 0) {
-    tree->SetBranchStatus("eCharge",1);
-    tree->SetBranchStatus("muCharge",1);
-    tree->SetBranchAddress("eCharge", &eCharge);
-    tree->SetBranchAddress("muCharge", &muCharge);
-  }
-  if (region < 2) {
-    tree->SetBranchStatus("evtRegion",1);
-    tree->SetBranchAddress("evtRegion", &evtRegion);
-  }
-  if (flags & 1) {
-    tree->SetBranchStatus("puWeight",1);
-    tree->SetBranchAddress("puWeight", &puWeight);
-  }
-  if (cutVariable[0] != '\0') {
-    tree->SetBranchStatus(cutVariable,1);
-    tree->SetBranchAddress(cutVariable, &cutVar);
-  }
-  if (flags & 1<<5) {
-    tree->SetBranchStatus("trgEff",1);
-    tree->SetBranchAddress("trgEff", &trgEff);
-  }
-  if (flags & 1<<4) {
-    tree->SetBranchStatus("trgEffSf",1);
-    tree->SetBranchAddress("trgEffSf", &trgEffSf);
-  }
-  if (flags & 1<<2) {
-    tree->SetBranchStatus("eleEffSf",1);
-    tree->SetBranchAddress("eleEffSf", &eleEffSf);
-  }
-  if (flags & 1<<1) {
-    tree->SetBranchStatus("muEffSf",1);
-    tree->SetBranchAddress("muEffSf", &muEffSf);
-  }
-  if (flags & 1<<9) {
-    tree->SetBranchStatus("passHeep",1);
-    tree->SetBranchStatus("fakeRate",1);
-    tree->SetBranchAddress("passHeep", &passHeep);
-    tree->SetBranchAddress("fakeRate", &fakeRate);
-  }
-
-  Long64_t nEntries = (*tree).GetEntries();
-  for (unsigned int i = 0; i < nEntries; ++i) {
-    tree->GetEntry(i);
-
-    // trigger fired?
-    if ((flags & 1<<8) && passTrg == false) continue;
-
-    // select electron region
-    if (evtRegion == 0 && region == 1) continue;
-    if (evtRegion == 1 && region == 0) continue;
-
-    float scaleFactor = userScale;
-    if (flags & 1<<5) scaleFactor *= trgEff;
-    if (flags & 1<<4) scaleFactor *= trgEffSf;
-    if (flags & 1<<2) scaleFactor *= eleEffSf;
-    if (flags & 1<<1) scaleFactor *= muEffSf;
-    // set lumi according to detector region
-    if (evtRegion == 0 && flags & 1<<3) scaleFactor *= lumiScaleFactorEB;
-    if (evtRegion == 1 && flags & 1<<3) scaleFactor *= lumiScaleFactorEE;
-
-    // PU reweight
-    if (flags & 1) scaleFactor *= puWeight;
-
-    // get only the desired charge combination. Scheme emu -3 to +3: -+, +-, OS, ALL, SS, ++, --
-    if (signs < 0 && (eCharge * muCharge) > 0) continue; // OS
-    if (signs > 0 && (eCharge * muCharge) < 0) continue; // SS
-    if (abs(signs) == 3 && eCharge > 0) continue; // e-mu+ or e-mu-
-    if (abs(signs) == 2 && eCharge < 0) continue; // e+mu- or e+mu+
-
-    // user defined cut
-    if (cutVariable[0] != '\0')
-      if (cutVar < cutLow || cutVar >= cutHigh) continue;
-    
-    if (flags & 1<<9) {
-      if (!passHeep) scaleFactor *= fakeRate / (1 - fakeRate);
-      else continue;
-    }
-
-    if (normToBinWidth) scaleFactor /= histo->GetBinWidth(histo->FindBin(var));
-    histo->Fill(var, scaleFactor);
-  }
-
-  //cout << "integral: " << histo->Integral() << "       overflow: " << histo->GetBinContent(histo->GetNbinsX() + 1) << endl;
-  return histo;
 }
 
