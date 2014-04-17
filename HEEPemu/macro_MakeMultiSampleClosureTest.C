@@ -17,7 +17,7 @@
 #include "TStyle.h"
 #include "THashList.h"
 
-TH1F * MakeMcWeightedHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.);
+TH1F * MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.);
 
 // class for plotting of control variable plots
 class ContVarPlot {
@@ -242,11 +242,11 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   vector<float> mcWeightsForCutRanges;
   TH1F *refOverTestHist;
   if (plot_ttbar) {
-    refOverTestHist = (TH1F *)MakeMcWeightedHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin);
-    emuTest_ref.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin);
+    emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
   } else {
-    refOverTestHist = (TH1F *)MakeMcWeightedHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin);
-    emuTest_ref.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin);
+    emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
   }
  
   // get combined ttbar histograms with MC weights for different samples mixed on an event-by-event basis
@@ -267,10 +267,10 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     lowCuts.push_back(600.);
     highCuts.push_back(1.e9);
     mcWeightsForCutRanges.push_back(ttbarMcWeight600up->GetVal());
-    emuTest_ttbar.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_ttbar700to1000.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_ttbar1000up.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_ttbarPriv600up.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_ttbarPriv600up", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
   } else {
     // get combined WW histograms with different final states
     // total weight above 600 GeV (emu_mass): w_t = 1/(1/w_central + (N_p1+N_p2)/(w_p1*N_p1 + w_p2*N_p2))
@@ -286,9 +286,9 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     lowCuts.push_back(600.);
     highCuts.push_back(1.e9);
     mcWeightsForCutRanges.push_back((wwMcWeight600upEminusMuPlus->GetVal()*wwNGen600upEminusMuPlus->GetVal() + wwMcWeight600upEplusMuMinus->GetVal()*wwNGen600upEplusMuMinus->GetVal())/(wwNGen600upEminusMuPlus->GetVal()+wwNGen600upEplusMuMinus->GetVal()));
-    emuTest_ww.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_wwPriv600upEminusMuPlus.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_wwPriv600upEplusMuMinus.push_back(MakeMcWeightedHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_wwPriv600upEminusMuPlus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_wwPriv600upEplusMuMinus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
   }
 
   sig+=3;
@@ -569,14 +569,17 @@ void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, uns
 
 // flags: [apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
 TH1F *
-MakeMcWeightedHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth, float userScale)
+MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth, float userScale)
 {
-  input->cd();
+  TDirectory *dir = gDirectory->CurrentDirectory();
   // prepare the histogram
-  TH1F *histo = new TH1F("dummy", "dummy", 150, 0., 1500.);
+  TH1F *histo = new TH1F("dummy", "dummy", 3000, 0., 3000.);
   histo->Sumw2();
-  histo->SetName(brName);
-  histo->SetTitle(brName);
+  TString histoName = treeName;
+  histoName.Remove(0, 7);
+  histoName.Prepend(brName);
+  histo->SetName(histoName);
+  histo->SetTitle(histoName);
   float *bins = &binning[0];
   histo->GetXaxis()->Set(binning.size() - 1, bins);
   map<const char *, float> cutVarMap;
@@ -595,7 +598,7 @@ MakeMcWeightedHistoFromBranch(TFile *input, const char * treeName, const char *b
 
   // get the tree
   TTree *tree;
-  tree = (TTree *)input->Get(treeName);
+  tree = (TTree *)dir->Get(treeName);
 
   // get branches
   float var;

@@ -44,35 +44,34 @@ float CalcSystErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors,
 float CalcSSQcdErr(vector<vector<TH1F *> > &histos, vector<float> &errors, int lowerBin, int upperBin = -1);
 float CalcAllErrWithQCD(vector<vector<TH1F *> > &histos, vector<float> &errors, vector<bool> &samples, int sample, int region, int lowerBin, int upperBin = -1, bool calcQcdErr = 0);
 TGraphAsymmErrors * makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBars);
-TH1F * MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int signs, int &region, const char *cutVariable, float cutLow, float cutHigh, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.);
+TH1F * MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.);
 
 void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
   TFile input("./emuSpec_19703pb-1.root", "open");
-  //TFile input("./emuSpec_MuEG_19703pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
-  const bool usePu = 1;
-  const bool useWeight = 1;
+  //const bool usePu = 1;
+  //const bool useWeight = 1;
   const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
 
   int eRegion = 2; // electron region EB(0), EE(1), EB+EE(2)
 
   bool plotSign[5];
   plotSign[0] = 1;  // all
-  plotSign[1] = 1;  // SS same sign
-  plotSign[2] = 1;  // OS opposite sign
+  plotSign[1] = 0;  // SS same sign
+  plotSign[2] = 0;  // OS opposite sign
   plotSign[3] = 0;  // e-mu+
   plotSign[4] = 0;  // e+mu-
 
   bool plotType[2];
   plotType[0] = 1;  // emu spectrum
-  plotType[1] = 1;  // cumulative emu spectrum
+  plotType[1] = 0;  // cumulative emu spectrum
 
-  const float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
+  float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
   const bool plotPull = 1; // plot (data-bkg)/bkg
   const bool plotPullBelowSpec = 1; // plot (data-bkg)/bkg below spectrum
   const bool varBinning = 1;
@@ -151,8 +150,13 @@ void macro_MakeEMuInvMassPlot()
 
   vector<TH1F *> emuMass_data;
   vector<TH1F *> emuMass_ttbar;
+  //std::vector<TH1F *> emuMass_ttbar700to1000;
+  //std::vector<TH1F *> emuMass_ttbar1000up;
+  //std::vector<TH1F *> emuMass_ttbarPriv600up;
   vector<TH1F *> emuMass_ztautau;
   vector<TH1F *> emuMass_ww;
+  //vector<TH1F *> emuMass_wwPriv600upEminusMuPlus;
+  //vector<TH1F *> emuMass_wwPriv600upEplusMuMinus;
   vector<TH1F *> emuMass_wz;
   vector<TH1F *> emuMass_zz;
   vector<TH1F *> emuMass_tw;
@@ -182,16 +186,16 @@ void macro_MakeEMuInvMassPlot()
         binning.push_back(bin);
       for (float bin = 500.; bin <= 620.; bin += 40.)
         binning.push_back(bin);
-        binning.push_back(670.);
-        binning.push_back(720.);
-        binning.push_back(780.);
-        binning.push_back(840.);
-        binning.push_back(920.);
-        binning.push_back(1000.);
-        binning.push_back(1100.);
-        binning.push_back(1220.);
-        binning.push_back(1380.);
-        binning.push_back(1500.);
+      binning.push_back(670.);
+      binning.push_back(720.);
+      binning.push_back(780.);
+      binning.push_back(840.);
+      binning.push_back(920.);
+      binning.push_back(1000.);
+      binning.push_back(1100.);
+      binning.push_back(1220.);
+      binning.push_back(1380.);
+      binning.push_back(1500.);
     } else {
       for (float bin = 0.; bin < 200.; bin += 20.)
         binning.push_back(bin);
@@ -213,32 +217,73 @@ void macro_MakeEMuInvMassPlot()
   int nBins = binning.size();
 
   THashList *mcWeights = (THashList *)input.Get("mcWeights");
-  TParameter<float> *mcWeight = (TParameter<float> *)mcWeights->FindObject("ttbar");
-  TParameter<float> *mcWeight700to1000 = (TParameter<float> *)mcWeights->FindObject("ttbar700to1000");
-  TParameter<float> *mcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
+  THashList *nGenEvents = (THashList *)input.Get("nGenEvents");
+  TParameter<float> *ttbarMcWeight = (TParameter<float> *)mcWeights->FindObject("ttbar");
+  TParameter<float> *ttbarMcWeight700to1000 = (TParameter<float> *)mcWeights->FindObject("ttbar700to1000");
+  TParameter<float> *ttbarMcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
+  TParameter<float> *ttbarMcWeight600up = (TParameter<float> *)mcWeights->FindObject("ttbarPriv600up");
+  TParameter<float> *wwMcWeight = (TParameter<float> *)mcWeights->FindObject("ww");
+  TParameter<float> *wwMcWeight600upEminusMuPlus = (TParameter<float> *)mcWeights->FindObject("wwPriv600upEminusMuPlus");
+  TParameter<float> *wwMcWeight600upEplusMuMinus = (TParameter<float> *)mcWeights->FindObject("wwPriv600upEplusMuMinus");
+  TParameter<float> *wwNGen600upEminusMuPlus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEminusMuPlus");
+  TParameter<float> *wwNGen600upEplusMuMinus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEplusMuMinus");
 
-  float totMcWeight = 1.;
+  // vectors for processes with multiple samples 
+  vector<const char *> cutVarsTtbar;
+  vector<float> lowCutsTtbar;
+  vector<float> highCutsTtbar;
+  vector<float> mcWeightsForCutRangesTtbar;
+  cutVarsTtbar.push_back("");
+  lowCutsTtbar.push_back(0.);
+  highCutsTtbar.push_back(1.e9);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight->GetVal());
+  cutVarsTtbar.push_back("genMTtbar");
+  lowCutsTtbar.push_back(700.);
+  highCutsTtbar.push_back(1000.);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight700to1000->GetVal());
+  cutVarsTtbar.push_back("genMTtbar");
+  lowCutsTtbar.push_back(1000.);
+  highCutsTtbar.push_back(1.e9);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight1000up->GetVal());
+  cutVarsTtbar.push_back("emu_mass");
+  lowCutsTtbar.push_back(600.);
+  highCutsTtbar.push_back(1.e9);
+  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight600up->GetVal());
+  vector<const char *> cutVarsWw;
+  vector<float> lowCutsWw;
+  vector<float> highCutsWw;
+  vector<float> mcWeightsForCutRangesWw;
+  cutVarsWw.push_back("");
+  lowCutsWw.push_back(0.);
+  highCutsWw.push_back(1.e9);
+  mcWeightsForCutRangesWw.push_back(wwMcWeight->GetVal());
+  cutVarsWw.push_back("emu_mass");
+  lowCutsWw.push_back(600.);
+  highCutsWw.push_back(1.e9);
+  mcWeightsForCutRangesWw.push_back((wwMcWeight600upEminusMuPlus->GetVal()*wwNGen600upEminusMuPlus->GetVal() + wwMcWeight600upEplusMuMinus->GetVal()*wwNGen600upEplusMuMinus->GetVal())/(wwNGen600upEminusMuPlus->GetVal()+wwNGen600upEplusMuMinus->GetVal()));
+  vector<const char *> cutVarsEmpty;
+  vector<float> lowCutsEmpty;
+  vector<float> highCutsEmpty;
+  vector<float> mcWeightsForCutRangesEmpty;
+
   // determine qcd contribution
   TH1F *qcdContrib;
   if (qcdEst == 1) {
-    TH1F *ssData = MakeHistoFromBranch(&input, "emuTree_data", "mass", SS, eRegion, "", 0., 0., binning, 0x100);
-    TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 0., 700., binning, 0x1DF);
-    totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", SS, eRegion, "genMTtbar", 700., 1000., binning, 0x19F), totMcWeight);
-    totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F), totMcWeight);
-    //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF);
-    //TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF);
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
-    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", SS, eRegion, "", 0., 0., binning, 0x1DF));
+    TH1F *ssData = MakeHistoFromBranch(&input, "emuTree_data", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x100);
+    TH1F *ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF);
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "mass", SS, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww", "mass", SS, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", "mass", SS, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", "mass", SS, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wz", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zz", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_tw", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_zee", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
+    ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", SS, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
     qcdContrib = (TH1F *)ssData->Clone("qcdContrib_SS");
     qcdContrib->Add(ssBg, -1);
     for (int i = 0; i < qcdContrib->GetNbinsX() + 2; ++i) {
@@ -268,31 +313,29 @@ void macro_MakeEMuInvMassPlot()
       else if (k == 3) k = -3;
       else if (k == 4) k = -2;
       // make the histograms
-      dataOverBgHist.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x100, normToBin));
-      emuMass_data.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x100));
+      dataOverBgHist.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x100, normToBin));
+      emuMass_data.push_back(MakeHistoFromBranch(&input, "emuTree_data", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x100));
 
-      TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "genMTtbar", 0., 700., binning, 0x1DF, normToBin);
-      totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight700to1000->GetVal());
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", k, eRegion, "genMTtbar", 700., 1000., binning, 0x19F, normToBin), totMcWeight);
-      totMcWeight = 1. / (1 / mcWeight->GetVal() + 1 / mcWeight1000up->GetVal());
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
-      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", k, eRegion, "genMTtbar", 1000., 1000000000., binning, 0x19F, normToBin), totMcWeight);
+      TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF, normToBin);
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "mass", k, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF, normToBin));
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "mass", k, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF, normToBin));
+      ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "mass", k, eRegion, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF, normToBin));
       emuMass_ttbar.push_back(ttbarComb);
-      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      //emuMass_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarto2l", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_zz.push_back(MakeHistoFromBranch(&input, "emuTree_zz", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      emuMass_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      if (plotSignal[0] > 0.) emuMass_sig1.push_back(MakeHistoFromBranch(&input, "emuTree_sig500", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      if (plotSignal[1] > 0.) emuMass_sig2.push_back(MakeHistoFromBranch(&input, "emuTree_sig750", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      if (plotSignal[2] > 0.) emuMass_sig3.push_back(MakeHistoFromBranch(&input, "emuTree_sig1000", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      if (plotSignal[3] > 0.) emuMass_sig4.push_back(MakeHistoFromBranch(&input, "emuTree_sig1250", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
-      if (qcdEst != 2) emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, eRegion, "", 0., 0., binning, 0x1DF, normToBin));
+      emuMass_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      TH1F *wwComb = MakeHistoFromBranch(&input, "emuTree_ww", "mass", k, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF, normToBin);
+      wwComb->Add(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", "mass", k, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF, normToBin));
+      wwComb->Add(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", "mass", k, eRegion, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF, normToBin));
+      emuMass_ww.push_back(wwComb);
+      emuMass_wz.push_back(MakeHistoFromBranch(&input, "emuTree_wz", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      emuMass_zz.push_back(MakeHistoFromBranch(&input, "emuTree_zz", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      emuMass_tw.push_back(MakeHistoFromBranch(&input, "emuTree_tw", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      emuMass_zmumu.push_back(MakeHistoFromBranch(&input, "emuTree_zmumu", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      emuMass_zee.push_back(MakeHistoFromBranch(&input, "emuTree_zee", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      if (plotSignal[0] > 0.) emuMass_sig1.push_back(MakeHistoFromBranch(&input, "emuTree_sig500", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      if (plotSignal[1] > 0.) emuMass_sig2.push_back(MakeHistoFromBranch(&input, "emuTree_sig750", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      if (plotSignal[2] > 0.) emuMass_sig3.push_back(MakeHistoFromBranch(&input, "emuTree_sig1000", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      if (plotSignal[3] > 0.) emuMass_sig4.push_back(MakeHistoFromBranch(&input, "emuTree_sig1250", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
+      if (qcdEst != 2) emuMass_wjets.push_back(MakeHistoFromBranch(&input, "emuTree_wjets", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF, normToBin));
       if (k == -1) k = 2;
       else if (k == -2) k = 4;
       else if (k == -3) k = 3;
@@ -329,9 +372,9 @@ void macro_MakeEMuInvMassPlot()
         else if (k == 3) k = -3;
         else if (k == 4) k = -2;
         if (qcdEst == 2) {
-          //qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", "mass", ALL, eRegion, "", 0., 0., binning, 0x300);
+          //qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", "mass", ALL, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x300);
           //if (k != ALL) emuMass_qcd.back()->Scale(0.5);
-          qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", "mass", k, eRegion, "", 0., 0., binning, 0x300);
+          qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", "mass", k, eRegion, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x300);
         }
         if (k == -1) k = 2;
         else if (k == -2) k = 4;
@@ -503,7 +546,7 @@ void macro_MakeEMuInvMassPlot()
       bgHist->Add(emuMass_wz.back());
       bgHist->Add(emuMass_ww.back());
       bgHist->Add(emuMass_ztautau.back());
-
+      
       if (plotSignal[0] > 0.) {
         emuMass_sig1.back()->SetLineColor(kGreen);
         emuMass_sig1.back()->SetLineWidth(2);
@@ -708,14 +751,14 @@ void macro_MakeEMuInvMassPlot()
       
       if (groupedPlot) {
         tex->SetTextSize(0.047);
-        if (prelim) tex->DrawLatex(0.467, 0.846, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-        else tex->DrawLatex(0.518, 0.846, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (prelim) tex->DrawLatex(0.467, 0.846, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+        else tex->DrawLatex(0.518, 0.846, "CMS, 8 TeV, 19.7 fb^{-1}");
         if (eRegion == 0) tex->DrawLatex(0.275, 0.846, "e in barrel");
         if (eRegion == 1) tex->DrawLatex(0.275, 0.846, "e in endcap");
       } else {
         tex->SetTextSize(0.042);
-        if (prelim) tex->DrawLatex(0.325, 0.853, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-        else tex->DrawLatex(0.405, 0.853, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (prelim) tex->DrawLatex(0.325, 0.853, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+        else tex->DrawLatex(0.405, 0.853, "CMS, 8 TeV, 19.7 fb^{-1}");
         if (eRegion == 0) tex->DrawLatex(0.325, 0.775, "e in barrel");
         if (eRegion == 1) tex->DrawLatex(0.325, 0.775, "e in endcap");
       }
@@ -804,8 +847,8 @@ void macro_MakeEMuInvMassPlot()
       if (!plotPullBelowSpec) {
         if (groupedPlot) tex->SetTextSize(0.047 * fontScaleBot);
         else tex->SetTextSize(0.042 * fontScaleBot);
-        if (prelim) tex->DrawLatex(0.150, 0.853, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-        else tex->DrawLatex(0.150, 0.853, "CMS, 8 TeV, 19.6 fb^{-1}");
+        if (prelim) tex->DrawLatex(0.150, 0.853, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+        else tex->DrawLatex(0.150, 0.853, "CMS, 8 TeV, 19.7 fb^{-1}");
         tex->SetTextSize(0.042 * fontScaleBot);
         tex->DrawLatex(0.150, 0.764, Form("#chi^{2} / ndf: %.2f / %i", f0->GetChisquare(), f0->GetNDF()));
         tex->DrawLatex(0.150, 0.720, Form("p0: %.4f #pm %0.4f", f0->GetParameter(0), f0->GetParError(0)));
@@ -923,8 +966,8 @@ void macro_MakeEMuInvMassPlot()
   outFile->Close();
   cout << "Chi^2 / NDF: " << bgParamFunc->GetChisquare() << " / " << bgParamFunc->GetNDF() << ", prob: " << bgParamFunc->GetProb() << endl;
   tex->SetTextSize(0.035);
-  if (prelim) tex->DrawLatex(0.109, 0.935, "CMS Preliminary, 8 TeV, 19.6 fb^{-1}");
-  else tex->DrawLatex(0.109, 0.935, "CMS, 8 TeV, 19.6 fb^{-1}");
+  if (prelim) tex->DrawLatex(0.109, 0.935, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+  else tex->DrawLatex(0.109, 0.935, "CMS, 8 TeV, 19.7 fb^{-1}");
   if (eRegion == 0) tex->DrawLatex(0.325, 0.845, "e in barrel");
   if (eRegion == 1) tex->DrawLatex(0.325, 0.845, "e in endcap");
   //tex->DrawLatex(0.159, 0.180, "P(m|a,b,c,#kappa) = m^{-#kappa} e^{a + b m + c m^{2}}");
@@ -1452,19 +1495,23 @@ TGraphAsymmErrors* makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBar
 
 // flags: [apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
 TH1F *
-MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int signs, int &region, const char *cutVariable, float cutLow, float cutHigh, vector<float> &binning, unsigned int flags, bool normToBinWidth, float userScale)
+MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth, float userScale)
 {
-  input->cd();
+  TDirectory *dir = gDirectory->CurrentDirectory();
   // prepare the histogram
-  TH1F *histo = new TH1F("dummy", "dummy", 150, 0., 1500.);
+  TH1F *histo = new TH1F("dummy", "dummy", 3000, 0., 3000.);
   histo->Sumw2();
-  histo->SetName(brName);
-  histo->SetTitle(brName);
+  TString histoName = treeName;
+  histoName.Remove(0, 7);
+  histoName.Prepend(brName);
+  histo->SetName(histoName);
+  histo->SetTitle(histoName);
   float *bins = &binning[0];
   histo->GetXaxis()->Set(binning.size() - 1, bins);
+  map<const char *, float> cutVarMap;
 
   if (flags & 1<<7) userScale *= ((TParameter<float> *)input->Get("lumi"))->GetVal();
-  if (flags & 1<<6) {
+  if (flags & 1<<6 && cutVariables.size() == 0) {
     THashList *mcWeights = (THashList *)input->Get("mcWeights");
     unsigned int charOffset = 8;
     if (flags & 1<<9) charOffset += 2;
@@ -1477,7 +1524,7 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
 
   // get the tree
   TTree *tree;
-  tree = (TTree *)input->Get(treeName);
+  tree = (TTree *)dir->Get(treeName);
 
   // get branches
   float var;
@@ -1487,7 +1534,6 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
   int eCharge;
   int muCharge;
   int evtRegion;
-  float cutVar = 0.;
   float fakeRate = 0.;
   float trgEff = 1.;
   float trgEffSf = 1.;
@@ -1514,9 +1560,12 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     tree->SetBranchStatus("puWeight",1);
     tree->SetBranchAddress("puWeight", &puWeight);
   }
-  if (cutVariable[0] != '\0') {
-    tree->SetBranchStatus(cutVariable,1);
-    tree->SetBranchAddress(cutVariable, &cutVar);
+  for (unsigned int i = 0; i < cutVariables.size(); ++i) {
+    if (cutVariables.at(i)[0] != '\0') {
+      cutVarMap.insert(pair<const char *, float>(cutVariables[i], -1.));
+      tree->SetBranchStatus(cutVariables[i],1);
+      tree->SetBranchAddress(cutVariables[i], &cutVarMap.at(cutVariables[i]));
+    }
   }
   if (flags & 1<<5) {
     tree->SetBranchStatus("trgEff",1);
@@ -1570,9 +1619,24 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *brName, int 
     if (abs(signs) == 3 && eCharge > 0) continue; // e-mu+ or e-mu-
     if (abs(signs) == 2 && eCharge < 0) continue; // e+mu- or e+mu+
 
-    // user defined cut
-    if (cutVariable[0] != '\0')
-      if (cutVar < cutLow || cutVar >= cutHigh) continue;
+    // set correct event weight if there are cuts defined
+    if (flags & 1<<6 && cutVariables.size() > 0) {
+      float totMcWeight = 0.;
+      for (unsigned int j = 0; j < cutVariables.size(); ++j) {
+        if (cutVariables.at(j)[0] == '\0') {
+          totMcWeight += 1./mcWeigthsForCutsRanges[j];
+        } else {
+          float cutVar = cutVarMap.at(cutVariables[j]);
+          if (cutVar < cutLows[j] || cutVar >= cutHighs[j]) {
+            continue;
+          } else {
+            totMcWeight += 1./mcWeigthsForCutsRanges[j];
+          }
+        }
+      }
+      totMcWeight = 1./totMcWeight;
+      scaleFactor *= totMcWeight;
+    }
     
     if (flags & 1<<9) {
       if (!passHeep) scaleFactor *= fakeRate / (1 - fakeRate);
