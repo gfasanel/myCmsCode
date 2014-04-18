@@ -25,12 +25,7 @@ void EmuSpectrum::Loop()
 
    // scale factors
    // muon factors: mu high_pt id trk iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
-   TParameter<float> trgEffLowEta("trgEffLowEta", 0.99 * 0.929); // ele L1 eff times Mu40 eff measured by Z' to mumu for |eta|<0.9
-   TParameter<float> trgEffMidEta("trgEffMidEta", 0.99 * 0.8314); // ele L1 eff times Mu40 eff measured by Z' to mumu for 0.9<|eta|<1.2
-   TParameter<float> trgEffHighEta("trgEffHighEta", 0.99 * 0.8027); // ele L1 eff times Mu40 eff measured by Z' to mumu for 1.2<|eta|
-   TParameter<float> trgDataMcScaleFactorLowEta("trgDataMcScaleFactorLowEta", 0.976); // scale factor between data and mc measured by Z' to mumu for Mu40 for |eta|<0.9
-   TParameter<float> trgDataMcScaleFactorMidEta("trgDataMcScaleFactorMidEta", 0.954); // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
-   TParameter<float> trgDataMcScaleFactorHighEta("trgDataMcScaleFactorHighEta", 0.983); // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
+   TParameter<float> trgL1Eff("trgL1Eff", 0.99); // ele L1 eff
    // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
    TParameter<float> eps_cand_sf_0p8("eps_cand_sf_0p8", 0.990); // data/MC scale for epsilon_cand (>50GeV) |eta|<0.8
    TParameter<float> eps_cand_sf_err_0p8("eps_cand_sf_err_0p8", 0.004); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) |eta|<0.8
@@ -50,10 +45,6 @@ void EmuSpectrum::Loop()
    TParameter<float> eps_heep_sf_ee_pt100("eps_heep_sf_eb_pt100", 0.981); // HEEP eff scale factor
    TParameter<float> eps_heep_sf_err_ee_pt100("eps_heep_sf_err_eb_pt100", 0.007); // HEEP eff scale factor error
    // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
-   TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.9900); // for |eta|<0.9
-   TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.9923); // for 0.9<|eta|<1.2
-   TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.9949); // for 1.2<|eta|<2.1
-   TParameter<float> muScaleFactorHighestEta("muScaleFactorHighestEta", 0.9923); // for 2.1<|eta|<2.4
    TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.997);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
    TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.934);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
@@ -474,12 +465,6 @@ void EmuSpectrum::Loop()
 
    // write parameters
    lumi.Write();
-   trgEffLowEta.Write();
-   trgEffMidEta.Write();
-   trgEffHighEta.Write();
-   trgDataMcScaleFactorLowEta.Write();
-   trgDataMcScaleFactorMidEta.Write();
-   trgDataMcScaleFactorHighEta.Write();
    lumiScaleFactorEB.Write();
    lumiScaleFactorEE.Write();
    eps_cand_sf_0p8.Write();
@@ -498,9 +483,6 @@ void EmuSpectrum::Loop()
    eps_heep_sf_err_ee_pt35.Write();
    eps_heep_sf_ee_pt100.Write();
    eps_heep_sf_err_ee_pt100.Write();
-   muScaleFactorLowEta.Write();
-   muScaleFactorMidEta.Write();
-   muScaleFactorHighEta.Write();
    systErrLumi.Write();
    systErrEff.Write();
    systErrMCs.Write("systErrMCs", TObject::kSingleKey);
@@ -1077,27 +1059,8 @@ void EmuSpectrum::Loop()
                  eleEffSf = heepEffSf * eps_cand_sf_2p0to2p5.GetVal();
                  eleEffSfErr = sqrt(heepEffSfErr*heepEffSfErr + eps_cand_sf_err_2p0to2p5.GetVal()*eps_cand_sf_err_2p0to2p5.GetVal());
                }
-               // muon scale factor
-               if (fabs(muon_eta[MU_passGOOD[muInd]]) < 0.9) {
-                 muEffSf = muScaleFactorLowEta.GetVal();
-                 trgEffSf = trgDataMcScaleFactorLowEta.GetVal();
-                 trgEff = trgEffLowEta.GetVal();
-               }
-               else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 1.2) {
-                 muEffSf = muScaleFactorMidEta.GetVal();
-                 trgEffSf = trgDataMcScaleFactorMidEta.GetVal();
-                 trgEff = trgEffMidEta.GetVal();
-               }
-               else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.1) {
-                 muEffSf = muScaleFactorHighEta.GetVal();
-                 trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
-                 trgEff = trgEffHighEta.GetVal();
-               }
-               else if (fabs(muon_eta[MU_passGOOD[muInd]]) < 2.4) {
-                 muEffSf = muScaleFactorHighestEta.GetVal();
-                 trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
-                 trgEff = trgEffHighEta.GetVal();
-               }
+               // muon scale factors for id and trg plus trg efficiencies
+               WeightMuonRecoIsoTrigger(muon_pt[MU_passGOOD[muInd]], muon_eta[MU_passGOOD[muInd]], muEffSf, trgEffSf, trgEff, suffix[p], trgL1Eff.GetVal());
 
                if (lowMassPuOnly && invMass > puMassCut) weight = 1.;
                if (p > 0) weight *= eleEffSf * muEffSf * Lumi_ScaleFactor * trgEffSf;
@@ -1498,5 +1461,92 @@ int EmuSpectrum::Trigger(int &prescale, unsigned int *trig, const int &selector)
    }
    prescale = 0;
    return -1;
+}
+
+void 
+EmuSpectrum::WeightMuonRecoIsoTrigger(float MuonPt, float MuonEta, float &weight_muon_reco, float &weight_trigger, float &eff_trigger, TString &type, float l1_eff)
+{
+   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
+   if(fabs(MuonEta)<0.9) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.994067;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.993037;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.991306;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.989358;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.0029;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=1.01755;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+   if(fabs(MuonEta)>0.9 && fabs(MuonEta)<1.2) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.993689;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.993637;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.994911;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.990111;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.0091;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=1.00899;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+   if(fabs(MuonEta)>1.2 && fabs(MuonEta)<2.1) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.996594;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.997472;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.996475;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.991681;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.01997;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=0.983776;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+   if(fabs(MuonEta)>2.1 && fabs(MuonEta)<2.4) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.99407;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.996346;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.991808;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.986235;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.04176;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=0.789917;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+
+   // muon factors: mu-high_pt-id-trk_iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
+   if(type.BeginsWith("sig")) {
+      if (MuonEta>-2.1 && MuonEta<-1.6) {weight_trigger=0.974366; eff_trigger=0.743592;}
+      else if (MuonEta>-1.6 && MuonEta<-1.2) {weight_trigger=0.988066; eff_trigger=0.838491;}
+      else if (MuonEta>-1.2 && MuonEta<-0.9) {weight_trigger=0.955999; eff_trigger=0.833293;}
+      else if (MuonEta>-0.9 && MuonEta<-0.6) {weight_trigger=0.977317; eff_trigger=0.928455;}
+      else if (MuonEta>-0.6 && MuonEta<-0.3) {weight_trigger=0.987245; eff_trigger=0.955694;}
+      else if (MuonEta>-0.3 && MuonEta<-0.2) {weight_trigger=0.926888; eff_trigger=0.816532;}
+      else if (MuonEta>-0.2 && MuonEta<0.2) {weight_trigger=0.982564; eff_trigger=0.945548;}
+      else if (MuonEta>0.2 && MuonEta<0.3) {weight_trigger=0.945051; eff_trigger=0.826780;}
+      else if (MuonEta>0.3 && MuonEta<0.6) {weight_trigger=0.981904; eff_trigger=0.952209;}
+      else if (MuonEta>0.6 && MuonEta<0.9) {weight_trigger=0.98001; eff_trigger=0.931446;}
+      else if (MuonEta>0.9 && MuonEta<1.2) {weight_trigger=0.955033; eff_trigger=0.829441;}
+      else if (MuonEta>1.2 && MuonEta<1.6) {weight_trigger=0.967649; eff_trigger=0.807104;}
+      else if (MuonEta>1.6 && MuonEta<2.1) {weight_trigger=1.00618; eff_trigger=0.814047;}
+   } else {
+      if(fabs(MuonEta)<0.9) {
+         if (MuonPt<50.) {weight_trigger=0.977615; eff_trigger=0.929521;}
+         else if (MuonPt>50. && MuonPt<60.) {weight_trigger=0.976165; eff_trigger=0.928760;}
+         else if (MuonPt>60. && MuonPt<90.) {weight_trigger=0.974155; eff_trigger=0.924693;}
+         else if (MuonPt>90. && MuonPt<140.) {weight_trigger=0.976909; eff_trigger=0.921874;}
+         else if (MuonPt>140. && MuonPt<500.) {weight_trigger=0.990006; eff_trigger=0.929174;}
+         else if (MuonPt>500.) {weight_trigger=0.990006; eff_trigger=0.929174;}
+      }
+      else if(fabs(MuonEta)>0.9 && fabs(MuonEta)<1.2) {
+         if (MuonPt<50.) {weight_trigger=0.956918; eff_trigger=0.831272;}
+         else if (MuonPt>50. && MuonPt<60.) {weight_trigger=0.954277; eff_trigger=0.832350;}
+         else if (MuonPt>60. && MuonPt<90.) {weight_trigger=0.946978; eff_trigger=0.825169;}
+         else if (MuonPt>90. && MuonPt<140.) {weight_trigger=0.952839; eff_trigger=0.825886;}
+         else if (MuonPt>140. && MuonPt<500.) {weight_trigger=0.961069; eff_trigger=0.841223;}
+         else if (MuonPt>500.) {weight_trigger=0.961069; eff_trigger=0.841223;}
+      }
+      else if(fabs(MuonEta)>1.2 && fabs(MuonEta)<2.1) {
+         if (MuonPt<50.) {weight_trigger=0.987869; eff_trigger=0.803493;}
+         else if (MuonPt>50. && MuonPt<60.) {weight_trigger=0.981194; eff_trigger=0.802700;}
+         else if (MuonPt>60. && MuonPt<90.) {weight_trigger=0.972754; eff_trigger=0.796577;}
+         else if (MuonPt>90. && MuonPt<140.) {weight_trigger=0.984463; eff_trigger=0.807423;}
+         else if (MuonPt>140. && MuonPt<500.) {weight_trigger=0.986544; eff_trigger=0.783592;}
+         else if (MuonPt>500.) {weight_trigger=0.986544; eff_trigger=0.783592;}
+      }
+   }
+   if (fabs(MuonEta)>=2.1) {weight_trigger=1.0; eff_trigger=0.78;} // assumption
+
+   eff_trigger *= l1_eff;
 }
 
