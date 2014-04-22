@@ -132,6 +132,7 @@ void macroEmuTree() {
           Int_t           genPart_status[100];
           Float_t         genPair_mass;
           Float_t         emu_mass;
+          Float_t         res_mass;
           Int_t           trueNVtx;
        
           // List of branches
@@ -223,6 +224,7 @@ void macroEmuTree() {
           TBranch        *b_genPart_status;   //!
           TBranch        *b_genPair_mass;   //!
           TBranch        *b_emu_mass;   //!
+          TBranch        *b_res_mass;   //!
           TBranch        *b_trueNVtx;   //!
        
           oldtree->SetBranchAddress("runnumber", &runnumber, &b_runnumber);
@@ -313,6 +315,7 @@ void macroEmuTree() {
           oldtree->SetBranchAddress("genPart_status", genPart_status, &b_genPart_status);
           oldtree->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
           oldtree->SetBranchAddress("emu_mass", &emu_mass, &b_emu_mass);
+          oldtree->SetBranchAddress("res_mass", &res_mass, &b_res_mass);
           oldtree->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
        
           // enable only used branches
@@ -405,6 +408,7 @@ void macroEmuTree() {
           oldtree->SetBranchStatus("genPart_status", 1);
           oldtree->SetBranchStatus("genPair_mass", 1);
           oldtree->SetBranchStatus("emu_mass", 1);
+          oldtree->SetBranchStatus("res_mass", 1);
           oldtree->SetBranchStatus("trueNVtx", 1);
 
   
