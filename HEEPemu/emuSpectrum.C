@@ -178,26 +178,26 @@ void EmuSpectrum::Loop()
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
 
-   //TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_6923652ev.root");
-   //nGenEvtsV.push_back(6923652.);
-   //input.push_back(make_pair(inTTbarMg, 245.8/ nGenEvtsV.back())); //TTjets from MadGraph
-   //systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
-   //storeGenMTtbar.push_back(1);
-   //storeEmuMass.push_back(0);
+   TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_6923750ev.root");
+   nGenEvtsV.push_back(6923750.);
+   input.push_back(make_pair(inTTbarMg, 245.8/ nGenEvtsV.back())); //TTjets from MadGraph
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
+   storeGenMTtbar.push_back(1);
+   storeEmuMass.push_back(1);
 
-   //TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_4246444ev.root");
-   //nGenEvtsV.push_back(4246444.);
-   //input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 2l
-   //systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
-   //storeGenMTtbar.push_back(1);
-   //storeEmuMass.push_back(0);
+   TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v2_AODSIM_emuSkim_12119013ev.root");
+   nGenEvtsV.push_back(12119013.);
+   input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 2l
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
+   storeGenMTtbar.push_back(1);
+   storeEmuMass.push_back(1);
 
-   //TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v1ext_AODSIM_emuSkim_36654720ev.root");
-   //nGenEvtsV.push_back(36654720.);
-   //input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
-   //systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
-   //storeGenMTtbar.push_back(1);
-   //storeEmuMass.push_back(0);
+   TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_11229902ev.root");
+   nGenEvtsV.push_back(11229902.);
+   input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
+   storeGenMTtbar.push_back(1);
+   storeEmuMass.push_back(1);
 
    TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_196046ev.root");
    nGenEvtsV.push_back(196046.);

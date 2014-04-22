@@ -149,6 +149,9 @@ MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int
           }
         }
       }
+      // if totMcWeight is still 0 the event will be ignored
+      if (totMcWeight == 0.) continue;
+
       totMcWeight = 1./totMcWeight;
       scaleFactor *= totMcWeight;
     }

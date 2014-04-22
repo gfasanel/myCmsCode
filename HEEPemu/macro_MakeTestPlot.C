@@ -45,6 +45,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
+  const bool ttbar_sample_type = 0; // 0=powheg, 1=madgraph
   const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
   const float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
   const bool plotPull = 1; // plot (data-bkg)/bkg
@@ -206,6 +207,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TParameter<float> *ttbarMcWeight = (TParameter<float> *)mcWeights->FindObject("ttbar");
   TParameter<float> *ttbarMcWeight700to1000 = (TParameter<float> *)mcWeights->FindObject("ttbar700to1000");
   TParameter<float> *ttbarMcWeight1000up = (TParameter<float> *)mcWeights->FindObject("ttbar1000up");
+  TParameter<float> *ttbarMcWeightTo2l = (TParameter<float> *)mcWeights->FindObject("ttbarto2l");
+  TParameter<float> *ttbarMcWeightTo1l1jet = (TParameter<float> *)mcWeights->FindObject("ttbarto1l1jet");
   TParameter<float> *ttbarMcWeight600up = (TParameter<float> *)mcWeights->FindObject("ttbarPriv600up");
   TParameter<float> *wwMcWeight = (TParameter<float> *)mcWeights->FindObject("ww");
   TParameter<float> *wwMcWeight600upEminusMuPlus = (TParameter<float> *)mcWeights->FindObject("wwPriv600upEminusMuPlus");
@@ -221,22 +224,40 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   vector<float> lowCutsTtbar;
   vector<float> highCutsTtbar;
   vector<float> mcWeightsForCutRangesTtbar;
-  cutVarsTtbar.push_back("");
-  lowCutsTtbar.push_back(0.);
-  highCutsTtbar.push_back(1.e9);
-  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight->GetVal());
-  cutVarsTtbar.push_back("genMTtbar");
-  lowCutsTtbar.push_back(700.);
-  highCutsTtbar.push_back(1000.);
-  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight700to1000->GetVal());
-  cutVarsTtbar.push_back("genMTtbar");
-  lowCutsTtbar.push_back(1000.);
-  highCutsTtbar.push_back(1.e9);
-  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight1000up->GetVal());
-  cutVarsTtbar.push_back("emu_mass");
-  lowCutsTtbar.push_back(600.);
-  highCutsTtbar.push_back(1.e9);
-  mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight600up->GetVal());
+  // additional ones for madgraph samples
+  vector<float> mcWeightsForCutRangesTtbarTo2l;
+  vector<float> mcWeightsForCutRangesTtbarTo1l1jet;
+  vector<float> lowCutsTtbarPriv600up;
+  vector<float> highCutsTtbarPriv600up;
+  vector<float> mcWeightsForCutRangesTtbarPriv600up;
+  if (ttbar_sample_type) {
+    // for madgraph we do not know the number of events generated above emu_mass=600 GeV so we cut there and use the private sample above
+    cutVarsTtbar.push_back("emu_mass");
+    lowCutsTtbar.push_back(0.);
+    highCutsTtbar.push_back(600.);
+    lowCutsTtbarPriv600up.push_back(600.);
+    highCutsTtbarPriv600up.push_back(1.e9);
+    mcWeightsForCutRangesTtbarTo2l.push_back(ttbarMcWeightTo2l->GetVal());
+    mcWeightsForCutRangesTtbarTo1l1jet.push_back(ttbarMcWeightTo1l1jet->GetVal());
+    mcWeightsForCutRangesTtbarPriv600up.push_back(ttbarMcWeight600up->GetVal());
+  } else {
+    cutVarsTtbar.push_back("");
+    lowCutsTtbar.push_back(0.);
+    highCutsTtbar.push_back(1.e9);
+    mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight->GetVal());
+    cutVarsTtbar.push_back("genMTtbar");
+    lowCutsTtbar.push_back(700.);
+    highCutsTtbar.push_back(1000.);
+    mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight700to1000->GetVal());
+    cutVarsTtbar.push_back("genMTtbar");
+    lowCutsTtbar.push_back(1000.);
+    highCutsTtbar.push_back(1.e9);
+    mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight1000up->GetVal());
+    cutVarsTtbar.push_back("emu_mass");
+    lowCutsTtbar.push_back(600.);
+    highCutsTtbar.push_back(1.e9);
+    mcWeightsForCutRangesTtbar.push_back(ttbarMcWeight600up->GetVal());
+  }
   vector<const char *> cutVarsWw;
   vector<float> lowCutsWw;
   vector<float> highCutsWw;
@@ -270,10 +291,16 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      TH1F *qcdContrib;
      if (plotQcd && qcdEst == 1) {
        ssData = MakeHistoFromBranch(&input, "emuTree_data" + shapeUncName, testVar, 1, reg, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x100);
-       ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF);
-       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
-       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
-       ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+       if (ttbar_sample_type) {
+         ssBg = MakeHistoFromBranch(&input, "emuTree_ttbarto2l" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbarTo2l, binning, 0x1DF);
+         ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbarto1l1jet" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbarTo1l1jet, binning, 0x1DF));
+         ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbarPriv600up, highCutsTtbarPriv600up, mcWeightsForCutRangesTtbarPriv600up, binning, 0x1DF));
+       } else {
+         ssBg = MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF);
+         ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+         ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+         ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up" + shapeUncName, testVar, 1, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+       }
        ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ztautau" + shapeUncName, testVar, 1, reg, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
        ssBg->Add(MakeHistoFromBranch(&input, "emuTree_ww" + shapeUncName, testVar, 1, reg, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
        ssBg->Add(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus" + shapeUncName, testVar, 1, reg, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF));
@@ -303,10 +330,17 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      TH1F *dataOverBgHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_data" + shapeUncName, testVar, sig, reg, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x100);
      if (shUnc == 0) emuTest_data.push_back((TH1F *)dataOverBgHist->Clone("mass_data_obs"));
      else emuTest_data.push_back((TH1F *)dataOverBgHist->Clone());
-     TH1F *ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF);
-     ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
-     ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
-     ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+     TH1F *ttbarComb;
+     if (ttbar_sample_type) {
+       ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbarto2l" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbarTo2l, binning, 0x1DF);
+       ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbarto1l1jet" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbarTo1l1jet, binning, 0x1DF));
+       ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbarPriv600up, highCutsTtbarPriv600up, mcWeightsForCutRangesTtbarPriv600up, binning, 0x1DF));
+     } else {
+       ttbarComb = MakeHistoFromBranch(&input, "emuTree_ttbar" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF);
+       ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+       ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbar1000up" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+       ttbarComb->Add(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up" + shapeUncName, testVar, sig, reg, cutVarsTtbar, lowCutsTtbar, highCutsTtbar, mcWeightsForCutRangesTtbar, binning, 0x1DF));
+     }
      emuTest_ttbar.push_back(ttbarComb);
      emuTest_ztautau.push_back(MakeHistoFromBranch(&input, "emuTree_ztautau" + shapeUncName, testVar, sig, reg, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x1DF));
      TH1F *wwComb = MakeHistoFromBranch(&input, "emuTree_ww" + shapeUncName, testVar, sig, reg, cutVarsWw, lowCutsWw, highCutsWw, mcWeightsForCutRangesWw, binning, 0x1DF);
