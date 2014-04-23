@@ -23,6 +23,7 @@ void macroEmuTree() {
   string inputline;
   string outputline;
   string blankline;
+  //ifstream myfile ("listofdata.txt");
   ifstream myfile ("listofsamples.txt");
   //ifstream myfile ("listofsigsamples.txt");
   if (myfile.is_open())
@@ -66,6 +67,7 @@ void macroEmuTree() {
           Int_t           pvsize;
           Int_t           JetColl_size;
           Float_t         Jet_pt[100];   //[JetColl_size]
+          Float_t         Jet_eta[100];   //[JetColl_size]
           Int_t           muon_size;
           Float_t         muon_pt[100];   //[muon_size]
           Float_t         muon_ptError[100];   //[muon_size]
@@ -158,6 +160,7 @@ void macroEmuTree() {
           TBranch        *b_pvsize;   //!
           TBranch        *b_JetColl_size;   //!
           TBranch        *b_Jet_pt;   //!
+          TBranch        *b_Jet_eta;   //!
           TBranch        *b_muon_size;   //!
           TBranch        *b_muon_pt;   //!
           TBranch        *b_muon_ptError;   //!
@@ -249,6 +252,7 @@ void macroEmuTree() {
           oldtree->SetBranchAddress("pvsize", &pvsize, &b_pvsize);
           oldtree->SetBranchAddress("JetColl_size", &JetColl_size, &b_JetColl_size);
           oldtree->SetBranchAddress("Jet_pt", Jet_pt, &b_Jet_pt);
+          oldtree->SetBranchAddress("Jet_eta", Jet_eta, &b_Jet_eta);
           oldtree->SetBranchAddress("muon_size", &muon_size, &b_muon_size);
           oldtree->SetBranchAddress("muon_pt", muon_pt, &b_muon_pt);
           oldtree->SetBranchAddress("muon_ptError", muon_ptError, &b_muon_ptError);
@@ -342,6 +346,7 @@ void macroEmuTree() {
           oldtree->SetBranchStatus("pvsize", 1);
           oldtree->SetBranchStatus("JetColl_size", 1);
           oldtree->SetBranchStatus("Jet_pt", 1);
+          oldtree->SetBranchStatus("Jet_eta", 1);
           oldtree->SetBranchStatus("muon_size", 1);
           oldtree->SetBranchStatus("muon_pt", 1);
           oldtree->SetBranchStatus("muon_ptError", 1);
