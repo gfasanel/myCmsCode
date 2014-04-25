@@ -353,7 +353,7 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    frps_missHitsCutEB = 1;
    frps_missHitsCutEE = 1;
 
-   suffix.reserve(40);
+   suffix.reserve(50);
    suffix.push_back("data");
    suffix.push_back("ttbar");
    suffix.push_back("ttbar700to1000");
@@ -402,8 +402,22 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("sigNoAccCuts5000");
    suffix.push_back("sig1000CentralProduction");
    suffix.push_back("sigMz1000Ma20000");
+   suffix.push_back("sigMa1000Mz20000");
+   suffix.push_back("sigTagV7C2_250");
+   suffix.push_back("sigTagV7C2_500");
+   suffix.push_back("sigTagV7C2_750");
+   suffix.push_back("sigTagV7C2_1000");
+   suffix.push_back("sigTagV7C2_1250");
+   suffix.push_back("sigTagV7C2_1500");
+   suffix.push_back("sigTagV7C2_1750");
+   suffix.push_back("sigTagV7C2_2000");
+   suffix.push_back("sigTagV7C2_2500");
+   suffix.push_back("sigTagV7C2_3000");
+   suffix.push_back("sigTagV7C2_3500");
+   suffix.push_back("sigTagV7C2_4000");
+   suffix.push_back("sigTagV7C2_5000");
 
-   shapeUncNames.reserve(4);
+   shapeUncNames.reserve(5);
    shapeUncNames.push_back("");
    shapeUncNames.push_back("eleScaleUp");
    shapeUncNames.push_back("eleScaleDown");
