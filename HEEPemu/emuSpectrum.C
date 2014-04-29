@@ -52,6 +52,8 @@ void EmuSpectrum::Loop()
    TParameter<float> systErrLumi("systErrLumi", 0.026);
    TParameter<float> systErrEff("systErrEff", 0.010); // muon err (0.0057) & ele err (0.0086)
 
+   float jetLeptonVetoDR = 0.5;
+   float bDiscrWP_M = 0.679; // b jet discriminator for working point M (1% mistag) of CSV tagger
    bool usePUInfo = true;
    bool lowMassPuOnly = false;
    float puMassCut = 120.;
@@ -711,6 +713,9 @@ void EmuSpectrum::Loop()
          float numOfJets = 0.;
          float numOfJetsPt20 = 0.;
          float numOfJetsPt30 = 0.;
+         float numOfBJetsPt30 = 0.;
+         float numOfBJetsMVAPt30 = 0.;
+         float jetPt = 0.;
          emuTree->Branch("pfMet", &pfmet, "pfMet/F");
          emuTree->Branch("nVtx", &nVtx, "nVtx/F");
          emuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
@@ -754,6 +759,9 @@ void EmuSpectrum::Loop()
          emuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
          emuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
          emuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
+         emuTree->Branch("numOfBJetsPt30", &numOfBJetsPt30, "numOfBJetsPt30/F");
+         emuTree->Branch("numOfBJetsMVAPt30", &numOfBJetsMVAPt30, "numOfBJetsMVAPt30/F");
+         emuTree->Branch("jetPt", &jetPt, "jetPt/F");
 
          TTree *frEmuTree = new TTree("frEmuTree_" + suffix[p] + shapeUncName, "frEmuTree_" + suffix[p] + shapeUncName);
          float fakeRate = 0.;
@@ -817,6 +825,9 @@ void EmuSpectrum::Loop()
             frEmuTree->Branch("numOfJets", &numOfJets, "numOfJets/F");
             frEmuTree->Branch("numOfJetsPt20", &numOfJetsPt20, "numOfJetsPt20/F");
             frEmuTree->Branch("numOfJetsPt30", &numOfJetsPt30, "numOfJetsPt30/F");
+            frEmuTree->Branch("numOfBJetsPt30", &numOfBJetsPt30, "numOfBJetsPt30/F");
+            frEmuTree->Branch("numOfBJetsMVAPt30", &numOfBJetsMVAPt30, "numOfBJetsMVAPt30/F");
+            frEmuTree->Branch("jetPt", &jetPt, "jetPt/F");
 
             if (p == 0) {
                cout << "-----------------------------------------------------------------------------------------------------------" << endl;
@@ -989,10 +1000,28 @@ void EmuSpectrum::Loop()
    
                   int jetsPt20 = 0;
                   int jetsPt30 = 0;
+                  int bJetsPt30 = 0;
+                  int bJetsMVAPt30 = 0;
                   for (int jetIt = 0; jetIt < JetColl_size; ++jetIt) {
-                     if (fabs(Jet_eta[jetIt]) < 2.5) {
+                     // lepton veto
+                     bool vetoed = false;
+                     for (unsigned int eleIt = 0; eleIt < GSF_passFrPre.size(); ++eleIt) {
+                        float dR = deltaR(Jet_eta[jetIt], Jet_phi[jetIt], gsf_eta[GSF_passFrPre[eleIt]], gsf_phi[GSF_passFrPre[eleIt]]);
+                        if (dR < jetLeptonVetoDR) vetoed = true;
+                     }
+                     if (vetoed) continue;
+                     for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                        float dR = deltaR(Jet_eta[jetIt], Jet_phi[jetIt], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]]);
+                        if (dR < jetLeptonVetoDR) vetoed = true;
+                     }
+                     if (vetoed) continue;
+                     if (fabs(Jet_eta[jetIt]) < 2.4) {
                         if (Jet_pt[jetIt] > 20.) ++jetsPt20;
-                        if (Jet_pt[jetIt] > 30.) ++jetsPt30;
+                        if (Jet_pt[jetIt] > 30.) {
+                           ++jetsPt30;
+                           if (cSecVertBTags[jetIt] > bDiscrWP_M) ++bJetsPt30;
+                           if (cSecVertMVABTags[jetIt] > bDiscrWP_M) ++bJetsMVAPt30;
+                        }
                      }
                   }
    
@@ -1054,6 +1083,8 @@ void EmuSpectrum::Loop()
                   numOfJets = JetColl_size;
                   numOfJetsPt20 = jetsPt20;
                   numOfJetsPt30 = jetsPt30;
+                  numOfBJetsPt30 = bJetsPt30;
+                  numOfBJetsMVAPt30 = bJetsMVAPt30;
    
                   frEmuTree->Fill();
                }
@@ -1167,10 +1198,28 @@ void EmuSpectrum::Loop()
 
                int jetsPt20 = 0;
                int jetsPt30 = 0;
+               int bJetsPt30 = 0;
+               int bJetsMVAPt30 = 0;
                for (int jetIt = 0; jetIt < JetColl_size; ++ jetIt) {
-                  if (fabs(Jet_eta[jetIt]) < 2.5) {
+                  // lepton veto
+                  bool vetoed = false;
+                  for (unsigned int eleIt = 0; eleIt < GSF_passHEEP.size(); ++eleIt) {
+                     float dR = deltaR(Jet_eta[jetIt], Jet_phi[jetIt], gsf_eta[GSF_passHEEP[eleIt]], gsf_phi[GSF_passHEEP[eleIt]]);
+                     if (dR < jetLeptonVetoDR) vetoed = true;
+                  }
+                  if (vetoed) continue;
+                  for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                     float dR = deltaR(Jet_eta[jetIt], Jet_phi[jetIt], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]]);
+                     if (dR < jetLeptonVetoDR) vetoed = true;
+                  }
+                  if (vetoed) continue;
+                  if (fabs(Jet_eta[jetIt]) < 2.4) {
                      if (Jet_pt[jetIt] > 20.) ++jetsPt20;
-                     if (Jet_pt[jetIt] > 30.) ++jetsPt30;
+                     if (Jet_pt[jetIt] > 30.) {
+                        ++jetsPt30;
+                        if (cSecVertBTags[jetIt] > bDiscrWP_M) ++bJetsPt30;
+                        if (cSecVertMVABTags[jetIt] > bDiscrWP_M) ++bJetsMVAPt30;
+                     }
                   }
                }
 
@@ -1239,6 +1288,8 @@ void EmuSpectrum::Loop()
                numOfJets = JetColl_size;
                numOfJetsPt20 = jetsPt20;
                numOfJetsPt30 = jetsPt30;
+               numOfBJetsPt30 = bJetsPt30;
+               numOfBJetsMVAPt30 = bJetsMVAPt30;
 
                emuTree->Fill();
 

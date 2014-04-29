@@ -41,6 +41,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
   TFile input("./emuSpec_19703pb-1.root", "open");
+  //TFile input("./test_19703pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -94,6 +95,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   testPlots.push_back(ContVarPlot("rho", "rho", "#rho", 0., 50., 50, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("numOfJetsPt20", "Number of jets > 20 GeV", "# jets_{p_{T}>20}", 0., 20., 20, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("numOfJetsPt30", "Number of jets > 30 GeV", "# jets_{p_{T}>30}", 0., 15., 15, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("numOfBJetsPt30", "Number of b-jets > 30 GeV", "# b-jets_{p_{T}>30}", 0., 6., 6, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("numOfBJetsMVAPt30", "Number of b-jets_{MVA} > 30 GeV", "# b-jets_{p_{T}>30}", 0., 6., 6, 1, 0, 1, 1));
   testPlots.push_back(ContVarPlot("eDxyMinusMuDxy", "|Dxy_e - Dxy_mu|", "|#Deltaxy_{e}-#Deltaxy_{#mu}|", 0., 0.06, 40, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("eDzMinusMuDz", "|Dz_e - Dz_mu|", "|#Deltaz_{e}-#Deltaz_{#mu}|", 0., 0.5, 40, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("dEta", "|eta_e - eta_mu|", "|#eta_{e}-#eta_{#mu}|", 0., 5., 50, 1, 0, 1, 1));
@@ -771,9 +774,9 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 }
 
 // plot a range of control variables
-void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, unsigned int to = 43)
+void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, unsigned int to = 45)
 {
-  if (to == 0 || to > 43) to = 43;
+  if (to == 0 || to > 45) to = 45;
   if (from == 0 || from > to) from = 1;
   for (unsigned int i = from; i <= to; ++i)
     macro_MakeTestPlot(i, sign, region);

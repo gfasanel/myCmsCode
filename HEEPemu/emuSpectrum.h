@@ -66,6 +66,13 @@ public :
    Int_t           JetColl_size;
    Float_t         Jet_pt[100];   //[JetColl_size]
    Float_t         Jet_eta[100];   //[JetColl_size]
+   Float_t         Jet_phi[100];   //[JetColl_size]
+   Float_t         cSecVertBTags[100];   //[JetColl_size]
+   Float_t         cSecVertMVABTags[100];   //[JetColl_size]
+   Int_t           pfJetColl_size;
+   Float_t         pfJet_pt[100];   //[pfJetColl_size]
+   Float_t         pfJet_eta[100];   //[pfJetColl_size]
+   Float_t         pfJet_phi[100];   //[pfJetColl_size]
    Int_t           muon_size;
    Float_t         muon_pt[100];   //[muon_size]
    Float_t         muon_ptError[100];   //[muon_size]
@@ -139,6 +146,13 @@ public :
    TBranch        *b_JetColl_size;   //!
    TBranch        *b_Jet_pt;   //!
    TBranch        *b_Jet_eta;   //!
+   TBranch        *b_Jet_phi;   //!
+   TBranch        *b_cSecVertBTags;   //!
+   TBranch        *b_cSecVertMVABTags;   //!
+   TBranch        *b_pfJetColl_size;   //!
+   TBranch        *b_pfJet_pt;   //!
+   TBranch        *b_pfJet_eta;   //!
+   TBranch        *b_pfJet_phi;   //!
    TBranch        *b_muon_size;   //!
    TBranch        *b_muon_pt;   //!
    TBranch        *b_muon_ptError;   //!
@@ -481,6 +495,13 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("JetColl_size", &JetColl_size, &b_JetColl_size);
    fChain->SetBranchAddress("Jet_pt", Jet_pt, &b_Jet_pt);
    fChain->SetBranchAddress("Jet_eta", Jet_eta, &b_Jet_eta);
+   fChain->SetBranchAddress("Jet_phi", Jet_phi, &b_Jet_phi);
+   fChain->SetBranchAddress("cSecVertBTags", cSecVertBTags, &b_cSecVertBTags);
+   fChain->SetBranchAddress("cSecVertMVABTags", cSecVertMVABTags, &b_cSecVertMVABTags);
+   fChain->SetBranchAddress("pfJetColl_size", &pfJetColl_size, &b_pfJetColl_size);
+   fChain->SetBranchAddress("pfJet_pt", pfJet_pt, &b_pfJet_pt);
+   fChain->SetBranchAddress("pfJet_eta", pfJet_eta, &b_pfJet_eta);
+   fChain->SetBranchAddress("pfJet_phi", pfJet_phi, &b_pfJet_phi);
    fChain->SetBranchAddress("muon_size", &muon_size, &b_muon_size);
    fChain->SetBranchAddress("muon_pt", muon_pt, &b_muon_pt);
    fChain->SetBranchAddress("muon_ptError", muon_ptError, &b_muon_ptError);
@@ -555,6 +576,13 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("JetColl_size", 1);
    fChain->SetBranchStatus("Jet_pt", 1);
    fChain->SetBranchStatus("Jet_eta", 1);
+   fChain->SetBranchStatus("Jet_phi", 1);
+   fChain->SetBranchStatus("cSecVertBTags", 1);
+   fChain->SetBranchStatus("cSecVertMVABTags", 1);
+   fChain->SetBranchStatus("pfJetColl_size", 1);
+   fChain->SetBranchStatus("pfJet_pt", 1);
+   fChain->SetBranchStatus("pfJet_eta", 1);
+   fChain->SetBranchStatus("pfJet_phi", 1);
    fChain->SetBranchStatus("muon_size", 1);
    fChain->SetBranchStatus("muon_pt", 1);
    fChain->SetBranchStatus("muon_ptError", 1);

@@ -68,6 +68,13 @@ void macroEmuTree() {
           Int_t           JetColl_size;
           Float_t         Jet_pt[100];   //[JetColl_size]
           Float_t         Jet_eta[100];   //[JetColl_size]
+          Float_t         Jet_phi[100];   //[JetColl_size]
+          Float_t         cSecVertBTags[100];   //[JetColl_size]
+          Float_t         cSecVertMVABTags[100];   //[JetColl_size]
+          Int_t           pfJetColl_size;
+          Float_t         pfJet_pt[100];   //[pfJetColl_size]
+          Float_t         pfJet_eta[100];   //[pfJetColl_size]
+          Float_t         pfJet_phi[100];   //[pfJetColl_size]
           Int_t           muon_size;
           Float_t         muon_pt[100];   //[muon_size]
           Float_t         muon_ptError[100];   //[muon_size]
@@ -161,6 +168,13 @@ void macroEmuTree() {
           TBranch        *b_JetColl_size;   //!
           TBranch        *b_Jet_pt;   //!
           TBranch        *b_Jet_eta;   //!
+          TBranch        *b_Jet_phi;   //!
+          TBranch        *b_cSecVertBTags;   //!
+          TBranch        *b_cSecVertMVABTags;   //!
+          TBranch        *b_pfJetColl_size;   //!
+          TBranch        *b_pfJet_pt;   //!
+          TBranch        *b_pfJet_eta;   //!
+          TBranch        *b_pfJet_phi;   //!
           TBranch        *b_muon_size;   //!
           TBranch        *b_muon_pt;   //!
           TBranch        *b_muon_ptError;   //!
@@ -253,6 +267,13 @@ void macroEmuTree() {
           oldtree->SetBranchAddress("JetColl_size", &JetColl_size, &b_JetColl_size);
           oldtree->SetBranchAddress("Jet_pt", Jet_pt, &b_Jet_pt);
           oldtree->SetBranchAddress("Jet_eta", Jet_eta, &b_Jet_eta);
+          oldtree->SetBranchAddress("Jet_phi", Jet_phi, &b_Jet_phi);
+          oldtree->SetBranchAddress("cSecVertBTags", cSecVertBTags, &b_cSecVertBTags);
+          oldtree->SetBranchAddress("cSecVertMVABTags", cSecVertMVABTags, &b_cSecVertMVABTags);
+          oldtree->SetBranchAddress("pfJetColl_size", &pfJetColl_size, &b_pfJetColl_size);
+          oldtree->SetBranchAddress("pfJet_pt", pfJet_pt, &b_pfJet_pt);
+          oldtree->SetBranchAddress("pfJet_eta", pfJet_eta, &b_pfJet_eta);
+          oldtree->SetBranchAddress("pfJet_phi", pfJet_phi, &b_pfJet_phi);
           oldtree->SetBranchAddress("muon_size", &muon_size, &b_muon_size);
           oldtree->SetBranchAddress("muon_pt", muon_pt, &b_muon_pt);
           oldtree->SetBranchAddress("muon_ptError", muon_ptError, &b_muon_ptError);
@@ -347,6 +368,13 @@ void macroEmuTree() {
           oldtree->SetBranchStatus("JetColl_size", 1);
           oldtree->SetBranchStatus("Jet_pt", 1);
           oldtree->SetBranchStatus("Jet_eta", 1);
+          oldtree->SetBranchStatus("Jet_phi", 1);
+          oldtree->SetBranchStatus("cSecVertBTags", 1);
+          oldtree->SetBranchStatus("cSecVertMVABTags", 1);
+          oldtree->SetBranchStatus("pfJetColl_size", 1);
+          oldtree->SetBranchStatus("pfJet_pt", 1);
+          oldtree->SetBranchStatus("pfJet_eta", 1);
+          oldtree->SetBranchStatus("pfJet_phi", 1);
           oldtree->SetBranchStatus("muon_size", 1);
           oldtree->SetBranchStatus("muon_pt", 1);
           oldtree->SetBranchStatus("muon_ptError", 1);
