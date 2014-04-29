@@ -336,7 +336,7 @@ void EmuSpectrum::Loop()
 
    TFile *inSig14 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    nGenEvtsV.push_back(10000.);
-   input.push_back(make_pair(inSig14, 8.956e-5 / nGenEvtsV.back())); //Signal with no acceptance cuts
+   input.push_back(make_pair(inSig14, 8.9745e-5 / nGenEvtsV.back())); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig14", 0.));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
@@ -385,7 +385,7 @@ void EmuSpectrum::Loop()
 
    TFile *inSig21 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    nGenEvtsV.push_back(10000.);
-   input.push_back(make_pair(inSig21, 1.059e-7 / nGenEvtsV.back())); //Signal with no acceptance cuts
+   input.push_back(make_pair(inSig21, 1.060e-7 / nGenEvtsV.back())); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig21", 0.));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
@@ -448,7 +448,7 @@ void EmuSpectrum::Loop()
 
    TFile *inSig29 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-EXOMCRECO_Private14_DR53X_PU_S10_START53_V7C2-v1_USER_emuSkim_10000ev.root");
    nGenEvtsV.push_back(10000.);
-   input.push_back(make_pair(inSig29, 8.956e-5 / nGenEvtsV.back())); //Signal with no acceptance cuts
+   input.push_back(make_pair(inSig29, 8.9745e-5 / nGenEvtsV.back())); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig29", 0.));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
@@ -497,7 +497,7 @@ void EmuSpectrum::Loop()
 
    TFile *inSig36 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-EXOMCRECO_Private14_DR53X_PU_S10_START53_V7C2-v1_USER_emuSkim_10000ev.root");
    nGenEvtsV.push_back(10000.);
-   input.push_back(make_pair(inSig36, 1.059e-7 / nGenEvtsV.back())); //Signal with no acceptance cuts
+   input.push_back(make_pair(inSig36, 1.060e-7 / nGenEvtsV.back())); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig36", 0.));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
