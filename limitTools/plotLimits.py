@@ -46,7 +46,6 @@ parser.add_option("-w"  ,"--workDir", dest="workDir", default=os.getcwd()+'/', h
 parser.add_option("-m"  ,"--minMass", dest="minMass", default="100", type="float", help="Minimal resonance mass.")
 parser.add_option("-M"  ,"--maxMass", dest="maxMass", default="100", type="float", help="Maximal resonance mass.")
 parser.add_option("-S"  ,"--massStep", dest="massStep", default="50", type="float", help="Mass step size.")
-parser.add_option("-l"  ,"--lumi", dest="lumi", default="19703.", type="float", help="Integrated luminosity in pb.")
 parser.add_option("-k"  ,"--kappa", dest="kappa", default="1.", type="float", help="Kappa factor for coupling.")
 parser.add_option("-o"  ,"--obs", dest="drawObs", default=False, action="store_true", help="Draw observed limit.")
 parser.add_option("-e"  ,"--exp", dest="drawExp", default=False, action="store_true", help="Draw expected limit.")
