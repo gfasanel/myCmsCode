@@ -1,0 +1,36 @@
+Scripts to generate shapes and card files to use with the Higgs combine limit setting tool, 
+submit the jobs to the CERN batch system and merge and plot the output.
+
+Usage:
+Execute the commands in this order as they depend on each other.
+
+Generate shape files:
+    ./makeShapeFiles.py -w myWorkDir -m 100 -M 2000 -S 50 -k 4.
+    
+    Generates shape files from input histogram in ./data/ (or specified with -i option).
+    The mass points range from 100 GeV to 2000 GeV with steps of 50 GeV.
+    The -k option specifies a factor for the coupling in the model.
+
+Generate card files:
+    ./makeDataCards.py -w myWorkDir -m 100 -M 2000 -S 50 -k 4.
+    
+    Generates the card files used by the combine tool.
+
+Submit the jobs on the batch system:
+    ./launchJobs.py -q 1nd -m 100 -M 2000 -S 50 -j 10 -t 10 -T 100 -w myWorkDir
+    
+    This submits 10 jobs with 10 toy experiments each with 100 tries of the MCMC to the one day queue of the LSF batch system.
+    
+    ./launchJobs.py -q 1nd -m 100 -M 2000 -S 50 -T 100 -w myWorkDir
+    
+    This submits one job for each mass point with 100 tries for MCMC to calculate the observed limits.
+
+Merge the output .root files with the limits from different toy experiments:
+    ./mergeJobResults.py -w myWorkDir
+
+Draw the cross section times branching ratio limit plot:
+    ./plotLimits.py -m 100 -M 2000 -S 50 -fs -oe12t -w myWorkDir/ -k 4.
+    
+    This draw the final limit plot with observed (-o) and expected (-e) curves, one (-1) and two (-2) sigma band and theory (-t) curve.
+    The y axis is in fb (-f) and the final plot is saved (-s) in the results subdirectory of the working directory.
+
