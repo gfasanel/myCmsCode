@@ -119,6 +119,7 @@ class ShapeHMaker:
             shapeHisto = TH1F(bkg_name, bkg_name, int(math.ceil(maxMass)-math.floor(minMass)), math.floor(minMass), math.ceil(maxMass))
             for m in range(int(math.floor(minMass)), int(math.ceil(maxMass))):
                 shapeHisto.SetBinContent(shapeHisto.FindBin(m), bkgHist.GetBinContent(bkgHist.FindBin(m)))
+                shapeHisto.SetBinError(shapeHisto.FindBin(m), bkgHist.GetBinError(bkgHist.FindBin(m)))
             shapeHisto.Rebuild()
             shapeHisto.Write()
         else:
