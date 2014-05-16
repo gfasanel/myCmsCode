@@ -24,6 +24,8 @@
 #include "TLegend.h"
 #include "TStyle.h"
 #include "TStopwatch.h"
+#include "TRandom3.h"
+#include "TF1.h"
 
 #include <vector>
 #include <iostream>
@@ -123,6 +125,7 @@ public :
    Float_t         genele_pt[100];
    Float_t         genele_eta[100];
    Float_t         genele_phi[100];
+   Int_t           genMu_size;
    Float_t         genmu_pt[100];
    Float_t         genmu_eta[100];
    Float_t         genmu_phi[100];
@@ -203,6 +206,7 @@ public :
    TBranch        *b_genele_pt;   //!
    TBranch        *b_genele_eta;   //!
    TBranch        *b_genele_phi;   //!
+   TBranch        *b_genMu_size;   //!
    TBranch        *b_genmu_pt;   //!
    TBranch        *b_genmu_eta;   //!
    TBranch        *b_genmu_phi;   //!
@@ -280,6 +284,11 @@ protected :
    vector<TString> suffix;
    // strings for shape uncertainty names
    vector<TString> shapeUncNames;
+   // random number generator for Gaussian smearing
+   TRandom3 randGen;
+   // psssimistic and optimistic muon relative massResolution
+   TF1* mResV7C1;
+   TF1* mResV7C2;
 
    // Functions
    bool PassHEEP(const int &n);
@@ -288,6 +297,7 @@ protected :
    double FakeRate (const float& et, const float& eta);
    void scaleEle (const bool up);
    void scaleMu (const bool up);
+   void resMu (const bool up);
    double topScaleFactor (const float& top_genpt, const float& atop_genpt);
    int Trigger(int &prescale, unsigned int *trig, const int &selector=0);
    void WeightMuonRecoIsoTrigger(float MuonPt, float MuonEta, float &weight_muon_reco, float &weight_trigger, float &eff_trigger, TString &type, float l1_eff=1.);
@@ -367,6 +377,16 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    frps_missHitsCutEB = 1;
    frps_missHitsCutEE = 1;
 
+   // resolution parametrisations
+   //mResV7C1 = new TF1("mResV7C1", "pol2", 0., 5000.);
+   //mResV7C1->SetParameters(0.0132055, 1.53824e-5, -9.33481e-11);
+   //mResV7C2 = new TF1("mResV7C2", "pol2", 0., 5000.);
+   //mResV7C2->SetParameters(0.0148294, 1.16352e-5, -1.13658e-09);
+   mResV7C1 = new TF1("mResV7C1", "[0]+[1]*(1-exp(-x/[2]))", 0., 5000.);
+   mResV7C1->SetParameters(1.19197e-2, 2.28203e-1, 2.27692e+3);
+   mResV7C2 = new TF1("mResV7C2", "[0]+[1]*(1-exp(-x/[2]))", 0., 5000.);
+   mResV7C2->SetParameters(1.38427e-2, 6.44632e-2, 6.63635e+2);
+
    suffix.reserve(50);
    suffix.push_back("data");
    suffix.push_back("ttbar");
@@ -437,6 +457,8 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    shapeUncNames.push_back("eleScaleDown");
    shapeUncNames.push_back("muScaleUp");
    shapeUncNames.push_back("muScaleDown");
+   shapeUncNames.push_back("muonResUp");
+   shapeUncNames.push_back("muonResDown");
 }
 
 EmuSpectrum::~EmuSpectrum()
@@ -552,6 +574,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("genele_pt", genele_pt, &b_genele_pt);
    fChain->SetBranchAddress("genele_eta", genele_eta, &b_genele_eta);
    fChain->SetBranchAddress("genele_phi", genele_phi, &b_genele_phi);
+   fChain->SetBranchAddress("genMu_size", &genMu_size, &b_genMu_size);
    fChain->SetBranchAddress("genmu_pt", genmu_pt, &b_genmu_pt);
    fChain->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
    fChain->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
@@ -633,6 +656,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("genele_pt", 1);
    fChain->SetBranchStatus("genele_eta", 1);
    fChain->SetBranchStatus("genele_phi", 1);
+   fChain->SetBranchStatus("genMu_size", 1);
    fChain->SetBranchStatus("genmu_pt", 1);
    fChain->SetBranchStatus("genmu_eta", 1);
    fChain->SetBranchStatus("genmu_phi", 1);

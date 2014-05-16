@@ -7,8 +7,6 @@ from ROOT import TFile,TTree,TH1F,TH1D,TF1,TGraph,TGraphErrors
 from ROOT import TCanvas,TLegend,TLatex,TPaveStats
 from ROOT import gROOT,gStyle,gPad
 
-gROOT.SetBatch()
-
 savePlots = True
 font = 42
 markers = [ROOT.kFullTriangleUp, ROOT.kFullTriangleDown]
@@ -55,8 +53,8 @@ for i, treePrefix in enumerate(treePrefices):
     
             tree = input.Get(keyName)
     
-            #brName = 'mass'
             brName = '(mass-emu_mass)/emu_mass'
+            #brName = '(mass-genEmuMass)/genEmuMass'
     
             cList.append(TCanvas(keyName+'_res', keyName+'_res', 100, 20, 600, 600))
             j = len(cList)-1
