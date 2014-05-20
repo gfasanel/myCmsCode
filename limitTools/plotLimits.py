@@ -55,6 +55,7 @@ parser.add_option("-3"  ,"--3sigma", dest="draw3sigma", default=False, action="s
 parser.add_option("-t"  ,"--theory", dest="drawTheory", default=False, action="store_true", help="Draw theory curve.")
 parser.add_option("-f"  ,"--fb", dest="inFemtoBarn", default=False, action="store_true", help="Output cross section times BR in fb instead of pb.")
 parser.add_option("-s"  ,"--save", dest="savePlots", default=False, action="store_true", help="Save plots to root file in results directory.")
+parser.add_option("-d"  ,"--dots", dest="showMarker", default=False, action="store_true", help="Plot a marker at the calculated mass point.")
 (options, args) = parser.parse_args()
 
 if not options.workDir[-1:] == '/':
@@ -63,9 +64,7 @@ if not options.workDir[-1:] == '/':
 # mass points to draw
 massPoints = numpy.arange(options.minMass, options.maxMass+options.massStep, options.massStep)
 
-# acceptance times efficiency and theory cross section curves
-#accTimesEff = TF1('accTimesEff', '[0] + [1]/(x+[2]) + [3]*x', 0., 1.e6)
-#accTimesEff.SetParameters(0.74, -131.8, 151.9, -2.81e-5)
+# theory cross section curve
 xsec_x_br_sig = TF1('xsec_x_br_sig', '[0] * exp(-x/[1] + [2]/x - x**2/[3])', 0.5*options.minMass, 1.2*options.maxMass)
 xsec_x_br_sig.SetParameters(3.98360e-4, 397.414, 323.610, 1.05017e7)
 
@@ -76,8 +75,10 @@ if options.inFemtoBarn:
 
 # graphs and curves to plot
 obs_lim = TGraph(len(massPoints))
+obs_lim.SetName('obs_lim')
 
 median_3sigma = TGraphAsymmErrors(len(massPoints))
+median_3sigma.SetName('median_3sigma')
 median_2sigma = median_3sigma.Clone('median_2sigma')
 median_1sigma = median_3sigma.Clone('median_1sigma')
 theory_curve = xsec_x_br_sig.Clone('theory_curve')
@@ -88,7 +89,6 @@ print '  Mass      |   Observed limit  |         Expected limit (+/- 1 sigma)   
 print '----------------------------------------------------------------------------------------------'
 # loop over the mass points
 for i, mass in enumerate(massPoints):
-    #scale = options.kappa**2 * xsec_x_br_sig.Eval(mass) / accTimesEff.Eval(mass) * femtoFact   // I think this is double counting the acc x eff
     scale = options.kappa**2 * xsec_x_br_sig.Eval(mass) * femtoFact
 
     #get the observed limit from the root file
@@ -140,50 +140,59 @@ median.SetLineWidth(2)
 median.SetLineColor(ROOT.kBlue)
 median.SetLineStyle(ROOT.kDashed)
 
+##############################################################################
 #now draw the limits
 c = TCanvas('limit')
 c.SetLogy(True)
 
 optionAxis = 'A'
 #draw expected limits
+median_3sigma.SetFillColor(ROOT.kRed-6)
+median_3sigma.SetLineColor(ROOT.kRed-6)
+setAxisLabels(median_3sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
 if options.draw3sigma:
-    median_3sigma.SetFillColor(ROOT.kRed-6)
-    median_3sigma.SetLineColor(ROOT.kRed-6)
-    setAxisLabels(median_3sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
     median_3sigma.Draw(optionAxis+'3')
     optionAxis = ''
+
+median_2sigma.SetFillColor(ROOT.kYellow)
+median_2sigma.SetLineColor(ROOT.kYellow)
+setAxisLabels(median_2sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
 if options.draw2sigma:
-    median_2sigma.SetFillColor(ROOT.kYellow)
-    median_2sigma.SetLineColor(ROOT.kYellow)
-    setAxisLabels(median_2sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
     median_2sigma.Draw(optionAxis+'3')
     optionAxis = ''
+
+median_1sigma.SetFillColor(ROOT.kGreen)
+median_1sigma.SetLineColor(ROOT.kGreen)
+setAxisLabels(median_1sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
 if options.draw1sigma:
-    median_1sigma.SetFillColor(ROOT.kGreen)
-    median_1sigma.SetLineColor(ROOT.kGreen)
-    setAxisLabels(median_1sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
     median_1sigma.Draw(optionAxis+'3')
     optionAxis = ''
+
+setAxisLabels(median, options.minMass, options.maxMass, options.inFemtoBarn, font)
 if options.drawExp:
-    setAxisLabels(median, options.minMass, options.maxMass, options.inFemtoBarn, font)
     median.Draw(optionAxis+'LX')
     optionAxis = ''
 
 #draw observed limits
 obs_lim.SetLineWidth(2)
+obs_lim.SetMarkerStyle(20)
+setAxisLabels(obs_lim, options.minMass, options.maxMass, options.inFemtoBarn, font)
 if options.drawObs:
-    setAxisLabels(obs_lim, options.minMass, options.maxMass, options.inFemtoBarn, font)
-    obs_lim.Draw(optionAxis+'LP')
+    if options.showMarker:
+        obs_lim.Draw(optionAxis+'LP')
+    else:
+        obs_lim.Draw(optionAxis+'L')
     optionAxis = ''
+
 #draw theory curve
 theory_curve.SetLineWidth(2)
 theory_curve.SetLineColor(ROOT.kCyan+1)
+setAxisLabels(theory_curve, options.minMass, options.maxMass, options.inFemtoBarn, font)
 if options.drawTheory:
     if optionAxis == '':
         theory_curve.Draw('Lsame')
     else:
         theory_curve.Draw('L')
-        setAxisLabels(theory_curve, options.minMass, options.maxMass, options.inFemtoBarn, font)
 
 #legend
 legend = TLegend(0.54, 0.50, 0.89, 0.88)
@@ -221,6 +230,11 @@ tex.DrawLatex(0.1, 0.91, 'CMS Preliminary, 8 TeV, 19.7 fb^{-1}')
 if options.savePlots:
     output = TFile(options.workDir+'results/limitPlot.root', 'recreate')
     c.Write(c.GetName())
+    obs_lim.Write()
+    median_1sigma.Write()
+    median_2sigma.Write()
+    median_3sigma.Write()
+    theory_curve.Write()
     output.Close()
     print 'Limit plot written to: '+options.workDir+'results/limitPlot.root'
 
