@@ -2,7 +2,7 @@
 
 import ROOT
 import math
-#ROOT.gROOT.SetBatch(True)
+ROOT.gROOT.SetBatch(True)
 from ROOT import TFile,TTree,TH1F,TH1D,TF1,TGraph,TGraphErrors
 from ROOT import TCanvas,TLegend,TLatex,TPaveStats
 from ROOT import gROOT,gStyle,gPad
@@ -161,9 +161,9 @@ for i, treePrefix in enumerate(treePrefices):
     else:
         resList[i].Draw('psame')
 
-    resFitFuncList.append(TF1('resFitFunc{0}'.format(i), 'pol2', 250, 5000))
+    resFitFuncList.append(TF1('resFitFunc{0}'.format(i), 'pol2', 150, 5000))
     resFitFuncList[i].SetLineColor(colors[i])
-    resList[i].Fit(resFitFuncList[i], '', '', 250, 5000)
+    resList[i].Fit(resFitFuncList[i], '', '', 150, 5000)
 
     # move the stats box
     gPad.Update()
@@ -181,7 +181,7 @@ tex2.SetTextFont(font)
 tex2.SetTextSize(0.04)
 tex2.DrawLatex(0.14, 0.91, 'CMS Simulation, 8 TeV')
 
-anFitFunc = TF1('anFitFunc', 'pol2', 250, 5000)
+anFitFunc = TF1('anFitFunc', 'pol2', 150, 5000)
 anFitFunc.SetParameters(0.013, 1.8e-5, -8.9e-10)
 anFitFunc.Draw('psame')
 
@@ -208,12 +208,15 @@ if len(treePrefices) > 1:
     gPad.SetTickx(1)
     gPad.SetTicky(1)
     
-    resErr = TGraph(resList[0].GetN())
+    resErr = TGraphErrors(resList[0].GetN())
     g1x = resList[0].GetX()
     g1y = resList[0].GetY()
     g2y = resList[1].GetY()
     for i in range(resList[0].GetN()):
-        resErr.SetPoint(i, g1x[i], abs(g1y[i]-g2y[i])/g1y[i])
+        num = abs(g1y[i]-g2y[i])
+        resErr.SetPoint(i, g1x[i], num/g1y[i])
+        numErr2 = resList[0].GetErrorY(i)**2 + resList[1].GetErrorY(i)**2
+        resErr.SetPointError(i, 0., num/g1y[i] * math.sqrt((resList[0].GetErrorY(i)/g1y[i])**2 + numErr2/num**2)) # error propagation for |A-B|/A
     resErr.GetXaxis().SetTitle('M_{e#mu} (GeV)')
     resErr.GetXaxis().SetTitleFont(font)
     resErr.GetXaxis().SetLabelFont(font)
@@ -223,11 +226,11 @@ if len(treePrefices) > 1:
     resErr.GetYaxis().SetLabelFont(font)
     resErr.Draw('ap')
 
-    resErrFitFunc = TF1('resErrFitFunc', 'pol2', 250, 5000)
+    resErrFitFunc = TF1('resErrFitFunc', 'pol2', 150, 5000)
     resErrFitFunc.SetLineColor(colors[0])
-    resErr.Fit(resErrFitFunc, '', '', 250, 5000)
+    resErr.Fit(resErrFitFunc, '', '', 150, 5000)
 
-    resErrFunc = TF1('resErrFunc', 'pol2 / pol2(3)', 250, 5000)
+    resErrFunc = TF1('resErrFunc', 'pol2 / pol2(3)', 150, 5000)
     resErrFunc.SetParameters(resFitFuncList[0].GetParameter(0)-resFitFuncList[1].GetParameter(0), resFitFuncList[0].GetParameter(1)-resFitFuncList[1].GetParameter(1), resFitFuncList[0].GetParameter(2)-resFitFuncList[1].GetParameter(2), resFitFuncList[0].GetParameter(0), resFitFuncList[0].GetParameter(1), resFitFuncList[0].GetParameter(2))
     resErrFunc.SetLineColor(colors[1])
     resErrFunc.Draw('lsame')
@@ -251,6 +254,7 @@ if len(treePrefices) > 1:
 # save canvases to root file
 if savePlots:
     output = TFile('./plots/resolutionPlots.root', 'recreate')
+    #output = TFile('./plots/resolutionPlots_singleMu.root', 'recreate')
     output.cd()
     for canvas in cList:
         canvas.Write(canvas.GetName())

@@ -223,8 +223,10 @@ if len(treePrefices) > 1:
     g1y = resList[0].GetY()
     g2y = resList[1].GetY()
     for i in range(resList[0].GetN()):
-        resErr.SetPoint(i, g1x[i], abs(g1y[i]-g2y[i])/g1y[i])
-        resErr.SetPointError(i, resList[0].GetErrorX(i), math.sqrt(resList[0].GetErrorY(i)**2 + resList[1].GetErrorY(i)**2)/g1y[i])
+        num = abs(g1y[i]-g2y[i])
+        resErr.SetPoint(i, g1x[i], num/g1y[i])
+        numErr2 = resList[0].GetErrorY(i)**2 + resList[1].GetErrorY(i)**2
+        resErr.SetPointError(i, resList[0].GetErrorX(i), num/g1y[i] * math.sqrt((resList[0].GetErrorY(i)/g1y[i])**2 + numErr2/num**2)) # error propagation for |A-B|/A
     resErr.GetXaxis().SetTitle('p^{#mu gen}_{T} (GeV)')
     resErr.GetXaxis().SetTitleFont(font)
     resErr.GetXaxis().SetLabelFont(font)
