@@ -41,7 +41,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
   TFile input("./emuSpec_19703pb-1.root", "open");
-  //TFile input("./test_19703pb-1.root", "open");
+  //TFile input("./emuSpec_singleMuTrg_19706pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -416,6 +416,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
        emuTest_allBkg->Write(testVar + "_allBkg" + shapeUncName);
        if (var == 0) {
          fitCanvas = new TCanvas("fitCanvas" + shapeUncName, "fitCanvas" + shapeUncName, 100, 100, 700, 600);
+         fitCanvas->SetLogy();
          TF1 *bgParamFunc = new TF1("bgParamFunc" + shapeUncName, "1/[1]*(1+([2]*(x-[0]))/([1]))**(-1/[2]-1)", 0., 6000.);
          bgParamFunc->SetParLimits(0, 100., 1.e5);
          bgParamFunc->SetParLimits(1, 10., 1000.);
@@ -423,6 +424,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
          bgParamFunc->SetParNames("m_{min}", "#alpha", "#beta");
          fitCanvas->cd();
          emuTest_allBkg->Fit("bgParamFunc" + shapeUncName, "", "", 150., 1500.);
+         std::cout << "Fit chi^2, ndf, chi^2/ndf: " << bgParamFunc->GetChisquare() << ", " << bgParamFunc->GetNDF() << ", " << bgParamFunc->GetChisquare()/bgParamFunc->GetNDF() << std::endl;
          outFile->cd();
          bgParamFunc->Write();
        }

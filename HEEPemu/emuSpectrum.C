@@ -10,22 +10,36 @@ void EmuSpectrum::Loop()
    TStopwatch timer;
    timer.Start();
    // parameters /////////////////////////////////////////////////////////////
-   float LumiFactor = 19703.; //Lumi in pb-1
-   //float LumiFactor = 19706.; //Lumi in pb-1
-   TParameter<float> lumi("lumi", LumiFactor);
+   ////-----------------------------------------------------------------------
+   //// MuEG dataset triggered by Mu22_photon22 trigger
+   //float LumiFactor = 19703.; //Lumi in pb-1
+   //// DATA file
+   //TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19703pb-1.root";
+   //// pile up histogram
+   //TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
+   //string outfileName = "emuSpec";
+   //float eleL1Eff = 0.99;
+   //int trgSelector = 0;
+   ////-----------------------------------------------------------------------
 
+   //-----------------------------------------------------------------------
+   // SingleMu dataset triggered by Mu40_eta2p1 trigger
+   float LumiFactor = 19706.; //Lumi in pb-1
    // DATA file
-   TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19703pb-1.root";
-   //TString dataFile = "file:////user/treis/data2013/SingleMu_Run2012ABCD-22Jan2013-v1_AOD_ele20mu20_19706pb-1.root";
+   TString dataFile = "file:////user/treis/data2013/SingleMu_Run2012ABCD-22Jan2013-v1_AOD_ele20mu20_19706pb-1.root";
    // pile up histogram
-   TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
+   TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_SingleMu_Run2012ABCD-22Jan2013.root";
+   string outfileName = "emuSpec_singleMuTrg";
+   muon_pt_min = 45.;
+   muon_etaMax = 2.1;
+   float eleL1Eff = 1.; // there is no electron L1 for the trigger used and so just set it to 1.
+   int trgSelector = 4;
+   //-----------------------------------------------------------------------
 
-   string outfileName = "emuSpec";
-   //string outfileName = "test";
-
+   TParameter<float> lumi("lumi", LumiFactor);
    // scale factors
    // muon factors: mu high_pt id trk iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
-   TParameter<float> trgL1Eff("trgL1Eff", 0.99); // ele L1 eff
+   TParameter<float> trgL1Eff("trgL1Eff", eleL1Eff); // ele L1 eff
    // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
    TParameter<float> eps_cand_sf_0p8("eps_cand_sf_0p8", 0.990); // data/MC scale for epsilon_cand (>50GeV) |eta|<0.8
    TParameter<float> eps_cand_sf_err_0p8("eps_cand_sf_err_0p8", 0.004); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) |eta|<0.8
@@ -972,14 +986,18 @@ void EmuSpectrum::Loop()
             // get trigger info
             int prescale = 0;
             passTrg = true;
-            if (p == 0 && Trigger(prescale, dataTrig) < 1) passTrg = false;
+            if (p == 0 && Trigger(prescale, dataTrig, trgSelector) < 1) passTrg = false;
             if (p != 0) {
-               if (jentry < nentries * dataTrig[0] / dataEntries) {
-                  if (Trigger(prescale, trig, 1) < 1) passTrg = false;
-               } else if (jentry < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
-                  if (Trigger(prescale, trig, 2) < 1) passTrg = false;
-               } else {
-                  if (Trigger(prescale, trig, 3) < 1) passTrg = false;
+               if (trgSelector == 4) {    // single muon trigger
+                  if (Trigger(prescale, trig, 4) < 1) passTrg = false;
+               } else { 
+                  if (jentry < nentries * dataTrig[0] / dataEntries) {
+                     if (Trigger(prescale, trig, 1) < 1) passTrg = false;
+                  } else if (jentry < nentries * (dataTrig[0] + dataTrig[1]) / dataEntries) {
+                     if (Trigger(prescale, trig, 2) < 1) passTrg = false;
+                  } else {
+                     if (Trigger(prescale, trig, 3) < 1) passTrg = false;
+                  }
                }
             }
 
@@ -1687,6 +1705,10 @@ int EmuSpectrum::Trigger(int &prescale, unsigned int *trig, const int &selector)
       prescale = prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
       if (HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL >= 0) trig[2]++;
       return HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
+   } else if (selector == 4) {
+      prescale = prescale_HLT_Mu40_eta2p1;
+      if (HLT_Mu40_eta2p1 >= 0) trig[0]++;
+      return HLT_Mu40_eta2p1;
    } else {
       // select an unprescaled trigger
       if (prescale_HLT_Mu22_Photon22_CaloIdL == 1) {

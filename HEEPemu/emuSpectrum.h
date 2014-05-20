@@ -57,9 +57,11 @@ public :
    UInt_t          eventnumber;
    UInt_t          luminosityBlock;
    Int_t           HLT_Mu22_Photon22_CaloIdL;
+   Int_t           HLT_Mu40_eta2p1;
    Int_t           HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           prescale_HLT_Mu22_Photon22_CaloIdL;
+   Int_t           prescale_HLT_Mu40_eta2p1;
    Int_t           prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Int_t           prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    Float_t         rho;
@@ -138,9 +140,11 @@ public :
    TBranch        *b_eventnumber;   //!
    TBranch        *b_luminosityBlock;   //!
    TBranch        *b_HLT_Mu22_Photon22_CaloIdL;   //!
+   TBranch        *b_HLT_Mu40_eta2p1;   //!
    TBranch        *b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_prescale_HLT_Mu22_Photon22_CaloIdL;   //!
+   TBranch        *b_prescale_HLT_Mu40_eta2p1;   //!
    TBranch        *b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;   //!
    TBranch        *b_rho;   //!
@@ -226,6 +230,7 @@ public :
 
 protected :
    pair<unsigned int, unsigned int> runs_HLT_Mu22_Photon22_CaloIdL;
+   pair<unsigned int, unsigned int> runs_HLT_Mu40_eta2p1;
    pair<unsigned int, unsigned int> runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
    pair<unsigned int, unsigned int> runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL;
 
@@ -323,6 +328,7 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
       Init(tree);
    }
    runs_HLT_Mu22_Photon22_CaloIdL = make_pair(999999999, 0);
+   runs_HLT_Mu40_eta2p1 = make_pair(999999999, 0);
    runs_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL = make_pair(999999999, 0);
    runs_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL = make_pair(999999999, 0);
    
@@ -506,9 +512,11 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("eventnumber", &eventnumber, &b_eventnumber);
    fChain->SetBranchAddress("luminosityBlock", &luminosityBlock, &b_luminosityBlock);
    fChain->SetBranchAddress("HLT_Mu22_Photon22_CaloIdL", &HLT_Mu22_Photon22_CaloIdL, &b_HLT_Mu22_Photon22_CaloIdL);
+   fChain->SetBranchAddress("HLT_Mu40_eta2p1", &HLT_Mu40_eta2p1, &b_HLT_Mu40_eta2p1);
    fChain->SetBranchAddress("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("prescale_HLT_Mu22_Photon22_CaloIdL", &prescale_HLT_Mu22_Photon22_CaloIdL, &b_prescale_HLT_Mu22_Photon22_CaloIdL);
+   fChain->SetBranchAddress("prescale_HLT_Mu40_eta2p1", &prescale_HLT_Mu40_eta2p1, &b_prescale_HLT_Mu40_eta2p1);
    fChain->SetBranchAddress("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", &prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL, &b_prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL);
    fChain->SetBranchAddress("rho", &rho, &b_rho);
@@ -588,9 +596,11 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("eventnumber", 1);
    fChain->SetBranchStatus("luminosityBlock", 1);
    fChain->SetBranchStatus("HLT_Mu22_Photon22_CaloIdL", 1);
+   fChain->SetBranchStatus("HLT_Mu40_eta2p1", 1);
    fChain->SetBranchStatus("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("prescale_HLT_Mu22_Photon22_CaloIdL", 1);
+   fChain->SetBranchStatus("prescale_HLT_Mu40_eta2p1", 1);
    fChain->SetBranchStatus("prescale_HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("prescale_HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL", 1);
    fChain->SetBranchStatus("rho", 1);
