@@ -177,11 +177,11 @@ if options.drawExp:
 obs_lim.SetLineWidth(2)
 obs_lim.SetMarkerStyle(20)
 setAxisLabels(obs_lim, options.minMass, options.maxMass, options.inFemtoBarn, font)
+drawStyle = 'l'
 if options.drawObs:
     if options.showMarker:
-        obs_lim.Draw(optionAxis+'LP')
-    else:
-        obs_lim.Draw(optionAxis+'L')
+        drawStyle += 'p'
+    obs_lim.Draw(optionAxis+drawStyle)
     optionAxis = ''
 
 #draw theory curve
@@ -202,7 +202,7 @@ legend.SetBorderSize(0)
 legend.SetFillColor(19)
 legend.SetFillStyle(0)
 if options.drawObs:
-    legend.AddEntry(obs_lim, '95% CL limit', 'lp')
+    legend.AddEntry(obs_lim, '95% CL limit', drawStyle)
 if options.drawExp:
     legend.AddEntry(median, 'median expected limit', 'l')
 if options.draw1sigma:
