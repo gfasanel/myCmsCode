@@ -34,6 +34,8 @@ void EmuSpectrum::Loop()
    muon_etaMax = 2.1;
    float eleL1Eff = 1.; // there is no electron L1 for the trigger used and so just set it to 1.
    int trgSelector = 4;
+   mResV7C1->SetParameters(1.17416e-2, 2.31609e-1, 2.32020e+3);
+   mResV7C2->SetParameters(1.45309e-2, 6.43018e-2, 6.85898e+2);
    //-----------------------------------------------------------------------
 
    TParameter<float> lumi("lumi", LumiFactor);

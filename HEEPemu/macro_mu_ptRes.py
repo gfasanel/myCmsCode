@@ -23,6 +23,7 @@ gStyle.SetOptTitle(0)
 
 #open files to comare
 input = TFile("emuSpec_19703pb-1.root")
+#input = TFile("emuSpec_singleMuTrg_19706pb-1.root")
 treePrefices = ['emuTree_sigNoAccCuts', 'emuTree_sigTagV7C2_']
 #treePrefices = ['emuTree_sigTagV7C2_']
 recoTags = ['START53_V7C1', 'START53_V7C2']
@@ -262,6 +263,7 @@ if len(treePrefices) > 1:
 # save canvases to root file
 if savePlots:
     output = TFile('./plots/muPtResolutionPlots.root', 'recreate')
+    #output = TFile('./plots/muPtResolutionPlots_singleMu.root', 'recreate')
     output.cd()
     for canvas in cList:
         canvas.Write(canvas.GetName())
