@@ -44,6 +44,8 @@ gStyle.SetPadTickY(1)
 parser = OptionParser(usage="usage: %prog [options]", description="Plot limits.\n")
 parser.add_option("-w" ,"--workDir1", dest="workDir1", default=os.getcwd()+'/', help="Path to working directory one.")
 parser.add_option("-W" ,"--workDir2", dest="workDir2", default=os.getcwd()+'/', help="Path to working directory two.")
+parser.add_option("-n" ,"--name1", dest="name1", default='', help="Display name for legend one.")
+parser.add_option("-N" ,"--name2", dest="name2", default='', help="Display name for legend two.")
 parser.add_option("-o" ,"--obs1", dest="drawObs1", default=False, action="store_true", help="Draw observed limit one.")
 parser.add_option("-O" ,"--obs2", dest="drawObs2", default=False, action="store_true", help="Draw observed limit two.")
 parser.add_option("-e" ,"--exp1", dest="drawExp1", default=False, action="store_true", help="Draw expected limit one.")
@@ -51,9 +53,9 @@ parser.add_option("-E" ,"--exp2", dest="drawExp2", default=False, action="store_
 parser.add_option("-1" ,"--1sigma1", dest="draw1sigma1", default=False, action="store_true", help="Draw one sigma band one.")
 parser.add_option("-2" ,"--2sigma1", dest="draw2sigma1", default=False, action="store_true", help="Draw two sigma band one.")
 parser.add_option("-3" ,"--3sigma1", dest="draw3sigma1", default=False, action="store_true", help="Draw three sigma band one.")
-parser.add_option("--1sigma2", dest="draw1sigma2", default=False, action="store_true", help="Draw one sigma band two.")
-parser.add_option("--2sigma2", dest="draw2sigma2", default=False, action="store_true", help="Draw two sigma band two.")
-parser.add_option("--3sigma2", dest="draw3sigma2", default=False, action="store_true", help="Draw three sigma band two.")
+parser.add_option("-4" ,"--1sigma2", dest="draw1sigma2", default=False, action="store_true", help="Draw one sigma band two.")
+parser.add_option("-5" ,"--2sigma2", dest="draw2sigma2", default=False, action="store_true", help="Draw two sigma band two.")
+parser.add_option("-6" ,"--3sigma2", dest="draw3sigma2", default=False, action="store_true", help="Draw three sigma band two.")
 parser.add_option("-t" ,"--theory1", dest="drawTheory1", default=False, action="store_true", help="Draw theory curve one.")
 parser.add_option("-T" ,"--theory2", dest="drawTheory2", default=False, action="store_true", help="Draw theory curve one.")
 parser.add_option("-s" ,"--save", dest="savePlots", default=False, action="store_true", help="Save plots to root file in results directory.")
@@ -192,8 +194,9 @@ if options.drawTheory1:
         theory_curve1.Draw('Lsame')
     else:
         theory_curve1.Draw('L')
-theory_curve1.SetLineWidth(2)
-theory_curve1.SetLineColor(ROOT.kCyan-1)
+theory_curve2.SetLineWidth(2)
+theory_curve2.SetLineColor(ROOT.kCyan-1)
+theory_curve2.SetLineStyle(ROOT.kDashed)
 if options.drawTheory2:
     if optionAxis == '':
         theory_curve2.Draw('Lsame')
@@ -201,36 +204,43 @@ if options.drawTheory2:
         theory_curve2.Draw('L')
 
 #legend
-legend = TLegend(0.54, 0.50, 0.89, 0.88)
+legend = TLegend(0.32, 0.50, 0.89, 0.88)
 legend.SetTextFont(font)
 legend.SetTextSize(0.04)
 legend.SetBorderSize(0)
 legend.SetFillColor(19)
 legend.SetFillStyle(0)
+legend.SetNColumns(2)
+if options.name1 != '':
+    legend.AddEntry(options.name1, options.name1, '')
+if options.name2 != '':
+    legend.AddEntry(options.name2, options.name2, '')
 if options.drawObs1:
     legend.AddEntry(obs_lim1, '95% CL limit', drawStyle1)
+if options.drawObs2:
+    legend.AddEntry(obs_lim2, '95% CL limit', drawStyle2)
+else:
+    legend.AddEntry('empty', '', '')
 if options.drawExp1:
-    legend.AddEntry(median1, 'median expected limit', 'l')
+    legend.AddEntry(median1, 'median exp. limit', 'l')
+if options.drawExp2:
+    legend.AddEntry(median2, 'median exp. limit', 'l')
 if options.draw1sigma1:
     legend.AddEntry(median_1sigma1, '68% expected', 'f')
+if options.draw1sigma2:
+    legend.AddEntry(median_1sigma2, '68% expected', 'f')
 if options.draw2sigma1:
     legend.AddEntry(median_2sigma1, '95% expected', 'f')
+if options.draw2sigma2:
+    legend.AddEntry(median_2sigma2, '95% expected', 'f')
 if options.draw3sigma1:
     legend.AddEntry(median_3sigma1, '99% expected', 'f')
+if options.draw3sigma2:
+    legend.AddEntry(median_3sigma2, '99% expected', 'f')
 if options.drawTheory1:
     sigText = "Z' signal (LO)"
     #sigText = "#splitline{{Z' signal (LO)}}{{#kappa = {:.1g} #times M_{{Z'}} / 100 TeV}}".format(options.kappa)
     legend.AddEntry(theory_curve1, sigText, 'l')
-if options.drawObs2:
-    legend.AddEntry(obs_lim2, '95% CL limit', drawStyle2)
-if options.drawExp2:
-    legend.AddEntry(median2, 'median expected limit', 'l')
-if options.draw1sigma2:
-    legend.AddEntry(median_1sigma2, '68% expected', 'f')
-if options.draw2sigma2:
-    legend.AddEntry(median_2sigma2, '95% expected', 'f')
-if options.draw3sigma2:
-    legend.AddEntry(median_3sigma2, '99% expected', 'f')
 if options.drawTheory2:
     sigText = "Z' signal (LO)"
     #sigText = "#splitline{{Z' signal (LO)}}{{#kappa = {:.1g} #times M_{{Z'}} / 100 TeV}}".format(options.kappa)
@@ -246,7 +256,7 @@ tex.DrawLatex(0.1, 0.91, 'CMS Preliminary, 8 TeV, 19.7 fb^{-1}')
 ##############################################################################
 # save canvases to root file
 if options.savePlots:
-    output = TFile(options.workDir+'results/limitComparisonPlot.root', 'recreate')
+    output = TFile(options.workDir1+'results/limitComparisonPlot.root', 'recreate')
     c.Write(c.GetName())
     output.Close()
     print 'Limit comparion plot written to: '+options.workDir1+'results/limitComparisonPlot.root'
