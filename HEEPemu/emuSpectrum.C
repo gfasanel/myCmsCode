@@ -959,6 +959,7 @@ void EmuSpectrum::Loop()
             // if (Cut(ientry) < 0) continue;
             if (jentry % 50000 == 0) cout << "Processing event " << jentry << endl;
             thetree->GetEntry(jentry);
+            topRewSf = 1.;
 
             // modify eleScale, muScale, muonRes by +/-1 sigma for shape uncertainties
             switch (shUnc) {

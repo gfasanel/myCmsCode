@@ -132,8 +132,8 @@ public :
    Float_t         genmu_eta[100];
    Float_t         genmu_phi[100];
    Int_t           genPart_size;
-   Float_t         genPart_pt[20];
-   Float_t         genPart_pdgid[20];
+   Float_t         genPart_pt[100];
+   Int_t           genPart_pdgid[100];
    Float_t         genPair_mass;
    Float_t         emu_mass;
    Int_t           trueNVtx;
