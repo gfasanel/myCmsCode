@@ -284,6 +284,7 @@ protected :
    bool PassHEEP(const int &n);
    bool PassHighPtMu(const int &n);
    int Trigger(int &prescale, unsigned int *trig, const int &selector = 0);
+   void WeightMuonRecoIsoTrigger(float MuonPt, float MuonEta, float &weight_muon_reco, float &weight_trigger, float &eff_trigger, TString &type, float l1_eff = 1.);
 };
 
 #endif

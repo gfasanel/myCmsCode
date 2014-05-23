@@ -52,10 +52,6 @@ void AccTimesEff::Loop()
    float minInvMass = 0.;
 
    // scale factors
-   // muon factors: mu high_pt id trk iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
-   float trgDataMcScaleFactorLowEta = 0.976; // scale factor between data and mc measured by Z' to mumu for Mu40 for |eta|<0.9
-   float trgDataMcScaleFactorMidEta = 0.954; // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
-   float trgDataMcScaleFactorHighEta = 0.983; // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
    // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
    float eps_cand_sf_0p8 = 0.990; // data/MC scale for epsilon_cand (>50GeV) |eta|<0.8
    float eps_cand_sf_0p8to1p4442 = 0.991; // data/MC scale for epsilon_cand (>50GeV) 0.8<|eta|<1.4442
@@ -66,11 +62,6 @@ void AccTimesEff::Loop()
    float eps_heep_sf_eb_pt100 = 0.985; // HEEP eff scale factor
    float eps_heep_sf_ee_pt35 = 0.979; // HEEP eff scale factor
    float eps_heep_sf_ee_pt100 = 0.981; // HEEP eff scale factor
-   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
-   float muScaleFactorLowEta = 0.9900; // for |eta|<0.9
-   float muScaleFactorMidEta = 0.9923; // for 0.9<|eta|<1.2
-   float muScaleFactorHighEta = 0.9949; // for 1.2<|eta|<2.1
-   float muScaleFactorHighestEta = 0.9923; // for 2.1<|eta|<2.4
  
    TH1::SetDefaultSumw2(kTRUE);
 
@@ -88,6 +79,9 @@ void AccTimesEff::Loop()
       muon_etaMax = 2.1;
       muEtaCut = muon_etaMax;
    }
+   TString eleDetRegSuffix = "";
+   if (eleDetRegion == 1) eleDetRegSuffix = "_EB";
+   else if (eleDetRegion == 2) eleDetRegSuffix = "_EE";
 
    TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 145, 0., 5010.);
    //TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 125, 0., 3510.);
@@ -230,7 +224,7 @@ void AccTimesEff::Loop()
 
    // output file
    stringstream ssOutfile;
-   ssOutfile << outfileName << ".root";
+   ssOutfile << outfileName << "_" <<  triggerName << eleDetRegSuffix << fileNameExtra << ".root";
    TFile *output = new TFile(ssOutfile.str().c_str(), "recreate");
 
    ///////////////////////////////////////////////////////////////////////////
@@ -309,12 +303,12 @@ void AccTimesEff::Loop()
          float eleSf = 1.;
          float muSf = 1.;
          float trgSf = 1.;
+         float trgEff = 1.;
+         TString sigString = "sig";
 
          if (useScaleFactors) {
             // set trg scale factor according to generated muon
-            if (fabs(genmu_eta[0]) < 0.9) trgSf = trgDataMcScaleFactorLowEta;
-            else if (fabs(genmu_eta[0]) < 1.2) trgSf = trgDataMcScaleFactorMidEta;
-            else trgSf = trgDataMcScaleFactorHighEta;
+            WeightMuonRecoIsoTrigger(genmu_pt[0], genmu_eta[0], muSf, trgSf, trgEff, sigString);
          }
 
          // trigger?
@@ -403,22 +397,7 @@ void AccTimesEff::Loop()
 
          if (useScaleFactors && MU_passGOOD.size() > 0) {
             // set trg and muon scale factor according to selected muon
-            if (fabs(MU_passGOOD[muInd]) < 0.9) {
-               muSf = muScaleFactorLowEta;
-               trgSf = trgDataMcScaleFactorLowEta;
-            }
-            else if (fabs(MU_passGOOD[muInd]) < 1.2) {
-               muSf = muScaleFactorMidEta;
-               trgSf = trgDataMcScaleFactorMidEta;
-            }
-            else if (fabs(MU_passGOOD[muInd]) < 2.1) {
-               muSf = muScaleFactorHighEta;
-               trgSf = trgDataMcScaleFactorHighEta;
-            }
-            else {
-               muSf = muScaleFactorHighestEta;
-               trgSf = trgDataMcScaleFactorHighEta;
-            }
+            WeightMuonRecoIsoTrigger(muon_pt[MU_passGOOD[muInd]], muon_eta[MU_passGOOD[muInd]], muSf, trgSf, trgEff, sigString);
          }
          float sf = trgSf*muSf;
          float leptSf = muSf;
@@ -630,9 +609,15 @@ void AccTimesEff::Loop()
    TH1F* hAccTimesEffNote = (TH1F*)hAccTimesEff->Clone("hAccTimesEffNote");
    TH1F* hAccTimesEff2 = (TH1F*)hAccTimesEff->Clone("hAccTimesEff2");
 
-   //TF1 *andreasFunc = new TF1("andreasFunc", "0.61 + 280.1/ (x + 2008.7) - 30537.3/(x*x + 75925.2)", 200., 5010.);
-   TF1 *andreasFunc = new TF1("andreasFunc", "0.78 - 74.4/ (x + 46.7) - 3.5e-5*x", 200., 5010.);
+   TF1 *andreasFunc = new TF1("andreasFunc", "[0] + [1]/ (x + [2]) + [3]*x", 200., 5010.);
+   andreasFunc->SetParameters(0.78, -74.4, 46.7, -3.5e-5);
    andreasFunc->SetLineColor(kGreen);
+   TF1 *otherDatasetFunc = new TF1("otherDatasetFunc", "[0] + [1]/ (x + [2]) + [3]*x", 200., 5010.);
+   if (triggerInd == 0)
+      otherDatasetFunc->SetParameters(7.41590e-1, -1.41313e2, 1.63499e2, -2.87806e-5);
+   else
+      otherDatasetFunc->SetParameters(7.50730e-1, -1.15163e2, 1.21807e2, -2.58317e-5);
+   otherDatasetFunc->SetLineColor(kRed);
    TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]/ (x + [2]) + [3]*x", 200., 5010.);
    TF1 *fitFunc2 = new TF1("fitFunc2", "[0] + [1]/ (x + [2]) + [3]/ (x*x + [4])", 200., 5010.);
    //TF1 *fitFuncEB = new TF1("fitFuncEB", "[0] + [1]/ (x + [2])", 10., 5010.);
@@ -658,7 +643,25 @@ void AccTimesEff::Loop()
    fitFunc->Draw("same");
    //fitFunc2->Draw("same");
    andreasFunc->Draw("same");
-   TLatex *tex = new TLatex(0.15, 0.25, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
+   otherDatasetFunc->Draw("same");
+   TLegend* legendAccEff = new TLegend(0.304, 0.241, 0.852, 0.430);
+   legendAccEff->SetTextFont(font);
+   legendAccEff->SetTextSize(0.03);
+   legendAccEff->SetBorderSize(0);
+   legendAccEff->SetLineColor(1);
+   legendAccEff->SetLineStyle(1);
+   legendAccEff->SetLineWidth(1);
+   legendAccEff->SetFillColor(19);
+   legendAccEff->SetFillStyle(0);
+   legendAccEff->AddEntry(hAccTimesEff, "total acc x eff");
+   legendAccEff->AddEntry(fitFunc, "Fit to total acc x eff", "l");
+   if (triggerInd == 0)
+      legendAccEff->AddEntry(otherDatasetFunc, "acc x eff with Mu40_eta2p1", "l");
+   else
+      legendAccEff->AddEntry(otherDatasetFunc, "acc x eff with Mu22_Photon22_CaloIdL", "l");
+   legendAccEff->AddEntry(andreasFunc, "RPV acc x eff from AN-13-422", "l");
+   legendAccEff->Draw("same");
+   TLatex *tex = new TLatex(0.15, 0.16, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
    tex->SetNDC();
    tex->SetTextFont(font);
    tex->SetLineWidth(2);
@@ -1153,9 +1156,6 @@ void AccTimesEff::Loop()
 
    // safe in various file formats
    if (saveSpec) {
-     TString eleDetRegSuffix = "";
-     if (eleDetRegion == 1) eleDetRegSuffix = "_EB";
-     else if (eleDetRegion == 2) eleDetRegSuffix = "_EE";
      if (saveAsPdf) {
         if (eleDetRegion == 0) {
            trgEffPlot->Print(plotDir + trgEffPlot->GetName() + fileNameExtra + ".pdf", "pdf");
@@ -1163,6 +1163,7 @@ void AccTimesEff::Loop()
            trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".pdf", "pdf");
            trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".pdf", "pdf");
            trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".pdf", "pdf");
+           accTimesEffPlotNote->Print(plotDir + accTimesEffPlotNote->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
            accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
            accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
            accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".pdf", "pdf");
@@ -1182,6 +1183,7 @@ void AccTimesEff::Loop()
            trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".png", "png");
            trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".png", "png");
            trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".png", "png");
+           accTimesEffPlotNote->Print(plotDir + accTimesEffPlotNote->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
            accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
            accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
            accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".png", "png");
@@ -1201,6 +1203,7 @@ void AccTimesEff::Loop()
            trgEffPlot_ele_eta->Print(plotDir + trgEffPlot_ele_eta->GetName() + fileNameExtra + ".root", "root");
            trgEffPlot_mu_pt->Print(plotDir + trgEffPlot_mu_pt->GetName() + fileNameExtra + ".root", "root");
            trgEffPlot_mu_eta->Print(plotDir + trgEffPlot_mu_eta->GetName() + fileNameExtra + ".root", "root");
+           accTimesEffPlotNote->Print(plotDir + accTimesEffPlotNote->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
            accTimesEffPlot->Print(plotDir + accTimesEffPlot->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
            accTimesEffPlotEB->Print(plotDir + accTimesEffPlotEB->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
            accTimesEffPlotEE->Print(plotDir + accTimesEffPlotEE->GetName() + "_" + triggerName + fileNameExtra + ".root", "root");
@@ -1224,6 +1227,7 @@ void AccTimesEff::Loop()
    trgEffPlot_mu_eta->Write();
    trgFltrEffPlot->Write();
    trgFltrEffPlotByFilter->Write();
+   accTimesEffPlotNote->Write();
    accTimesEffPlot->Write();
    accTimesEffPlotEB->Write();
    accTimesEffPlotEE->Write();
@@ -1377,4 +1381,90 @@ bool AccTimesEff::PassHighPtMu(const int &n)
    return false;
 }
 
+void 
+AccTimesEff::WeightMuonRecoIsoTrigger(float MuonPt, float MuonEta, float &weight_muon_reco, float &weight_trigger, float &eff_trigger, TString &type, float l1_eff)
+{
+   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
+   if(fabs(MuonEta)<0.9) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.994067;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.993037;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.991306;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.989358;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.0029;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=1.01755;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+   if(fabs(MuonEta)>0.9 && fabs(MuonEta)<1.2) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.993689;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.993637;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.994911;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.990111;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.0091;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=1.00899;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+   if(fabs(MuonEta)>1.2 && fabs(MuonEta)<2.1) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.996594;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.997472;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.996475;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.991681;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.01997;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=0.983776;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+   if(fabs(MuonEta)>2.1 && fabs(MuonEta)<2.4) {
+      if (MuonPt>35. && MuonPt<40.) weight_muon_reco=0.99407;
+      else if (MuonPt>40. && MuonPt<50.) weight_muon_reco=0.996346;
+      else if (MuonPt>50. && MuonPt<60.) weight_muon_reco=0.991808;
+      else if (MuonPt>60. && MuonPt<90.) weight_muon_reco=0.986235;
+      else if (MuonPt>90. && MuonPt<140.) weight_muon_reco=1.04176;
+      else if (MuonPt>140. && MuonPt<300.) weight_muon_reco=0.789917;
+      else if (MuonPt>300.) weight_muon_reco=1.0;
+   }
+
+   // muon factors: mu-high_pt-id-trk_iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
+   if(type.BeginsWith("sig")) {
+      if (MuonEta>-2.1 && MuonEta<-1.6) {weight_trigger=0.974366; eff_trigger=0.743592;}
+      else if (MuonEta>-1.6 && MuonEta<-1.2) {weight_trigger=0.988066; eff_trigger=0.838491;}
+      else if (MuonEta>-1.2 && MuonEta<-0.9) {weight_trigger=0.955999; eff_trigger=0.833293;}
+      else if (MuonEta>-0.9 && MuonEta<-0.6) {weight_trigger=0.977317; eff_trigger=0.928455;}
+      else if (MuonEta>-0.6 && MuonEta<-0.3) {weight_trigger=0.987245; eff_trigger=0.955694;}
+      else if (MuonEta>-0.3 && MuonEta<-0.2) {weight_trigger=0.926888; eff_trigger=0.816532;}
+      else if (MuonEta>-0.2 && MuonEta<0.2) {weight_trigger=0.982564; eff_trigger=0.945548;}
+      else if (MuonEta>0.2 && MuonEta<0.3) {weight_trigger=0.945051; eff_trigger=0.826780;}
+      else if (MuonEta>0.3 && MuonEta<0.6) {weight_trigger=0.981904; eff_trigger=0.952209;}
+      else if (MuonEta>0.6 && MuonEta<0.9) {weight_trigger=0.98001; eff_trigger=0.931446;}
+      else if (MuonEta>0.9 && MuonEta<1.2) {weight_trigger=0.955033; eff_trigger=0.829441;}
+      else if (MuonEta>1.2 && MuonEta<1.6) {weight_trigger=0.967649; eff_trigger=0.807104;}
+      else if (MuonEta>1.6 && MuonEta<2.1) {weight_trigger=1.00618; eff_trigger=0.814047;}
+   } else {
+      if(fabs(MuonEta)<0.9) {
+         if (MuonPt<50.) {weight_trigger=0.977615; eff_trigger=0.929521;}
+         else if (MuonPt>50. && MuonPt<60.) {weight_trigger=0.976165; eff_trigger=0.928760;}
+         else if (MuonPt>60. && MuonPt<90.) {weight_trigger=0.974155; eff_trigger=0.924693;}
+         else if (MuonPt>90. && MuonPt<140.) {weight_trigger=0.976909; eff_trigger=0.921874;}
+         else if (MuonPt>140. && MuonPt<500.) {weight_trigger=0.990006; eff_trigger=0.929174;}
+         else if (MuonPt>500.) {weight_trigger=0.990006; eff_trigger=0.929174;}
+      }
+      else if(fabs(MuonEta)>0.9 && fabs(MuonEta)<1.2) {
+         if (MuonPt<50.) {weight_trigger=0.956918; eff_trigger=0.831272;}
+         else if (MuonPt>50. && MuonPt<60.) {weight_trigger=0.954277; eff_trigger=0.832350;}
+         else if (MuonPt>60. && MuonPt<90.) {weight_trigger=0.946978; eff_trigger=0.825169;}
+         else if (MuonPt>90. && MuonPt<140.) {weight_trigger=0.952839; eff_trigger=0.825886;}
+         else if (MuonPt>140. && MuonPt<500.) {weight_trigger=0.961069; eff_trigger=0.841223;}
+         else if (MuonPt>500.) {weight_trigger=0.961069; eff_trigger=0.841223;}
+      }
+      else if(fabs(MuonEta)>1.2 && fabs(MuonEta)<2.1) {
+         if (MuonPt<50.) {weight_trigger=0.987869; eff_trigger=0.803493;}
+         else if (MuonPt>50. && MuonPt<60.) {weight_trigger=0.981194; eff_trigger=0.802700;}
+         else if (MuonPt>60. && MuonPt<90.) {weight_trigger=0.972754; eff_trigger=0.796577;}
+         else if (MuonPt>90. && MuonPt<140.) {weight_trigger=0.984463; eff_trigger=0.807423;}
+         else if (MuonPt>140. && MuonPt<500.) {weight_trigger=0.986544; eff_trigger=0.783592;}
+         else if (MuonPt>500.) {weight_trigger=0.986544; eff_trigger=0.783592;}
+      }
+   }
+   if (fabs(MuonEta)>=2.1) {weight_trigger=1.0; eff_trigger=0.78;} // assumption
+
+   eff_trigger *= l1_eff;
+}
 
