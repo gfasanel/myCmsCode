@@ -681,7 +681,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("genmu_phi", 1);
    fChain->SetBranchStatus("genPart_size", 1);
    fChain->SetBranchStatus("genPart_pt", 1);
-   fChain->SetBranchStatus("genPartpdgid", 1);
+   fChain->SetBranchStatus("genPart_pdgid", 1);
    fChain->SetBranchStatus("genPair_mass", 1);
    fChain->SetBranchStatus("emu_mass", 1);
    fChain->SetBranchStatus("trueNVtx", 1);
