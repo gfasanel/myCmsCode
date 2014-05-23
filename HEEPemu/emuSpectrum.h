@@ -131,6 +131,9 @@ public :
    Float_t         genmu_pt[100];
    Float_t         genmu_eta[100];
    Float_t         genmu_phi[100];
+   Int_t           genPart_size;
+   Float_t         genPart_pt[20];
+   Float_t         genPart_pdgid[20];
    Float_t         genPair_mass;
    Float_t         emu_mass;
    Int_t           trueNVtx;
@@ -214,6 +217,9 @@ public :
    TBranch        *b_genmu_pt;   //!
    TBranch        *b_genmu_eta;   //!
    TBranch        *b_genmu_phi;   //!
+   TBranch        *b_genPart_size;   //!
+   TBranch        *b_genPart_pt;   //!
+   TBranch        *b_genPart_pdgid;   //!
    TBranch        *b_genPair_mass;   //!
    TBranch        *b_emu_mass;   //!
    TBranch        *b_trueNVtx;   //!
@@ -586,6 +592,9 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("genmu_pt", genmu_pt, &b_genmu_pt);
    fChain->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
    fChain->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
+   fChain->SetBranchAddress("genPart_size", &genPart_size, &b_genPart_size);
+   fChain->SetBranchAddress("genPart_pt", genPart_pt, &b_genPart_pt);
+   fChain->SetBranchAddress("genPart_pdgid", genPart_pdgid, &b_genPart_pdgid);
    fChain->SetBranchAddress("genPair_mass", &genPair_mass, &b_genPair_mass);
    fChain->SetBranchAddress("emu_mass", &emu_mass, &b_emu_mass);
    fChain->SetBranchAddress("trueNVtx", &trueNVtx, &b_trueNVtx);
@@ -670,6 +679,9 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("genmu_pt", 1);
    fChain->SetBranchStatus("genmu_eta", 1);
    fChain->SetBranchStatus("genmu_phi", 1);
+   fChain->SetBranchStatus("genPart_size", 1);
+   fChain->SetBranchStatus("genPart_pt", 1);
+   fChain->SetBranchStatus("genPartpdgid", 1);
    fChain->SetBranchStatus("genPair_mass", 1);
    fChain->SetBranchStatus("emu_mass", 1);
    fChain->SetBranchStatus("trueNVtx", 1);
