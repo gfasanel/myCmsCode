@@ -5,8 +5,8 @@
 // found on file: /user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root
 //////////////////////////////////////////////////////////
 
-#ifndef accTimesEff_h
-#define accTimesEff_h
+#ifndef accTimesEffRpv_h
+#define accTimesEffRpv_h
 
 #include "TFile.h"
 #include "TDCacheFile.h"
@@ -43,7 +43,7 @@ const Int_t kMaxnWasRun = 1;
 const Int_t kMaxnAccept = 1;
 const Int_t kMaxnErrors = 1;
 
-class AccTimesEff {
+class AccTimesEffRpv {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -220,8 +220,8 @@ public :
    TBranch        *b_emu_mass;   //!
    TBranch        *b_trueNVtx;   //!
 
-   AccTimesEff(TTree *tree=0);
-   virtual ~AccTimesEff();
+   AccTimesEffRpv(TTree *tree=0);
+   virtual ~AccTimesEffRpv();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -289,8 +289,8 @@ protected :
 
 #endif
 
-#ifdef accTimesEff_cxx
-AccTimesEff::AccTimesEff(TTree *tree) : fChain(0) 
+#ifdef accTimesEffRpv_cxx
+AccTimesEffRpv::AccTimesEffRpv(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -342,19 +342,19 @@ AccTimesEff::AccTimesEff(TTree *tree) : fChain(0)
    muon_relIsoCutMax = 0.1;
 }
 
-AccTimesEff::~AccTimesEff()
+AccTimesEffRpv::~AccTimesEffRpv()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t AccTimesEff::GetEntry(Long64_t entry)
+Int_t AccTimesEffRpv::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t AccTimesEff::LoadTree(Long64_t entry)
+Long64_t AccTimesEffRpv::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -367,7 +367,7 @@ Long64_t AccTimesEff::LoadTree(Long64_t entry)
    return centry;
 }
 
-void AccTimesEff::Init(TTree *tree)
+void AccTimesEffRpv::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -558,7 +558,7 @@ void AccTimesEff::Init(TTree *tree)
    Notify();
 }
 
-Bool_t AccTimesEff::Notify()
+Bool_t AccTimesEffRpv::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -569,18 +569,18 @@ Bool_t AccTimesEff::Notify()
    return kTRUE;
 }
 
-void AccTimesEff::Show(Long64_t entry)
+void AccTimesEffRpv::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t AccTimesEff::Cut(Long64_t entry)
+Int_t AccTimesEffRpv::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef accTimesEff_cxx
+#endif // #ifdef accTimesEffRpv_cxx

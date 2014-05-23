@@ -1,5 +1,5 @@
-#define accTimesEff_cxx
-#include "accTimesEff.h"
+#define accTimesEffRpv_cxx
+#include "accTimesEff_rpv.h"
 #include <TH1.h>
 #include <TF1.h>
 #include <TLatex.h>
@@ -10,26 +10,14 @@
 
 using namespace std;
 
-void AccTimesEff::Loop()
+void AccTimesEffRpv::Loop()
 {
    TStopwatch timer;
    timer.Start();
    // parameters /////////////////////////////////////////////////////////////
    vector<TString> files;
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-250_noAccCuts_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_10000ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
-   files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9966ev.root");
-   string outfileName = "accTimesEffHistos";
+   files.push_back("file:////user/treis/mcsamples/RPVresonantToEMu_M-scan_TuneZ2star_8TeV-calchep-pythia6_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_319984ev.root");
+   string outfileName = "accTimesEffRpvHistos";
 
    // output file formats
    const bool saveSpec = 0;
@@ -83,7 +71,7 @@ void AccTimesEff::Loop()
    if (eleDetRegion == 1) eleDetRegSuffix = "_EB";
    else if (eleDetRegion == 2) eleDetRegSuffix = "_EE";
 
-   TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 145, 0., 5010.);
+   TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 27, -50., 2650.);
    //TH1F *hGenEvts = new TH1F("hGenEvts", "hGenEvts", 125, 0., 3510.);
    hGenEvts->GetXaxis()->SetTitle("M_{Z'}^{truth} (GeV)");
    hGenEvts->GetXaxis()->SetTitleFont(font);
@@ -250,6 +238,8 @@ void AccTimesEff::Loop()
          //if (jentry % 50000 == 0) cout << "Processing event " << jentry << endl;
          thetree->GetEntry(jentry);
 
+         if (emu_mass > 2050.) continue;
+
          //hard ele + hard muon
          TLorentzVector hardEle1;
          TLorentzVector hardMu1;
@@ -264,9 +254,9 @@ void AccTimesEff::Loop()
          double genInvMass = (genEle1 + genMu1).M();
 
          //cout << genelemom_mass[0] << "     " << genInvMass << "     " << hardInvMass << endl;
-         if (fabs(genelemom_pdgid[0]) < 7) continue;
+         //if (fabs(genelemom_pdgid[0]) < 7) continue;
          // fill the gen histograms
-         hGenEvts->Fill(hardInvMass);
+         hGenEvts->Fill(emu_mass);
          hGenEvts_ele_pt->Fill(genele_pt[0]);
          hGenEvts_ele_eta->Fill(genele_eta[0]);
          hGenEvts_mu_pt->Fill(genmu_pt[0]);
@@ -277,25 +267,25 @@ void AccTimesEff::Loop()
          bool passMuEta = 0;
          if (fabs(hardGenEle_eta[0]) < 1.442 || (fabs(hardGenEle_eta[0]) > 1.56 && fabs(hardGenEle_eta[0]) < 2.5)) passEleEta = 1;
          if (fabs(hardGenMu_eta[0]) < muEtaCut) passMuEta = 1;
-         if (passEleEta && passMuEta) hPassEtaCuts->Fill(hardInvMass);
+         if (passEleEta && passMuEta) hPassEtaCuts->Fill(emu_mass);
          if (hardGenEle_pt[0] > elePtCut) {
             if (fabs(hardGenEle_eta[0]) < 1.442) {
-               hGenEvtsEleInAcc->Fill(hardInvMass);
-               hGenEvtsEleInAccEB->Fill(hardInvMass);
+               hGenEvtsEleInAcc->Fill(emu_mass);
+               hGenEvtsEleInAccEB->Fill(emu_mass);
             }
             else if (fabs(hardGenEle_eta[0]) > 1.56 && fabs(hardGenEle_eta[0]) < 2.5) {
-               hGenEvtsEleInAcc->Fill(hardInvMass);
-               hGenEvtsEleInAccEE->Fill(hardInvMass);
+               hGenEvtsEleInAcc->Fill(emu_mass);
+               hGenEvtsEleInAccEE->Fill(emu_mass);
             }
             if (hardGenMu_pt[0] > muPtCut) {
-               hPassPtCuts->Fill(hardInvMass);
-               if (passEleEta && passMuEta) hPassPtEtaCuts->Fill(hardInvMass);
+               hPassPtCuts->Fill(emu_mass);
+               if (passEleEta && passMuEta) hPassPtEtaCuts->Fill(emu_mass);
             }
          }
          if (hardGenMu_pt[0] > muPtCut && passMuEta) {
-            hGenEvtsMuInAcc->Fill(hardInvMass);
+            hGenEvtsMuInAcc->Fill(emu_mass);
             if (passEleEta) {
-               if (hardGenEle_pt[0] > elePtCut) hGenEvtsInAcc->Fill(hardInvMass);
+               if (hardGenEle_pt[0] > elePtCut) hGenEvtsInAcc->Fill(emu_mass);
             }
          }
 
@@ -315,16 +305,16 @@ void AccTimesEff::Loop()
          if (triggerInd == 0) triggerBit = HLT_Mu22_Photon22_CaloIdL;
          else triggerBit = HLT_Mu40_eta2p1;
 
-         if (triggerBit) hTrgEvts->Fill(hardInvMass);
+         if (triggerBit) hTrgEvts->Fill(emu_mass);
          if (HLT_Mu22_Photon22_CaloIdL) {
-            hTrgEvts_mu22ph22->Fill(hardInvMass, trgSf);
+            hTrgEvts_mu22ph22->Fill(emu_mass, trgSf);
             hTrgEvts_mu22ph22_ele_pt->Fill(genele_pt[0], trgSf);
             hTrgEvts_mu22ph22_ele_eta->Fill(genele_eta[0], trgSf);
             hTrgEvts_mu22ph22_mu_pt->Fill(genmu_pt[0], trgSf);
             hTrgEvts_mu22ph22_mu_eta->Fill(genmu_eta[0], trgSf);
          }
          if (HLT_Mu40_eta2p1) {
-            hTrgEvts_mu40->Fill(hardInvMass, trgSf);
+            hTrgEvts_mu40->Fill(emu_mass, trgSf);
             hTrgEvts_mu40_ele_pt->Fill(genele_pt[0], trgSf);
             hTrgEvts_mu40_ele_eta->Fill(genele_eta[0], trgSf);
             hTrgEvts_mu40_mu_pt->Fill(genmu_pt[0], trgSf);
@@ -367,7 +357,7 @@ void AccTimesEff::Loop()
          }
 
          // reco leptons in acceptance
-         if (recoElePassAcc && recoMuPassAcc) hRecoEvtsLepInAcc->Fill(hardInvMass);
+         if (recoElePassAcc && recoMuPassAcc) hRecoEvtsLepInAcc->Fill(emu_mass);
 
          // find the e-mu pair with the maximum invariant mass if it exists
          unsigned int eleInd = 0;
@@ -421,17 +411,17 @@ void AccTimesEff::Loop()
             }
 
             if (triggerBit) {
-               hRecoEleEvts->Fill(hardInvMass, sf);
-               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEleEvtsEB->Fill(hardInvMass, sf);
-               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEleEvtsEE->Fill(hardInvMass, sf);
+               hRecoEleEvts->Fill(emu_mass, sf);
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEleEvtsEB->Fill(emu_mass, sf);
+               if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEleEvtsEE->Fill(emu_mass, sf);
             }
-            hRecoNoTrgEleEvts->Fill(hardInvMass, leptSf);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(hardInvMass, leptSf);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(hardInvMass, leptSf);
+            hRecoNoTrgEleEvts->Fill(emu_mass, leptSf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEleEvtsEB->Fill(emu_mass, leptSf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEleEvtsEE->Fill(emu_mass, leptSf);
          } 
          if (MU_passGOOD.size() > 0) {
-            if (triggerBit) hRecoMuEvts->Fill(hardInvMass, sf);
-            hRecoNoTrgMuEvts->Fill(hardInvMass, leptSf);
+            if (triggerBit) hRecoMuEvts->Fill(emu_mass, sf);
+            hRecoNoTrgMuEvts->Fill(emu_mass, leptSf);
          }
 
          // veto when there are more than one good candidates
@@ -444,21 +434,21 @@ void AccTimesEff::Loop()
          //MASS CUT
          if (invMass < minInvMass) continue;
 
-         if (hltL1sMu16Eta2p1) hFltrMatchEvts_l1Mu16Eta2p1->Fill(hardInvMass, sf);
-         if (hltL1Mu3p5EG12L3Filtered22) hFltrMatchEvts_mu22ph22_muLeg->Fill(hardInvMass, sf);
-         if (hltL1sL1SingleEG12) hFltrMatchEvts_l1SingleEG12->Fill(hardInvMass, sf);
-         if (hltL1sL1Mu3p5EG12) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass, sf);
-         if (hltMu22Photon22CaloIdLHEFilter) hFltrMatchEvts_mu22ph22_phLeg->Fill(hardInvMass, sf);
-         if (hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q) hFltrMatchEvts_mu40->Fill(hardInvMass, sf);
+         if (hltL1sMu16Eta2p1) hFltrMatchEvts_l1Mu16Eta2p1->Fill(emu_mass, sf);
+         if (hltL1Mu3p5EG12L3Filtered22) hFltrMatchEvts_mu22ph22_muLeg->Fill(emu_mass, sf);
+         if (hltL1sL1SingleEG12) hFltrMatchEvts_l1SingleEG12->Fill(emu_mass, sf);
+         if (hltL1sL1Mu3p5EG12) hFltrMatchEvts_l1Mu3p5EG12->Fill(emu_mass, sf);
+         if (hltMu22Photon22CaloIdLHEFilter) hFltrMatchEvts_mu22ph22_phLeg->Fill(emu_mass, sf);
+         if (hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q) hFltrMatchEvts_mu40->Fill(emu_mass, sf);
 
          if (triggerBit) {
-            hRecoEvts->Fill(hardInvMass, sf);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEvtsEB->Fill(hardInvMass, sf);
-            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEvtsEE->Fill(hardInvMass, sf);
+            hRecoEvts->Fill(emu_mass, sf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoEvtsEB->Fill(emu_mass, sf);
+            if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEvtsEE->Fill(emu_mass, sf);
          }
-         hRecoNoTrgEvts->Fill(hardInvMass, leptSf);
-         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEvtsEB->Fill(hardInvMass, leptSf);
-         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEvtsEE->Fill(hardInvMass, leptSf);
+         hRecoNoTrgEvts->Fill(emu_mass, leptSf);
+         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEvtsEB->Fill(emu_mass, leptSf);
+         if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEvtsEE->Fill(emu_mass, leptSf);
          ++evCounter;
         ///////////////////////////////////////////////////////////////////////
       } //END LOOP OVER EVENTS
@@ -628,10 +618,10 @@ void AccTimesEff::Loop()
    fitFunc2->SetLineColor(kRed);
    fitFuncEB->SetLineColor(kBlue);
    fitFuncEE->SetLineColor(kBlue);
-   hAccTimesEff->Fit("fitFunc", "", "", 200., 5010.);
-   //hAccTimesEff->Fit("fitFunc2", "", "", 200., 3510.);
-   hAccTimesEffEB->Fit("fitFuncEB", "", "", 200., 5010.);
-   hAccTimesEffEE->Fit("fitFuncEE", "", "", 200., 5010.);
+   hAccTimesEff->Fit("fitFunc", "", "", 50., 2600.);
+   //hAccTimesEff->Fit("fitFunc2", "", "", 50., 2600.);
+   hAccTimesEffEB->Fit("fitFuncEB", "", "", 50., 2600.);
+   hAccTimesEffEE->Fit("fitFuncEE", "", "", 50., 2600.);
    cout << "Chi^2 / NDF F1: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF() << ", prob: " << fitFunc->GetProb() << endl;
    cout << "Chi^2 / NDF F2: " << fitFunc2->GetChisquare() << " / " << fitFunc2->GetNDF() << ", prob: " << fitFunc2->GetProb() << endl;
    cout << "Chi^2 / NDF EB: " << fitFuncEB->GetChisquare() << " / " << fitFuncEB->GetNDF() << ", prob: " << fitFuncEB->GetProb() << endl;
@@ -643,25 +633,7 @@ void AccTimesEff::Loop()
    fitFunc->Draw("same");
    //fitFunc2->Draw("same");
    andreasFunc->Draw("same");
-   otherDatasetFunc->Draw("same");
-   TLegend* legendAccEff = new TLegend(0.304, 0.241, 0.852, 0.430);
-   legendAccEff->SetTextFont(font);
-   legendAccEff->SetTextSize(0.03);
-   legendAccEff->SetBorderSize(0);
-   legendAccEff->SetLineColor(1);
-   legendAccEff->SetLineStyle(1);
-   legendAccEff->SetLineWidth(1);
-   legendAccEff->SetFillColor(19);
-   legendAccEff->SetFillStyle(0);
-   legendAccEff->AddEntry(hAccTimesEff, "total acc x eff");
-   legendAccEff->AddEntry(fitFunc, "Fit to total acc x eff", "l");
-   if (triggerInd == 0)
-      legendAccEff->AddEntry(otherDatasetFunc, "acc x eff with Mu40_eta2p1", "l");
-   else
-      legendAccEff->AddEntry(otherDatasetFunc, "acc x eff with Mu22_Photon22_CaloIdL", "l");
-   legendAccEff->AddEntry(andreasFunc, "RPV acc x eff from AN-13-422", "l");
-   legendAccEff->Draw("same");
-   TLatex *tex = new TLatex(0.15, 0.16, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
+   TLatex *tex = new TLatex(0.15, 0.25, "P(M|p0,p1,p2,p3) = p0 + #frac{p1}{M+p2} + p3*M");
    tex->SetNDC();
    tex->SetTextFont(font);
    tex->SetLineWidth(2);
@@ -686,12 +658,13 @@ void AccTimesEff::Loop()
    TH1F* hAccTimesEffNoTrgNote = (TH1F*)hAccTimesEffNoTrg->Clone("hAccTimesEffNoTrgNote");
    TF1* fitFuncNote = (TF1 *)fitFunc->Clone("fitFuncNote");
 
+   cout << "Note plot:" << endl;
    hAccTimesEffNote->GetYaxis()->SetTitle("Ax#epsilon");
    hAccTimesEffNote->GetYaxis()->SetRangeUser(0., 1.);
    hAccTimesEffNote->GetXaxis()->SetRangeUser(0., 3500.);
    hAccTimesEffNote->SetLineColor(kWhite);
    hAccTimesEffNote->Draw();
-   hAccTimesEffNote->Fit("fitFuncNote", "", "", 200., 3600.);
+   hAccTimesEffNote->Fit("fitFuncNote", "", "", 50., 2600.);
    hAccNote->SetMarkerColor(kBlue);
    hAccNote->Draw("histpsame");
    hAccTimesEffNoTrgNote->SetMarkerColor(kRed);
@@ -1328,7 +1301,7 @@ void AccTimesEff::Loop()
    timer.Print();
 }
 
-bool AccTimesEff::PassHEEP(const int &n)
+bool AccTimesEffRpv::PassHEEP(const int &n)
 {
    // HEEPv4.1
    // barrel
@@ -1362,7 +1335,7 @@ bool AccTimesEff::PassHEEP(const int &n)
    return false;
 }
 
-bool AccTimesEff::PassHighPtMu(const int &n)
+bool AccTimesEffRpv::PassHighPtMu(const int &n)
 {
    if (muon_pt[n] > muon_pt_min
        && muon_ptError[n] / muon_pt[n] < muon_dptOverPt
@@ -1382,7 +1355,7 @@ bool AccTimesEff::PassHighPtMu(const int &n)
 }
 
 void 
-AccTimesEff::WeightMuonRecoIsoTrigger(float MuonPt, float MuonEta, float &weight_muon_reco, float &weight_trigger, float &eff_trigger, TString &type, float l1_eff)
+AccTimesEffRpv::WeightMuonRecoIsoTrigger(float MuonPt, float MuonEta, float &weight_muon_reco, float &weight_trigger, float &eff_trigger, TString &type, float l1_eff)
 {
    // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
    if(fabs(MuonEta)<0.9) {

@@ -259,7 +259,12 @@ if savePlots:
     for canvas in cList:
         canvas.Write(canvas.GetName())
     c1.Write(c1.GetName())
+    for func in resFitFuncList:
+        func.Write()
+    anFitFunc.Write()
     if len(treePrefices) > 1:
         c2.Write(c2.GetName())
+        resErrFitFunc.Write()
+        resErrFunc.Write()
     output.Close()
 
