@@ -55,12 +55,12 @@ class ShapeHMaker:
         if dataset == 'SingleMu':  # singleMu dataset
             self.lumi = 19706.
             self.relMassRes.SetParameters(0.012628, 1.56799e-5, -1.37816e-10)
-            self.accTimesEff.SetParameters(0.748776, -161.321, 206.203, -3.11382e-5)
+            self.accTimesEff.SetParameters(0.744268, -144.951, 171.187, -2.9103e-5)
             self.resErrFunc.SetParameters(-0.00170793, 3.74598e-6, 1.04606e-9, 0.012628, 1.56799e-5, -1.37816e-10)
         else:  # MuEG dataset
             self.lumi = 19703.
             self.relMassRes.SetParameters(0.0132055, 1.53824e-5, -9.33481e-11)
-            self.accTimesEff.SetParameters(0.755094, -129.296, 153.844, -2.77505e-5)
+            self.accTimesEff.SetParameters(0.752457, -117.556, 127.668, -2.59323e-5)
             self.resErrFunc.SetParameters(-0.00162388, 3.74716e-6, 1.04324e-9, 0.0132055, 1.53824e-5, -9.33481e-11)
 
     def run(self, mass):
