@@ -11,6 +11,7 @@ from optparse import OptionParser
 
 def main():
     parser = OptionParser(usage="usage: %prog [options]", description="Generate files with shape histograms for limit setting.\n")
+    parser.add_option("-d"  ,"--dataSet", dest="dataset", default='MuEG', help="Dataset used to generate input histograms. Can be MuEG or SingleMu.")
     parser.add_option("-w"  ,"--workDir", dest="workDir", default=os.getcwd()+'/', help="Path to working directory.")
     parser.add_option("-i"  ,"--input", dest="input", default=os.getcwd()+'/data/histograms_1gevbins.root', help="Path to input root file.")
     parser.add_option("-m"  ,"--minMass", dest="minMass", default="100", type="float", help="Minimal resonance mass.")
@@ -19,6 +20,9 @@ def main():
     parser.add_option("-k"  ,"--kappa", dest="kappa", default="1.", type="float", help="Kappa factor for coupling.")
     (options, args) = parser.parse_args()
 
+    if options.dataset != 'MuEG' and options.dataset != 'SingleMu':
+        raise Exception('Unknown option '+options.dataset+" for dataset. Use 'MuEG' or 'SingleMu'.")
+
     if not options.workDir[-1:] == '/':
         options.workDir = options.workDir+'/'
     if not os.path.exists(options.workDir):
@@ -26,7 +30,7 @@ def main():
     if not os.path.exists(options.workDir+'data'):
         os.makedirs(options.workDir+'data')
         
-    shm = ShapeHMaker(options.workDir, options.input, options.kappa)
+    shm = ShapeHMaker(options.dataset, options.workDir, options.input, options.kappa)
     massPoints = numpy.arange(options.minMass, options.maxMass+options.massStep, options.massStep)
     obs_lim = TGraph(len(massPoints))
     for i, mass in enumerate(massPoints):
@@ -34,23 +38,30 @@ def main():
         shm.run(mass)
 
 class ShapeHMaker:
-    def __init__(self, work_dir, histo_file, kappa):
+    def __init__(self, dataset, work_dir, histo_file, kappa):
+        print 'Setup for {0} dataset.'.format(dataset)
         self.workDir = work_dir
         self.histoFile = histo_file
         self.kappa = kappa
-        self.lumi = 19703.
+        self.dataHisto_name = "mass_data_obs"
+        self.outfile_name = "shapeHistos_m"
+        self.outfile_dir = self.workDir+"data/"
         self.relMassRes = TF1('relMassRes', '[0] + [1]*x + [2]*x**2', 0., 1.e6)
-        self.relMassRes.SetParameters(0.0132055, 1.53824e-5, -9.33481e-11)
         self.accTimesEff = TF1('accTimesEff', '[0] + [1]/(x+[2]) + [3]*x', 0., 1.e6)
-        self.accTimesEff.SetParameters(0.74, -131.8, 151.9, -2.81e-5)
         self.xsec_x_br_sig = TF1('xsec_x_br_sig', '[0] * exp(-x/[1] + [2]/x - x**2/[3])', 1.e-6, 1.e6)
         self.xsec_x_br_sig.SetParameters(3.98360e-4, 397.414, 323.610, 1.05017e7)
         # define resolution error function
         self.resErrFunc = TF1('resErrFunc', 'abs(([0]+[1]*x+[2]*x**2)/([3]+[4]*x+[5]*x**2))')
-        self.resErrFunc.SetParameters(-0.00162388, 3.74716e-6, 1.04324e-9, 0.0132055, 1.53824e-5, -9.33481e-11)
-        self.dataHisto_name = "mass_data_obs"
-        self.outfile_name = "shapeHistos_m"
-        self.outfile_dir = self.workDir+"data/"
+        if dataset == 'SingleMu':  # singleMu dataset
+            self.lumi = 19706.
+            self.relMassRes.SetParameters(0.012628, 1.56799e-5, -1.37816e-10)
+            self.accTimesEff.SetParameters(0.748776, -161.321, 206.203, -3.11382e-5)
+            self.resErrFunc.SetParameters(-0.00170793, 3.74598e-6, 1.04606e-9, 0.012628, 1.56799e-5, -1.37816e-10)
+        else:  # MuEG dataset
+            self.lumi = 19703.
+            self.relMassRes.SetParameters(0.0132055, 1.53824e-5, -9.33481e-11)
+            self.accTimesEff.SetParameters(0.755094, -129.296, 153.844, -2.77505e-5)
+            self.resErrFunc.SetParameters(-0.00162388, 3.74716e-6, 1.04324e-9, 0.0132055, 1.53824e-5, -9.33481e-11)
 
     def run(self, mass):
         self.outfile = TFile(self.outfile_dir + self.outfile_name + "{:.0f}.root".format(mass), 'recreate')

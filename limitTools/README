@@ -5,14 +5,15 @@ Usage:
 Execute the commands in this order as they depend on each other.
 
 Generate shape files:
-    ./makeShapeFiles.py -w myWorkDir -m 100 -M 2000 -S 50 -k 4.
+    ./makeShapeFiles.py -w myWorkDir -d MuEG -m 100 -M 2000 -S 50 -k 4.
     
     Generates shape files from input histogram in ./data/ (or specified with -i option).
     The mass points range from 100 GeV to 2000 GeV with steps of 50 GeV.
     The -k option specifies a factor for the coupling in the model.
+    Use the setup for the MuEG dataset.
 
 Generate card files:
-    ./makeDataCards.py -w myWorkDir -m 100 -M 2000 -S 50 -k 4.
+    ./makeDataCards.py -w myWorkDir -d MuEG -m 100 -M 2000 -S 50 -k 4.
     
     Generates the card files used by the combine tool.
 

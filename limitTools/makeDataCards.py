@@ -11,12 +11,16 @@ from optparse import OptionParser
 
 def main():
     parser = OptionParser(usage="usage: %prog [options]", description="Generate cards for limit setting.\n")
+    parser.add_option("-d"  ,"--dataSet", dest="dataset", default='MuEG', help="Dataset used to generate input histograms. Can be MuEG or SingleMu.")
     parser.add_option("-w"  ,"--workDir", dest="workDir", default=os.getcwd()+'/', help="Path to working directory.")
     parser.add_option("-m"  ,"--minMass", dest="minMass", default="100", type="float", help="Minimal resonance mass.")
     parser.add_option("-M"  ,"--maxMass", dest="maxMass", default="100", type="float", help="Maximal resonance mass.")
     parser.add_option("-S"  ,"--massStep", dest="massStep", default="50", type="float", help="Mass step size.")
     parser.add_option("-k"  ,"--kappa", dest="kappa", default="1.", type="float", help="Kappa factor for coupling.")
     (options, args) = parser.parse_args()
+
+    if options.dataset != 'MuEG' and options.dataset != 'SingleMu':
+        raise Exception('Unknown option '+options.dataset+" for dataset. Use 'MuEG' or 'SingleMu'.")
 
     if not options.workDir[-1:] == '/':
         options.workDir = options.workDir+'/'
@@ -25,7 +29,7 @@ def main():
     if not os.path.exists(options.workDir+'cards'):
         os.makedirs(options.workDir+'cards')
 
-    dcm = DcMaker(options.workDir, options.kappa)
+    dcm = DcMaker(options.dataset, options.workDir, options.kappa)
     massPoints = numpy.arange(options.minMass, options.maxMass+options.massStep, options.massStep)
     obs_lim = TGraph(len(massPoints))
     for i, mass in enumerate(massPoints):
@@ -35,19 +39,23 @@ def main():
 class DcMaker:
     divider_str = "------------------------------------------------------------------------------- \n"
     
-    def __init__(self, work_dir, kappa):
+    def __init__(self, dataset, work_dir, kappa):
         self.workDir = work_dir
         self.kappa = kappa
-        self.lumi = 19703.
+        self.outfile_name = "emuLimitCard_m"
+        self.outfile_dir = self.workDir+"cards/"
         self.accTimesEff = TF1('accTimesEff', '[0] + [1]/(x+[2]) + [3]*x', 0., 1.e6)
-        self.accTimesEff.SetParameters(0.74, -131.8, 151.9, -2.81e-5)
         self.xsec_x_br_sig = TF1('xsec_x_br_sig', '[0] * exp(-x/[1] + [2]/x - x**2/[3])', 1.e-6, 1.e6)
         self.xsec_x_br_sig.SetParameters(3.98360e-4, 397.414, 323.610, 1.05017e7)
         self.pdf_unc = TF1('pdf_unc', '[0] + [1]*x + [2]*x**2', 0., 1.e6)
         self.pdf_unc.SetParameters(1.045, 3.4e-5, 1.5e-8)
-        self.outfile_name = "emuLimitCard_m"
-        self.outfile_dir = self.workDir+"cards/"
-
+        if dataset == 'SingleMu':  # singleMu dataset
+            self.lumi = 19706.
+            self.accTimesEff.SetParameters(0.748776, -161.321, 206.203, -3.11382e-5)
+        else:  # MuEG dataset
+            self.lumi = 19703.
+            self.accTimesEff.SetParameters(0.755094, -129.296, 153.844, -2.77505e-5)
+ 
     def run(self, mass):
         self.mass = mass
         self.outfile = open(self.outfile_dir + self.outfile_name + "{:.0f}.txt".format(self.mass), 'w')
