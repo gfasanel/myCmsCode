@@ -51,10 +51,10 @@ class DcMaker:
         self.pdf_unc.SetParameters(1.045, 3.4e-5, 1.5e-8)
         if dataset == 'SingleMu':  # singleMu dataset
             self.lumi = 19706.
-            self.accTimesEff.SetParameters(0.748776, -161.321, 206.203, -3.11382e-5)
+            self.accTimesEff.SetParameters(0.744268, -144.951, 171.187, -2.9103e-5)
         else:  # MuEG dataset
             self.lumi = 19703.
-            self.accTimesEff.SetParameters(0.755094, -129.296, 153.844, -2.77505e-5)
+            self.accTimesEff.SetParameters(0.752457, -117.556, 127.668, -2.59323e-5)
  
     def run(self, mass):
         self.mass = mass
