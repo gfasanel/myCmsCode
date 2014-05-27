@@ -82,7 +82,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   std::vector<ContVarPlot> testPlots;
   testPlots.reserve(40);
   // flags: logPlot | underflow in first bin | overflow in last bin
-  testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 0, 1, 0, 0));
   testPlots.push_back(ContVarPlot("pfMet", "PF MET", "E^{T}_{miss} [GeV]", 0., 500., 50, 1, 1, 1));
   testPlots.push_back(ContVarPlot("nVtx", "Number of primary vertices", "# PV", 0., 50., 50, 0, 1, 1));
   testPlots.push_back(ContVarPlot("rho", "rho", "#rho", 0., 50., 50, 0, 1, 1));
@@ -367,7 +367,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   // test histogram for (ref - test) / test
   TH1F *testHist;
   if (plot_ttbar) {
-    testHist = (TH1F *)emuTest_ttbar.back()->Clone("testHist_ww");
+    testHist = (TH1F *)emuTest_ttbar.back()->Clone("testHist_ttbar");
     testHist->Add(emuTest_ttbar700to1000.back());
     testHist->Add(emuTest_ttbar1000up.back());
     testHist->Add(emuTest_ttbarPriv600up.back());
