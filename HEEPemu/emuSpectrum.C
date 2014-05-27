@@ -10,33 +10,33 @@ void EmuSpectrum::Loop()
    TStopwatch timer;
    timer.Start();
    // parameters /////////////////////////////////////////////////////////////
-   ////-----------------------------------------------------------------------
-   //// MuEG dataset triggered by Mu22_photon22 trigger
-   //float LumiFactor = 19703.; //Lumi in pb-1
-   //// DATA file
-   //TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19703pb-1.root";
-   //// pile up histogram
-   //TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
-   //string outfileName = "emuSpec";
-   //float eleL1Eff = 0.99;
-   //int trgSelector = 0;
-   ////-----------------------------------------------------------------------
+   //-----------------------------------------------------------------------
+   // MuEG dataset triggered by Mu22_photon22 trigger
+   float LumiFactor = 19703.; //Lumi in pb-1
+   // DATA file
+   TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19703pb-1.root";
+   // pile up histogram
+   TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
+   string outfileName = "emuSpec";
+   float eleL1Eff = 0.99;
+   int trgSelector = 0;
+   //-----------------------------------------------------------------------
 
    //-----------------------------------------------------------------------
-   // SingleMu dataset triggered by Mu40_eta2p1 trigger
-   float LumiFactor = 19706.; //Lumi in pb-1
-   // DATA file
-   TString dataFile = "file:////user/treis/data2013/SingleMu_Run2012ABCD-22Jan2013-v1_AOD_ele20mu20_19706pb-1.root";
-   // pile up histogram
-   TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_SingleMu_Run2012ABCD-22Jan2013.root";
-   string outfileName = "emuSpec_singleMuTrg";
-   muon_pt_min = 45.;
-   muon_etaMax = 2.1;
-   float eleL1Eff = 1.; // there is no electron L1 for the trigger used and so just set it to 1.
-   int trgSelector = 4;
-   mResV7C1->SetParameters(1.17416e-2, 2.31609e-1, 2.32020e+3);
-   mResV7C2->SetParameters(1.45309e-2, 6.43018e-2, 6.85898e+2);
-   //-----------------------------------------------------------------------
+   //// SingleMu dataset triggered by Mu40_eta2p1 trigger
+   //float LumiFactor = 19706.; //Lumi in pb-1
+   //// DATA file
+   //TString dataFile = "file:////user/treis/data2013/SingleMu_Run2012ABCD-22Jan2013-v1_AOD_ele20mu20_19706pb-1.root";
+   //// pile up histogram
+   //TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_SingleMu_Run2012ABCD-22Jan2013.root";
+   //string outfileName = "emuSpec_singleMuTrg";
+   //muon_pt_min = 45.;
+   //muon_etaMax = 2.1;
+   //float eleL1Eff = 1.; // there is no electron L1 for the trigger used and so just set it to 1.
+   //int trgSelector = 4;
+   //mResV7C1->SetParameters(1.17416e-2, 2.31609e-1, 2.32020e+3);
+   //mResV7C2->SetParameters(1.45309e-2, 6.43018e-2, 6.85898e+2);
+   ////-----------------------------------------------------------------------
 
    TParameter<float> lumi("lumi", LumiFactor);
    // scale factors
@@ -959,6 +959,7 @@ void EmuSpectrum::Loop()
             // if (Cut(ientry) < 0) continue;
             if (jentry % 50000 == 0) cout << "Processing event " << jentry << endl;
             thetree->GetEntry(jentry);
+            topRewSf = 1.;
 
             // modify eleScale, muScale, muonRes by +/-1 sigma for shape uncertainties
             switch (shUnc) {
@@ -1061,7 +1062,16 @@ void EmuSpectrum::Loop()
             }
             //if (GSF_passHEEP.size() > 1 || MU_passGOOD.size() > 1) cout << endl;
 
-            //topRewSf = topScaleFactor();
+            // top pt reweighting factor
+            if (storeGenMTtbar[p]) {
+               float topPt = 0.;
+               float atopPt = 0.;
+               for (int j = 0; j < genPart_size; ++j) {
+                  if (genPart_pdgid[j] == 6) topPt = genPart_pt[j];
+                  else if (genPart_pdgid[j] == -6) atopPt = genPart_pt[j];
+               }
+               topRewSf = topScaleFactor(topPt, atopPt);
+            }
 
             //GSF-nonHEEP ele + GOOD muon
             if (GSF_passFrPre.size() > 0 && MU_passGOOD.size() > 0) {
@@ -1181,7 +1191,7 @@ void EmuSpectrum::Loop()
                   numOfJetsPt30 = jetsPt30;
                   numOfBJetsPt30 = bJetsPt30;
                   numOfBJetsMVAPt30 = bJetsMVAPt30;
-   
+
                   frEmuTree->Fill();
                }
             }
@@ -1684,9 +1694,9 @@ EmuSpectrum::topScaleFactor (const float& top_genpt, const float& atop_genpt)
 {
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
   // constants for 8 TeV dilepton
-  float a = 0.148;
-  float b = -0.00129;
-  return sqrt(exp(a+b*top_genpt) + exp(a+b*atop_genpt)); 
+  float a = 0.159;
+  float b = -0.00141;
+  return sqrt(exp(a+b*top_genpt) * exp(a+b*atop_genpt)); 
 }
 
 int EmuSpectrum::Trigger(int &prescale, unsigned int *trig, const int &selector)

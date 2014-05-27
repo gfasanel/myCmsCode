@@ -8,19 +8,18 @@
 #include "TParameter.h"
 #include "THashList.h"
 
-// flags: [apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
+// flags: [apply top reweighting | apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
 TH1F *
 MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.)
 {
+  unsigned int fills = 0.;
   TDirectory *dir = gDirectory->CurrentDirectory();
   // prepare the histogram
-  TH1F *histo = new TH1F("dummy", "dummy", 3000, 0., 3000.);
-  histo->Sumw2();
   TString histoName = treeName;
   histoName.Remove(0, 7);
   histoName.Prepend(brName);
-  histo->SetName(histoName);
-  histo->SetTitle(histoName);
+  TH1F *histo = new TH1F((const char*)histoName, (const char*)histoName, 3000, 0., 3000.);
+  histo->Sumw2();
   float *bins = &binning[0];
   histo->GetXaxis()->Set(binning.size() - 1, bins);
   map<const char *, float> cutVarMap;
@@ -41,22 +40,27 @@ MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int
   TTree *tree;
   tree = (TTree *)dir->Get(treeName);
 
+  float sf_sum = 0.;
   // get branches
   float var;
   bool passTrg;
   bool passHeep;
   float puWeight = 1.;
-  int eCharge;
-  int muCharge;
-  int evtRegion;
+  int eCharge = 0;
+  int muCharge = 0;
+  int evtRegion = 0;
   float fakeRate = 0.;
   float trgEff = 1.;
   float trgEffSf = 1.;
   float eleEffSf = 1.;
   float muEffSf = 1.;
+  float topRewSf = 1.;
+  float topRewSf_sum = 0.;
   tree->SetBranchStatus("*",0); //disable all branches
   tree->SetBranchStatus(brName,1);
   tree->SetBranchAddress(brName, &var);
+  tree->SetBranchStatus("evtRegion",1);
+  tree->SetBranchAddress("evtRegion", &evtRegion);
   if (flags & 1<<8) {
     tree->SetBranchStatus("passTrg",1);
     tree->SetBranchAddress("passTrg", &passTrg);
@@ -66,10 +70,6 @@ MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int
     tree->SetBranchStatus("muCharge",1);
     tree->SetBranchAddress("eCharge", &eCharge);
     tree->SetBranchAddress("muCharge", &muCharge);
-  }
-  if (region < 2) {
-    tree->SetBranchStatus("evtRegion",1);
-    tree->SetBranchAddress("evtRegion", &evtRegion);
   }
   if (flags & 1) {
     tree->SetBranchStatus("puWeight",1);
@@ -104,6 +104,10 @@ MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int
     tree->SetBranchAddress("passHeep", &passHeep);
     tree->SetBranchAddress("fakeRate", &fakeRate);
   }
+  if (flags & 1<<10) {
+    tree->SetBranchStatus("topRewSf",1);
+    tree->SetBranchAddress("topRewSf", &topRewSf);
+  }
 
   Long64_t nEntries = (*tree).GetEntries();
   for (unsigned int i = 0; i < nEntries; ++i) {
@@ -124,6 +128,7 @@ MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int
     // set lumi according to detector region
     if (evtRegion == 0 && flags & 1<<3) scaleFactor *= lumiScaleFactorEB;
     if (evtRegion == 1 && flags & 1<<3) scaleFactor *= lumiScaleFactorEE;
+    sf_sum += scaleFactor;
 
     // PU reweight
     if (flags & 1) scaleFactor *= puWeight;
@@ -161,11 +166,23 @@ MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int
       else continue;
     }
 
+    if (flags & 1<<10) {
+      topRewSf_sum += topRewSf;
+      scaleFactor *= topRewSf;
+    }
+
     if (normToBinWidth) scaleFactor /= histo->GetBinWidth(histo->FindBin(var));
+    ++fills;
     histo->Fill(var, scaleFactor);
   }
 
-  //cout << "integral: " << histo->Integral() << "       overflow: " << histo->GetBinContent(histo->GetNbinsX() + 1) << endl;
+  // fix the normalisation after top reweighting
+  if (flags & 1<<10) {
+    cout << "Top reweighting overall scale factor from " << fills << " events: " << fills/topRewSf_sum << endl;
+    histo->Scale(fills/topRewSf_sum);
+  }
+
+  //cout << "integral: " << histo->Integral() << "       overflow: " << histo->GetBinContent(histo->GetNbinsX() + 1) << "       underflow: " << histo->GetBinContent(0) << endl;
   return histo;
 }
 

@@ -44,6 +44,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
+  const bool topReweighting = 0;
   const bool plot_ttbar = 1; // plot ttbar or WW
 
   const bool plotPull = 1; // plot (ref - test) / test
@@ -81,7 +82,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   std::vector<ContVarPlot> testPlots;
   testPlots.reserve(40);
   // flags: logPlot | underflow in first bin | overflow in last bin
-  testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 0, 1, 0, 0));
   testPlots.push_back(ContVarPlot("pfMet", "PF MET", "E^{T}_{miss} [GeV]", 0., 500., 50, 1, 1, 1));
   testPlots.push_back(ContVarPlot("nVtx", "Number of primary vertices", "# PV", 0., 50., 50, 0, 1, 1));
   testPlots.push_back(ContVarPlot("rho", "rho", "#rho", 0., 50., 50, 0, 1, 1));
@@ -155,6 +156,10 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   // sanity checks for sign and region input
   if (abs(sig) > 3) sig = 0;
   if (reg > 2) reg = 0;
+  // the makeHistoFromBranch function uses a different scheme for barrel and endcap selection
+  unsigned int histoReg = 2;
+  if (reg == 1) histoReg = 0;
+  else if (reg == 2) histoReg = 1;
 
   std::vector<TH1F *> emuTest_ref;
   std::vector<TH1F *> emuTest_ttbar;
@@ -235,6 +240,9 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   TParameter<float> *wwNGen600upEminusMuPlus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEminusMuPlus");
   TParameter<float> *wwNGen600upEplusMuMinus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEplusMuMinus");
 
+  unsigned int flags = 0x1DF; // flags: [apply top reweighting | apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
+  unsigned int topFlags = flags;
+  if (topReweighting) topFlags += (1<<10);
   // get the histograms
   vector<const char *> cutVars;
   vector<float> lowCuts;
@@ -242,11 +250,11 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   vector<float> mcWeightsForCutRanges;
   TH1F *refOverTestHist;
   if (plot_ttbar) {
-    refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin);
-    emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin);
+    emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
   } else {
-    refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin);
-    emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin);
+    emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
   }
  
   // get combined ttbar histograms with MC weights for different samples mixed on an event-by-event basis
@@ -267,10 +275,10 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     lowCuts.push_back(600.);
     highCuts.push_back(1.e9);
     mcWeightsForCutRanges.push_back(ttbarMcWeight600up->GetVal());
-    emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+    emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+    emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+    emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
   } else {
     // get combined WW histograms with different final states
     // total weight above 600 GeV (emu_mass): w_t = 1/(1/w_central + (N_p1+N_p2)/(w_p1*N_p1 + w_p2*N_p2))
@@ -286,9 +294,9 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     lowCuts.push_back(600.);
     highCuts.push_back(1.e9);
     mcWeightsForCutRanges.push_back((wwMcWeight600upEminusMuPlus->GetVal()*wwNGen600upEminusMuPlus->GetVal() + wwMcWeight600upEplusMuMinus->GetVal()*wwNGen600upEplusMuMinus->GetVal())/(wwNGen600upEminusMuPlus->GetVal()+wwNGen600upEplusMuMinus->GetVal()));
-    emuTest_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_wwPriv600upEminusMuPlus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
-    emuTest_wwPriv600upEplusMuMinus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", testVar, sig, reg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, 0x1DF, normToBin));
+    emuTest_ww.push_back(MakeHistoFromBranch(&input, "emuTree_ww", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+    emuTest_wwPriv600upEminusMuPlus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+    emuTest_wwPriv600upEplusMuMinus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
   }
 
   sig+=3;
@@ -359,7 +367,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   // test histogram for (ref - test) / test
   TH1F *testHist;
   if (plot_ttbar) {
-    testHist = (TH1F *)emuTest_ttbar.back()->Clone("testHist_ww");
+    testHist = (TH1F *)emuTest_ttbar.back()->Clone("testHist_ttbar");
     testHist->Add(emuTest_ttbar700to1000.back());
     testHist->Add(emuTest_ttbar1000up.back());
     testHist->Add(emuTest_ttbarPriv600up.back());
