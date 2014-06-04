@@ -140,7 +140,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TString nameSign[7] = {" e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
   TString region[3] = {"", "_EB", "_EE"};
   TString nameReg[3] = {"", " EB", " EE"};
-  TString shapeUncNames[8] = {"", "eleScaleUp", "eleScaleDown", "muScaleUp", "muScaleDown", "muonResUp", "muonResDown", "muonResSmearUp"};
+  TString shapeUncNames[9] = {"", "eleScaleUp", "eleScaleDown", "muScaleUp", "muScaleDown", "muonResUp", "muonResDown", "muonResSmearUp", "muonResSmearDown"};
 
   // plot a list with possible test histograms
   if (var > testPlots.size()) var = 0;
@@ -284,7 +284,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   vector<float> mcWeightsForCutRangesEmpty;
 
   // loop over shape uncertainty up and downscalings
-  for (unsigned int shUnc = 0; shUnc < 8; ++shUnc) {
+  for (unsigned int shUnc = 0; shUnc < 9; ++shUnc) {
      if (shUnc > 0 && !plotShapeUnc) continue;
      TString shapeUncName = shapeUncNames[shUnc];
      input.cd(shapeUncNames[shUnc]);

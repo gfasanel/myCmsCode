@@ -228,10 +228,11 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   emuTest_ttbar_tot_rew.back()->Add(emuTest_ttbarPriv600up_rew.back());
 
   // calculate up and down shapes
-  mass_ttbar_topPtReweightUp.push_back((TH1F *)emuTest_ttbar_tot_rew.back()->Clone("mass_ttbar_topPtReweightUp"));
-  mass_ttbar_topPtReweightDown.push_back((TH1F *)emuTest_ttbar_tot.back()->Clone("mass_ttbar_topPtReweightDown"));
-  mass_ttbar_topPtReweightDown.back()->Add(emuTest_ttbar_tot.back());
-  mass_ttbar_topPtReweightDown.back()->Add(emuTest_ttbar_tot_rew.back(), -1.);
+  mass_ttbar_topPtReweightDown.push_back((TH1F *)emuTest_ttbar_tot_rew.back()->Clone("mass_ttbar_topPtReweightDown"));
+  mass_ttbar_topPtReweightUp.push_back((TH1F *)emuTest_ttbar_tot.back()->Clone("mass_ttbar_topPtReweightUp"));
+  // decided to take Up fluctuation spectrum same as nominal
+  //mass_ttbar_topPtReweightUp.back()->Add(emuTest_ttbar_tot.back());
+  //mass_ttbar_topPtReweightUp.back()->Add(emuTest_ttbar_tot_rew.back(), -1.);
 
   TCanvas *emuPlot;
   TPad *specPad;
@@ -296,8 +297,8 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   legend.SetFillColor(19);
   legend.SetFillStyle(0);
   legend.AddEntry(emuTest_ttbar_tot.back(), "t#bar{t} no reweighting", "l");
-  legend.AddEntry(mass_ttbar_topPtReweightUp.back(), "t#bar{t} reweighting (Up)", "l");
-  legend.AddEntry(mass_ttbar_topPtReweightDown.back(), "2x t#bar{t}_{no rew} - t#bar{t}_{rew} (Down)", "l");
+  legend.AddEntry(mass_ttbar_topPtReweightDown.back(), "t#bar{t} reweighting (Down)", "l");
+  //legend.AddEntry(mass_ttbar_topPtReweightUp.back(), "2x t#bar{t}_{no rew} - t#bar{t}_{rew} (Up)", "l");
   legend.SetBorderSize(0);
   legend.DrawClone("same");
   

@@ -23,7 +23,7 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName
   // not produced try to fall back to the tree without shape uncertainty
   if (tree == NULL) {
     std::cout << "Could not find tree '" << treeNameStr << "' in root file directory '" << dir->GetPath() << "'. Try to fall back to base tree '" << treeName << "'." << std::endl;
-    TDirectory *baseDir = dir->GetDirectory("..");
+    TDirectory *baseDir = dir->GetDirectory("/");
     treeNameStr = treeName;
     tree = (TTree *)baseDir->Get((const char*)treeName);
     if (tree == NULL) std::cerr << "Error: Fallback tree '" << treeName << "' not found." << std::endl;
@@ -31,7 +31,8 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName
   dir->cd();
 
   // prepare the histogram
-  TString histoName = treeNameStr;
+  TString histoName = treeName;
+  histoName += shapeUncName;
   histoName.Remove(0, 7);
   histoName.Prepend(brName);
   TH1F *histo = new TH1F((const char*)histoName, (const char*)histoName, 3000, 0., 3000.);
