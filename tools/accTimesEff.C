@@ -40,7 +40,7 @@ void AccTimesEff::Loop()
    TString fileNameExtra = "";
    //fileNameExtra = "_test";
 
-   unsigned int triggerInd = 0;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
+   unsigned int triggerInd = 1;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
    unsigned int eleDetRegion = 0;  // electron in subdetector. 0: EB or EE; 1: EB; 2: EE
    const bool useScaleFactors = 1;
 
@@ -688,16 +688,16 @@ void AccTimesEff::Loop()
 
    hAccTimesEffNote->GetYaxis()->SetTitle("Ax#epsilon");
    hAccTimesEffNote->GetYaxis()->SetRangeUser(0., 1.);
-   hAccTimesEffNote->GetXaxis()->SetRangeUser(0., 3500.);
+   hAccTimesEffNote->GetXaxis()->SetRangeUser(0., 2700.);
    hAccTimesEffNote->SetLineColor(kWhite);
    hAccTimesEffNote->Draw();
-   hAccTimesEffNote->Fit("fitFuncNote", "", "", 200., 3600.);
+   hAccTimesEffNote->Fit("fitFuncNote", "", "", 200., 2500.);
    hAccNote->SetMarkerColor(kBlue);
    hAccNote->Draw("histpsame");
    hAccTimesEffNoTrgNote->SetMarkerColor(kRed);
    hAccTimesEffNoTrgNote->Draw("histpsame");
    //andreasFunc->Draw("same");
-   TLegend* legendNote = new TLegend(0.223, 0.120, 0.910, 0.521);
+   TLegend* legendNote = new TLegend(0.223, 0.120, 0.910, 0.45);
    legendNote->SetTextFont(font);
    legendNote->SetTextSize(0.035);
    legendNote->SetBorderSize(1);
@@ -709,7 +709,7 @@ void AccTimesEff::Loop()
    legendNote->AddEntry(hAccNote, "gen leptons within acceptance", "p");
    legendNote->AddEntry(hAccTimesEffNoTrgNote, "reco leptons within acceptance", "p");
    legendNote->AddEntry(hAccTimesEffNote, "full selection with trigger", "p");
-   legendNote->AddEntry(fitFuncNote, "#splitline{fit 200 GeV < M_{Z'}^{truth} < 3.6 TeV}{A+B/(M+C)+DxM}", "l");
+   legendNote->AddEntry(fitFuncNote, "#splitline{fit 200 GeV < M_{Z'}^{truth} < 2.5 TeV}{A+B/(M+C)+DxM}", "l");
    legendNote->Draw("same");
    //tex->DrawLatex(0.15, 0.17, "Andreas (green): A#dot#epsilon(M) = 0.61 + #frac{280.1}{M + 2008.7} - #frac{30537.3}{M^{2} + 75925.2}");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
@@ -1322,6 +1322,7 @@ void AccTimesEff::Loop()
    fitFunc->Write();
    fitFuncEB->Write();
    fitFuncEE->Write();
+   fitFuncNote->Write();
 
    output->Close();
    timer.Stop();
