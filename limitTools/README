@@ -35,3 +35,13 @@ Draw the cross section times branching ratio limit plot:
     This draw the final limit plot with observed (-o) and expected (-e) curves, one (-1) and two (-2) sigma band and theory (-t) curve.
     The y axis is in fb (-f) and the final plot is saved (-s) in the results subdirectory of the working directory.
 
+Compare two limit curves:
+
+    ./compareLimits.py -oOeE14 -w myWorkDir1/ -W myWorkDir2/ -n MuEG -N SingleMu
+
+    Draws the limit curves from the two different working directories on one plot.
+    Lower case flags select the curves to draw for directory one and uppre case flags select the curves for directory two.
+    -n and -N are the names that should be displayed on the legend.
+    [1-3] selects uncertainty bands for directory one and [4-6] selects bands for directory two.
+    -d and -D draws markers at the calculated points.
+
