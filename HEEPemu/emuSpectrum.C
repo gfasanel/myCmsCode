@@ -17,7 +17,7 @@ void EmuSpectrum::Loop()
    //TString dataFile = "file:////user/treis/data2013/MuEG_Run2012A+B+C+D-ReReco22Jan2013_1e1muSkim_19703pb-1.root";
    //// pile up histogram
    //TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
-   //string outfileName = "emuSpec";
+   //string outfileName = "emuSpec_MuGammaTrg";
    //float eleL1Eff = 0.99;
    //int trgSelector = 0;
    ////-----------------------------------------------------------------------

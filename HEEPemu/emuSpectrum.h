@@ -396,9 +396,9 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    //mResV7C2 = new TF1("mResV7C2", "pol2", 0., 5000.);
    //mResV7C2->SetParameters(0.0148294, 1.16352e-5, -1.13658e-09);
    mResV7C1 = new TF1("mResV7C1", "[0]+[1]*(1-exp(-x/[2]))", 0., 5000.);
-   mResV7C1->SetParameters(1.19197e-2, 2.28203e-1, 2.27692e+3);
+   mResV7C1->SetParameters(1.386e-2, 5.424e-1, 6.100e+3);
    mResV7C2 = new TF1("mResV7C2", "[0]+[1]*(1-exp(-x/[2]))", 0., 5000.);
-   mResV7C2->SetParameters(1.38427e-2, 6.44632e-2, 6.63635e+2);
+   mResV7C2->SetParameters(1.253e-2, 6.137e-2, 5.194e+2);
 
    suffix.reserve(50);
    suffix.push_back("data");
