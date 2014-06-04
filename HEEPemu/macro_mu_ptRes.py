@@ -22,13 +22,13 @@ gStyle.SetOptFit(1)
 gStyle.SetOptTitle(0)
 
 #open files to comare
-input = TFile("emuSpec_19703pb-1.root")
-#input = TFile("emuSpec_singleMuTrg_19706pb-1.root")
+#input = TFile("emuSpec_19703pb-1.root")
+input = TFile("emuSpec_singleMuTrg_19706pb-1.root")
 treePrefices = ['emuTree_sigNoAccCuts', 'emuTree_sigTagV7C2_']
 #treePrefices = ['emuTree_sigTagV7C2_']
 recoTags = ['START53_V7C1', 'START53_V7C2']
 
-muPt_ranges = [75., 150., 200., 300., 400., 500., 600., 700., 800., 900., 1000., 1125., 1250., 1375., 1500., 1625., 1750., 2000., 2400., 2800.]
+muPt_ranges = [75., 150., 200., 300., 400., 500., 600., 700., 800., 900., 1000., 1125., 1250., 1375., 1500., 1625., 1750., 2000., 2400.]
 
 #get the trees from the root files
 input.cd()
@@ -50,19 +50,25 @@ for i, treePrefix in enumerate(treePrefices):
     for key in keyList:
         keyName = key.GetName()
         if keyName[:len(treePrefix)] == treePrefix and keyName[len(treePrefix)].isdigit() and keyName[len(keyName)-1].isdigit():
+            massPt = int(keyName[len(treePrefix):])
+            # go only up to masses of 4 TeV
+            if massPt > 4000:
+                continue
+    
             print keyName
             tree = input.Get(keyName)
 
             lowerPt = 0.
             for k, upperPt in enumerate(muPt_ranges):
-                brName = '(muPt-genMuPt)/genMuPt'
+                #brName = '(muPt-genMuPt)/genMuPt'
+                brName = '(genMuPt-muPt)/muPt'
                 #brName = 'genMuPt'
 
                 axisRange = 0.2
                 if lowerPt > 500.:
                     axisRange = 0.5
                 if lowerPt > 1500.:
-                    axisRange = 1.
+                    axisRange = 0.8
                 #get the histograms from the tree
                 helperCanvas.cd()
                 tree.Draw(brName+'>>{0}_hPtDiff_{1}_{2}(100, -{3}, {3})'.format(treePrefices[i], keyName, k, axisRange), 'genMuPt>={0} && genMuPt<{1}'.format(lowerPt, upperPt))
@@ -99,7 +105,8 @@ for i, treePrefix in enumerate(treePrefices):
         #hPtDiffs[l].SetLineWidth(2)
         hPtDiffs[l].SetLineColor(colors[0])
         hPtDiffs[l].Draw('e0')
-        hPtDiffs[l].GetXaxis().SetTitle('(p^{#mu reco}_{T} - p^{#mu gen}_{T})/p^{#mu gen}_{T}')
+        #hPtDiffs[l].GetXaxis().SetTitle('(p^{#mu reco}_{T} - p^{#mu gen}_{T})/p^{#mu gen}_{T}')
+        hPtDiffs[l].GetXaxis().SetTitle('(p^{#mu gen}_{T} - p^{#mu reco}_{T})/p^{#mu reco}_{T}')
         hPtDiffs[l].GetXaxis().SetTitleOffset(1.05)
         hPtDiffs[l].GetXaxis().SetTitleFont(font)
         hPtDiffs[l].GetXaxis().SetLabelFont(font)
@@ -114,7 +121,9 @@ for i, treePrefix in enumerate(treePrefices):
         gauss.SetParameter(1, peak)
         gauss.SetParameter(2, hPtDiffs[l].GetRMS())
         factorFit1 = 1.
-        factorFit2 = 1.8
+        factorFit2 = 2.
+        if hPtDiffs[l].GetEntries() < 400:
+            factorFit2 = 3. 
         # raw and fine fit
         hPtDiffs[l].Fit(gauss, '', '', peak-factorFit1*hPtDiffs[l].GetRMS(), peak+factorFit1*hPtDiffs[l].GetRMS())
         hPtDiffs[l].Fit(gauss, '', '', gauss.GetParameter(1)-factorFit2*gauss.GetParameter(2), gauss.GetParameter(1)+factorFit2*gauss.GetParameter(2))
@@ -136,7 +145,7 @@ for i, treePrefix in enumerate(treePrefices):
         tex.SetTextSize(0.04)
         tex.DrawLatex(0.14, 0.91, 'CMS Simulation, 8 TeV')
         tex.SetTextSize(0.03)
-        tex.DrawLatex(0.18, 0.85, "p_{T} = ["+str(lowerPt)+', '+str(upperPt)+'] GeV')
+        tex.DrawLatex(0.18, 0.85, "p_{T}^{#mu gen} = ["+str(lowerPt)+', '+str(upperPt)+'] GeV')
         tex.DrawLatex(0.18, 0.80, recoTags[i])
         cList[l].Modified()
         cList[l].Update()
@@ -264,16 +273,23 @@ if len(treePrefices) > 1:
 ##############################################################################
 # save canvases to root file
 if savePlots:
-    output = TFile('./plots/muPtResolutionPlots.root', 'recreate')
-    #output = TFile('./plots/muPtResolutionPlots_singleMu.root', 'recreate')
+    #output = TFile('./plots/muPtResolutionPlots.root', 'recreate')
+    output = TFile('./plots/muPtResolutionPlots_singleMu.root', 'recreate')
+    plotDir = './plots/plots/'
     output.cd()
     for canvas in cList:
         canvas.Write(canvas.GetName())
+        canvas.Print(plotDir+canvas.GetName()+'.png', 'png')
+        canvas.Print(plotDir+canvas.GetName()+'.pdf', 'pdf')
     c1.Write(c1.GetName())
+    c1.Print(plotDir+c1.GetName()+'.png', 'png')
+    c1.Print(plotDir+c1.GetName()+'.pdf', 'pdf')
     for func in resFitFuncList:
         func.Write()
     if len(treePrefices) > 1:
         c2.Write(c2.GetName())
+        c2.Print(plotDir+c2.GetName()+'.png', 'png')
+        c2.Print(plotDir+c2.GetName()+'.pdf', 'pdf')
         resErrFitFunc.Write()
         #resErrFunc.Write()
     output.Close()
