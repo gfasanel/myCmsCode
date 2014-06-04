@@ -10,12 +10,28 @@
 
 // flags: [apply top reweighting | apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
 TH1F *
-MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.)
+MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.)
 {
   unsigned int fills = 0.;
   TDirectory *dir = gDirectory->CurrentDirectory();
+  // get the tree
+  TTree *tree;
+  TString treeNameStr = treeName;
+  treeNameStr += shapeUncName;
+  tree = (TTree *)dir->Get((const char*)treeNameStr);
+  // if the tree does not exist because the shape uncertainty tree was 
+  // not produced try to fall back to the tree without shape uncertainty
+  if (tree == NULL) {
+    std::cout << "Could not find tree '" << treeNameStr << "' in root file directory '" << dir->GetPath() << "'. Try to fall back to base tree '" << treeName << "'." << std::endl;
+    TDirectory *baseDir = dir->GetDirectory("..");
+    treeNameStr = treeName;
+    tree = (TTree *)baseDir->Get((const char*)treeName);
+    if (tree == NULL) std::cerr << "Error: Fallback tree '" << treeName << "' not found." << std::endl;
+  }
+  dir->cd();
+
   // prepare the histogram
-  TString histoName = treeName;
+  TString histoName = treeNameStr;
   histoName.Remove(0, 7);
   histoName.Prepend(brName);
   TH1F *histo = new TH1F((const char*)histoName, (const char*)histoName, 3000, 0., 3000.);
@@ -29,16 +45,12 @@ MakeHistoFromBranch(TFile *input, const char * treeName, const char *brName, int
     THashList *mcWeights = (THashList *)input->Get("mcWeights");
     unsigned int charOffset = 8;
     if (flags & 1<<9) charOffset += 2;
-    userScale *= ((TParameter<float> *)mcWeights->FindObject(treeName + charOffset))->GetVal();
+    userScale *= ((TParameter<float> *)mcWeights->FindObject((const char*)treeNameStr + charOffset))->GetVal();
   }
   float lumiScaleFactorEB = ((TParameter<float> *)input->Get("lumiScaleFactorEB"))->GetVal();
   float lumiScaleFactorEE = ((TParameter<float> *)input->Get("lumiScaleFactorEE"))->GetVal();
 
   //cout << "Scalefactor = " << userScale << endl;
-
-  // get the tree
-  TTree *tree;
-  tree = (TTree *)dir->Get(treeName);
 
   float sf_sum = 0.;
   // get branches

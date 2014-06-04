@@ -39,8 +39,8 @@ class ContVarPlot {
 void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
-  TFile input("./emuSpec_19703pb-1.root");
-  //TFile input("./emuSpec_singleMuTrg_19706pb-1.root");
+  //TFile input("./emuSpec_19703pb-1.root");
+  TFile input("./emuSpec_singleMuTrg_19706pb-1.root");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -207,15 +207,15 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   lowCuts.push_back(600.);
   highCuts.push_back(1.e9);
   mcWeightsForCutRanges.push_back(ttbarMcWeight600up->GetVal());
-  emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
   topFlags += (1<<10);
-  emuTest_ttbar_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  emuTest_ttbar700to1000_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  emuTest_ttbar1000up_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  emuTest_ttbarPriv600up_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbar_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbar700to1000_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbar1000up_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  emuTest_ttbarPriv600up_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
   sig+=3;
 
   emuTest_ttbar_tot.push_back((TH1F *)emuTest_ttbar.back()->Clone("emuTest_ttbar_tot"));

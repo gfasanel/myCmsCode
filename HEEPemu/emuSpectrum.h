@@ -306,10 +306,11 @@ protected :
    bool PassHighPtMu(const int &n);
    bool PassFRPreSel(const int &n);
    double FakeRate (const float& et, const float& eta);
-   void scaleEle (const bool up);
-   void scaleMu (const bool up);
-   void resMu (const bool up);
-   double topScaleFactor (const float& top_genpt, const float& atop_genpt);
+   void ScaleEle (const bool up);
+   void ScaleMu (const bool up);
+   void ResMu (const bool up);
+   void SmearOneOverMuPt (float smearFactor);
+   double TopScaleFactor (const float& top_genpt, const float& atop_genpt);
    int Trigger(int &prescale, unsigned int *trig, const int &selector=0);
    void WeightMuonRecoIsoTrigger(float MuonPt, float MuonEta, float &weight_muon_reco, float &weight_trigger, float &eff_trigger, TString &type, float l1_eff=1.);
 };
@@ -471,6 +472,7 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    shapeUncNames.push_back("muScaleDown");
    shapeUncNames.push_back("muonResUp");
    shapeUncNames.push_back("muonResDown");
+   shapeUncNames.push_back("muonResSmearUp");
 }
 
 EmuSpectrum::~EmuSpectrum()
