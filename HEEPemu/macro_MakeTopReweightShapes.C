@@ -39,7 +39,7 @@ class ContVarPlot {
 void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
-  //TFile input("./emuSpec_19703pb-1.root");
+  //TFile input("./emuSpec_MuGammaTrg_19703pb-1.root");
   TFile input("./emuSpec_singleMuTrg_19706pb-1.root");
   input.cd();
 

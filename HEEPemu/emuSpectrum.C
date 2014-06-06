@@ -103,7 +103,7 @@ void EmuSpectrum::Loop()
    //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
    //input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
    nGenEvtsV.push_back(28150723.);
-   input.push_back(make_pair(inTTbar, 245.8 / nGenEvtsV.back()));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
+   input.push_back(make_pair(inTTbar, 252.89 / nGenEvtsV.back()));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.036));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -111,7 +111,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_3082812ev.root");
    nGenEvtsV.push_back(3082812.);
-   input.push_back(make_pair(inTTbar700to1000, 15.614 / nGenEvtsV.back() * 245.8/211.));  // ttbar  mtt 700to1000
+   input.push_back(make_pair(inTTbar700to1000, 15.614 / nGenEvtsV.back() * 252.89/211.));  // ttbar  mtt 700to1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.036));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -119,7 +119,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_1249111ev.root");
    nGenEvtsV.push_back(1249111.);
-   input.push_back(make_pair(inTTbar1000up, 2.954 / nGenEvtsV.back() * 245.8/211.));  // ttbar  mtt>1000
+   input.push_back(make_pair(inTTbar1000up, 2.954 / nGenEvtsV.back() * 252.89/211.));  // ttbar  mtt>1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.036));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -215,7 +215,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_6923750ev.root");
    nGenEvtsV.push_back(6923750.);
-   input.push_back(make_pair(inTTbarMg, 245.8/ nGenEvtsV.back())); //TTjets from MadGraph
+   input.push_back(make_pair(inTTbarMg, 252.89/ nGenEvtsV.back())); //TTjets from MadGraph
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -223,7 +223,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v2_AODSIM_emuSkim_12119013ev.root");
    nGenEvtsV.push_back(12119013.);
-   input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 2l
+   input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 252.89/(13.43+53.2+53.4))); //TT to 2l
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -231,7 +231,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_11229902ev.root");
    nGenEvtsV.push_back(11229902.);
-   input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
+   input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 252.89/(13.43+53.2+53.4))); //TT to 1l1jet
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
