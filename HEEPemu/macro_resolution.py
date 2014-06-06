@@ -22,7 +22,7 @@ gStyle.SetOptFit(1)
 gStyle.SetOptTitle(0)
 
 #open files to comare
-#input = TFile("emuSpec_19703pb-1.root")
+#input = TFile("emuSpec_MuGammaTrg_19703pb-1.root")
 input = TFile("emuSpec_singleMuTrg_19706pb-1.root")
 treePrefices = ['emuTree_sigNoAccCuts', 'emuTree_sigTagV7C2_']
 #treePrefices = ['emuTree_sigNoAccCuts']
@@ -238,12 +238,12 @@ if len(treePrefices) > 1:
     resErrFitFuncLow.SetLineColor(colors[0])
     resErr.Fit(resErrFitFuncLow, '', '', 150, 700)
 
-    ## relative difference of the two reolution fit functions drawn on plot
-    #resErrFunc = TF1('resErrFunc', 'pol2 / pol2(3)', 150, 5000)
-    #resErrFunc.SetParameters(resFitFuncList[0].GetParameter(0)-resFitFuncList[1].GetParameter(0), resFitFuncList[0].GetParameter(1)-resFitFuncList[1].GetParameter(1), resFitFuncList[0].GetParameter(2)-resFitFuncList[1].GetParameter(2), resFitFuncList[0].GetParameter(0), resFitFuncList[0].GetParameter(1), resFitFuncList[0].GetParameter(2))
-    #resErrFunc.SetLineColor(colors[1])
+    # relative difference of the two reolution fit functions drawn on plot
+    resErrFunc = TF1('resErrFunc', 'pol2 / pol2(3)', 150, 5000)
+    resErrFunc.SetParameters(resFitFuncList[0].GetParameter(0)-resFitFuncList[1].GetParameter(0), resFitFuncList[0].GetParameter(1)-resFitFuncList[1].GetParameter(1), resFitFuncList[0].GetParameter(2)-resFitFuncList[1].GetParameter(2), resFitFuncList[0].GetParameter(0), resFitFuncList[0].GetParameter(1), resFitFuncList[0].GetParameter(2))
+    resErrFunc.SetLineColor(colors[1])
     #resErrFunc.Draw('lsame')
-    #resErrFunc.Print()
+    resErrFunc.Print()
 
     tex2.DrawLatex(0.14, 0.91, 'CMS Simulation, 8 TeV')
     # move the stats box
@@ -298,6 +298,6 @@ if savePlots:
         c2.Print(plotDir+c2.GetName()+'.pdf', 'pdf')
         resErrFitFuncLow.Write()
         resErrFitFuncHigh.Write()
-        #resErrFunc.Write()
+        resErrFunc.Write()
     output.Close()
 
