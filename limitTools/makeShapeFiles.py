@@ -51,21 +51,39 @@ class ShapeHMaker:
         self.xsec_x_br_sig = TF1('xsec_x_br_sig', '[0] * exp(-x/[1] + [2]/x - x**2/[3])', 1.e-6, 1.e6)
         self.xsec_x_br_sig.SetParameters(3.98360e-4, 397.414, 323.610, 1.05017e7)
         # define resolution error function
-        self.resErrFunc = TF1('resErrFunc', 'abs(([0]+[1]*x+[2]*x**2)/([3]+[4]*x+[5]*x**2))')
+        self.resErrFunc = TF1('resErrFunc', 'abs(([0]+[1]*x+[2]*x**2)/([3]+[4]*x+[5]*x**2))') # not used
+        self.resErrFuncLow = TF1('resErrFuncLow', 'pol0')
+        self.resErrFuncHigh = TF1('resErrFuncHigh', 'pol2')
+        self.resErrIntersection = 0.
         if dataset == 'SingleMu':  # singleMu dataset
             self.lumi = 19706.
-            self.relMassRes.SetParameters(0.012628, 1.56799e-5, -1.37816e-10)
-            self.accTimesEff.SetParameters(0.744268, -144.951, 171.187, -2.9103e-5)
-            self.resErrFunc.SetParameters(-0.00170793, 3.74598e-6, 1.04606e-9, 0.012628, 1.56799e-5, -1.37816e-10)
+            self.accTimesEff.SetParameters(0.741884, -143.669, 169.996, -2.7689e-5)
+            self.relMassRes.SetParameters(0.01323, 1.434e-5, 3.306e-10)
+            self.resErrFunc.SetParameters(-0.0006892, 1.54159e-6, 1.78813e-9, 0.013228, 1.4343e-5, 3.30618e-10)
+            self.resErrFuncLow.SetParameter(0, 0.01824)
+            self.resErrFuncHigh.SetParameters(-0.1165, 2.089e-4, -1.767e-8)
+            self.resErrIntersection = 684.8
         else:  # MuEG dataset
             self.lumi = 19703.
-            self.relMassRes.SetParameters(0.0132055, 1.53824e-5, -9.33481e-11)
-            self.accTimesEff.SetParameters(0.752457, -117.556, 127.668, -2.59323e-5)
-            self.resErrFunc.SetParameters(-0.00162388, 3.74716e-6, 1.04324e-9, 0.0132055, 1.53824e-5, -9.33481e-11)
+            self.accTimesEff.SetParameters(0.765356, -130.208, 153.271, -2.95164e-5)
+            self.relMassRes.SetParameters(0.01384, 1.397e-5, 3.995e-10)
+            self.resErrFunc.SetParameters(-0.00057455, 1.48816e-6, 1.80482e-9, 0.0138397, 1.39739e-5, 3.99508e-10)
+            self.resErrFuncLow.SetParameter(0, 0.02539)
+            self.resErrFuncHigh.SetParameters(-0.1098, 2.032e-4, -1.66e-8)
+            self.resErrIntersection = 706.
+        self.shapes = ['sigRes', 
+                       'eleScale', 
+                       'muScale', 
+                       #'muonRes', 
+                       'muonResSmear', 
+                       'topPtReweight']
 
     def run(self, mass):
         self.outfile = TFile(self.outfile_dir + self.outfile_name + "{:.0f}.root".format(mass), 'recreate')
         self.infile = TFile(self.histoFile)
+        self.baseNames = []
+        self.allNames = []
+        self.blackList = []
         self.factorMin = 1.
         self.factorMax = 1.
         # find a proper range for this mass point
@@ -77,9 +95,8 @@ class ShapeHMaker:
         self.makeSigShapeHisto(mass, 500000, 1.)
         # make the bkg shapes from the input file
         keyList = self.infile.GetListOfKeys()
-        for key in keyList:
-            if key.GetName()[:5] == 'mass_': 
-                self.makeBkgShapeHisto(key.GetName(), mass)
+        for name in self.allNames:
+            self.makeShapeHisto(name, mass)
         print "Created shapes file: {0}".format(self.outfile.GetName())
         self.infile.Close()
         self.outfile.Close()
@@ -87,6 +104,13 @@ class ShapeHMaker:
     def getSigExpEvts(self, mass):
         nExp = self.lumi * self.kappa**2 * self.xsec_x_br_sig.Eval(mass) * self.accTimesEff.Eval(mass)
         return nExp
+
+    def getResErr(self, mass):
+        #return self.resErrFunc.Eval(mass)
+        if mass < self.resErrIntersection:
+            return self.resErrFuncLow.Eval(mass)
+        else:
+            return self.resErrFuncHigh.Eval(mass)
 
     def makeSigShapeHisto(self, mass, nEvts, resScale=0):
         nExp = self.getSigExpEvts(mass)
@@ -105,20 +129,33 @@ class ShapeHMaker:
         # upscale or downscale the width of the Gaussian if requested
         if resScale < 0.:
             shapeHisto.SetName(shapeHisto.GetName()+'_sigResDown')
-            gaussShape.SetParameter(2, gaussShape.GetParameter(2) + resScale*gaussShape.GetParameter(2)*self.resErrFunc.Eval(mass))
+            gaussShape.SetParameter(2, gaussShape.GetParameter(2) + resScale*gaussShape.GetParameter(2)*self.getResErr(mass))
         elif resScale > 0.:
             shapeHisto.SetName(shapeHisto.GetName()+'_sigResUp')
-            gaussShape.SetParameter(2, gaussShape.GetParameter(2) + resScale*gaussShape.GetParameter(2)*self.resErrFunc.Eval(mass))
+            gaussShape.SetParameter(2, gaussShape.GetParameter(2) + resScale*gaussShape.GetParameter(2)*self.getResErr(mass))
         # fill the histogram
         shapeHisto.FillRandom('gaussShape', nEvts)
         # normalise
         shapeHisto.Scale(nExp/shapeHisto.Integral())
         shapeHisto.Write()
 
-    def makeBkgShapeHisto(self, bkg_name, mass):
+    def makeShapeHisto(self, name, mass):
+        # check if the histogram is blacklisted. If so use the base histogram
+        for badName in self.blackList:
+            blackListed = False
+            if name == badName:
+                blacklisted = True
+                for baseName in self.baseNames:
+                    if name[:len(baseName)] == baseName:
+                        print 'Use {:s} instead of the blacklisted {:s}.'.format(baseName, name)
+                        name = baseName
+                        break
+            if blackListed:
+                break
+ 
         nExp = 0.
         self.infile.cd()
-        bkgHist = self.infile.Get(bkg_name)
+        bkgHist = self.infile.Get(name)
         if bkgHist:
             minMass = mass - 3*self.factorMin*mass*self.relMassRes.Eval(mass)
             # no upper limit above a mass of 800 GeV
@@ -127,7 +164,7 @@ class ShapeHMaker:
             else:
                 maxMass = bkgHist.GetXaxis().GetXmax()
             self.outfile.cd()
-            shapeHisto = TH1F(bkg_name, bkg_name, int(math.ceil(maxMass)-math.floor(minMass)), math.floor(minMass), math.ceil(maxMass))
+            shapeHisto = TH1F(name, name, int(math.ceil(maxMass)-math.floor(minMass)), math.floor(minMass), math.ceil(maxMass))
             for m in range(int(math.floor(minMass)), int(math.ceil(maxMass))):
                 shapeHisto.SetBinContent(shapeHisto.FindBin(m), bkgHist.GetBinContent(bkgHist.FindBin(m)))
                 shapeHisto.SetBinError(shapeHisto.FindBin(m), bkgHist.GetBinError(bkgHist.FindBin(m)))
@@ -140,30 +177,52 @@ class ShapeHMaker:
         self.infile.cd()
         keyList = self.infile.GetListOfKeys()
         # list of base histograms
-        baseNames = []
         shapeNamess = []
         baseHistos = []
         shapeHistoss = []
         for keyB in keyList:
             if keyB.GetName()[:5] == 'mass_' and keyB.GetName()[-4:] != 'Down' and keyB.GetName()[-2:] != 'Up':
-                baseNames.append(keyB.GetName())
+                self.baseNames.append(keyB.GetName())
                 baseHistos.append(self.infile.Get(keyB.GetName()))
         # complete the list of histograms corresponding to baseHisto
         for i, baseHisto in enumerate(baseHistos):
-            baseName = baseNames[i]
+            baseName = self.baseNames[i]
             shapeNames = []
             shapeHistos = []
             for keyS in keyList:
-                if keyS.GetName() != baseName and keyS.GetName()[:len(baseName)] == baseName:
-                    shapeNames.append(keyS.GetName())
-                    shapeHistos.append(self.infile.Get(keyS.GetName()))
+                keySName = keyS.GetName()
+                if keySName != baseName and keySName[:len(baseName)] == baseName:
+                    # check if the shape is in the list of good shapes
+                    for goodShName in self.shapes:
+                        index = keySName.rfind(goodShName)
+                        if index > 0 and (keySName[index+len(goodShName):] == 'Up' or keySName[index+len(goodShName):] == 'Down'):
+                            shapeNames.append(keySName)
+                            shapeHistos.append(self.infile.Get(keySName))
+                            break
             shapeNamess.append(shapeNames)
             shapeHistoss.append(shapeHistos)
 
+        # make one global list of all histograms
+        for i, bn in enumerate(self.baseNames):
+            self.allNames.append(bn)
+            for sn in shapeNamess[i]:
+                self.allNames.append(sn)
+
         self.factorMin = 1.
+        self.factorMax = 1.
         rangeChanged = True
-        while rangeChanged:
+        conflictDet = False
+        counter = 0
+        firstBadHistoName = ''
+        while rangeChanged or conflictDet:
             rangeChanged = False
+            conflictDet = False
+            # catch infinite loops
+            counter += 1
+            if counter > 100:
+                print 'It seems I am stuck in an infinite loop. Break.'
+                break
+
             # define new range minimum
             minMass = mass - 3*self.factorMin*mass*self.relMassRes.Eval(mass)
             # no upper limit above a mass of 800 GeV, so define range maximum from base histogram an case
@@ -173,42 +232,119 @@ class ShapeHMaker:
                 maxMass = baseHistos[0].GetXaxis().GetXmax()
             minMassBin = baseHistos[0].FindBin(minMass)
             maxMassBin = baseHistos[0].FindBin(maxMass)
+            if minMassBin > maxMassBin:
+                print 'Error: Lower edge of window above upper edge.'
             minMassFromBin = baseHistos[0].GetBinLowEdge(minMassBin)
             maxMassFromBin = baseHistos[0].GetBinLowEdge(maxMassBin) + baseHistos[0].GetBinWidth(maxMassBin)
             print 'Trying range [{:.1f}, {:.1f}] GeV for mass point {:.1f} GeV.'.format(minMassFromBin, maxMassFromBin, mass)
 
             # loop over all base histograms
             for i, baseHisto in enumerate(baseHistos):
-                baseName = baseNames[i]
+                baseName = self.baseNames[i]
                 #print 'baseHisto: {:<12s}'.format(baseName)
                 baseH_int = baseHisto.Integral(minMassBin, maxMassBin)
-                 # loop over shape histograms corresponding to base histogram
+                # save the previous factors in case this histogram has to be blacklisted
+                prevFactorMin = self.factorMin
+                prevFactorMax = self.factorMax
+                prevRangeChanged = rangeChanged
+                # loop over shape histograms corresponding to base histogram
                 for shapeHisto in shapeHistoss[i]:
+                    shapeName = shapeHisto.GetName()
+                    #check if the histogram is on the blacklist
+                    blackListed = False
+                    for badName in self.blackList:
+                        if shapeName == badName:
+                            blackListed = True
+                    if blackListed:
+                        continue
+
                     histoRangeChanged = True
                     while histoRangeChanged:
                         histoRangeChanged = False
                         # define new range minimum
                         minMass = mass - 3*self.factorMin*mass*self.relMassRes.Eval(mass)
                         minMassBin = baseHistos[0].FindBin(minMass)
+                        # define new range maximum
+                        if mass <= 800.: 
+                            maxMass = mass + 3*self.factorMax*mass*self.relMassRes.Eval(mass)
+                        else:
+                             maxMass = baseHistos[0].GetXaxis().GetXmax()
+                        maxMassBin = baseHistos[0].FindBin(maxMass)
                         shapeH_int = shapeHisto.Integral(minMassBin, maxMassBin)
-                        #print 'baseHisto: {:<12s}, Integral={:>8g}; shapeHisto: {:<25s}, Integral={:>8g}'.format(baseHisto.GetName(), baseH_int, shapeHisto.GetName(), shapeH_int)
+                        #print 'baseHisto: {:<12s}, Integral={:>8g}; shapeHisto: {:<25s}, Integral={:>8g}'.format(baseHisto.GetName(), baseH_int, shapeName, shapeH_int)
+                        nbins = maxMassBin-minMassBin+1
                         # windows have to be enlarged
                         if baseH_int > 0. and shapeH_int == 0.:
-                            self.factorMin += 0.01
+                            # remember the name of the first histogram that needed to change the range
+                            if firstBadHistoName == '':
+                                firstBadHistoName = shapeName
+                            # if the range was enlarged by a previous histogram we have a loop condition if this histogram is trying to narrow it
+                            # raise flag so that the initially enlarging histogram is blacklisted on the next iteration
+                            if prevFactorMin < 1.:
+                                conflictDet = True
+                            # enlarge the range
+                            if mass <= 800.:
+                                # decide if widening from the upper or lower edge by looking which half has more events (advantage for lower side if odd number of bins)
+                                if baseHisto.Integral(minMassBin, minMassBin+int(math.ceil(nbins/2))-1) > baseHisto.Integral(minMassBin+int(math.ceil(nbins/2)), maxMassBin):
+                                    self.factorMin += 0.01
+                                else:
+                                    self.factorMax += 0.01
+                            else:
+                                self.factorMin += 0.01
                             histoRangeChanged = True
                             rangeChanged = True
                         # windows have to be narrowed
                         elif baseH_int == 0. and shapeH_int > 0.:
-                            self.factorMin -= 0.01
+                            # remember the name of the first histogram that needed to change the range
+                            if firstBadHistoName == '':
+                                firstBadHistoName = shapeName
+                            # if the range was enlarged by a previous histogram we have a loop condition if this histogram is trying to narrow it
+                            # raise flag so that the initially narrowing histogram is blacklisted on the next iteration
+                            if prevFactorMin > 1.:
+                                conflictDet = True
+                            # narrow the range
+                            if mass <= 800.:
+                                # decide if narrowing from the upper or lower edge by looking which half has more events (advantage for lower side if odd number of bins)
+                                if shapeHisto.Integral(minMassBin, minMassBin+int(math.ceil(nbins/2))-1) > shapeHisto.Integral(minMassBin+int(math.ceil(nbins/2)), maxMassBin):
+                                    self.factorMin -= 0.01
+                                else:
+                                    self.factorMax -= 0.01
+                            else:
+                                self.factorMin -= 0.01
                             histoRangeChanged = True
                             rangeChanged = True
 
-                # if one histogram triggered a range change stop the check for this range and start with the new range
-                if rangeChanged:
-                    if self.factorMin > 1.:
-                        print 'Lower edge shifted by {:.0f}% to enlarge the window of {:s}* histograms from nominal width.'.format(100*(self.factorMin-1.), baseName)
-                    elif self.factorMin < 1.:
-                        print 'Lower edge shifted by {:.0f}% to narrow  the window of {:s}* histograms from nominal width.'.format(100*(self.factorMin-1.), baseName)
-                    break 
+                    if conflictDet == True:
+                        print 'Conflict detected between {:s} and {:s}. Blacklist first histogram to change the range: {:s}.'.format(firstBadHistoName, shapeName, firstBadHistoName)
+                        self.blackList.append(firstBadHistoName)
+                        firstBadHistoName = ''
+                        self.factorMin = 1
+                        self.factorMax = 1
+                        break
+
+                    # in case the factor is too large blacklist the histogram and use the base histogram instead
+                    if abs(self.factorMin-1.) > 0.2 or abs(self.factorMax-1.) > 0.2:
+                        print 'Range modification factors exceed 20% of the nominal value. Blacklist {:s}.'.format(shapeName)
+                        self.blackList.append(shapeName)
+                        self.factorMin = prevFactorMin
+                        self.factorMax = prevFactorMax
+                        rangeChanged = prevRangeChanged
+                        continue
+
+                    # if one histogram triggered a range change stop the check for this range and start with the new range
+                    if rangeChanged:
+                        if self.factorMin > 1.:
+                            print 'Lower edge shifted by {:.0f}% to enlarge the window of {:s} histogram from nominal width.'.format(100*(self.factorMin-1.), shapeName)
+                        elif self.factorMin < 1.:
+                            print 'Lower edge shifted by {:.0f}% to narrow the window of {:s} histogram from nominal width.'.format(100*(self.factorMin-1.), shapeName)
+                        if self.factorMax > 1.:
+                            print 'Upper edge shifted by {:.0f}% to enlarge the window of {:s} histogram from nominal width.'.format(100*(self.factorMax-1.), shapeName)
+                        elif self.factorMax < 1.:
+                            print 'Upper edge shifted by {:.0f}% to narrow the window of {:s} histogram from nominal width.'.format(100*(self.factorMax-1.), shapeName)
+                        break 
+
+                if rangeChanged or conflictDet:
+                    break
+
 
 if __name__=='__main__': main()
