@@ -51,10 +51,10 @@ class DcMaker:
         self.pdf_unc.SetParameters(1.045, 3.4e-5, 1.5e-8)
         if dataset == 'SingleMu':  # singleMu dataset
             self.lumi = 19706.
-            self.accTimesEff.SetParameters(0.744268, -144.951, 171.187, -2.9103e-5)
+            self.accTimesEff.SetParameters(0.741884, -143.669, 169.996, -2.7689e-5)
         else:  # MuEG dataset
             self.lumi = 19703.
-            self.accTimesEff.SetParameters(0.752457, -117.556, 127.668, -2.59323e-5)
+            self.accTimesEff.SetParameters(0.765356, -130.208, 153.271, -2.95164e-5)
  
     def run(self, mass):
         self.mass = mass
@@ -119,7 +119,7 @@ class DcMaker:
 
     def writeUncert(self):
         self.outfile.write("lumi          lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, '-'))
-        self.outfile.write("bkgXsec       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1.036, 1.035, 1.038, 1.025, 1.069, 1.054, 1.054, 1.054, '-'))
+        self.outfile.write("bkgXsec       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1.05, 1.04, '-', '-', 1.03, '-', '-', '-', '-'))
         self.outfile.write("fakeRate      lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', '-', '-', '-', '-', '-', '-', '-', '-', 1.3))
         pdf_unc = self.pdf_unc.Eval(self.mass)
         self.outfile.write("pdf           lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, '-'))
@@ -128,7 +128,8 @@ class DcMaker:
         self.outfile.write("sigRes        shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1, '-', '-', '-', '-', '-', '-', '-', '-', '-'))
         self.outfile.write("eleScale      shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
         self.outfile.write("muScale       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
-        self.outfile.write("muonRes       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
+        #self.outfile.write("muonRes       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
+        self.outfile.write("muonResSmear  shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
         self.outfile.write("topPtReweight shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, '-', '-', '-', '-', '-', '-', '-', '-'))
 
 if __name__=='__main__': main()
