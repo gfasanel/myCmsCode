@@ -103,24 +103,24 @@ void EmuSpectrum::Loop()
    //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
    //input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
    nGenEvtsV.push_back(28150723.);
-   input.push_back(make_pair(inTTbar, 245.8 / nGenEvtsV.back()));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.036));
+   input.push_back(make_pair(inTTbar, 252.89 / nGenEvtsV.back()));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
 
    TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_3082812ev.root");
    nGenEvtsV.push_back(3082812.);
-   input.push_back(make_pair(inTTbar700to1000, 15.614 / nGenEvtsV.back() * 245.8/211.));  // ttbar  mtt 700to1000
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.036));
+   input.push_back(make_pair(inTTbar700to1000, 15.614 / nGenEvtsV.back() * 252.89/211.));  // ttbar  mtt 700to1000
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
 
    TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_1249111ev.root");
    nGenEvtsV.push_back(1249111.);
-   input.push_back(make_pair(inTTbar1000up, 2.954 / nGenEvtsV.back() * 245.8/211.));  // ttbar  mtt>1000
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.036));
+   input.push_back(make_pair(inTTbar1000up, 2.954 / nGenEvtsV.back() * 252.89/211.));  // ttbar  mtt>1000
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
@@ -128,7 +128,7 @@ void EmuSpectrum::Loop()
    TFile *inTTbarPriv600up = TFile::Open("file:////user/treis/mcsamples/ttbar_tail_600_inf_35066ev.root");
    nGenEvtsV.push_back(35066.);
    input.push_back(make_pair(inTTbarPriv600up, 0.00431 * 1.166 / nGenEvtsV.back()));  // ttbar private production from Andreas with M^gen_emu=600+ scaled to Czakon et al. NNLO
-   systErrMCs.Add(new TParameter<float>("systErrMcTtbarPriv600up", 0.15));
+   systErrMCs.Add(new TParameter<float>("systErrMcTtbarPriv600up", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
@@ -136,7 +136,7 @@ void EmuSpectrum::Loop()
    TFile *inZtt = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_52085800ev.root");
    nGenEvtsV.push_back(52085800.);
    input.push_back(make_pair(inZtt, 1915.1 / nGenEvtsV.back())); //Ztautau
-   systErrMCs.Add(new TParameter<float>("systErrMcDyTauTau", 0.054));
+   systErrMCs.Add(new TParameter<float>("systErrMcDyTauTau", 0.01));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -144,7 +144,7 @@ void EmuSpectrum::Loop()
    TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_10000431ev.root");
    nGenEvtsV.push_back(10000431.);
    input.push_back(make_pair(inWW, 54.838 / nGenEvtsV.back())); //WW
-   systErrMCs.Add(new TParameter<float>("systErrMcWW", 0.035));
+   systErrMCs.Add(new TParameter<float>("systErrMcWW", 0.04));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
@@ -152,7 +152,7 @@ void EmuSpectrum::Loop()
    TFile *inWWeMinusMuPlusPriv600up = TFile::Open("file:////user/treis/mcsamples/WW_emu_tail_Muplus_Eminus_25625ev.root");
    nGenEvtsV.push_back(25625.);
    input.push_back(make_pair(inWWeMinusMuPlusPriv600up, 1.531e-3 * 1.071 / nGenEvtsV.back())); //WW to e- mu+ from private production Andreas with SF to MCFM
-   systErrMCs.Add(new TParameter<float>("systErrMcWWeMinusMuPlusPriv600up", 0.05));
+   systErrMCs.Add(new TParameter<float>("systErrMcWWeMinusMuPlusPriv600up", 0.04));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
@@ -160,7 +160,7 @@ void EmuSpectrum::Loop()
    TFile *inWWePlusMuMinusPriv600up = TFile::Open("file:////user/treis/mcsamples/WW_emu_tail_Eplus_Muminus_26537ev.root");
    nGenEvtsV.push_back(26537.);
    input.push_back(make_pair(inWWePlusMuMinusPriv600up, 1.586e-3 * 1.071 / nGenEvtsV.back())); //WW to e- mu+ from private production Andreas with SF to MCFM
-   systErrMCs.Add(new TParameter<float>("systErrMcWWePlusMuMinusPriv600up", 0.05));
+   systErrMCs.Add(new TParameter<float>("systErrMcWWePlusMuMinusPriv600up", 0.04));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
@@ -168,7 +168,7 @@ void EmuSpectrum::Loop()
    TFile *inWZ = TFile::Open("file:////user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_10000283ev.root");
    nGenEvtsV.push_back(10000283.);
    input.push_back(make_pair(inWZ, 33.21 / nGenEvtsV.back())); //WZ
-   systErrMCs.Add(new TParameter<float>("systErrMcWZ", 0.038));
+   systErrMCs.Add(new TParameter<float>("systErrMcWZ", 0.04));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -176,7 +176,7 @@ void EmuSpectrum::Loop()
    TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_991118ev.root");
    nGenEvtsV.push_back(991118.);
    input.push_back(make_pair(inTW, 22.2 / nGenEvtsV.back())); //tW
-   systErrMCs.Add(new TParameter<float>("systErrMcTW", 0.069));
+   systErrMCs.Add(new TParameter<float>("systErrMcTW", 0.03));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -192,7 +192,7 @@ void EmuSpectrum::Loop()
    TFile *inZmm = TFile::Open("file:////user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_52113126ev.root");
    nGenEvtsV.push_back(52113126.);
    input.push_back(make_pair(inZmm, 1915. / nGenEvtsV.back())); //Zmumu
-   systErrMCs.Add(new TParameter<float>("systErrMcDyMuMu", 0.054));
+   systErrMCs.Add(new TParameter<float>("systErrMcDyMuMu", 0.01));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -200,7 +200,7 @@ void EmuSpectrum::Loop()
    TFile *inZee = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_46002499ev.root");
    nGenEvtsV.push_back(46002499.);
    input.push_back(make_pair(inZee, 1915. / nGenEvtsV.back())); //Zee
-   systErrMCs.Add(new TParameter<float>("systErrMcDyEE", 0.054));
+   systErrMCs.Add(new TParameter<float>("systErrMcDyEE", 0.01));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -208,31 +208,31 @@ void EmuSpectrum::Loop()
    TFile *inZZ = TFile::Open("file:////user/treis/mcsamples/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_9799908ev.root");
    nGenEvtsV.push_back(9799908.);
    input.push_back(make_pair(inZZ, 17.654 / nGenEvtsV.back())); //ZZ
-   systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.025));
+   systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.03));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
 
    TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_6923750ev.root");
    nGenEvtsV.push_back(6923750.);
-   input.push_back(make_pair(inTTbarMg, 245.8/ nGenEvtsV.back())); //TTjets from MadGraph
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
+   input.push_back(make_pair(inTTbarMg, 252.89/ nGenEvtsV.back())); //TTjets from MadGraph
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
 
    TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v2_AODSIM_emuSkim_12119013ev.root");
    nGenEvtsV.push_back(12119013.);
-   input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 2l
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
+   input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 252.89/(13.43+53.2+53.4))); //TT to 2l
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
 
    TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_11229902ev.root");
    nGenEvtsV.push_back(11229902.);
-   input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
-   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
+   input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 252.89/(13.43+53.2+53.4))); //TT to 1l1jet
+   systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
@@ -240,7 +240,7 @@ void EmuSpectrum::Loop()
    TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_196046ev.root");
    nGenEvtsV.push_back(196046.);
    input.push_back(make_pair(inTTW, 0.232 / nGenEvtsV.back())); //TTW
-   systErrMCs.Add(new TParameter<float>("systErrMcTtW", 0.32));
+   systErrMCs.Add(new TParameter<float>("systErrMcTtW", 0.29));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);

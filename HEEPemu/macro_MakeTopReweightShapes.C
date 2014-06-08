@@ -39,7 +39,7 @@ class ContVarPlot {
 void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
-  //TFile input("./emuSpec_19703pb-1.root");
+  //TFile input("./emuSpec_MuGammaTrg_19703pb-1.root");
   TFile input("./emuSpec_singleMuTrg_19706pb-1.root");
   input.cd();
 
@@ -73,7 +73,7 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   std::vector<ContVarPlot> testPlots;
   testPlots.reserve(40);
   // flags: logPlot | underflow in first bin | overflow in last bin
-  testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 2500., 2500, 1, 0, 0));
+  testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 3000., 3000, 1, 0, 0));
 
   TString sign[7] = {"_e-mu+", "_e+mu-", "_OS", "", "_SS", "_++", "_--"};
   TString nameSign[7] = {" e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
