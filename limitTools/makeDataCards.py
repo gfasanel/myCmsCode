@@ -97,6 +97,10 @@ class DcMaker:
         else:
             raise Exception("I did not find histogram 'mass_{:s}' in file {:s}./shapeHistos_m{:.0f}.root.".format(name, self.workDir, self.mass))
 
+    def getWWxsecUnc(self):
+        constUnc = 0.04 # cross section uncertainty from twiki
+        linUnc = 0.0001*self.mass # 10% additional uncertainty per TeV
+        return 1 + math.sqrt(constUnc**2 + linUnc**2)
 
     def writeSetup(self):
         imax_str = "imax    {0}     number of channels \n".format(1)
@@ -119,7 +123,7 @@ class DcMaker:
 
     def writeUncert(self):
         self.outfile.write("lumi          lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, '-'))
-        self.outfile.write("bkgXsec       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1.05, 1.04, '-', '-', 1.03, '-', '-', '-', '-'))
+        self.outfile.write("bkgXsec       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1.05, self.getWWxsecUnc(), 1.04, 1.03, 1.03, 1.01, 1.01, 1.01, '-'))
         self.outfile.write("fakeRate      lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', '-', '-', '-', '-', '-', '-', '-', '-', 1.3))
         pdf_unc = self.pdf_unc.Eval(self.mass)
         self.outfile.write("pdf           lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, '-'))
