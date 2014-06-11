@@ -88,27 +88,33 @@ print '-------------------------------------------------------------------------
 print '  Mass      |   Observed limit  |         Expected limit (+/- 1 sigma)        |  Theory'
 print '----------------------------------------------------------------------------------------------'
 # loop over the mass points
-for i, mass in enumerate(massPoints):
+oi = -1
+ei = -1
+for mass in massPoints:
     scale = options.kappa**2 * xsec_x_br_sig.Eval(mass) * femtoFact
 
     #get the observed limit from the root file
     resultsFile = TFile(options.workDir+'results/higgsCombineObserved.MarkovChainMC.mH120_m{:.0f}.root'.format(mass))
     tree = resultsFile.Get('limit')
     obs_lim_value = 0.
-    if tree == None: 
-        print "No data found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
+    if tree == None:
+        pass
+        #print "No data found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
     else:
         if tree.GetEntry(0) > 0:
             obs_lim_value = tree.limit * scale
         else:
-            print "No limit found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
-    obs_lim.SetPoint(i, mass, obs_lim_value)
+            pass
+            #print "No limit found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
+    if obs_lim_value > 0.:
+        oi += 1
+        obs_lim.SetPoint(oi, mass, obs_lim_value)
 
     #get the 1-, 2-, 3-sigma quantiles and the median from the toys for the expected limits
     expectedFile = TFile(options.workDir+'results/higgsCombineExpected.MarkovChainMC.mH120_m{:.0f}.root'.format(mass))
     expTree = expectedFile.Get('limit')
     if expTree == None: 
-        print "No data found in file '{0}'. Will set expected limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
+        #print "No data found in file '{0}'. Will set expected limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
         quantiles = array.array('d', [0., 0., 0., 0., 0., 0., 0.])
     else:
         expLimit = array.array('d')
@@ -121,18 +127,28 @@ for i, mass in enumerate(massPoints):
         TMath.Quantiles(expTree.GetEntries(), 7, expLimit, quantiles, prob, False)
 
     # fill the graphs
-    median_3sigma.SetPoint(i, mass, quantiles[3] * scale)
-    median_3sigma.SetPointError(i, 0., 0., (quantiles[3]-quantiles[0]) * scale, (quantiles[6]-quantiles[3]) * scale)
-    median_2sigma.SetPoint(i, mass, quantiles[3] * scale)
-    median_2sigma.SetPointError(i, 0., 0., (quantiles[3]-quantiles[1]) * scale, (quantiles[5]-quantiles[3]) * scale)
-    median_1sigma.SetPoint(i, mass, quantiles[3] * scale)
-    median_1sigma.SetPointError(i, 0., 0., (quantiles[3]-quantiles[2]) * scale, (quantiles[4]-quantiles[3]) * scale)
+    if quantiles[3] > 0:
+        ei += 1
+        median_3sigma.SetPoint(ei, mass, quantiles[3] * scale)
+        median_3sigma.SetPointError(ei, 0., 0., (quantiles[3]-quantiles[0]) * scale, (quantiles[6]-quantiles[3]) * scale)
+        median_2sigma.SetPoint(ei, mass, quantiles[3] * scale)
+        median_2sigma.SetPointError(ei, 0., 0., (quantiles[3]-quantiles[1]) * scale, (quantiles[5]-quantiles[3]) * scale)
+        median_1sigma.SetPoint(ei, mass, quantiles[3] * scale)
+        median_1sigma.SetPointError(ei, 0., 0., (quantiles[3]-quantiles[2]) * scale, (quantiles[4]-quantiles[3]) * scale)
 
     # text output of the limits
     if options.inFemtoBarn:
         print "{:>6.1f} GeV  |  {:>12.5f} fb  |  {:>12.5f} ({:>+11.5g} {:>+11.5g}) fb  |  {:g} fb".format(mass, obs_lim_value, quantiles[3] * scale, (quantiles[4]-quantiles[3]) * scale, (quantiles[2]-quantiles[3]) * scale, theory_curve.Eval(mass))
     else:
         print "{:>6.1f} GeV  |  {:>12.5f} pb  |  {:>12.5f} ({:>+11.5g} {:>+11.5g}) pb  |  {:g} pb".format(mass, obs_lim_value, quantiles[3] * scale, (quantiles[4]-quantiles[3]) * scale, (quantiles[2]-quantiles[3]) * scale, theory_curve.Eval(mass))
+
+# remove needless points
+while median_3sigma.GetN() > oi+1:
+    obs_lim.RemovePoint(obs_lim.GetN()-1)
+while median_3sigma.GetN() > ei+1:
+    median_3sigma.RemovePoint(median_3sigma.GetN()-1)
+    median_2sigma.RemovePoint(median_2sigma.GetN()-1)
+    median_1sigma.RemovePoint(median_1sigma.GetN()-1)
 
 # clone the median graph for plotting the expected limit
 median = median_1sigma.Clone('median')
@@ -193,6 +209,7 @@ if options.drawTheory:
         theory_curve.Draw('Lsame')
     else:
         theory_curve.Draw('L')
+theory_curve.SetRange(options.minMass, options.maxMass)
 
 #legend
 legend = TLegend(0.54, 0.50, 0.89, 0.88)
