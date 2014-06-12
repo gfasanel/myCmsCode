@@ -94,37 +94,40 @@ for mass in massPoints:
     scale = options.kappa**2 * xsec_x_br_sig.Eval(mass) * femtoFact
 
     #get the observed limit from the root file
-    resultsFile = TFile(options.workDir+'results/higgsCombineObserved.MarkovChainMC.mH120_m{:.0f}.root'.format(mass))
-    tree = resultsFile.Get('limit')
     obs_lim_value = 0.
-    if tree == None:
-        pass
-        #print "No data found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
-    else:
-        if tree.GetEntry(0) > 0:
-            obs_lim_value = tree.limit * scale
+    if os.path.isfile(options.workDir+'results/higgsCombineObserved.MarkovChainMC.mH120_m{:.0f}.root'.format(mass)):
+        resultsFile = TFile(options.workDir+'results/higgsCombineObserved.MarkovChainMC.mH120_m{:.0f}.root'.format(mass))
+        tree = resultsFile.Get('limit')
+        if tree == None:
+            print "No data found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
         else:
-            pass
-            #print "No limit found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
+            if tree.GetEntry(0) > 0:
+                obs_lim_value = tree.limit * scale
+            else:
+                print "No limit found in file '{0}'. Will set observed limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
+
     if obs_lim_value > 0.:
         oi += 1
         obs_lim.SetPoint(oi, mass, obs_lim_value)
 
     #get the 1-, 2-, 3-sigma quantiles and the median from the toys for the expected limits
-    expectedFile = TFile(options.workDir+'results/higgsCombineExpected.MarkovChainMC.mH120_m{:.0f}.root'.format(mass))
-    expTree = expectedFile.Get('limit')
-    if expTree == None: 
-        #print "No data found in file '{0}'. Will set expected limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
-        quantiles = array.array('d', [0., 0., 0., 0., 0., 0., 0.])
-    else:
-        expLimit = array.array('d')
-        for row in expTree:
-            expLimit.append(row.limit)
+    if os.path.isfile(options.workDir+'results/higgsCombineExpected.MarkovChainMC.mH120_m{:.0f}.root'.format(mass)):
+        expectedFile = TFile(options.workDir+'results/higgsCombineExpected.MarkovChainMC.mH120_m{:.0f}.root'.format(mass))
+        expTree = expectedFile.Get('limit')
+        if expTree == None: 
+            print "No data found in file '{0}'. Will set expected limit to 0 for mass={1} GeV.".format(resultsFile.GetName(), mass)
+            quantiles = array.array('d', [0., 0., 0., 0., 0., 0., 0.])
+        else:
+            expLimit = array.array('d')
+            for row in expTree:
+                expLimit.append(row.limit)
 
-        #calculate quantiles
-        prob = array.array('d', [0.0013, 0.0228, 0.1587, 0.5, 0.8413, 0.9772, 0.9987])
+            #calculate quantiles
+            prob = array.array('d', [0.0013, 0.0228, 0.1587, 0.5, 0.8413, 0.9772, 0.9987])
+            quantiles = array.array('d', [0., 0., 0., 0., 0., 0., 0.])
+            TMath.Quantiles(expTree.GetEntries(), 7, expLimit, quantiles, prob, False)
+    else:
         quantiles = array.array('d', [0., 0., 0., 0., 0., 0., 0.])
-        TMath.Quantiles(expTree.GetEntries(), 7, expLimit, quantiles, prob, False)
 
     # fill the graphs
     if quantiles[3] > 0:
@@ -137,10 +140,22 @@ for mass in massPoints:
         median_1sigma.SetPointError(ei, 0., 0., (quantiles[3]-quantiles[2]) * scale, (quantiles[4]-quantiles[3]) * scale)
 
     # text output of the limits
-    if options.inFemtoBarn:
-        print "{:>6.1f} GeV  |  {:>12.5f} fb  |  {:>12.5f} ({:>+11.5g} {:>+11.5g}) fb  |  {:g} fb".format(mass, obs_lim_value, quantiles[3] * scale, (quantiles[4]-quantiles[3]) * scale, (quantiles[2]-quantiles[3]) * scale, theory_curve.Eval(mass))
+    if obs_lim_value > 0.:
+        obs_lim_value_str = '{:>12.5f}'.format(obs_lim_value)
     else:
-        print "{:>6.1f} GeV  |  {:>12.5f} pb  |  {:>12.5f} ({:>+11.5g} {:>+11.5g}) pb  |  {:g} pb".format(mass, obs_lim_value, quantiles[3] * scale, (quantiles[4]-quantiles[3]) * scale, (quantiles[2]-quantiles[3]) * scale, theory_curve.Eval(mass))
+        obs_lim_value_str = '           -'
+    if quantiles[3] > 0:
+        exp_lim_value_str = '{:>12.5f}'.format(quantiles[3] * scale)
+        exp_lim_plus_str = '{:>+11.5g}'.format((quantiles[4]-quantiles[3]) * scale)
+        exp_lim_minus_str = '{:>+11.5g}'.format((quantiles[2]-quantiles[3]) * scale)
+    else:
+        exp_lim_value_str = '           -'
+        exp_lim_plus_str = '          -'
+        exp_lim_minus_str = '          -'
+    if options.inFemtoBarn:
+        print "{:>6.1f} GeV  |  {:s} fb  |  {:s} ({:s} {:s}) fb  |  {:g} fb".format(mass, obs_lim_value_str, exp_lim_value_str, exp_lim_plus_str, exp_lim_minus_str, theory_curve.Eval(mass))
+    else:
+        print "{:>6.1f} GeV  |  {:s} pb  |  {:s} ({:s} {:s}) pb  |  {:g} pb".format(mass, obs_lim_value_str, exp_lim_value_str, exp_lim_plus_str, exp_lim_minus_str, theory_curve.Eval(mass))
 
 # remove needless points
 while median_3sigma.GetN() > oi+1:
