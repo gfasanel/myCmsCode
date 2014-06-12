@@ -96,14 +96,14 @@ void EmuSpectrum::Loop()
    input.push_back(make_pair(inData, 1.)); //DATA
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
-   storeShapes.push_back(0);
+   storeShapes.push_back(1);
 
    // MC
    TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_28150723ev.root");
    //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
    //input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
    nGenEvtsV.push_back(28150723.);
-   input.push_back(make_pair(inTTbar, 252.89 / nGenEvtsV.back()));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
+   input.push_back(make_pair(inTTbar, 245.8 / nGenEvtsV.back()));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -111,7 +111,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_3082812ev.root");
    nGenEvtsV.push_back(3082812.);
-   input.push_back(make_pair(inTTbar700to1000, 15.614 / nGenEvtsV.back() * 252.89/211.));  // ttbar  mtt 700to1000
+   input.push_back(make_pair(inTTbar700to1000, 15.614 / nGenEvtsV.back() * 245.8/211.));  // ttbar  mtt 700to1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -119,7 +119,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_1249111ev.root");
    nGenEvtsV.push_back(1249111.);
-   input.push_back(make_pair(inTTbar1000up, 2.954 / nGenEvtsV.back() * 252.89/211.));  // ttbar  mtt>1000
+   input.push_back(make_pair(inTTbar1000up, 2.954 / nGenEvtsV.back() * 245.8/211.));  // ttbar  mtt>1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -215,7 +215,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_6923750ev.root");
    nGenEvtsV.push_back(6923750.);
-   input.push_back(make_pair(inTTbarMg, 252.89/ nGenEvtsV.back())); //TTjets from MadGraph
+   input.push_back(make_pair(inTTbarMg, 245.8/ nGenEvtsV.back())); //TTjets from MadGraph
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -223,7 +223,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v2_AODSIM_emuSkim_12119013ev.root");
    nGenEvtsV.push_back(12119013.);
-   input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 252.89/(13.43+53.2+53.4))); //TT to 2l
+   input.push_back(make_pair(inTTbar22l, 13.43 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 2l
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -231,7 +231,7 @@ void EmuSpectrum::Loop()
 
    TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_11229902ev.root");
    nGenEvtsV.push_back(11229902.);
-   input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 252.89/(13.43+53.2+53.4))); //TT to 1l1jet
+   input.push_back(make_pair(inTTbar21l, 53.2 / nGenEvtsV.back() * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.05));
    storeGenMTtbar.push_back(1);
    storeEmuMass.push_back(1);
@@ -715,6 +715,7 @@ void EmuSpectrum::Loop()
 
          // tree with event data
          bool passTrg = false;
+         bool passAltTrg = false;
          bool passHeep = false;
          float emuInvMass = 0.;
          float trueMass = 0.;
@@ -735,6 +736,7 @@ void EmuSpectrum::Loop()
          emuTree->Branch("eventnr", &eventnumber, "eventnr/i");
          emuTree->Branch("lumiSec", &luminosityBlock, "lumiSec/i");
          emuTree->Branch("passTrg", &passTrg, "passTrg/O");
+         emuTree->Branch("passAltTrg", &passAltTrg, "passAltTrg/O");
          emuTree->Branch("mass", &emuInvMass, "mass/F");
          if (p > 0) {
             emuTree->Branch("trueMass", &trueMass, "trueMass/F");
@@ -855,6 +857,7 @@ void EmuSpectrum::Loop()
          float fakeRate = 0.;
          {
             frEmuTree->Branch("passTrg", &passTrg, "passTrg/O");
+            frEmuTree->Branch("passAltTrg", &passAltTrg, "passAltTrg/O");
             frEmuTree->Branch("passHeep", &passHeep, "passHeep/O");
             frEmuTree->Branch("mass", &emuInvMass, "mass/F");
             frEmuTree->Branch("trueMass", &trueMass, "trueMass/F");
@@ -1008,6 +1011,16 @@ void EmuSpectrum::Loop()
                      if (Trigger(prescale, trig, 3) < 1) passTrg = false;
                   }
                }
+            }
+            int altPrescale = 0;
+            passAltTrg = true;
+            unsigned int altTrig[3] = {0, 0, 0};
+            if (trgSelector == 0) {
+               if (Trigger(altPrescale, altTrig, 4) < 1) passAltTrg = false;
+            } else if (trgSelector == 4) {
+               if (Trigger(altPrescale, altTrig, 0) < 1) passAltTrg = false;
+            } else {
+               passAltTrg = false;
             }
 
             // set the PU weight
@@ -1410,7 +1423,7 @@ void EmuSpectrum::Loop()
                emuMass = invMass;
                if (p == 0) {
                   // fill the good emu events tree
-                  if (passTrg) eleDataTree->Fill();
+                  if (shUnc == 0 && passTrg) eleDataTree->Fill();
                   //same sign and opposite sign
                   if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] > 0) ++nb_plus_plus;
                   if (gsf_charge[GSF_passHEEP[eleInd]] > 0 && muon_charge[MU_passGOOD[muInd]] < 0) ++nb_plus_minus;
@@ -1454,8 +1467,10 @@ void EmuSpectrum::Loop()
 
          if (p == 0) {
             //write root file with good emu events
-            goodEvFile->cd();
-            eleDataTree->Write();
+            if (shUnc == 0) {
+               goodEvFile->cd();
+               eleDataTree->Write();
+            }
 
             dataEntries = dataTrig[0] + dataTrig[1] + dataTrig[2];
             cout << "HLT_Mu22_Photon22_CaloIdL: " << dataTrig[0] 
@@ -1587,7 +1602,7 @@ bool EmuSpectrum::PassHighPtMu(const int &n)
        && muon_nhitsmuons[n] >= muon_nHitsMinMuon
        && muon_nlayerswithhits[n] >= muon_nLayersMin
        && fabs(muon_dxy_firstPVtx[n]) < muon_impactParamMaxXY
-       //&& fabs(muon_dz_firstPVtx[n]) < muon_impactParamMaxZ
+       && fabs(muon_dz_firstPVtx[n]) < muon_impactParamMaxZ
        && muon_nSegmentMatch[n] >= muon_nSegMatchMin
        && muon_isTrackerMuon[n]
        && muon_trackIso03[n] / muon_pt[n] < muon_relIsoCutMax
