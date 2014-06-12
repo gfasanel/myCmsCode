@@ -273,7 +273,7 @@ protected :
    int muon_nHitsMinMuon;
    int muon_nLayersMin; 
    float muon_impactParamMaxXY;   // in cm
-   float muon_impactParamMaxZ;   // in cm , not used
+   float muon_impactParamMaxZ;   // in cm
    int muon_nSegMatchMin;
    float muon_relIsoCutMax;
 
@@ -337,7 +337,7 @@ AccTimesEff::AccTimesEff(TTree *tree) : fChain(0)
    muon_nHitsMinMuon = 1;
    muon_nLayersMin = 6; 
    muon_impactParamMaxXY = 0.2;   // in cm
-   muon_impactParamMaxZ = 0.5;   // in cm , not used
+   muon_impactParamMaxZ = 0.5;   // in cm
    muon_nSegMatchMin = 2;
    muon_relIsoCutMax = 0.1;
 }

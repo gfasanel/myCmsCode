@@ -26,6 +26,7 @@ void macroEmuTree() {
   //ifstream myfile ("listofdata.txt");
   ifstream myfile ("listofsamples.txt");
   //ifstream myfile ("listofsigsamples.txt");
+  //noCuts = 1;
   if (myfile.is_open())
     {
       while ( myfile.good() )
