@@ -24,6 +24,7 @@ gStyle.SetOptTitle(0)
 #open files to comare
 #input = TFile("emuSpec_19703pb-1.root")
 input = TFile("emuSpec_singleMuTrg_19706pb-1.root")
+#input = TFile("emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root")
 treePrefices = ['emuTree_sigNoAccCuts', 'emuTree_sigTagV7C2_']
 #treePrefices = ['emuTree_sigTagV7C2_']
 recoTags = ['START53_V7C1', 'START53_V7C2']
@@ -62,6 +63,7 @@ for i, treePrefix in enumerate(treePrefices):
             for k, upperPt in enumerate(muPt_ranges):
                 #brName = '(muPt-genMuPt)/genMuPt'
                 brName = '(genMuPt-muPt)/muPt'
+                #brName = '(genMuPt*muCharge-muPt*genMuCharge)/muPt'
                 #brName = 'genMuPt'
 
                 axisRange = 0.2
@@ -197,6 +199,12 @@ for i, treePrefix in enumerate(treePrefices):
     statsBoxList[i].SetLineColor(colors[i])
     statsBoxList[i].SetTextColor(colors[i])
 
+#function = TF1('function', '[0]+[1]*(1-exp(-x/[2]))', 0, 3000)
+#function.SetParameters(1.35863e-2, 5.54127e-1, 6.23052e+3)
+#function.SetLineStyle(ROOT.kDashed)
+#function.SetLineColor(colors[2])
+#function.Draw('lsame')
+
 tex2 = TLatex()
 tex2.SetNDC()
 tex2.SetTextFont(font)
@@ -211,8 +219,8 @@ legend.SetTextSize(0.03)
 legend.SetBorderSize(0)
 legend.SetFillColor(19)
 legend.SetFillStyle(0)
-legend.AddEntry(resList[0], 'START53_V7C1', 'lp')
-legend.AddEntry(resList[1], 'START53_V7C2', 'lp')
+for i, res in enumerate(resList):
+    legend.AddEntry(res, recoTags[i], 'lp')
 legend.Draw('same')
  
 c1.Modified()
