@@ -128,6 +128,7 @@ public :
    Float_t         genele_eta[100];
    Float_t         genele_phi[100];
    Int_t           genMu_size;
+   Int_t           genmu_charge[100];
    Float_t         genmu_pt[100];
    Float_t         genmu_eta[100];
    Float_t         genmu_phi[100];
@@ -214,6 +215,7 @@ public :
    TBranch        *b_genele_eta;   //!
    TBranch        *b_genele_phi;   //!
    TBranch        *b_genMu_size;   //!
+   TBranch        *b_genmu_charge;   //!
    TBranch        *b_genmu_pt;   //!
    TBranch        *b_genmu_eta;   //!
    TBranch        *b_genmu_phi;   //!
@@ -591,6 +593,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchAddress("genele_eta", genele_eta, &b_genele_eta);
    fChain->SetBranchAddress("genele_phi", genele_phi, &b_genele_phi);
    fChain->SetBranchAddress("genMu_size", &genMu_size, &b_genMu_size);
+   fChain->SetBranchAddress("genmu_charge", genmu_charge, &b_genmu_charge);
    fChain->SetBranchAddress("genmu_pt", genmu_pt, &b_genmu_pt);
    fChain->SetBranchAddress("genmu_eta", genmu_eta, &b_genmu_eta);
    fChain->SetBranchAddress("genmu_phi", genmu_phi, &b_genmu_phi);
@@ -678,6 +681,7 @@ void EmuSpectrum::Init(TTree *tree)
    fChain->SetBranchStatus("genele_eta", 1);
    fChain->SetBranchStatus("genele_phi", 1);
    fChain->SetBranchStatus("genMu_size", 1);
+   fChain->SetBranchStatus("genmu_charge", 1);
    fChain->SetBranchStatus("genmu_pt", 1);
    fChain->SetBranchStatus("genmu_eta", 1);
    fChain->SetBranchStatus("genmu_phi", 1);

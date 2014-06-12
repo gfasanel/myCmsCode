@@ -805,6 +805,7 @@ void EmuSpectrum::Loop()
          float numOfBJetsMVAPt30 = 0.;
          float jetPt = 0.;
          float genMuPt = 0.;
+         int genMuCharge = 0.;
          emuTree->Branch("pfMet", &pfmet, "pfMet/F");
          emuTree->Branch("nVtx", &nVtx, "nVtx/F");
          emuTree->Branch("eDzMinusMuDz", &eDzMinusMuDz, "eDzMinusMuDz/F");
@@ -852,6 +853,7 @@ void EmuSpectrum::Loop()
          emuTree->Branch("numOfBJetsMVAPt30", &numOfBJetsMVAPt30, "numOfBJetsMVAPt30/F");
          emuTree->Branch("jetPt", &jetPt, "jetPt/F");
          emuTree->Branch("genMuPt", &genMuPt, "genMuPt/F");
+         emuTree->Branch("genMuCharge", &genMuCharge, "genMuCharge/I");
 
          TTree *frEmuTree = new TTree("frEmuTree_" + suffix[p] + shapeUncName, "frEmuTree_" + suffix[p] + shapeUncName);
          float fakeRate = 0.;
@@ -1359,6 +1361,7 @@ void EmuSpectrum::Loop()
                  trueMass = genelemom_mass[0];
                  genEmuMass = (genEle1 + genMu1).M();
                  genMuPt = genmu_pt[0];
+                 genMuCharge = genmu_charge[0];
                }
                eCharge = gsf_charge[GSF_passHEEP[eleInd]];
                muCharge = muon_charge[MU_passGOOD[muInd]];
