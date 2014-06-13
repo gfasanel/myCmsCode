@@ -158,7 +158,7 @@ for mass in massPoints:
         print "{:>6.1f} GeV  |  {:s} pb  |  {:s} ({:s} {:s}) pb  |  {:g} pb".format(mass, obs_lim_value_str, exp_lim_value_str, exp_lim_plus_str, exp_lim_minus_str, theory_curve.Eval(mass))
 
 # remove needless points
-while median_3sigma.GetN() > oi+1:
+while obs_lim.GetN() > oi+1:
     obs_lim.RemovePoint(obs_lim.GetN()-1)
 while median_3sigma.GetN() > ei+1:
     median_3sigma.RemovePoint(median_3sigma.GetN()-1)
