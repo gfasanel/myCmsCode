@@ -712,10 +712,10 @@ void AccTimesEff::Loop()
    legendNote->SetLineWidth(1);
    legendNote->SetFillColor(0);
    //legendNote->SetFillStyle(0);
-   legendNote->AddEntry(hAccNote, "gen leptons within acceptance", "lp");
-   legendNote->AddEntry(hAccTimesEffNoTrgNote, "reco leptons within acceptance", "lp");
-   legendNote->AddEntry(hAccTimesEffNote, "full selection with trigger", "lp");
-   legendNote->AddEntry(fitFuncNote, "#splitline{fit 200 GeV < M_{Z'}^{truth} < 2.5 TeV}{A+B/(M+C)+DxM}", "l");
+   legendNote->AddEntry(hAccNote, "#splitline{gen leptons within acceptance}{p_{T}, #eta cuts applied}", "p");
+   legendNote->AddEntry(hAccTimesEffNoTrgNote, "selected reconstructed leptons", "p");
+   legendNote->AddEntry(hAccTimesEffNote, "full selection with trigger", "p");
+   legendNote->AddEntry(fitFuncNote, "#splitline{fit 200 GeV <= M_{Z'}^{truth} <= 2.5 TeV}{A+B/(M+C)+DxM}", "l");
    legendNote->Draw("same");
    //tex->DrawLatex(0.15, 0.17, "Andreas (green): A#dot#epsilon(M) = 0.61 + #frac{280.1}{M + 2008.7} - #frac{30537.3}{M^{2} + 75925.2}");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
