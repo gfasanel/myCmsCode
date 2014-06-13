@@ -57,20 +57,20 @@ class ShapeHMaker:
         self.resErrIntersection = 0.
         if dataset == 'SingleMu':  # singleMu dataset
             self.lumi = 19706.
-            self.accTimesEff.SetParameters(0.741884, -143.669, 169.996, -2.7689e-5)
-            self.relMassRes.SetParameters(0.01323, 1.434e-5, 3.306e-10)
-            self.resErrFunc.SetParameters(-0.0006892, 1.54159e-6, 1.78813e-9, 0.013228, 1.4343e-5, 3.30618e-10)
-            self.resErrFuncLow.SetParameter(0, 0.01824)
-            self.resErrFuncHigh.SetParameters(-0.1165, 2.089e-4, -1.767e-8)
-            self.resErrIntersection = 684.8
+            self.accTimesEff.SetParameters(0.739589, -141.339, 165.642, -2.6972e-5)
+            self.relMassRes.SetParameters(0.01323, 1.434e-5, 3.288e-10)
+            self.resErrFunc.SetParameters(-0.00069275, 1.55093e-6, 1.78443e-9, 0.013229, 1.43445e-5, 3.28827e-10)
+            self.resErrFuncLow.SetParameter(0, 0.01849)
+            self.resErrFuncHigh.SetParameters(-0.1173, 2.097e-4, -1.786e-8)
+            self.resErrIntersection = 687.8
         else:  # MuEG dataset
             self.lumi = 19703.
-            self.accTimesEff.SetParameters(0.765356, -130.208, 153.271, -2.95164e-5)
-            self.relMassRes.SetParameters(0.01384, 1.397e-5, 3.995e-10)
-            self.resErrFunc.SetParameters(-0.00057455, 1.48816e-6, 1.80482e-9, 0.0138397, 1.39739e-5, 3.99508e-10)
-            self.resErrFuncLow.SetParameter(0, 0.02539)
-            self.resErrFuncHigh.SetParameters(-0.1098, 2.032e-4, -1.66e-8)
-            self.resErrIntersection = 706.
+            self.accTimesEff.SetParameters(0.764791, -129.597, 151.976, -2.93389e-5)
+            self.relMassRes.SetParameters(0.0138464, 1.39666e-5, 3.99985e-10)
+            self.resErrFunc.SetParameters(-0.000570474, 1.48494e-6, 1.80443e-9, 0.0138464, 1.39666e-5, 3.99985e-10)
+            self.resErrFuncLow.SetParameter(0, 0.02567)
+            self.resErrFuncHigh.SetParameters(-0.1103, 2.0363e-4, -1.66997e-8)
+            self.resErrIntersection = 709.
         self.shapes = ['sigRes', 
                        'eleScale', 
                        'muScale', 
