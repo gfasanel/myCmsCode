@@ -32,16 +32,16 @@ void AccTimesEff::Loop()
    string outfileName = "accTimesEffHistos";
 
    // output file formats
-   const bool saveSpec = 0;
-   const bool saveAsPdf = 0;
+   const bool saveSpec = 1;
+   const bool saveAsPdf = 1;
    const bool saveAsPng = 1;
    const bool saveAsRoot = 0;
    TString plotDir = "./plots/";
    TString fileNameExtra = "";
    //fileNameExtra = "_test";
 
-   unsigned int triggerInd = 1;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
-   unsigned int eleDetRegion = 0;  // electron in subdetector. 0: EB or EE; 1: EB; 2: EE
+   unsigned int triggerInd = 0;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
+   unsigned int eleDetRegion = 2;  // electron in subdetector. 0: EB or EE; 1: EB; 2: EE
    const bool useScaleFactors = 1;
 
    int font = 42; //62
@@ -673,6 +673,7 @@ void AccTimesEff::Loop()
    tex->DrawLatex(0.17, 0.80, "trg: " + triggerName);
 
    // plot
+   std::cout << "Note plot." << std::endl;
    TCanvas *accTimesEffPlotNote = new TCanvas("accTimesEffPlotNote", "Ax#epsilon", 100, 100, 600, 600);
    TPad *accTimesEffPadNote = (TPad*)accTimesEffPad->Clone("accTimesEffPadNote");
    accTimesEffPadNote->Draw();
@@ -689,15 +690,18 @@ void AccTimesEff::Loop()
    hAccTimesEffNote->GetYaxis()->SetTitle("Ax#epsilon");
    hAccTimesEffNote->GetYaxis()->SetRangeUser(0., 1.);
    hAccTimesEffNote->GetXaxis()->SetRangeUser(0., 2700.);
-   //hAccTimesEffNote->SetLineColor(kWhite);
+   hAccTimesEffNote->SetLineColor(kBlack);
+   hAccTimesEffNote->SetLineWidth(2);
    hAccTimesEffNote->Draw();
    hAccTimesEffNote->Fit("fitFuncNote", "", "", 200., 2500.);
    hAccNote->SetLineColor(kBlue);
+   hAccNote->SetLineWidth(2);
    hAccNote->SetMarkerColor(kBlue);
-   hAccNote->Draw("histpsame");
+   hAccNote->Draw("same");
    hAccTimesEffNoTrgNote->SetLineColor(kRed);
+   hAccTimesEffNoTrgNote->SetLineWidth(2);
    hAccTimesEffNoTrgNote->SetMarkerColor(kRed);
-   hAccTimesEffNoTrgNote->Draw("histpsame");
+   hAccTimesEffNoTrgNote->Draw("same");
    //andreasFunc->Draw("same");
    TLegend* legendNote = new TLegend(0.223, 0.120, 0.910, 0.45);
    legendNote->SetTextFont(font);
