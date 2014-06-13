@@ -40,8 +40,8 @@ void AccTimesEff::Loop()
    TString fileNameExtra = "";
    //fileNameExtra = "_test";
 
-   unsigned int triggerInd = 0;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
-   unsigned int eleDetRegion = 2;  // electron in subdetector. 0: EB or EE; 1: EB; 2: EE
+   unsigned int triggerInd = 1;  // 0: HLT_Mu22_Photon22_CaloIdL; 1: HLT_Mu40_eta2p1
+   unsigned int eleDetRegion = 0;  // electron in subdetector. 0: EB or EE; 1: EB; 2: EE
    const bool useScaleFactors = 1;
 
    int font = 42; //62
