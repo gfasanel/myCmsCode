@@ -152,10 +152,11 @@ for mass in massPoints:
         exp_lim_value_str = '           -'
         exp_lim_plus_str = '          -'
         exp_lim_minus_str = '          -'
-    if options.inFemtoBarn:
-        print "{:>6.1f} GeV  |  {:s} fb  |  {:s} ({:s} {:s}) fb  |  {:g} fb".format(mass, obs_lim_value_str, exp_lim_value_str, exp_lim_plus_str, exp_lim_minus_str, theory_curve.Eval(mass))
-    else:
-        print "{:>6.1f} GeV  |  {:s} pb  |  {:s} ({:s} {:s}) pb  |  {:g} pb".format(mass, obs_lim_value_str, exp_lim_value_str, exp_lim_plus_str, exp_lim_minus_str, theory_curve.Eval(mass))
+    if obs_lim_value > 0. or quantiles[3] > 0:
+        if options.inFemtoBarn:
+            print "{:>6.1f} GeV  |  {:s} fb  |  {:s} ({:s} {:s}) fb  |  {:g} fb".format(mass, obs_lim_value_str, exp_lim_value_str, exp_lim_plus_str, exp_lim_minus_str, theory_curve.Eval(mass))
+        else:
+            print "{:>6.1f} GeV  |  {:s} pb  |  {:s} ({:s} {:s}) pb  |  {:g} pb".format(mass, obs_lim_value_str, exp_lim_value_str, exp_lim_plus_str, exp_lim_minus_str, theory_curve.Eval(mass))
 
 # remove needless points
 while obs_lim.GetN() > oi+1:
