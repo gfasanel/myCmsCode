@@ -51,7 +51,7 @@ void macro_MakeEMuInvMassPlot()
 {
   // parameters //////////////////////////////////////////////////////////////
   //TFile input("./emuSpec_19703pb-1.root", "open");
-  TFile input("./emuSpec_singleMuTrg_19706pb-1.root", "open");
+  TFile input("./emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -61,23 +61,23 @@ void macro_MakeEMuInvMassPlot()
   const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
 
   const bool ttbar_sample_type = 0; // 0=powheg, 1=madgraph
-  int eRegion = 2; // electron region EB(0), EE(1), EB+EE(2)
+  int eRegion = 0; // electron region EB(0), EE(1), EB+EE(2)
 
   bool plotSign[5];
   plotSign[0] = 1;  // all
-  plotSign[1] = 0;  // SS same sign
-  plotSign[2] = 0;  // OS opposite sign
-  plotSign[3] = 0;  // e-mu+
-  plotSign[4] = 0;  // e+mu-
+  plotSign[1] = 1;  // SS same sign
+  plotSign[2] = 1;  // OS opposite sign
+  plotSign[3] = 1;  // e-mu+
+  plotSign[4] = 1;  // e+mu-
 
   bool plotType[2];
   plotType[0] = 1;  // emu spectrum
-  plotType[1] = 0;  // cumulative emu spectrum
+  plotType[1] = 1;  // cumulative emu spectrum
 
   float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
   const bool plotPull = 1; // plot (data-bkg)/bkg
   const bool plotPullBelowSpec = 1; // plot (data-bkg)/bkg below spectrum
-  const bool varBinning = 1;
+  const bool varBinning = 0;
   const bool logPlotX = 0;
   const bool logPlotY = 1;
   const bool prelim = 1;
@@ -99,14 +99,15 @@ void macro_MakeEMuInvMassPlot()
 
   // output file formats
   const bool savePull = 0;
-  const bool saveSpec = 0;
-  const bool saveCumSpec = 0;
-  const bool saveAsPdf = 0;
+  const bool saveSpec = 1;
+  const bool saveCumSpec = 1;
+  const bool saveAsPdf = 1;
   const bool saveAsPng = 1;
   const bool saveAsRoot = 0;
   const char *fileNameExtra = "";
   //const char *fileNameExtra = "madgraphTTbar_";
-  const char *plotDir = "../plots/20130523_withSignal/";
+  const char *plotDir = "./testplots/";
+  TString outfileName = "mass_plots";
 
   // plot style
   int ttbarColour = TColor::GetColor("#ff6666");
@@ -125,7 +126,7 @@ void macro_MakeEMuInvMassPlot()
 
   // systematic errors
   float systErrLumi = ((TParameter<float> *)input.Get("systErrLumi"))->GetVal();
-  systErrLumi = 0.; // since we normalize to the Z peak
+  //systErrLumi = 0.; // since we normalize to the Z peak
   float systErrEff = ((TParameter<float> *)input.Get("systErrEff"))->GetVal(); // muon err & ele err
   THashList *systErrMCs = (THashList *)input.Get("systErrMCs");
   vector<float> systErrMC;
@@ -139,7 +140,7 @@ void macro_MakeEMuInvMassPlot()
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcTW"))->GetVal()); //tW
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcDyMuMu"))->GetVal()); //Z->mm
   systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcDyEE"))->GetVal()); //Z->ee
-  if (qcdEst == 2) systErrMC.push_back(0.4); // qcd error
+  if (qcdEst == 2) systErrMC.push_back(0.3); // qcd error
   else systErrMC.push_back(((TParameter<float> *)systErrMCs->FindObject("systErrMcWJets"))->GetVal());  //WJets
 
   // to keep the histogram when the file is closed
@@ -331,6 +332,11 @@ void macro_MakeEMuInvMassPlot()
   tex->SetNDC();
   tex->SetTextFont(font);
   tex->SetLineWidth(2);
+
+  outfileName = plotDir+outfileName;
+  if (!varBinning) outfileName = outfileName+"_constBin";
+  outfileName = outfileName+".root";
+  TFile *outfile = new TFile(outfileName, "recreate");
 
   // loop over full spectrum, SS and OS
   for (int k = 0; k < 5; ++k) {
@@ -937,6 +943,9 @@ void macro_MakeEMuInvMassPlot()
           if (saveAsRoot) emuPlot->Print(saveFileName + ".root", "root");
         }
       }
+      outfile->cd();
+      emuPlot->Write();
+      if (!plotPullBelowSpec) dataOverBgPlot->Write();
     } // end loop over normal or cumulated
   } // end loop over full, SS and OS
 
@@ -1030,6 +1039,10 @@ void macro_MakeEMuInvMassPlot()
     bgParamDiff->Draw();
     bgParamDiff->GetYaxis()->SetRangeUser(-1., 2.5);
   }
+  outfile->cd();
+  bgParamPlot->Write();
+  outfile->Close();
+  std::cout << "Written canvases to " << outfileName << std::endl;
 
   ////////////////////////////////////////////////////////////////////////////
   // generate one object containing everything
