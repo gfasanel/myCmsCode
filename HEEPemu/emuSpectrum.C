@@ -29,7 +29,8 @@ void EmuSpectrum::Loop()
    TString dataFile = "file:////user/treis/data2013/SingleMu_Run2012ABCD-22Jan2013-v1_AOD_ele20mu20_19706pb-1.root";
    // pile up histogram
    TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_SingleMu_Run2012ABCD-22Jan2013.root";
-   string outfileName = "emuSpec_singleMuTrg";
+   //string outfileName = "emuSpec_singleMuTrg_altdiboson";
+   string outfileName = "emuSpec_test";
    muon_pt_min = 45.;
    muon_etaMax = 2.1;
    float eleL1Eff = 1.; // there is no electron L1 for the trigger used and so just set it to 1.
@@ -141,10 +142,26 @@ void EmuSpectrum::Loop()
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
 
+   TFile *inZjetsll = TFile::Open("file:////user/treis/mcsamples/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_30459503ev.root");
+   nGenEvtsV.push_back(30459503.);
+   input.push_back(make_pair(inZjetsll, 3531.9 / nGenEvtsV.back())); //ZJetsLL
+   systErrMCs.Add(new TParameter<float>("systErrMcDyJetsLL", 0.01));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
    TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_10000431ev.root");
    nGenEvtsV.push_back(10000431.);
    input.push_back(make_pair(inWW, 54.838 / nGenEvtsV.back())); //WW
    systErrMCs.Add(new TParameter<float>("systErrMcWW", 0.04));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(1);
+   storeShapes.push_back(1);
+
+   TFile *inWWpow = TFile::Open("file:////user/treis/mcsamples/WWJetTo2L2Nu_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_999864ev.root");
+   nGenEvtsV.push_back(999864.);
+   input.push_back(make_pair(inWWpow, 5.67 / nGenEvtsV.back())); //WW
+   systErrMCs.Add(new TParameter<float>("systErrMcWWpow", 0.04));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
    storeShapes.push_back(1);
@@ -173,10 +190,26 @@ void EmuSpectrum::Loop()
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
 
+   TFile *inWZmg = TFile::Open("file:////user/treis/mcsamples/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_2017979ev.root");
+   nGenEvtsV.push_back(2017979.);
+   input.push_back(make_pair(inWZmg, 1.09 / nGenEvtsV.back())); //WZ
+   systErrMCs.Add(new TParameter<float>("systErrMcWZmg", 0.04));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
    TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_991118ev.root");
    nGenEvtsV.push_back(991118.);
    input.push_back(make_pair(inTW, 22.2 / nGenEvtsV.back())); //tW
    systErrMCs.Add(new TParameter<float>("systErrMcTW", 0.03));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inTWpow = TFile::Open("file:////user/treis/mcsamples/T+TBarToDilepton_tW-channel-DR_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_5947992ev.root");
+   nGenEvtsV.push_back(5947992.);
+   input.push_back(make_pair(inTWpow, 2.34 / nGenEvtsV.back())); //tW
+   systErrMCs.Add(new TParameter<float>("systErrMcTWpow", 0.03));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -209,6 +242,14 @@ void EmuSpectrum::Loop()
    nGenEvtsV.push_back(9799908.);
    input.push_back(make_pair(inZZ, 17.654 / nGenEvtsV.back())); //ZZ
    systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.03));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inZZmg = TFile::Open("file:////user/treis/mcsamples/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_4807893ev.root");
+   nGenEvtsV.push_back(4807893.);
+   input.push_back(make_pair(inZZmg, 0.18 / nGenEvtsV.back())); //ZZ
+   systErrMCs.Add(new TParameter<float>("systErrMcZZmg", 0.03));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -804,7 +845,10 @@ void EmuSpectrum::Loop()
          float numOfBJetsPt30 = 0.;
          float numOfBJetsMVAPt30 = 0.;
          float jetPt = 0.;
+         float genElePt = 0.;
+         float genEleEta = 0.;
          float genMuPt = 0.;
+         float genMuEta = 0.;
          int genMuCharge = 0.;
          emuTree->Branch("pfMet", &pfmet, "pfMet/F");
          emuTree->Branch("nVtx", &nVtx, "nVtx/F");
@@ -852,7 +896,10 @@ void EmuSpectrum::Loop()
          emuTree->Branch("numOfBJetsPt30", &numOfBJetsPt30, "numOfBJetsPt30/F");
          emuTree->Branch("numOfBJetsMVAPt30", &numOfBJetsMVAPt30, "numOfBJetsMVAPt30/F");
          emuTree->Branch("jetPt", &jetPt, "jetPt/F");
+         emuTree->Branch("genElePt", &genElePt, "genElePt/F");
+         emuTree->Branch("genEleEta", &genEleEta, "genEleEta/F");
          emuTree->Branch("genMuPt", &genMuPt, "genMuPt/F");
+         emuTree->Branch("genMuEta", &genMuEta, "genMuEta/F");
          emuTree->Branch("genMuCharge", &genMuCharge, "genMuCharge/I");
 
          TTree *frEmuTree = new TTree("frEmuTree_" + suffix[p] + shapeUncName, "frEmuTree_" + suffix[p] + shapeUncName);
@@ -1360,7 +1407,10 @@ void EmuSpectrum::Loop()
                if (p > 0) {
                  trueMass = genelemom_mass[0];
                  genEmuMass = (genEle1 + genMu1).M();
+                 genElePt = genele_pt[0];
+                 genEleEta = genele_eta[0];
                  genMuPt = genmu_pt[0];
+                 genMuEta = genmu_eta[0];
                  genMuCharge = genmu_charge[0];
                }
                eCharge = gsf_charge[GSF_passHEEP[eleInd]];
