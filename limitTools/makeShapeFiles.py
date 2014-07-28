@@ -77,6 +77,7 @@ class ShapeHMaker:
                        #'muonRes', 
                        'muonResSmear', 
                        'topPtReweight']
+        self.massWinFactorInSigmas = 3.
 
     def run(self, mass):
         self.outfile = TFile(self.outfile_dir + self.outfile_name + "{:.0f}.root".format(mass), 'recreate')
@@ -114,10 +115,10 @@ class ShapeHMaker:
 
     def makeSigShapeHisto(self, mass, nEvts, resScale=0):
         nExp = self.getSigExpEvts(mass)
-        minMass = mass - 3*self.factorMin*mass*self.relMassRes.Eval(mass)
+        minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
         # no upper limit above a mass of 800 GeV
         if mass <= 800.:
-            maxMass = mass + 3*self.factorMax*mass*self.relMassRes.Eval(mass)
+            maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
         else:
             self.infile.cd()
             dataHist = self.infile.Get('mass_data_obs')
@@ -125,7 +126,7 @@ class ShapeHMaker:
         self.outfile.cd()
         shapeHisto = TH1F('mass_sig', 'mass_sig', int(math.ceil(maxMass)-math.floor(minMass)), math.floor(minMass), math.ceil(maxMass))
         gaussShape = TF1('gaussShape', 'gaus', math.floor(minMass), math.ceil(maxMass))
-        gaussShape.SetParameters(1., mass, (mass-minMass)/3.)
+        gaussShape.SetParameters(1., mass, (mass-minMass)/self.massWinFactorInSigmas)
         # upscale or downscale the width of the Gaussian if requested
         if resScale < 0.:
             shapeHisto.SetName(shapeHisto.GetName()+'_sigResDown')
@@ -157,10 +158,10 @@ class ShapeHMaker:
         self.infile.cd()
         bkgHist = self.infile.Get(name)
         if bkgHist:
-            minMass = mass - 3*self.factorMin*mass*self.relMassRes.Eval(mass)
+            minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
             # no upper limit above a mass of 800 GeV
             if mass <= 800.: 
-                maxMass = mass + 3*self.factorMax*mass*self.relMassRes.Eval(mass)
+                maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
             else:
                 maxMass = bkgHist.GetXaxis().GetXmax()
             self.outfile.cd()
@@ -224,10 +225,10 @@ class ShapeHMaker:
                 break
 
             # define new range minimum
-            minMass = mass - 3*self.factorMin*mass*self.relMassRes.Eval(mass)
+            minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
             # no upper limit above a mass of 800 GeV, so define range maximum from base histogram an case
             if mass <= 800.: 
-                maxMass = mass + 3*self.factorMax*mass*self.relMassRes.Eval(mass)
+                maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
             else:
                 maxMass = baseHistos[0].GetXaxis().GetXmax()
             minMassBin = baseHistos[0].FindBin(minMass)
@@ -262,11 +263,11 @@ class ShapeHMaker:
                     while histoRangeChanged:
                         histoRangeChanged = False
                         # define new range minimum
-                        minMass = mass - 3*self.factorMin*mass*self.relMassRes.Eval(mass)
+                        minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
                         minMassBin = baseHistos[0].FindBin(minMass)
                         # define new range maximum
                         if mass <= 800.: 
-                            maxMass = mass + 3*self.factorMax*mass*self.relMassRes.Eval(mass)
+                            maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
                         else:
                              maxMass = baseHistos[0].GetXaxis().GetXmax()
                         maxMassBin = baseHistos[0].FindBin(maxMass)
