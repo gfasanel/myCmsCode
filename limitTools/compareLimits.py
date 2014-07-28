@@ -211,40 +211,81 @@ legend.SetBorderSize(0)
 legend.SetFillColor(19)
 legend.SetFillStyle(0)
 legend.SetNColumns(2)
+leftCol = True
 if options.name1 != '':
+    if not leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(options.name1, options.name1, '')
+    leftCol = False
 if options.name2 != '':
+    if leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(options.name2, options.name2, '')
+    leftCol = True
 if options.drawObs1:
+    if not leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(obs_lim1, '95% CL limit', drawStyle1)
+    leftCol = False
 if options.drawObs2:
+    if leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(obs_lim2, '95% CL limit', drawStyle2)
-else:
-    legend.AddEntry('empty', '', '')
+    leftCol = True
 if options.drawExp1:
+    if not leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median1, 'median exp. limit', 'l')
+    leftCol = False
 if options.drawExp2:
+    if leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median2, 'median exp. limit', 'l')
+    leftCol = True
 if options.draw1sigma1:
+    if not leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median_1sigma1, '68% expected', 'f')
+    leftCol = False
 if options.draw1sigma2:
+    if leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median_1sigma2, '68% expected', 'f')
+    leftCol = True
 if options.draw2sigma1:
+    if not leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median_2sigma1, '95% expected', 'f')
+    leftCol = False
 if options.draw2sigma2:
+    if leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median_2sigma2, '95% expected', 'f')
+    leftCol = True
 if options.draw3sigma1:
+    if not leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median_3sigma1, '99% expected', 'f')
+    leftCol = False
 if options.draw3sigma2:
+    if leftCol:
+        legend.AddEntry('empty', '', '')
     legend.AddEntry(median_3sigma2, '99% expected', 'f')
+    leftCol = True
 if options.drawTheory1:
+    if not leftCol:
+        legend.AddEntry('empty', '', '')
     sigText = "Z' signal (LO)"
     #sigText = "#splitline{{Z' signal (LO)}}{{#kappa = {:.1g} #times M_{{Z'}} / 100 TeV}}".format(options.kappa)
     legend.AddEntry(theory_curve1, sigText, 'l')
+    leftCol = False
 if options.drawTheory2:
+    if leftCol:
+        legend.AddEntry('empty', '', '')
     sigText = "Z' signal (LO)"
     #sigText = "#splitline{{Z' signal (LO)}}{{#kappa = {:.1g} #times M_{{Z'}} / 100 TeV}}".format(options.kappa)
     legend.AddEntry(theory_curve2, sigText, 'l')
+    leftCol = True
 legend.Draw('same')
 
 tex = TLatex()
