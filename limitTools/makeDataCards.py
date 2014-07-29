@@ -104,7 +104,8 @@ class DcMaker:
 
     def writeSetup(self):
         imax_str = "imax    {0}     number of channels \n".format(1)
-        jmax_str = "jmax    {0}     number of backgrounds \n".format(9)
+        #jmax_str = "jmax    {0}     number of backgrounds \n".format(9)
+        jmax_str = "jmax    {0}     number of backgrounds \n".format(7)
         kmax_str = "kmax    *     number of nuisance parameters \n"
         shape_str = "shapes * * ./data/shapeHistos_m{:.0f}.root mass_$PROCESS mass_$PROCESS_$SYSTEMATIC \n".format(self.mass)
         self.outfile.write(imax_str+jmax_str+kmax_str+shape_str+self.divider_str)
@@ -114,26 +115,49 @@ class DcMaker:
         observation_str = "observation      {:11g} \n".format(self.getNEvts('data_obs'))
         self.outfile.write(bin_str+observation_str+self.divider_str)
 
+#    # uncertainties for background samples set 1
+#    def writeExpected(self):
+#        bin_str = "bin        {:>17} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('zp_lfv','zp_lfv','zp_lfv','zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv')
+#        procName_str = "process        {:>13} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('sig', 'ttbar', 'ww', 'wz', 'zz', 'tw', 'ztautau', 'zmumu', 'zee', 'qcd')
+#        procNum_str = "process        {:>13} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+#        expYield_str = "rate        {:>16.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} \n".format(self.getSigExpEvts(), self.getNEvts('ttbar'), self.getNEvts('ww'), self.getNEvts('wz'), self.getNEvts('zz'), self.getNEvts('tw'), self.getNEvts('ztautau'), self.getNEvts('zmumu'), self.getNEvts('zee'), self.getNEvts('qcd'))
+#        self.outfile.write(bin_str+procName_str+procNum_str+expYield_str+self.divider_str)
+#
+#    def writeUncert(self):
+#        self.outfile.write("lumi          lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, '-'))
+#        self.outfile.write("bkgXsec       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1.05, self.getWWxsecUnc(), 1.04, 1.03, 1.03, 1.01, 1.01, 1.01, '-'))
+#        self.outfile.write("fakeRate      lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', '-', '-', '-', '-', '-', '-', '-', '-', 1.3))
+#        pdf_unc = self.pdf_unc.Eval(self.mass)
+#        self.outfile.write("pdf           lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, '-'))
+#        self.outfile.write("accXeff       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, '-'))
+#        self.outfile.write("statMC        lnN   {:>8} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9} \n".format('-', self.getStatErr('ttbar'), self.getStatErr('ww'), self.getStatErr('wz'), self.getStatErr('zz'), self.getStatErr('tw'), self.getStatErr('ztautau'), self.getStatErr('zmumu'), self.getStatErr('zee'), '-'))
+#        self.outfile.write("sigRes        shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1, '-', '-', '-', '-', '-', '-', '-', '-', '-'))
+#        self.outfile.write("eleScale      shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
+#        self.outfile.write("muScale       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
+#        #self.outfile.write("muonRes       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
+#        self.outfile.write("muonResSmear  shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
+#        self.outfile.write("topPtReweight shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, '-', '-', '-', '-', '-', '-', '-', '-'))
+#
     def writeExpected(self):
-        bin_str = "bin        {:>17} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('zp_lfv','zp_lfv','zp_lfv','zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv')
-        procName_str = "process        {:>13} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('sig', 'ttbar', 'ww', 'wz', 'zz', 'tw', 'ztautau', 'zmumu', 'zee', 'qcd')
-        procNum_str = "process        {:>13} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-        expYield_str = "rate        {:>16.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} \n".format(self.getSigExpEvts(), self.getNEvts('ttbar'), self.getNEvts('ww'), self.getNEvts('wz'), self.getNEvts('zz'), self.getNEvts('tw'), self.getNEvts('ztautau'), self.getNEvts('zmumu'), self.getNEvts('zee'), self.getNEvts('qcd'))
+        bin_str = "bin        {:>17} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('zp_lfv','zp_lfv','zp_lfv','zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv', 'zp_lfv')
+        procName_str = "process        {:>13} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('sig', 'ttbar', 'wwpow', 'wzmg', 'zzmg', 'twpow', 'zjetsll', 'qcd')
+        procNum_str = "process        {:>13} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(0, 1, 2, 3, 4, 5, 6, 7)
+        expYield_str = "rate        {:>16.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} {:>9.3f} \n".format(self.getSigExpEvts(), self.getNEvts('ttbar'), self.getNEvts('wwpow'), self.getNEvts('wzmg'), self.getNEvts('zzmg'), self.getNEvts('twpow'), self.getNEvts('zjetsll'), self.getNEvts('qcd'))
         self.outfile.write(bin_str+procName_str+procNum_str+expYield_str+self.divider_str)
 
     def writeUncert(self):
-        self.outfile.write("lumi          lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, '-'))
-        self.outfile.write("bkgXsec       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1.05, self.getWWxsecUnc(), 1.04, 1.03, 1.03, 1.01, 1.01, 1.01, '-'))
-        self.outfile.write("fakeRate      lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', '-', '-', '-', '-', '-', '-', '-', '-', 1.3))
+        self.outfile.write("lumi          lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.026, 1.026, 1.026, 1.026, 1.026, 1.026, 1.026, '-'))
+        self.outfile.write("bkgXsec       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1.05, self.getWWxsecUnc(), 1.04, 1.03, 1.03, 1.01, '-'))
+        self.outfile.write("fakeRate      lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', '-', '-', '-', '-', '-', '-', 1.3))
         pdf_unc = self.pdf_unc.Eval(self.mass)
-        self.outfile.write("pdf           lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, '-'))
-        self.outfile.write("accXeff       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, '-'))
-        self.outfile.write("statMC        lnN   {:>8} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9} \n".format('-', self.getStatErr('ttbar'), self.getStatErr('ww'), self.getStatErr('wz'), self.getStatErr('zz'), self.getStatErr('tw'), self.getStatErr('ztautau'), self.getStatErr('zmumu'), self.getStatErr('zee'), '-'))
-        self.outfile.write("sigRes        shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1, '-', '-', '-', '-', '-', '-', '-', '-', '-'))
-        self.outfile.write("eleScale      shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
-        self.outfile.write("muScale       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
-        #self.outfile.write("muonRes       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
-        self.outfile.write("muonResSmear  shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, 1, 1, '-'))
-        self.outfile.write("topPtReweight shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, '-', '-', '-', '-', '-', '-', '-', '-'))
+        self.outfile.write("pdf           lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, pdf_unc, '-'))
+        self.outfile.write("accXeff       lnN   {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, '-'))
+        self.outfile.write("statMC        lnN   {:>8} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9.6} {:>9} \n".format('-', self.getStatErr('ttbar'), self.getStatErr('wwpow'), self.getStatErr('wzmg'), self.getStatErr('zzmg'), self.getStatErr('twpow'), self.getStatErr('zjetsll'), '-'))
+        self.outfile.write("sigRes        shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format(1, '-', '-', '-', '-', '-', '-', '-'))
+        self.outfile.write("eleScale      shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, '-'))
+        self.outfile.write("muScale       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, '-'))
+        #self.outfile.write("muonRes       shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, '-'))
+        self.outfile.write("muonResSmear  shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, 1, 1, 1, 1, 1, '-'))
+        self.outfile.write("topPtReweight shape {:>8} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} {:>9} \n".format('-', 1, '-', '-', '-', '-', '-', '-'))
 
 if __name__=='__main__': main()
