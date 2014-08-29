@@ -12,6 +12,23 @@
 TH1F *
 MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.)
 {
+  TString histoName = treeName;
+  histoName += shapeUncName;
+  histoName.Remove(0, 7);
+  histoName.Prepend(brName);
+
+  // subtraction of e-mu+ - e+mu-
+  if (signs == -4) {
+    TH1F *histo1 = new TH1F("histo1", "histo1", 3000, 0., 3000.);
+    histo1->Sumw2();
+    histo1 = MakeHistoFromBranch(input, treeName, shapeUncName, brName, -3, region, cutVariables, cutLows, cutHighs, mcWeigthsForCutsRanges, binning, flags, normToBinWidth, userScale);
+    TH1F *histo2 = new TH1F("histo2", "histo2", 3000, 0., 3000.);
+    histo2->Sumw2();
+    histo2 = MakeHistoFromBranch(input, treeName, shapeUncName, brName, -2, region, cutVariables, cutLows, cutHighs, mcWeigthsForCutsRanges, binning, flags, normToBinWidth, userScale);
+    histo1->Add(histo2, -1.);
+    return histo1;
+  }
+
   unsigned int fills = 0.;
   TDirectory *dir = gDirectory->CurrentDirectory();
   // get the tree
@@ -31,10 +48,6 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName
   dir->cd();
 
   // prepare the histogram
-  TString histoName = treeName;
-  histoName += shapeUncName;
-  histoName.Remove(0, 7);
-  histoName.Prepend(brName);
   TH1F *histo = new TH1F((const char*)histoName, (const char*)histoName, 3000, 0., 3000.);
   histo->Sumw2();
   float *bins = &binning[0];

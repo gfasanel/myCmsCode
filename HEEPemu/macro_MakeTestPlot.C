@@ -58,8 +58,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TString tw_base = "twpow";
   const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
   const float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
-  const bool plotPull = 1; // plot (data-bkg)/bkg
-  const bool plotShapeUnc = 1; // plot up/down shape uncertainty histograms
+  const bool plotPull = 0; // plot (data-bkg)/bkg
+  const bool plotShapeUnc = 0; // plot up/down shape uncertainty histograms
   const bool pullGridY = 1; // grid lines on y axis of pull plot
   const bool prelim = 1; // print Preliminary
   const bool writeHistosToFile = 1;
@@ -146,8 +146,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   testPlots.push_back(ContVarPlot("muTrkIso03", "Muon track iso 03", "#mu trk iso", 0., 20., 40, 1, 1, 1, 1));
   testPlots.push_back(ContVarPlot("muIsoCombRel", "Muon combined iso / pt", "#mu (iso_{em}+iso_{had}+iso_{trk})/p_{T}", 0., 3.5, 35, 1, 1, 1, 1));
 
-  TString sign[7] = {"_e-mu+", "_e+mu-", "_OS", "", "_SS", "_++", "_--"};
-  TString nameSign[7] = {" e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
+  TString sign[8] = {"_e-mu+_-_e+mu-", "_e-mu+", "_e+mu-", "_OS", "", "_SS", "_++", "_--"};
+  TString nameSign[8] = {" e-mu+ - e+mu-", " e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
   TString region[3] = {"", "_EB", "_EE"};
   TString nameReg[3] = {"", " EB", " EE"};
   TString shapeUncNames[9] = {"", "eleScaleUp", "eleScaleDown", "muScaleUp", "muScaleDown", "muonResUp", "muonResDown", "muonResSmearUp", "muonResSmearDown"};
@@ -156,8 +156,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   if (var > testPlots.size()) var = 0;
   if (var == 0) {
     cout << "Use macro_MakeTestPlot.C(x, y, z) with x {1-" << testPlots.size() << "} being the \n";
-    cout << "number of the test histogram to plot, y {-3 - +3} selects the charge with \n";
-    cout << "the scheme e-mu: -+, +-, OS, ALL, SS, ++, -- and z {0-2} selects the \n";
+    cout << "number of the test histogram to plot, y {-4 - +3} selects the charge with \n";
+    cout << "the scheme e-mu: (e-mu+)-(e+mu-), -+, +-, OS, ALL, SS, ++, -- and z {0-2} selects the \n";
     cout << "detector EB+EE, EB or EE events for the electron." << endl;
     cout << "-----------------------------------" << endl;
     for (unsigned int i = 0; i < testPlots.size(); ++i) {
@@ -175,7 +175,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   }
   --var;
   // sanity checks for sign and region input
-  if (abs(sig) > 3) sig = 0;
+  if (abs(sig) > 4) sig = 0;
   if (reg > 2) reg = 0;
   // the makeHistoFromBranch function uses a different scheme for barrel and endcap selection
   unsigned int histoReg = 2;
@@ -213,6 +213,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TString testVar = testPlots[var].fName;
   bool plotQcd = testPlots[var].fPlotQcd;
   bool logPlot = testPlots[var].fLogPlot;
+  if (abs(sig) > 3) logPlot = false;
   const bool overflowBin = testPlots[var].fOverFlow;
   const bool underflowBin = testPlots[var].fUnderFlow; 
 
@@ -305,7 +306,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      input.cd(shapeUncNames[shUnc]);
      if (shUnc > 0) {
         shapeUncName.Prepend("_");
-        sig-=3;
+        sig-=4;
      }
 
      // determine qcd contribution
@@ -347,7 +348,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
        cout << "; scale factor: " << (ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral()<< endl;
        qcdContrib->Scale((ssData->Integral() - ssBg->Integral()) / qcdContrib->Integral());
 
-       emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig] + nameReg[reg] + "qcd"));
+       emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig+4] + nameReg[reg] + "qcd"));
        if (sig == 0) emuTest_qcd.back()->Scale(2.);
        else if (abs(sig) > 1) emuTest_qcd.back()->Scale(0.5);
      }
@@ -406,7 +407,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      // qcd contribution
      if (plotQcd && qcdEst == 2) {
        qcdContrib = MakeHistoFromBranch(&input, "frEmuTree_data", shapeUncName, testVar, sig, histoReg, cutVarsEmpty, lowCutsEmpty, highCutsEmpty, mcWeightsForCutRangesEmpty, binning, 0x300);
-       emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig] + nameReg[reg] + "qcd"));
+       emuTest_qcd.push_back((TH1F *)qcdContrib->Clone(testVar + sign[sig+4] + nameReg[reg] + "qcd"));
        // normalize to bin width
        //for (int i = 1; i < emuTest_qcd.back()->GetNbinsX() + 1; ++i) {
        //  emuTest_qcd.back()->SetBinContent(i, emuTest_qcd.back()->GetBinContent(i) / emuTest_qcd.back()->GetBinWidth(i));
@@ -448,7 +449,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
        if (qcdEst != 2) emuTest_wjets.back()->Write();
        if (plotQcd) emuTest_qcd.back()->Write(testVar + "_qcd" + shapeUncName);
        emuTest_allBkg->Write(testVar + "_allBkg" + shapeUncName);
-       if (var == 0) {
+       if (var == 0 && abs(sig) < 4) {
          fitCanvas = new TCanvas("fitCanvas" + shapeUncName, "fitCanvas" + shapeUncName, 100, 100, 700, 600);
          fitCanvas->SetLogy();
          TF1 *bgParamFunc = new TF1("bgParamFunc" + shapeUncName, "1/[1]*(1+([2]*(x-[0]))/([1]))**(-1/[2]-1)", 0., 6000.);
@@ -465,7 +466,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      }
      input.cd();
 
-     sig+=3;
+     sig+=4;
 
      // add overflow to last bin
      if (overflowBin) {
