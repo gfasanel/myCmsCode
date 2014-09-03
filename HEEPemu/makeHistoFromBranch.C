@@ -26,6 +26,7 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName
     histo2->Sumw2();
     histo2 = MakeHistoFromBranch(input, treeName, shapeUncName, brName, -2, region, cutVariables, cutLows, cutHighs, mcWeigthsForCutsRanges, binning, flags, normToBinWidth, userScale);
     histo1->Add(histo2, -1.);
+    //histo1->Divide(histo2);
     return histo1;
   }
 

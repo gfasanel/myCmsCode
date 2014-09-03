@@ -20,6 +20,8 @@ void AccTimesEff::Loop()
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_Mz-1000_Ma-20000_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9999ev.root");
+   //files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_Ma-1000_Mz-20000_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
    files.push_back("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
@@ -32,7 +34,7 @@ void AccTimesEff::Loop()
    string outfileName = "accTimesEffHistos";
 
    // output file formats
-   const bool saveSpec = 1;
+   const bool saveSpec = 0;
    const bool saveAsPdf = 1;
    const bool saveAsPng = 1;
    const bool saveAsRoot = 0;

@@ -53,9 +53,11 @@ for brName, xAxisTitle in zip(brNames, xAxisTitles):
     hMzMa1000.Sumw2()
     hMz1000.Sumw2()
     hMa1000.Sumw2()
+    #print 'N_hMzMa1000: {0}, N_hMz1000: {1}, N_hMa1000: {2}'.format(hMzMa1000.Integral(), hMz1000.Integral(), hMa1000.Integral())
     hMzMa1000.Scale(1./hMzMa1000.Integral())
     hMz1000.Scale(1./hMz1000.Integral())
     hMa1000.Scale(1./hMa1000.Integral())
+    #print 'N_hMzMa1000: {0}, N_hMz1000: {1}, N_hMa1000: {2}'.format(hMzMa1000.Integral(), hMz1000.Integral(), hMa1000.Integral())
     
     #get the proper values for the y axis
     minimum = hMzMa1000.GetMinimum()

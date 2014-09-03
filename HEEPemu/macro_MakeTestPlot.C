@@ -9,6 +9,7 @@
 #include "TH1F.h"
 #include "TF1.h"
 #include "THStack.h"
+#include "TGraphAsymmErrors.h"
 #include "TColor.h"
 #include "TString.h"
 #include "TLegend.h"
@@ -16,8 +17,11 @@
 #include "TLatex.h"
 #include "TStyle.h"
 #include "THashList.h"
+#include "Math/QuantFuncMathCore.h"
 
 #include "makeHistoFromBranch.C"
+
+TGraphAsymmErrors * makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBars);
 
 // class for plotting of control variable plots
 class ContVarPlot {
@@ -57,7 +61,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TString zz_base = "zzmg";
   TString tw_base = "twpow";
   const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
-  const float plotSignal[4] = {100., 100., 100., 100.}; // signal scale factors. 0 for off
+  const float plotSignal[4] = {1., 1., 1., 1.}; // signal scale factors. 0 for off
   const bool plotPull = 0; // plot (data-bkg)/bkg
   const bool plotShapeUnc = 0; // plot up/down shape uncertainty histograms
   const bool pullGridY = 1; // grid lines on y axis of pull plot
@@ -147,7 +151,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   testPlots.push_back(ContVarPlot("muIsoCombRel", "Muon combined iso / pt", "#mu (iso_{em}+iso_{had}+iso_{trk})/p_{T}", 0., 3.5, 35, 1, 1, 1, 1));
 
   TString sign[8] = {"_e-mu+_-_e+mu-", "_e-mu+", "_e+mu-", "_OS", "", "_SS", "_++", "_--"};
-  TString nameSign[8] = {" e-mu+ - e+mu-", " e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
+  TString nameSign[8] = {" e^{-}#mu^{+} - e^{+}#mu^{-}", " e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
   TString region[3] = {"", "_EB", "_EE"};
   TString nameReg[3] = {"", " EB", " EE"};
   TString shapeUncNames[9] = {"", "eleScaleUp", "eleScaleDown", "muScaleUp", "muScaleDown", "muonResUp", "muonResDown", "muonResSmearUp", "muonResSmearDown"};
@@ -728,12 +732,19 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      if (!logPlot) bgStack->SetMinimum(0.);
      else bgStack->SetMinimum(0.5);
      bgStack->Draw("hist");
+     bgHist->SetFillColor(kBlue);
+     bgHist->SetFillStyle(3002);
+     bgHist->Draw("E2same");
 
      emuTest_data.back()->SetLineWidth(2);
      emuTest_data.back()->SetLineColor(kBlack);
      emuTest_data.back()->SetMarkerStyle(8);
      emuTest_data.back()->SetMarkerSize(0.8);
      emuTest_data.back()->Draw("same");
+     //TGraphAsymmErrors* dataHist = makeDataGraph(emuTest_data.back(), 1, false);      
+     //dataHist->SetMarkerStyle(20);
+     //dataHist->SetMarkerSize(1.1);
+     //dataHist->Draw("PZ");
 
      if (plotSignal[0] > 0.) emuTest_sig1.back()->Draw("histsame");
      if (plotSignal[1] > 0.) emuTest_sig2.back()->Draw("histsame");
@@ -765,10 +776,15 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      }
      if (qcdEst != 2) legend.AddEntry(emuTest_wjets.back(), "W+jets", "F");
      if (plotQcd) legend.AddEntry(emuTest_qcd.back(), "jets (data)", "F");
-     if (plotSignal[0] > 0.) legend.AddEntry(emuTest_sig1.back(), Form("Z'/#gamma'500 (x%.0f)", plotSignal[0]) ,"l");
-     if (plotSignal[1] > 0.) legend.AddEntry(emuTest_sig2.back(), Form("Z'/#gamma'750 (x%.0f)", plotSignal[1]) ,"l");
-     if (plotSignal[2] > 0.) legend.AddEntry(emuTest_sig3.back(), Form("Z'/#gamma'1000 (x%.0f)", plotSignal[2]) ,"l");
-     if (plotSignal[3] > 0.) legend.AddEntry(emuTest_sig4.back(), Form("Z'/#gamma'1250 (x%.0f)", plotSignal[3]) ,"l");
+     legend.AddEntry(bgHist, "stat error", "F");
+     if (plotSignal[0] > 1.) legend.AddEntry(emuTest_sig1.back(), Form("Z'/#gamma'500 (x%.0f)", plotSignal[0]) ,"l");
+     else if (plotSignal[0] == 1.) legend.AddEntry(emuTest_sig1.back(), "Z'/#gamma'500" ,"l");
+     if (plotSignal[1] > 1.) legend.AddEntry(emuTest_sig2.back(), Form("Z'/#gamma'750 (x%.0f)", plotSignal[1]) ,"l");
+     else if (plotSignal[1] == 1.) legend.AddEntry(emuTest_sig2.back(), "Z'/#gamma'750" ,"l");
+     if (plotSignal[2] > 1.) legend.AddEntry(emuTest_sig3.back(), Form("Z'/#gamma'1000 (x%.0f)", plotSignal[2]) ,"l");
+     else if (plotSignal[2] == 1.) legend.AddEntry(emuTest_sig3.back(), "Z'/#gamma'1000" ,"l");
+     if (plotSignal[3] > 1.) legend.AddEntry(emuTest_sig4.back(), Form("Z'/#gamma'1250 (x%.0f)", plotSignal[3]) ,"l");
+     else if (plotSignal[3] == 1.) legend.AddEntry(emuTest_sig4.back(), "Z'/#gamma'1250" ,"l");
      legend.SetBorderSize(0);
      legend.DrawClone("same");
      
@@ -861,5 +877,40 @@ void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, uns
   if (from == 0 || from > to) from = 1;
   for (unsigned int i = from; i <= to; ++i)
     macro_MakeTestPlot(i, sign, region);
+}
+
+TGraphAsymmErrors* makeDataGraph(TH1* dataHist,float normToBinWidth,bool xErrBars)
+{
+  std::vector<double> xPoint,yPoint,xErrLow,xErrHigh,yErrLow,yErrHigh;
+  for(int binNr=1;binNr<=dataHist->GetNbinsX();binNr++){
+    double nrData = dataHist->GetBinContent(binNr);
+
+    float scale = 1;
+    if(normToBinWidth>0) scale= normToBinWidth/dataHist->GetBinWidth(binNr);
+
+    const double alpha = (1 - 0.6827)/2;
+    const double beta  = (1 - 0.6827)/2;
+
+    double dataLowBound=0;
+    double dataHighBound=0;
+    if(nrData!=0){
+      dataLowBound = 0.5*ROOT::Math::chisquared_quantile_c(1-alpha, 2*nrData);
+      dataHighBound = 0.5*ROOT::Math::chisquared_quantile_c(beta, 2*(nrData+1));
+    }
+    double binCentre= dataHist->GetBinLowEdge(binNr)+0.5*dataHist->GetBinWidth(binNr);
+    xPoint.push_back(binCentre);
+    if(xErrBars){
+      xErrLow.push_back(dataHist->GetBinWidth(binNr)*0.5);
+      xErrHigh.push_back(dataHist->GetBinWidth(binNr)*0.5);
+    }else{
+      xErrHigh.push_back(0);
+      xErrLow.push_back(0);
+    }
+    yPoint.push_back(nrData*scale);
+    yErrLow.push_back((nrData-dataLowBound)*scale);
+    yErrHigh.push_back((dataHighBound-nrData)*scale);
+  }
+  TGraphAsymmErrors* resultGraph = new TGraphAsymmErrors(xPoint.size(),&xPoint[0],&yPoint[0],&xErrLow[0],&xErrHigh[0],&yErrLow[0],&yErrHigh[0]);
+   return resultGraph;
 }
 

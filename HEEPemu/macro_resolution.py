@@ -23,7 +23,7 @@ gStyle.SetOptTitle(0)
 
 #open files to comare
 #input = TFile("emuSpec_MuGammaTrg_19703pb-1.root")
-input = TFile("emuSpec_singleMuTrg_19706pb-1.root")
+input = TFile("emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root")
 treePrefices = ['emuTree_sigNoAccCuts', 'emuTree_sigTagV7C2_']
 #treePrefices = ['emuTree_sigNoAccCuts']
 

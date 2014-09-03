@@ -39,8 +39,11 @@ class ContVarPlot {
 void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
-  //TFile input("./emuSpec_MuGammaTrg_19703pb-1.root");
-  TFile input("./emuSpec_singleMuTrg_19706pb-1.root");
+  //TFile input("./emuSpec_MuGammaTrg_topxsect245p8_19703pb-1.root", "open");
+  //TFile input("./emuSpec_MuGammaTrg_topxsect252p89_19703pb-1.root", "open");
+  //TFile input("./emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root", "open");
+  TFile input("./emuSpec_singleMuTrg_altdiboson_19706pb-1.root", "open");
+  //TFile input("./emuSpec_singleMuTrg_topxsect252p89_19706pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
@@ -75,8 +78,8 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   // flags: logPlot | underflow in first bin | overflow in last bin
   testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 3000., 3000, 1, 0, 0));
 
-  TString sign[7] = {"_e-mu+", "_e+mu-", "_OS", "", "_SS", "_++", "_--"};
-  TString nameSign[7] = {" e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
+  TString sign[8] = {"_e-mu+_-_e+mu-", "_e-mu+", "_e+mu-", "_OS", "", "_SS", "_++", "_--"};
+  TString nameSign[8] = {" e-mu+ - e+mu-", " e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
   TString region[3] = {"", "_EB", "_EE"};
   TString nameReg[3] = {"", " EB", " EE"};
 
@@ -84,8 +87,8 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   if (var > testPlots.size()) var = 0;
   if (var == 0) {
     cout << "Use macro_MakeMultiSampleClosureTest.C(x, y, z) with x {1-" << testPlots.size() << "} being the \n";
-    cout << "number of the test histogram to plot, y {-3 - +3} selects the charge with \n";
-    cout << "the scheme e-mu: -+, +-, OS, ALL, SS, ++, -- and z {0-2} selects the \n";
+    cout << "number of the test histogram to plot, y {-4 - +3} selects the charge with \n";
+    cout << "the scheme e-mu: (e-mu+)-(e+mu-), -+, +-, OS, ALL, SS, ++, -- and z {0-2} selects the \n";
     cout << "detector EB+EE, EB or EE events for the electron." << endl;
     cout << "-----------------------------------" << endl;
     for (unsigned int i = 0; i < testPlots.size(); ++i) {
@@ -102,7 +105,7 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   }
   --var;
   // sanity checks for sign and region input
-  if (abs(sig) > 3) sig = 0;
+  if (abs(sig) > 4) sig = 0;
   if (reg > 2) reg = 0;
   // the makeHistoFromBranch function uses a different scheme for barrel and endcap selection
   unsigned int histoReg = 2;
@@ -125,6 +128,7 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   // configure plot style
   TString testVar = testPlots[var].fName;
   bool logPlot = testPlots[var].fLogPlot;
+  if (abs(sig) > 3) logPlot = false;
 
   // define the binning
   std::vector<float> binning;
@@ -216,7 +220,7 @@ void macro_MakeTopReweightShapes(unsigned int var = 0, int sig = 0, unsigned int
   emuTest_ttbar700to1000_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
   emuTest_ttbar1000up_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
   emuTest_ttbarPriv600up_rew.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  sig+=3;
+  sig+=4;
 
   emuTest_ttbar_tot.push_back((TH1F *)emuTest_ttbar.back()->Clone("emuTest_ttbar_tot"));
   emuTest_ttbar_tot.back()->Add(emuTest_ttbar700to1000.back());
