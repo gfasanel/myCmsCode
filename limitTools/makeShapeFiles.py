@@ -18,6 +18,7 @@ def main():
     parser.add_option("-M"  ,"--maxMass", dest="maxMass", default="100", type="float", help="Maximal resonance mass.")
     parser.add_option("-S"  ,"--massStep", dest="massStep", default="50", type="float", help="Mass step size.")
     parser.add_option("-k"  ,"--kappa", dest="kappa", default="1.", type="float", help="Kappa factor for coupling.")
+    parser.add_option("-s"  ,"--sigmas", dest="sigmas", default="3.", type="float", help="Window width in sigmas.")
     (options, args) = parser.parse_args()
 
     if options.dataset != 'MuEG' and options.dataset != 'SingleMu':
@@ -30,7 +31,7 @@ def main():
     if not os.path.exists(options.workDir+'data'):
         os.makedirs(options.workDir+'data')
         
-    shm = ShapeHMaker(options.dataset, options.workDir, options.input, options.kappa)
+    shm = ShapeHMaker(options.dataset, options.workDir, options.input, options.kappa, options.sigmas)
     massPoints = numpy.arange(options.minMass, options.maxMass+options.massStep, options.massStep)
     obs_lim = TGraph(len(massPoints))
     for i, mass in enumerate(massPoints):
@@ -38,7 +39,7 @@ def main():
         shm.run(mass)
 
 class ShapeHMaker:
-    def __init__(self, dataset, work_dir, histo_file, kappa):
+    def __init__(self, dataset, work_dir, histo_file, kappa, sigmas):
         print 'Setup for {0} dataset.'.format(dataset)
         self.workDir = work_dir
         self.histoFile = histo_file
@@ -77,7 +78,8 @@ class ShapeHMaker:
                        #'muonRes', 
                        'muonResSmear', 
                        'topPtReweight']
-        self.massWinFactorInSigmas = 3.
+        self.massWinFactorInSigmas = sigmas
+        print 'Using a mass window of +/-{0} sigma around the mass point.'.format(self.massWinFactorInSigmas)
 
     def run(self, mass):
         self.outfile = TFile(self.outfile_dir + self.outfile_name + "{:.0f}.root".format(mass), 'recreate')
