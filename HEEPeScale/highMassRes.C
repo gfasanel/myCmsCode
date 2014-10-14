@@ -251,7 +251,6 @@ void HighMassRes::RunCryBall()
   allDyTree->Merge(dyTreeTable);
   cout << "Entries in allDyTree: " << allDyTree->GetEntries() << ", Number of branches: " << allDyTree->GetNbranches() << endl;
 
-
   for (unsigned int reg = 0; reg < 7; ++reg) {
     if (!plotReg[reg]) continue;
     stringstream sStream;
@@ -286,6 +285,78 @@ void HighMassRes::RunCryBall()
       saveFileName = sStream.str();
       if (iRange == 0) mcWkSpc->writeToFile(saveFileName + ".root", kTRUE);
       else mcWkSpc->writeToFile(saveFileName + ".root", kFALSE);
+
+      // plot the data
+    }
+    //========================================================================
+
+    //========================================================================
+    // fit for signal MC
+    for (unsigned int iZp = 0; iZp < zPrimeGenMasses.size(); ++iZp) {
+      Float_t minMass = zPrimeGenMasses[iZp].first - zPrimeGenMasses[iZp].first * 0.075;
+      Float_t maxMass = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.075;
+      Float_t trueMassMin = zPrimeGenMasses[iZp].first - zPrimeGenMasses[iZp].first * 0.01; // ~3sigma around the peak
+      Float_t trueMassMax = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.01; // ~3sigma around the peak
+      if (iZp >= ssmStart) {
+        trueMassMin = zPrimeGenMasses[iZp].first - zPrimeGenMasses[iZp].first * 0.05; // ~3sigma around the peak
+        trueMassMax = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.05; // ~3sigma around the peak
+      }
+
+      // get invariant mass histo from file
+      //TFile input(inFile, "read");
+      input.cd();
+      TTree *zpTree = (TTree *)gDirectory->Get(zPrimeGenMasses[iZp].second);
+
+      // fit
+      std::cout << "FIT " << zPrimeGenMasses[iZp].second << " mass: " << zPrimeGenMasses[iZp].first << std::endl;
+      RooWorkspace *mcZpWkSpc = cryBall(zpTree, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
+      //mcZpWkSpc->Print("v");
+
+      // retrieve plot from workspace
+      RooPlot *plot = (RooPlot *)mcZpWkSpc->genobj("plot");
+      RooPlot *pullPlot = (RooPlot *)mcZpWkSpc->genobj("pullPlot");
+
+      // save workspace to file
+      mcZpWkSpc->SetNameTitle("wZp"+regTxt[reg]+=iZp, "workspaceZp"+regTxt[reg]+=iZp);
+      sStream.str("");
+      sStream << plotDir << "workSpaces" << regFileNameSuffix[reg];
+      sStream << fileNameExtra << "_" << lumi << "pb-1";
+      saveFileName = sStream.str();
+      mcZpWkSpc->writeToFile(saveFileName + ".root", kFALSE);
+
+      // plot the data
+    }
+  }
+  f->Close();
+}
+
+void HighMassRes::PlotRes()
+{
+  setTDRStyle();
+  for (unsigned int reg = 0; reg < 7; ++reg) {
+    if (!plotReg[reg]) continue;
+    stringstream sStream;
+    TString saveFileName = "";
+    // Open input file with workspace
+    sStream.str("");
+    sStream << plotDir << "workSpaces" << regFileNameSuffix[reg];
+    sStream << fileNameExtra << "_" << lumi << "pb-1";
+    TString wspaceFileName = sStream.str();
+    TFile *wspacefile = new TFile(wspaceFileName + ".root") ;
+    //========================================================================
+    // extract fit for DY samples
+    for (unsigned int iRange = 0; iRange < dyFitRanges.size() - 1; ++iRange) {
+      std::cout << "mass: " << dyFitRanges[iRange] << std::endl;
+
+      // Retrieve workspace from file
+      RooWorkspace* mcWkSpc = (RooWorkspace*) wspacefile->Get("wDY"+regTxt[reg]+=iRange) ;
+      //mcWkSpc->Print("v");
+
+      // retrieve plot from workspace
+      RooPlot *plot = (RooPlot *)mcWkSpc->genobj("plot");
+      RooPlot *pullPlot = (RooPlot *)mcWkSpc->genobj("pullPlot");
+      //plot->Print("v");
+      //pullPlot->Print("v");
 
       // plot the data
       TCanvas* c = new TCanvas("c" + regTxt[reg] += iRange, "Unbinned Invariant Mass Fit " + regTxt[reg] += iRange, 0, 0, 800, 600);
@@ -366,38 +437,17 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
     //========================================================================
 
     //========================================================================
-    // fit for signal MC
+    // extract fit for signal MC
     for (unsigned int iZp = 0; iZp < zPrimeGenMasses.size(); ++iZp) {
-      Float_t minMass = zPrimeGenMasses[iZp].first - zPrimeGenMasses[iZp].first * 0.075;
-      Float_t maxMass = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.075;
-      Float_t trueMassMin = zPrimeGenMasses[iZp].first - zPrimeGenMasses[iZp].first * 0.01; // ~3sigma around the peak
-      Float_t trueMassMax = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.01; // ~3sigma around the peak
-      if (iZp >= ssmStart) {
-        trueMassMin = zPrimeGenMasses[iZp].first - zPrimeGenMasses[iZp].first * 0.05; // ~3sigma around the peak
-        trueMassMax = zPrimeGenMasses[iZp].first + zPrimeGenMasses[iZp].first * 0.05; // ~3sigma around the peak
-      }
-
-      // get invariant mass histo from file
-      //TFile input(inFile, "read");
-      input.cd();
-      TTree *zpTree = (TTree *)gDirectory->Get(zPrimeGenMasses[iZp].second);
-
-      // fit
       std::cout << "FIT " << zPrimeGenMasses[iZp].second << " mass: " << zPrimeGenMasses[iZp].first << std::endl;
-      RooWorkspace *mcZpWkSpc = cryBall(zpTree, reg + 1, minMass, maxMass, trueMassMin, trueMassMax, cutoff_cb, plotOpt, nBins, fitModelType);
+
+      // Retrieve workspace from file
+      RooWorkspace* mcZpWkSpc = (RooWorkspace*) wspacefile->Get("wZp"+regTxt[reg]+=iZp) ;
       //mcZpWkSpc->Print("v");
 
       // retrieve plot from workspace
       RooPlot *plot = (RooPlot *)mcZpWkSpc->genobj("plot");
       RooPlot *pullPlot = (RooPlot *)mcZpWkSpc->genobj("pullPlot");
-
-      // save workspace to file
-      mcZpWkSpc->SetNameTitle("wZp"+regTxt[reg]+=iZp, "workspaceZp"+regTxt[reg]+=iZp);
-      sStream.str("");
-      sStream << plotDir << "workSpaces" << regFileNameSuffix[reg];
-      sStream << fileNameExtra << "_" << lumi << "pb-1";
-      saveFileName = sStream.str();
-      mcZpWkSpc->writeToFile(saveFileName + ".root", kFALSE);
 
       // plot the data
       TCanvas* c = new TCanvas("c" + regTxt[reg] += (dyFitRanges.size() - 1 + iZp), "Unbinned Invariant Mass Fit " + regTxt[reg] += (dyFitRanges.size() - 1 + iZp), 0, 0, 800, 600);
@@ -464,37 +514,38 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
       // fill the histograms with fit results from fit range
       Float_t denom = (Float_t)zPrimeGenMasses[iZp].first;
       if (iZp < ssmStart) {
-        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
+        sigmaHistosZpPsi[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
         sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
-        dmHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
-        dmHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
-        acbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
-        acbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
-        ncbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
-        ncbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
+        dmHistosZpPsi[reg]->SetBinContent(dmHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getVal());
+        dmHistosZpPsi[reg]->SetBinError(dmHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        acbHistosZpPsi[reg]->SetBinContent(acbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getVal());
+        acbHistosZpPsi[reg]->SetBinError(acbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
+        ncbHistosZpPsi[reg]->SetBinContent(ncbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getVal());
+        ncbHistosZpPsi[reg]->SetBinError(ncbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
         if (fitModelType > 0) {
-          ardcbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, dcbCutRSigMC->getVal());
-          ardcbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getError());
-          nrdcbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, dcbPowerRSigMC->getVal());
-          nrdcbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getError());
+          ardcbHistosZpPsi[reg]->SetBinContent(ardcbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getVal());
+          ardcbHistosZpPsi[reg]->SetBinError(ardcbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getError());
+          nrdcbHistosZpPsi[reg]->SetBinContent(nrdcbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getVal());
+          nrdcbHistosZpPsi[reg]->SetBinError(nrdcbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getError());
         }
       } else {
-        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
+        sigmaHistosZpSsm[reg]->SetBinContent(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
         sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
-        dmHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
-        dmHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
-        acbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
-        acbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
-        ncbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
-        ncbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
+        dmHistosZpSsm[reg]->SetBinContent(dmHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getVal());
+        dmHistosZpSsm[reg]->SetBinError(dmHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        acbHistosZpSsm[reg]->SetBinContent(acbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getVal());
+        acbHistosZpSsm[reg]->SetBinError(acbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
+        ncbHistosZpSsm[reg]->SetBinContent(ncbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getVal());
+        ncbHistosZpSsm[reg]->SetBinError(ncbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
         if (fitModelType > 0) {
-          ardcbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, dcbCutRSigMC->getVal());
-          ardcbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getError());
-          nrdcbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, dcbPowerRSigMC->getVal());
-          nrdcbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getError());
+          ardcbHistosZpSsm[reg]->SetBinContent(ardcbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getVal());
+          ardcbHistosZpSsm[reg]->SetBinError(ardcbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getError());
+          nrdcbHistosZpSsm[reg]->SetBinContent(nrdcbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getVal());
+          nrdcbHistosZpSsm[reg]->SetBinError(nrdcbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getError());
         }
       }
     }
+    wspacefile->Close();
     //========================================================================
 
     //========================================================================
@@ -1185,28 +1236,28 @@ void HighMassRes::CompareCryBall()
       // fill the histograms with fit results from fit range
       Float_t denom = (Float_t)zPrimeGenMasses[iZp].first;
       if (iZp < ssmStart) {
-        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
+        sigmaHistosZpPsi[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
         sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
-        dmHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
+        dmHistosZpPsi[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getVal());
         dmHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
-        acbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
+        acbHistosZpPsi[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getVal());
         acbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
-        ncbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
+        ncbHistosZpPsi[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getVal());
         ncbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
 
-        sigmaDCBHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * dCBSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].first, 2)));
+        sigmaDCBHistosZpPsi[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * dCBSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].first, 2)));
         sigmaDCBHistosZpPsi[reg]->SetBinError(sigmaDCBHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * dCBSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].second, 2)));
       } else {
-        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
+        sigmaHistosZpSsm[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
         sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
-        dmHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
+        dmHistosZpSsm[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getVal());
         dmHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
-        acbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
+        acbHistosZpSsm[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getVal());
         acbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
-        ncbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
+        ncbHistosZpSsm[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getVal());
         ncbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
 
-        sigmaDCBHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * dCBSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].first, 2)));
+        sigmaDCBHistosZpSsm[reg]->SetBinContent(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * dCBSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].first, 2)));
         sigmaDCBHistosZpSsm[reg]->SetBinError(sigmaDCBHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * dCBSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].second, 2)));
       }
     }

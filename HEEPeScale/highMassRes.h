@@ -57,6 +57,7 @@ public:
   inline virtual ~HighMassRes() {};
 
   void RunCryBall();
+  void PlotRes();
   void CompareCryBall();
 
 protected:
