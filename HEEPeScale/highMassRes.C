@@ -45,10 +45,14 @@ RooWorkspace * HighMassRes::cryBall(
   RooDataSet *data = new RooDataSet("data", "pruned dataset", RooArgSet(*mDiff));
 
   // prune dataset according to the desired regions. EE(4)/BE(2)/BB(1)
-  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && abs(ele1Eta) < 0.7 && abs(ele2Eta) < 0.7"));
-  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && abs(ele1Eta) >= 0.7 && abs(ele2Eta) >= 0.7"));
-  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && ((abs(ele1Eta) >= 0.7 && abs(ele2Eta) < 0.7) || (abs(ele2Eta) >= 0.7 && abs(ele1Eta) < 0.7))"));
-  if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0"));
+  if ((regions & 1) == 1) {
+    if (eleEbReg == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && abs(ele1Eta) < 0.7 && abs(ele2Eta) < 0.7")); // both electrons |eta| < 0.7
+    else if (eleEbReg == 2) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && abs(ele1Eta) >= 0.7 && abs(ele2Eta) >= 0.7")); // both electrons |eta| >= 0.7
+    else if (eleEbReg == 3) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && (abs(ele1Eta) < 0.7 || abs(ele2Eta) < 0.7)")); // one electron |eta| < 0.7
+    else if (eleEbReg == 4) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && (abs(ele1Eta) >= 0.7 || abs(ele2Eta) >= 0.7)")); // one electron |eta| >= 0.7
+    else if (eleEbReg == 5) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0 && ((abs(ele1Eta) >= 0.7 && abs(ele2Eta) < 0.7) || (abs(ele2Eta) >= 0.7 && abs(ele1Eta) < 0.7))")); // one electron |eta| < 0.7 and one |eta| >= 0.7
+    else data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 0"));
+  }
   if ((regions & 2) == 2) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 1"));
   if ((regions & 4) == 4) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(*mDiff), "evtRegion == 2"));
   if (data->numEntries() == 0) { // return if no falid region selected
@@ -59,6 +63,10 @@ RooWorkspace * HighMassRes::cryBall(
 
   float plotRangeMin = (minMass - maxMass) / 4.;
   float plotRangeMax = (maxMass - minMass) / 4.;
+  if (regions == 4) {
+    plotRangeMin = (minMass - maxMass) / 2.; // for EE-EE
+    plotRangeMax = (maxMass - minMass) / 2.; // for EE-EE
+  }
   if (plotRangeMax < 15.) {
     plotRangeMin = (minMass - maxMass) / 2.;
     plotRangeMax = (maxMass - minMass) / 2.;
@@ -75,17 +83,23 @@ RooWorkspace * HighMassRes::cryBall(
   //  Parameters for a Crystal Ball and a double sided Crystal Ball lineshape
   RooRealVar cbBias ("#Deltam_{CB}", "CB Bias", -.5, -50, 50, "GeV");
   RooRealVar cbSigma("#sigma_{CB}", "CB Width", 4., 0.02, 50., "GeV");
-  RooRealVar cbCut  ("a_{CB}", "CB Cut", 1., 0.1, 20.);
+  RooRealVar cbCut  ("#alpha_{CB}", "CB Cut", 1., 0.1, 20.);
   RooRealVar cbPower("n_{CB}", "CB Power", 2., 0.5, 20.);
   cbCut.setVal(cutoff_cb);
   //cbCut.setConstant(kTRUE);  // fix the cbCut_off
 
-  RooRealVar dCBBias ("#Deltam_{DCB}", "Double CB Bias", -.5, -50, 50, "GeV");
+  RooRealVar dCBBias ("#Deltam_{DCB}", "Double CB Bias", -0.5, -50, 50, "GeV");
   RooRealVar dCBSigma ("#sigma_{DCB}", "Double CB Width", 4., 0.02, 50., "GeV");
-  RooRealVar dCBCutL ("al_{DCB}", "Double CB Cut left", 1., 0.1, 50.);
-  RooRealVar dCBCutR ("ar_{DCB}", "Double CB Cut right", 1., 0.1, 50.);
-  RooRealVar dCBPowerL ("nl_{DCB}", "Double CB Power left", 2., 0.2, 50.);
-  RooRealVar dCBPowerR ("nr_{DCB}", "Double CB Power right", 2., 0.2, 50.);
+  RooRealVar dCBCutL ("#alpha_{L}^{DCB}", "Double CB Cut left", 1., 0.1, 50.);
+  RooRealVar dCBCutR ("#alpha_{R}^{DCB}", "Double CB Cut right", 1., 0.1, 50.);
+  RooRealVar dCBPowerL ("n_{L}^{DCB}", "Double CB Power left", 2., 0.2, 50.);
+  RooRealVar dCBPowerR ("n_{R}^{DCB}", "Double CB Power right", 2., 0.2, 50.);
+
+  // avoid failing fit with different starting values
+  if (eleEbReg == 1 && maxMass == 2500) {
+    dCBBias.setVal(-15.);
+    dCBSigma.setVal(15.);
+  }
 
   // fraction of signal
   RooRealVar  nsig("N_{S}", "#signal events", 524, 0.1, 10000000000.);
@@ -108,6 +122,10 @@ RooWorkspace * HighMassRes::cryBall(
   RooArgList fitModel;
   Float_t fitMin = (minMass - maxMass) / 4.;
   Float_t fitMax = (maxMass - minMass) / 4.;
+  if (regions == 4) {
+    fitMin = (minMass - maxMass) / 2.; // for EE-EE
+    fitMax = (maxMass - minMass) / 2.; // for EE-EE
+  }
   if (fitModelType == 0) {
     fitModel.add(cball);
   }
@@ -115,10 +133,18 @@ RooWorkspace * HighMassRes::cryBall(
     fitModel.add(dCBall);
     fitMin = (minMass - maxMass) / 2.;
     fitMax = (maxMass - minMass) / 2.;
+    if (regions == 4) {
+      fitMin = (minMass - maxMass); // for EE-EE
+      fitMax = (maxMass - minMass); // for EE-EE
+    }
   }
   if (maxMass - minMass < 40.) {
     fitMin = (minMass - maxMass) / 2.;
     fitMax = (maxMass - minMass) / 2.;
+    if (regions == 4) {
+      fitMin = (minMass - maxMass); // for EE-EE
+      fitMax = (maxMass - minMass); // for EE-EE
+    }
   }
  
   // Di-Electron mass model p.d.f.
@@ -229,6 +255,7 @@ void HighMassRes::RunCryBall()
   for (unsigned int reg = 0; reg < 7; ++reg) {
     if (!plotReg[reg]) continue;
     stringstream sStream;
+    TString saveFileName = "";
     //========================================================================
     // fit for DY samples
     for (unsigned int iRange = 0; iRange < dyFitRanges.size() - 1; ++iRange) {
@@ -251,6 +278,15 @@ void HighMassRes::RunCryBall()
       //plot->Print("v");
       //pullPlot->Print("v");
 
+      // save workspace to file
+      mcWkSpc->SetNameTitle("wDY"+regTxt[reg]+=iRange, "workspaceDY"+regTxt[reg]+=iRange);
+      sStream.str("");
+      sStream << plotDir << "workSpaces" << regFileNameSuffix[reg];
+      sStream << fileNameExtra << "_" << lumi << "pb-1";
+      saveFileName = sStream.str();
+      if (iRange == 0) mcWkSpc->writeToFile(saveFileName + ".root", kTRUE);
+      else mcWkSpc->writeToFile(saveFileName + ".root", kFALSE);
+
       // plot the data
       TCanvas* c = new TCanvas("c" + regTxt[reg] += iRange, "Unbinned Invariant Mass Fit " + regTxt[reg] += iRange, 0, 0, 800, 600);
       c->cd();
@@ -264,7 +300,7 @@ void HighMassRes::RunCryBall()
         gPad->SetBottomMargin(0.039);
         plot->SetTitle("");
         ((TPaveText *)plot->findObject("model_paramBox"))->SetX2(0.4);
-        ((TLatex *)plot->findObject("texLumi"))->SetX(0.674);
+        ((TLatex *)plot->findObject("texLumi"))->SetX(0.732);
         ((TLatex *)plot->findObject("texLumi"))->SetY(0.867);
         ((TLatex *)plot->findObject("texRange"))->SetX(0.732);
         ((TLatex *)plot->findObject("texRange"))->SetY(0.763);
@@ -295,7 +331,7 @@ void HighMassRes::RunCryBall()
       sStream.str("");
       sStream << plotDir << "resDyMc" << regFileNameSuffix[reg];
       sStream << iRange << fileNameExtra << "_" << lumi << "pb-1";
-      TString saveFileName = sStream.str();
+      saveFileName = sStream.str();
       if (saveFitsAsPdf) c->Print(saveFileName + ".pdf", "pdf");
       if (saveFitsAsPng) c->Print(saveFileName + ".png", "png");
       if (saveFitsAsRoot) c->Print(saveFileName + ".root", "root");
@@ -305,6 +341,8 @@ void HighMassRes::RunCryBall()
       RooRealVar *cbSigmaMC = mcWkSpc->var(sigmaName.Data());
       RooRealVar *cbCutMC = mcWkSpc->var(cutLName.Data());
       RooRealVar *cbPowerMC = mcWkSpc->var(powerLName.Data());
+      RooRealVar *dcbCutRMC = mcWkSpc->var(cutRName.Data());
+      RooRealVar *dcbPowerRMC = mcWkSpc->var(powerRName.Data());
 
       // fill the histograms with fit results from fit range
       Float_t denom = (dyFitRanges[iRange] + dyFitRanges[iRange + 1]) / 2;
@@ -318,6 +356,12 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
       acbHistos[reg]->SetBinError(iRange + 1, cbCutMC->getError());
       ncbHistos[reg]->SetBinContent(iRange + 1, cbPowerMC->getVal());
       ncbHistos[reg]->SetBinError(iRange + 1, cbPowerMC->getError());
+      if (fitModelType > 0) {
+        ardcbHistos[reg]->SetBinContent(iRange + 1, dcbCutRMC->getVal());
+        ardcbHistos[reg]->SetBinError(iRange + 1, dcbCutRMC->getError());
+        nrdcbHistos[reg]->SetBinContent(iRange + 1, dcbPowerRMC->getVal());
+        nrdcbHistos[reg]->SetBinError(iRange + 1, dcbPowerRMC->getError());
+      }
     }
     //========================================================================
 
@@ -347,6 +391,14 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
       RooPlot *plot = (RooPlot *)mcZpWkSpc->genobj("plot");
       RooPlot *pullPlot = (RooPlot *)mcZpWkSpc->genobj("pullPlot");
 
+      // save workspace to file
+      mcZpWkSpc->SetNameTitle("wZp"+regTxt[reg]+=iZp, "workspaceZp"+regTxt[reg]+=iZp);
+      sStream.str("");
+      sStream << plotDir << "workSpaces" << regFileNameSuffix[reg];
+      sStream << fileNameExtra << "_" << lumi << "pb-1";
+      saveFileName = sStream.str();
+      mcZpWkSpc->writeToFile(saveFileName + ".root", kFALSE);
+
       // plot the data
       TCanvas* c = new TCanvas("c" + regTxt[reg] += (dyFitRanges.size() - 1 + iZp), "Unbinned Invariant Mass Fit " + regTxt[reg] += (dyFitRanges.size() - 1 + iZp), 0, 0, 800, 600);
       c->cd(); 
@@ -360,7 +412,7 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
         gPad->SetBottomMargin(0.039);
         plot->SetTitle("");
         ((TPaveText *)plot->findObject("model_paramBox"))->SetX2(0.4);
-        ((TLatex *)plot->findObject("texLumi"))->SetX(0.674);
+        ((TLatex *)plot->findObject("texLumi"))->SetX(0.732);
         ((TLatex *)plot->findObject("texLumi"))->SetY(0.867);
         ((TLatex *)plot->findObject("texRange"))->SetX(0.732);
         ((TLatex *)plot->findObject("texRange"))->SetY(0.763);
@@ -396,37 +448,51 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
       sStream.str("");
       sStream << plotDir << "resSigMc" << regFileNameSuffix[reg];
       sStream << iZp << fileNameExtra << "_" << lumi << "pb-1";
-      TString saveFileName = sStream.str();
+      saveFileName = sStream.str();
       if (saveFitsAsPdf) c->Print(saveFileName + ".pdf", "pdf");
       if (saveFitsAsPng) c->Print(saveFileName + ".png", "png");
       if (saveFitsAsRoot) c->Print(saveFileName + ".root", "root");
 
       // get the fit results from workspace
-      RooRealVar *cbBiasMC = mcZpWkSpc->var(biasName.Data());
-      RooRealVar *cbSigmaMC = mcZpWkSpc->var(sigmaName.Data());
-      RooRealVar *cbCutMC = mcZpWkSpc->var(cutLName.Data());
-      RooRealVar *cbPowerMC = mcZpWkSpc->var(powerLName.Data());
+      RooRealVar *cbBiasSigMC = mcZpWkSpc->var(biasName.Data());
+      RooRealVar *cbSigmaSigMC = mcZpWkSpc->var(sigmaName.Data());
+      RooRealVar *cbCutSigMC = mcZpWkSpc->var(cutLName.Data());
+      RooRealVar *cbPowerSigMC = mcZpWkSpc->var(powerLName.Data());
+      RooRealVar *dcbCutRSigMC = mcZpWkSpc->var(cutRName.Data());
+      RooRealVar *dcbPowerRSigMC = mcZpWkSpc->var(powerRName.Data());
 
       // fill the histograms with fit results from fit range
       Float_t denom = (Float_t)zPrimeGenMasses[iZp].first;
       if (iZp < ssmStart) {
-        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
-        sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
-        dmHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasMC->getVal());
-        dmHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasMC->getError());
-        acbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutMC->getVal());
-        acbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutMC->getError());
-        ncbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerMC->getVal());
-        ncbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerMC->getError());
+        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
+        sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
+        dmHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
+        dmHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        acbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
+        acbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
+        ncbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
+        ncbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
+        if (fitModelType > 0) {
+          ardcbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, dcbCutRSigMC->getVal());
+          ardcbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getError());
+          nrdcbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, dcbPowerRSigMC->getVal());
+          nrdcbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getError());
+        }
       } else {
-        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
-        sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
-        dmHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasMC->getVal());
-        dmHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasMC->getError());
-        acbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutMC->getVal());
-        acbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutMC->getError());
-        ncbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerMC->getVal());
-        ncbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerMC->getError());
+        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg].first, 2)));
+        sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
+        dmHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
+        dmHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        acbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
+        acbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
+        ncbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
+        ncbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
+        if (fitModelType > 0) {
+          ardcbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, dcbCutRSigMC->getVal());
+          ardcbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbCutRSigMC->getError());
+          nrdcbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, dcbPowerRSigMC->getVal());
+          nrdcbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), dcbPowerRSigMC->getError());
+        }
       }
     }
     //========================================================================
@@ -464,14 +530,11 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     sigmaHistos[reg]->GetXaxis()->SetTitleSize(0.04);
-    sigmaHistos[reg]->GetXaxis()->SetTitleFont(font);
     sigmaHistos[reg]->GetXaxis()->SetLabelSize(0.035);
-    sigmaHistos[reg]->GetXaxis()->SetLabelFont(font);
-    sigmaHistos[reg]->GetYaxis()->SetTitle("#sqrt{#sigma_{fit}^{2}+#sigma_{extra}^{2}} (%)");
-    //sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
-    sigmaHistos[reg]->GetYaxis()->SetTitleFont(font);
+    if (mcOnly) sigmaHistos[reg]->GetYaxis()->SetTitle(sigmaName+" (%)");
+    else sigmaHistos[reg]->GetYaxis()->SetTitle("#sqrt{#sigma_{fit}^{2}+#sigma_{extra}^{2}} (%)");
+    sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
     sigmaHistos[reg]->GetYaxis()->SetLabelSize(0.035);
-    sigmaHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend->SetTextSize(0.04);
@@ -484,13 +547,21 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     legEntry->SetLineWidth(2);
     legend->Draw("sames");
 
-    TLatex *tex = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex;
+    if (mcOnly) tex = new TLatex(0.77, 0.965, "CMS Simulation");
+    else tex = new TLatex(0.49, 0.965, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex->SetNDC();
     tex->SetTextFont(font);
     tex->SetLineWidth(2);
     tex->SetTextSize(0.04);
     tex->Draw();
-    tex->DrawLatex(0.3, 0.7, regTxt[reg].Data());
+    tex->DrawLatex(0.1, 0.965, regTxt[reg].Data());
+    //tex->DrawLatex(0.3, 0.65, Form("#sigma_{extra} = %.2f%% #pm %.2f%%",sigmaExtras[reg].first,sigmaExtras[reg].second));
+    if (eleEbReg == 1) tex->DrawLatex(0.3, 0.65, "two e with |#eta| < 0.7");
+    else if (eleEbReg == 2) tex->DrawLatex(0.3, 0.65, "two e with |#eta| #geq 0.7");
+    else if (eleEbReg == 3 || eleEbReg == 5) tex->DrawLatex(0.3, 0.65, "one e with |#eta| < 0.7");
+    else if (eleEbReg == 4) tex->DrawLatex(0.3, 0.65, "one e with |#eta| #geq 0.7");
+    if (eleEbReg == 5) tex->DrawLatex(0.3, 0.6, "one e with |#eta| #geq 0.7");
     if (useRootTermForFit) {
       tex->DrawLatex(0.6, 0.61, "#sqrt{#frac{N^{2}}{m^{2}} + #frac{S^{2}}{m} + C^{2} + R^{2}m}");
       tex->DrawLatex(0.6, 0.45, Form("#splitline{#splitline{N = %.3f #pm %.3f}{S = %.3f #pm %.3f}}{#splitline{C = %.3f #pm %.3f}{R = %.3f #pm %.3f}}", fabs(fitFunc->GetParameter(0)), fitFunc->GetParError(0), fabs(fitFunc->GetParameter(1)), fitFunc->GetParError(1), fabs(fitFunc->GetParameter(2)), fitFunc->GetParError(2), fabs(fitFunc->GetParameter(3)), fitFunc->GetParError(3)));
@@ -504,7 +575,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     sStream.str("");
     sStream << plotDir << "highMassRes" << regFileNameSuffix[reg];
     sStream << fileNameExtra << "_" << lumi << "pb-1";
-    TString saveFileName = sStream.str();
+    saveFileName = sStream.str();
     if (saveResAsPdf) c1->Print(saveFileName + ".pdf", "pdf");
     if (saveResAsPng) c1->Print(saveFileName + ".png", "png");
     if (saveResAsRoot) c1->Print(saveFileName + ".root", "root");
@@ -534,14 +605,10 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     dmHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     dmHistos[reg]->GetXaxis()->SetTitleSize(0.04);
-    dmHistos[reg]->GetXaxis()->SetTitleFont(font);
     dmHistos[reg]->GetXaxis()->SetLabelSize(0.035);
-    dmHistos[reg]->GetXaxis()->SetLabelFont(font);
-    dmHistos[reg]->GetYaxis()->SetTitle("#Deltam_{CB} (GeV)");
+    dmHistos[reg]->GetYaxis()->SetTitle(biasName+" (GeV)");
     dmHistos[reg]->GetYaxis()->SetTitleSize(0.04);
-    dmHistos[reg]->GetYaxis()->SetTitleFont(font);
     dmHistos[reg]->GetYaxis()->SetLabelSize(0.035);
-    dmHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend2 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend2->SetTextSize(0.04);
@@ -551,13 +618,29 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     if (zPrimeGenMasses.size() > 7) legend2->AddEntry(dmHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend2->Draw("sames");
 
-    TLatex *tex2 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex2;
+    if (mcOnly) tex2 = new TLatex(0.77, 0.965, "CMS Simulation");
+    else tex2 = new TLatex(0.49, 0.965, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex2->SetNDC();
     tex2->SetTextFont(font);
     tex2->SetLineWidth(2);
     tex2->SetTextSize(0.04);
     tex2->Draw();
-    tex2->DrawLatex(0.3, 0.7, regTxt[reg].Data());
+    tex2->DrawLatex(0.1, 0.965, regTxt[reg].Data());
+    if (eleEbReg == 1) tex2->DrawLatex(0.72, 0.71, "two e with |#eta| < 0.7");
+    else if (eleEbReg == 2) tex2->DrawLatex(0.72, 0.71, "two e with |#eta| #geq 0.7");
+    else if (eleEbReg == 3 || eleEbReg == 5) tex2->DrawLatex(0.72, 0.71, "one e with |#eta| < 0.7");
+    else if (eleEbReg == 4) tex2->DrawLatex(0.72, 0.71, "one e with |#eta| #geq 0.7");
+    if (eleEbReg == 5) tex2->DrawLatex(0.72, 0.66, "one e with |#eta| #geq 0.7");
+
+    // safe in various file formats
+    sStream.str("");
+    sStream << plotDir << "highMassBias" << regFileNameSuffix[reg];
+    sStream << fileNameExtra << "_" << lumi << "pb-1";
+    saveFileName = sStream.str();
+    if (saveResAsPdf) c2->Print(saveFileName + ".pdf", "pdf");
+    if (saveResAsPng) c2->Print(saveFileName + ".png", "png");
+    if (saveResAsRoot) c2->Print(saveFileName + ".root", "root");
     //========================================================================
 
     //========================================================================
@@ -584,14 +667,10 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     acbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     acbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
-    acbHistos[reg]->GetXaxis()->SetTitleFont(font);
     acbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
-    acbHistos[reg]->GetXaxis()->SetLabelFont(font);
-    acbHistos[reg]->GetYaxis()->SetTitle("a_{CB}");
+    acbHistos[reg]->GetYaxis()->SetTitle(cutLName.Data());
     acbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
-    acbHistos[reg]->GetYaxis()->SetTitleFont(font);
     acbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
-    acbHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend3 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend3->SetTextSize(0.04);
@@ -601,13 +680,29 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     if (zPrimeGenMasses.size() > 7) legend3->AddEntry(acbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend3->Draw("sames");
 
-    TLatex *tex3 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex3;
+    if (mcOnly) tex3 = new TLatex(0.77, 0.965, "CMS Simulation");
+    else tex3 = new TLatex(0.49, 0.965, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex3->SetNDC();
     tex3->SetTextFont(font);
     tex3->SetLineWidth(2);
     tex3->SetTextSize(0.04);
     tex3->Draw();
-    tex3->DrawLatex(0.3, 0.7, regTxt[reg].Data());
+    tex3->DrawLatex(0.1, 0.965, regTxt[reg].Data());
+    if (eleEbReg == 1) tex3->DrawLatex(0.72, 0.71, "two e with |#eta| < 0.7");
+    else if (eleEbReg == 2) tex3->DrawLatex(0.72, 0.71, "two e with |#eta| #geq 0.7");
+    else if (eleEbReg == 3 || eleEbReg == 5) tex3->DrawLatex(0.72, 0.71, "one e with |#eta| < 0.7");
+    else if (eleEbReg == 4) tex3->DrawLatex(0.72, 0.71, "one e with |#eta| #geq 0.7");
+    if (eleEbReg == 5) tex3->DrawLatex(0.72, 0.66, "one e with |#eta| #geq 0.7");
+
+    // safe in various file formats
+    sStream.str("");
+    sStream << plotDir << "highMassCBCutoff" << regFileNameSuffix[reg];
+    sStream << fileNameExtra << "_" << lumi << "pb-1";
+    saveFileName = sStream.str();
+    if (saveResAsPdf) c3->Print(saveFileName + ".pdf", "pdf");
+    if (saveResAsPng) c3->Print(saveFileName + ".png", "png");
+    if (saveResAsRoot) c3->Print(saveFileName + ".root", "root");
     //========================================================================
 
     //========================================================================
@@ -634,14 +729,10 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
 
     ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     ncbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
-    ncbHistos[reg]->GetXaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
-    ncbHistos[reg]->GetXaxis()->SetLabelFont(font);
-    ncbHistos[reg]->GetYaxis()->SetTitle("n_{CB}");
+    ncbHistos[reg]->GetYaxis()->SetTitle(powerLName.Data());
     ncbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
-    ncbHistos[reg]->GetYaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
-    ncbHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend4 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend4->SetTextSize(0.04);
@@ -651,15 +742,156 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     if (zPrimeGenMasses.size() > 7) legend4->AddEntry(ncbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend4->Draw("sames");
 
-    TLatex *tex4 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex4;
+    if (mcOnly) tex4 = new TLatex(0.77, 0.965, "CMS Simulation");
+    else tex4 = new TLatex(0.49, 0.965, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex4->SetNDC();
     tex4->SetTextFont(font);
     tex4->SetLineWidth(2);
     tex4->SetTextSize(0.04);
     tex4->Draw();
-    tex4->DrawLatex(0.3, 0.7, regTxt[reg].Data());
+    tex4->DrawLatex(0.1, 0.965, regTxt[reg].Data());
+    if (eleEbReg == 1) tex4->DrawLatex(0.72, 0.71, "two e with |#eta| < 0.7");
+    else if (eleEbReg == 2) tex4->DrawLatex(0.72, 0.71, "two e with |#eta| #geq 0.7");
+    else if (eleEbReg == 3 || eleEbReg == 5) tex4->DrawLatex(0.72, 0.71, "one e with |#eta| < 0.7");
+    else if (eleEbReg == 4) tex4->DrawLatex(0.72, 0.71, "one e with |#eta| #geq 0.7");
+    if (eleEbReg == 5) tex4->DrawLatex(0.72, 0.66, "one e with |#eta| #geq 0.7");
+
+    // safe in various file formats
+    sStream.str("");
+    sStream << plotDir << "highMassCBPower" << regFileNameSuffix[reg];
+    sStream << fileNameExtra << "_" << lumi << "pb-1";
+    saveFileName = sStream.str();
+    if (saveResAsPdf) c4->Print(saveFileName + ".pdf", "pdf");
+    if (saveResAsPng) c4->Print(saveFileName + ".png", "png");
+    if (saveResAsRoot) c4->Print(saveFileName + ".root", "root");
     //========================================================================
 
+    if (fitModelType > 0) {
+      //========================================================================
+      // plot the the high energy Crystall Ball cut off parameter
+      TCanvas* c5 = new TCanvas("c5" + regTxt[reg], "High mass DCB right cut off " + regTxt[reg], 0, 0, 800, 600);
+      c5->cd();
+      // plot the data and fit the model
+      gStyle->SetErrorX(0.5);
+      ardcbHistos[reg]->SetLineWidth(1);
+      ardcbHistos[reg]->SetLineColor(fitColorDy);
+      ardcbHistos[reg]->SetMarkerColor(fitColorDy);
+      ardcbHistos[reg]->SetMarkerStyle(20);
+      ardcbHistos[reg]->Draw("e1");
+      if (zPrimeGenMasses.size() > 0) {
+        ardcbHistosZpPsi[reg]->SetLineColor(fitColorZpPsi);
+        ardcbHistosZpSsm[reg]->SetLineColor(fitColorZpSsm);
+        ardcbHistosZpPsi[reg]->SetMarkerColor(fitColorZpPsi);
+        ardcbHistosZpSsm[reg]->SetMarkerColor(fitColorZpSsm);
+        ardcbHistosZpPsi[reg]->SetMarkerStyle(22);
+        ardcbHistosZpSsm[reg]->SetMarkerStyle(23);
+        ardcbHistosZpPsi[reg]->Draw("e1sames");
+        ardcbHistosZpSsm[reg]->Draw("e1sames");
+      }
+
+      ardcbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+      ardcbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+      ardcbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+      ardcbHistos[reg]->GetYaxis()->SetTitle(cutRName.Data());
+      ardcbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+      ardcbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+
+      TLegend *legend5 = new TLegend(0.741, 0.758, 0.931, 0.916);
+      legend5->SetTextSize(0.04);
+      legend5->SetFillStyle(0);
+      legend5->AddEntry(ardcbHistos[reg], "DY #rightarrow ee", "lep");
+      if (zPrimeGenMasses.size() > 0) legend5->AddEntry(ardcbHistosZpPsi[reg], "Z'_{#psi} #rightarrow ee", "lep");
+      if (zPrimeGenMasses.size() > 7) legend5->AddEntry(acbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
+      legend5->Draw("sames");
+
+      TLatex *tex5;
+      if (mcOnly) tex5 = new TLatex(0.77, 0.965, "CMS Simulation");
+      else tex5 = new TLatex(0.49, 0.965, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+      tex5->SetNDC();
+      tex5->SetTextFont(font);
+      tex5->SetLineWidth(2);
+      tex5->SetTextSize(0.04);
+      tex5->Draw();
+      tex5->DrawLatex(0.1, 0.965, regTxt[reg].Data());
+      if (eleEbReg == 1) tex5->DrawLatex(0.72, 0.71, "two e with |#eta| < 0.7");
+      else if (eleEbReg == 2) tex5->DrawLatex(0.72, 0.71, "two e with |#eta| #geq 0.7");
+      else if (eleEbReg == 3 || eleEbReg == 5) tex5->DrawLatex(0.72, 0.71, "one e with |#eta| < 0.7");
+      else if (eleEbReg == 4) tex5->DrawLatex(0.72, 0.71, "one e with |#eta| #geq 0.7");
+      if (eleEbReg == 5) tex5->DrawLatex(0.72, 0.66, "one e with |#eta| #geq 0.7");
+
+      // safe in various file formats
+      sStream.str("");
+      sStream << plotDir << "highMassDCBCutoffR" << regFileNameSuffix[reg];
+      sStream << fileNameExtra << "_" << lumi << "pb-1";
+      saveFileName = sStream.str();
+      if (saveResAsPdf) c5->Print(saveFileName + ".pdf", "pdf");
+      if (saveResAsPng) c5->Print(saveFileName + ".png", "png");
+      if (saveResAsRoot) c5->Print(saveFileName + ".root", "root");
+      //========================================================================
+
+      //========================================================================
+      // plot the the high energy Crystall Ball power parameter
+      TCanvas* c6 = new TCanvas("c6" + regTxt[reg], "High mass DCB right power " + regTxt[reg], 0, 0, 800, 600);
+      c6->cd();
+      // plot the data and fit the model
+      gStyle->SetErrorX(0.5);
+      nrdcbHistos[reg]->SetLineWidth(1);
+      nrdcbHistos[reg]->SetLineColor(fitColorDy);
+      nrdcbHistos[reg]->SetMarkerColor(fitColorDy);
+      nrdcbHistos[reg]->SetMarkerStyle(20);
+      nrdcbHistos[reg]->Draw("e1");
+      if (zPrimeGenMasses.size() > 0) {
+        nrdcbHistosZpPsi[reg]->SetLineColor(fitColorZpPsi);
+        nrdcbHistosZpSsm[reg]->SetLineColor(fitColorZpSsm);
+        nrdcbHistosZpPsi[reg]->SetMarkerColor(fitColorZpPsi);
+        nrdcbHistosZpSsm[reg]->SetMarkerColor(fitColorZpSsm);
+        nrdcbHistosZpPsi[reg]->SetMarkerStyle(22);
+        nrdcbHistosZpSsm[reg]->SetMarkerStyle(23);
+        nrdcbHistosZpPsi[reg]->Draw("e1sames");
+        nrdcbHistosZpSsm[reg]->Draw("e1sames");
+      }
+
+      nrdcbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+      nrdcbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
+      nrdcbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
+      nrdcbHistos[reg]->GetYaxis()->SetTitle(powerRName.Data());
+      nrdcbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
+      nrdcbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
+
+      TLegend *legend6 = new TLegend(0.741, 0.758, 0.931, 0.916);
+      legend6->SetTextSize(0.04);
+      legend6->SetFillStyle(0);
+      legend6->AddEntry(nrdcbHistos[reg], "DY #rightarrow ee", "lep");
+      if (zPrimeGenMasses.size() > 0) legend6->AddEntry(nrdcbHistosZpPsi[reg], "Z'_{#psi} #rightarrow ee", "lep");
+      if (zPrimeGenMasses.size() > 7) legend6->AddEntry(nrdcbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
+      legend6->Draw("sames");
+
+      TLatex *tex6;
+      if (mcOnly) tex6 = new TLatex(0.77, 0.965, "CMS Simulation");
+      else tex6 = new TLatex(0.49, 0.965, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+      tex6->SetNDC();
+      tex6->SetTextFont(font);
+      tex6->SetLineWidth(2);
+      tex6->SetTextSize(0.04);
+      tex6->Draw();
+      tex6->DrawLatex(0.1, 0.965, regTxt[reg].Data());
+      if (eleEbReg == 1) tex6->DrawLatex(0.72, 0.71, "two e with |#eta| < 0.7");
+      else if (eleEbReg == 2) tex6->DrawLatex(0.72, 0.71, "two e with |#eta| #geq 0.7");
+      else if (eleEbReg == 3 || eleEbReg == 5) tex6->DrawLatex(0.72, 0.71, "one e with |#eta| < 0.7");
+      else if (eleEbReg == 4) tex6->DrawLatex(0.72, 0.71, "one e with |#eta| #geq 0.7");
+      if (eleEbReg == 5) tex6->DrawLatex(0.72, 0.66, "one e with |#eta| #geq 0.7");
+
+      // safe in various file formats
+      sStream.str("");
+      sStream << plotDir << "highMassDCBPowerR" << regFileNameSuffix[reg];
+      sStream << fileNameExtra << "_" << lumi << "pb-1";
+      saveFileName = sStream.str();
+      if (saveResAsPdf) c6->Print(saveFileName + ".pdf", "pdf");
+      if (saveResAsPng) c6->Print(saveFileName + ".png", "png");
+      if (saveResAsRoot) c6->Print(saveFileName + ".root", "root");
+      //========================================================================
+    }
   }
 }
 
@@ -712,7 +944,7 @@ void HighMassRes::CompareCryBall()
         gPad->SetBottomMargin(0.039);
         plot->SetTitle("");
         ((TPaveText *)plot2->findObject("model_paramBox"))->SetX2(0.4);
-        ((TLatex *)plot->findObject("texLumi"))->SetX(0.674);
+        ((TLatex *)plot->findObject("texLumi"))->SetX(0.732);
         ((TLatex *)plot->findObject("texLumi"))->SetY(0.867);
         ((TLatex *)plot->findObject("texRange"))->SetX(0.732);
         ((TLatex *)plot->findObject("texRange"))->SetY(0.763);
@@ -850,7 +1082,7 @@ void HighMassRes::CompareCryBall()
         gPad->SetBottomMargin(0.039);
         plot->SetTitle("");
         ((TPaveText *)plot2->findObject("model_paramBox"))->SetX2(0.4);
-        ((TLatex *)plot->findObject("texLumi"))->SetX(0.674);
+        ((TLatex *)plot->findObject("texLumi"))->SetX(0.732);
         ((TLatex *)plot->findObject("texLumi"))->SetY(0.867);
         ((TLatex *)plot->findObject("texRange"))->SetX(0.732);
         ((TLatex *)plot->findObject("texRange"))->SetY(0.763);
@@ -943,36 +1175,36 @@ void HighMassRes::CompareCryBall()
       if (saveFitsAsRoot) c->Print(saveFileName + ".root", "root");
 
       // get the fit results from workspace
-      RooRealVar *cbBiasMC = mcZpWkSpc->var(biasName.Data());
-      RooRealVar *cbSigmaMC = mcZpWkSpc->var(sigmaName.Data());
-      RooRealVar *cbCutMC = mcZpWkSpc->var(cutLName.Data());
-      RooRealVar *cbPowerMC = mcZpWkSpc->var(powerLName.Data());
+      RooRealVar *cbBiasSigMC = mcZpWkSpc->var(biasName.Data());
+      RooRealVar *cbSigmaSigMC = mcZpWkSpc->var(sigmaName.Data());
+      RooRealVar *cbCutSigMC = mcZpWkSpc->var(cutLName.Data());
+      RooRealVar *cbPowerSigMC = mcZpWkSpc->var(powerLName.Data());
 
       RooRealVar *dCBSigmaMC = mcZpWkSpc2->var(sigmaName.Data());
 
       // fill the histograms with fit results from fit range
       Float_t denom = (Float_t)zPrimeGenMasses[iZp].first;
       if (iZp < ssmStart) {
-        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
-        sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
-        dmHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasMC->getVal());
-        dmHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasMC->getError());
-        acbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutMC->getVal());
-        acbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutMC->getError());
-        ncbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerMC->getVal());
-        ncbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerMC->getError());
+        sigmaHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
+        sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
+        dmHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
+        dmHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        acbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
+        acbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
+        ncbHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
+        ncbHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
 
         sigmaDCBHistosZpPsi[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * dCBSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].first, 2)));
         sigmaDCBHistosZpPsi[reg]->SetBinError(sigmaDCBHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * dCBSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].second, 2)));
       } else {
-        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
-        sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
-        dmHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasMC->getVal());
-        dmHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasMC->getError());
-        acbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutMC->getVal());
-        acbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutMC->getError());
-        ncbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerMC->getVal());
-        ncbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerMC->getError());
+        sigmaHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * cbSigmaSigMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].first, 2)));
+        sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType].second, 2)));
+        dmHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbBiasSigMC->getVal());
+        dmHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        acbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbCutSigMC->getVal());
+        acbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
+        ncbHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, cbPowerSigMC->getVal());
+        ncbHistosZpSsm[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getError());
 
         sigmaDCBHistosZpSsm[reg]->Fill(zPrimeGenMasses[iZp].first, sqrt(pow(100 * dCBSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].first, 2)));
         sigmaDCBHistosZpSsm[reg]->SetBinError(sigmaDCBHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * dCBSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg+7*fitModelType2].second, 2)));
@@ -1032,14 +1264,11 @@ void HighMassRes::CompareCryBall()
 
     sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     sigmaHistos[reg]->GetXaxis()->SetTitleSize(0.04);
-    sigmaHistos[reg]->GetXaxis()->SetTitleFont(font);
     sigmaHistos[reg]->GetXaxis()->SetLabelSize(0.035);
-    sigmaHistos[reg]->GetXaxis()->SetLabelFont(font);
-    sigmaHistos[reg]->GetYaxis()->SetTitle("#sqrt{#sigma_{fit}^{2}+#sigma_{extra}^{2}} (%)");
-    //sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
-    sigmaHistos[reg]->GetYaxis()->SetTitleFont(font);
+    if (mcOnly) sigmaHistos[reg]->GetYaxis()->SetTitle("#sigma_{fit} (%)"); // for MC only
+    else sigmaHistos[reg]->GetYaxis()->SetTitle("#sqrt{#sigma_{fit}^{2}+#sigma_{extra}^{2}} (%)");
+    sigmaHistos[reg]->GetYaxis()->SetTitleSize(0.04);
     sigmaHistos[reg]->GetYaxis()->SetLabelSize(0.035);
-    sigmaHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend = new TLegend(0.577, 0.645, 0.951, 0.935);
     legend->SetTextSize(0.04);
@@ -1062,7 +1291,9 @@ void HighMassRes::CompareCryBall()
     legEntry2->SetLineWidth(2);
     legend->Draw("sames");
 
-    TLatex *tex = new TLatex(0.18, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex;
+    if (mcOnly) tex = new TLatex(0.25, 0.85, "CMS Simulation");
+    else tex = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex->SetNDC();
     tex->SetTextFont(font);
     tex->SetLineWidth(2);
@@ -1107,14 +1338,10 @@ void HighMassRes::CompareCryBall()
 
     dmHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     dmHistos[reg]->GetXaxis()->SetTitleSize(0.04);
-    dmHistos[reg]->GetXaxis()->SetTitleFont(font);
     dmHistos[reg]->GetXaxis()->SetLabelSize(0.035);
-    dmHistos[reg]->GetXaxis()->SetLabelFont(font);
     dmHistos[reg]->GetYaxis()->SetTitle("#Deltam_{CB} (GeV)");
     dmHistos[reg]->GetYaxis()->SetTitleSize(0.04);
-    dmHistos[reg]->GetYaxis()->SetTitleFont(font);
     dmHistos[reg]->GetYaxis()->SetLabelSize(0.035);
-    dmHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend2 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend2->SetTextSize(0.04);
@@ -1124,7 +1351,9 @@ void HighMassRes::CompareCryBall()
     if (zPrimeGenMasses.size() > 7) legend2->AddEntry(dmHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend2->Draw("sames");
 
-    TLatex *tex2 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex2;
+    if (mcOnly) tex2 = new TLatex(0.25, 0.85, "CMS Simulation");
+    else tex2 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex2->SetNDC();
     tex2->SetTextFont(font);
     tex2->SetLineWidth(2);
@@ -1170,7 +1399,9 @@ void HighMassRes::CompareCryBall()
     if (zPrimeGenMasses.size() > 7) legend3->AddEntry(acbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend3->Draw("sames");
 
-    TLatex *tex3 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex3;
+    if (mcOnly) tex3 = new TLatex(0.25, 0.85, "CMS Simulation");
+    else tex3 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex3->SetNDC();
     tex3->SetTextFont(font);
     tex3->SetLineWidth(2);
@@ -1203,14 +1434,10 @@ void HighMassRes::CompareCryBall()
 
     ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
     ncbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
-    ncbHistos[reg]->GetXaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
-    ncbHistos[reg]->GetXaxis()->SetLabelFont(font);
     ncbHistos[reg]->GetYaxis()->SetTitle("n_{CB}");
     ncbHistos[reg]->GetYaxis()->SetTitleSize(0.04);
-    ncbHistos[reg]->GetYaxis()->SetTitleFont(font);
     ncbHistos[reg]->GetYaxis()->SetLabelSize(0.035);
-    ncbHistos[reg]->GetYaxis()->SetLabelFont(font);
 
     TLegend *legend4 = new TLegend(0.741, 0.758, 0.931, 0.916);
     legend4->SetTextSize(0.04);
@@ -1220,7 +1447,9 @@ void HighMassRes::CompareCryBall()
     if (zPrimeGenMasses.size() > 7) legend4->AddEntry(ncbHistosZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
     legend4->Draw("sames");
 
-    TLatex *tex4 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    TLatex *tex4;
+    if (mcOnly) tex4 = new TLatex(0.25, 0.85, "CMS Simulation");
+    else tex4 = new TLatex(0.25, 0.85, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex4->SetNDC();
     tex4->SetTextFont(font);
     tex4->SetLineWidth(2);

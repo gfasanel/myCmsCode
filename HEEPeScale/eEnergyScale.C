@@ -81,9 +81,11 @@ RooWorkspace * cryBallBW(
   RooDataSet *data = new RooDataSet("data", "pruned dataset", RooArgSet(mass));
 
   // prune dataset according to the desired regions. EE(4)/BE(2)/BB(1)
-  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && abs(ele1Eta) < 0.7 && abs(ele2Eta) < 0.7"));
-  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && abs(ele1Eta) >= 0.7 && abs(ele2Eta) >= 0.7"));
-  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && ((abs(ele1Eta) >= 0.7 && abs(ele2Eta) < 0.7) || (abs(ele2Eta) >= 0.7 && abs(ele1Eta) < 0.7))"));
+  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && abs(ele1Eta) < 0.7 && abs(ele2Eta) < 0.7")); // both electrons |eta| < 0.7
+  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && abs(ele1Eta) >= 0.7 && abs(ele2Eta) >= 0.7")); // both electrons |eta| >= 0.7
+  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && (abs(ele1Eta) < 0.7 || abs(ele2Eta) < 0.7)")); // one electron |eta| < 0.7
+  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && (abs(ele1Eta) >= 0.7 || abs(ele2Eta) >= 0.7)")); // one electron |eta| >= 0.7
+  //if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0 && ((abs(ele1Eta) >= 0.7 && abs(ele2Eta) < 0.7) || (abs(ele2Eta) >= 0.7 && abs(ele1Eta) < 0.7))")); // one electron |eta| < 0.7 and one |eta| >= 0.7
   if ((regions & 1) == 1) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 0"));
   if ((regions & 2) == 2) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 1"));
   if ((regions & 4) == 4) data->append(*(RooDataSet *)dataAll->reduce(RooArgSet(mass), "evtRegion == 2"));
@@ -99,6 +101,9 @@ RooWorkspace * cryBallBW(
   ////////////////////////////////////////////////
 
   //  Signal p.d.f. parameters
+  //  Parameters for a Gaussian and a Crystal Ball Lineshape
+  RooRealVar gBias ("#Deltam_{Gauss}", "Gaussian Bias", -.2, -20, 20,"GeV");
+  RooRealVar gSigma("#sigma_{Gauss}","Gaussian Width", 2., 0.02, 20.,"GeV");
   //  Parameters for a Gaussian and a Crystal Ball Lineshape
   RooRealVar cbBias ("#Deltam_{CB}", "CB Bias", -.2, -20, 20,"GeV");
   RooRealVar cbSigma("#sigma_{CB}","CB Width", 2., 0.02, 20.,"GeV");
@@ -146,37 +151,40 @@ RooWorkspace * cryBallBW(
   ////////////////////////////////////////////////
   //               P.D.F.s                      //
   ////////////////////////////////////////////////
-  
+ 
   // Di-Electron mass signal p.d.f.
   RooBreitWigner bw("bw", "bw", mass, bwMean, bwWidth);
-  // RooGaussian signal("signal", "A  Gaussian Lineshape", mass, m0, sigma);
-  RooCBShape     cball("cball", "A Crystal Ball Lineshape", mass, cbBias, cbSigma, cbCut, cbPower);
+  RooGaussian gauss("gauss", "A Gaussian Lineshape", mass, gBias, gSigma);
+  RooCBShape cball("cball", "A Crystal Ball Lineshape", mass, cbBias, cbSigma, cbCut, cbPower);
 #ifdef __CINT__
   gROOT->ProcessLineSync(".x RooDCBShape.cxx+") ;
 #endif  
   RooDCBShape dCBall("dCBall", "A double Crystal Ball lineshape", mass, dCBBias, dCBSigma, dCBCutL, dCBCutR, dCBPowerL, dCBPowerR);
-  
+ 
   // mass.setBins(100000, "fft");
+  RooFFTConvPdf BWxGauss("BWxGauss","Breit - Wigner (X) Gaussian", mass, bw, gauss);
   RooFFTConvPdf BWxCB("BWxCB","Breit - Wigner (X) Crystal Ball", mass, bw, cball);
   RooFFTConvPdf BWxDCB("BWxDCB","Breit - Wigner (X) double Crystal Ball", mass, bw, dCBall);
-  
-  
+ 
   // Di-Electron mass background  p.d.f.
   RooExponential bg("bg","bkgd exp", mass, expRate);
   // RooPolynomial bg("bg","bkg Polynomial",mass,c0);
-  
-  
+ 
   // Di-Electron mass model p.d.f.
-  //RooAddPdf model("model", "signal + background mass model", RooArgList(BWxCB, bg), RooArgList(nsig, nbkg)); // Signal + Bkg
+  //RooAddPdf model("model", "signal + background mass model", RooArgList(BWxDCB, bg), RooArgList(nsig, nbkg)); // Signal + Bkg
   RooArgList pdfs("pdfs");
   RooArgSet plotParam("plotParam");
   if (fitModelType == 0) {
     pdfs.add(BWxCB);
     plotParam.add(RooArgSet(cbBias, cbSigma));
   }
-  else {
+  else if (fitModelType == 1) {
     pdfs.add(BWxDCB);
     plotParam.add(RooArgSet(dCBBias, dCBSigma));
+  }
+  else {
+    pdfs.add(BWxGauss);
+    plotParam.add(RooArgSet(gBias, gSigma));
   }
   pdfs.Print("v");
   plotParam.Print("v");
@@ -211,7 +219,7 @@ void RunCryBall()
   double mean_bw = 91.1876;
   double gamma_bw = 2.4952;
   double cutoff_cb = 1.0;
-  const unsigned int fitModelType = 1; // (0, 1) = (CB, double CB)
+  const unsigned int fitModelType = 1; // (0, 1, 2) = (CB, double CB, Gaussian)
 
   const char* plotOpt = "NEU";
   const int nBins = 40;
@@ -221,17 +229,18 @@ void RunCryBall()
   plotReg[2] = 0; // EB-EB + EB-EE
   plotReg[3] = 0; // EE-EE
 
-  bool plotMC = true;
-  bool normalizeMC = true;
-  bool printLatexTable = true;
-  bool printHtmlTable = true;
+  bool logY = 0; // log y axis
+  bool plotMC = 1;
+  bool normalizeMC = 1;
+  bool printLatexTable = 1;
+  bool printHtmlTable = 1;
 
   const bool saveAsPdf = 1;
   const bool saveAsPng = 1;
   const bool saveAsRoot = 1;
   const char *fileNameExtra = "";
   //const char *fileNameExtra = "_runCv2";
-  const char *plotDir = "./plots_20131001_2/";
+  const char *plotDir = "./plots_20141009_bb/";
   ////////////////////////////////////////////////////////////////////////////
 
   vector<TString> treeNames;
@@ -253,6 +262,12 @@ void RunCryBall()
   regFileNameSuffix.push_back("BEEE");
   regFileNameSuffix.push_back("BBBEEE");
 
+  vector<pair<float, float> > logYplotRanges;
+  logYplotRanges.push_back(make_pair(1000., 5000000.));
+  logYplotRanges.push_back(make_pair(1000., 2000000.));
+  logYplotRanges.push_back(make_pair(3000., 6000000.));
+  logYplotRanges.push_back(make_pair(300., 700000.));
+
   // fit results
   vector<vector<Double_t> > fitResData;
   vector<vector<Double_t> > fitErrData;
@@ -261,7 +276,7 @@ void RunCryBall()
 
   for (unsigned int reg = 0; reg < 4; ++reg) {
     if (!plotReg[reg]) continue;
-    unsigned int nCpu = 3;
+    unsigned int nCpu = 2;
     if (reg == 2) nCpu = 1;
     // fit
     RooWorkspace *dataWkSpc = cryBallBW(inFile, treeNames[0].Data(), reg + 1, minMass, maxMass, mean_bw, gamma_bw, cutoff_cb, plotOpt, nBins, fitModelType, nCpu);
@@ -269,6 +284,7 @@ void RunCryBall()
     RooRealVar *mass = dataWkSpc->var("mass");
     RooDataSet *data = (RooDataSet *)dataWkSpc->data("data");
     RooAddPdf *model = (RooAddPdf *)dataWkSpc->pdf("model");
+    RooExponential *bkgPdf = (RooExponential *)dataWkSpc->pdf("bg");
 
     RooWorkspace *dy20WkSpc = cryBallBW(inFile, treeNames[1].Data(), reg + 1, minMass, maxMass, mean_bw, gamma_bw, cutoff_cb, plotOpt, nBins, fitModelType, nCpu);
     RooDataSet *dataMc = (RooDataSet *)dy20WkSpc->data("data");
@@ -276,29 +292,13 @@ void RunCryBall()
 
     // plot the data
     TCanvas* c = new TCanvas("c" + regTxt[reg], "Unbinned Invariant Mass Fit " + regTxt[reg], 0, 0, 800, 600);
+    if (logY) gPad->SetLogy();
     // plot the fit results
     RooPlot* plot = mass->frame(Range(minMass,maxMass),Bins(nBins));
 
     // calculate normalization factor
     Double_t normFactor = (Double_t)data->numEntries() / (Double_t)dataMc->numEntries();
     if (!normalizeMC) normFactor = 1.;
-
-    data->plotOn(plot, Name("dataData"));
-    model->plotOn(plot, Name("modelData"));
-    gStyle->SetTextColor(kBlue);
-    model->paramOn(plot, Format(plotOpt, AutoPrecision(1)), Parameters(*dataWkSpc->set("plotParam")), Layout(0.12, 0.5, 0.95));
-    if (plotMC) dataMc->plotOn(plot, Name("dataDy20"), Rescale(normFactor), MarkerColor(kRed));
-    modelMc->plotOn(plot, Name("modelDy20"), Normalization(normFactor, RooAbsReal::Relative), LineStyle(kDashed), LineColor(kRed));
-    gStyle->SetTextColor(kRed);  
-    modelMc->paramOn(plot, Format(plotOpt, AutoPrecision(1)), Parameters(*dy20WkSpc->set("plotParam")), Layout(0.12, 0.5, 0.832168));
-    gStyle->SetTextColor(kBlack);  
-
-    plot->drawAfter("modelData", "modelDy20");
-    plot->drawAfter("modelDy20", "dataDy20");
-    plot->drawAfter("dataDy20", "dataData");
-
-    cout << "Chi^2 data: " << plot->chiSquare("modelData", "dataData", 7+2*fitModelType) << endl;
-    cout << "Chi^2 DY20: " << plot->chiSquare("modelDy20", "dataDy20", 7+2*fitModelType) << endl;
 
     vector<TString> delMName(1, "#Deltam_{CB}");
     vector<TString> sigmaName(1, "#sigma_{CB}");
@@ -312,65 +312,123 @@ void RunCryBall()
     aRName.push_back("ar_{DCB}");
     powerLName.push_back("nl_{DCB}");
     powerRName.push_back("nr_{DCB}");
+    delMName.push_back("#Deltam_{Gauss}");
+    sigmaName.push_back("#sigma_{Gauss}");
 
     // get the fit results
     RooRealVar *bias = dataWkSpc->var(delMName[fitModelType].Data());
     RooRealVar *sigma = dataWkSpc->var(sigmaName[fitModelType].Data());
-    RooRealVar *cutL = dataWkSpc->var(aLName[fitModelType].Data());
-    RooRealVar *cutR = dataWkSpc->var(aRName[fitModelType].Data());
-    RooRealVar *powerL = dataWkSpc->var(powerLName[fitModelType].Data());
-    RooRealVar *powerR = dataWkSpc->var(powerRName[fitModelType].Data());
+    RooRealVar *cutL;
+    RooRealVar *cutR;
+    RooRealVar *powerL;
+    RooRealVar *powerR;
+    if (fitModelType == 0 || fitModelType == 1) {
+      cutL = dataWkSpc->var(aLName[fitModelType].Data());
+      cutR = dataWkSpc->var(aRName[fitModelType].Data());
+      powerL = dataWkSpc->var(powerLName[fitModelType].Data());
+      powerR = dataWkSpc->var(powerRName[fitModelType].Data());
+    }
     RooRealVar *nsig = dataWkSpc->var("N_{S}");
- 
+    //RooRealVar *nbkg = dataWkSpc->var("N_{B}");
+    //RooRealVar *lambdaExp = dataWkSpc->var("#lambda_{exp}");
+
     RooRealVar *biasMC = dy20WkSpc->var(delMName[fitModelType].Data());
     RooRealVar *sigmaMC = dy20WkSpc->var(sigmaName[fitModelType].Data());
-    RooRealVar *cutLMC = dy20WkSpc->var(aLName[fitModelType].Data());
-    RooRealVar *cutRMC = dy20WkSpc->var(aRName[fitModelType].Data());
-    RooRealVar *powerLMC = dy20WkSpc->var(powerLName[fitModelType].Data());
-    RooRealVar *powerRMC = dy20WkSpc->var(powerRName[fitModelType].Data());
+    RooRealVar *cutLMC;
+    RooRealVar *cutRMC;
+    RooRealVar *powerLMC;
+    RooRealVar *powerRMC;
+    if (fitModelType == 0 || fitModelType == 1) {
+      cutLMC = dy20WkSpc->var(aLName[fitModelType].Data());
+      cutRMC = dy20WkSpc->var(aRName[fitModelType].Data());
+      powerLMC = dy20WkSpc->var(powerLName[fitModelType].Data());
+      powerRMC = dy20WkSpc->var(powerRName[fitModelType].Data());
+    }
     RooRealVar *nsigMC = dy20WkSpc->var("N_{S}");
+    //RooRealVar *nbkgMC = dy20WkSpc->var("N_{B}");
+    //RooRealVar *lambdaExpMC = dy20WkSpc->var("#lambda_{exp}");
 
     // save fit results
     vector<Double_t> helper;
     helper.push_back(bias->getVal());
     helper.push_back(sigma->getVal());
-    helper.push_back(cutL->getVal());
-    if (fitModelType > 0) helper.push_back(cutR->getVal());
-    helper.push_back(powerL->getVal());
-    if (fitModelType > 0) helper.push_back(powerR->getVal());
+    if (fitModelType == 0 || fitModelType == 1) {
+      helper.push_back(cutL->getVal());
+      if (fitModelType > 0) helper.push_back(cutR->getVal());
+      helper.push_back(powerL->getVal());
+      if (fitModelType > 0) helper.push_back(powerR->getVal());
+    }
     helper.push_back(nsig->getVal());
+    //helper.push_back(nbkg->getVal());
+    //helper.push_back(lambdaExp->getVal());
     fitResData.push_back(helper);
     helper.clear();
     helper.push_back(bias->getError());
     helper.push_back(sigma->getError());
-    helper.push_back(cutL->getError());
-    if (fitModelType > 0) helper.push_back(cutR->getError());
-    helper.push_back(powerL->getError());
-    if (fitModelType > 0) helper.push_back(powerR->getError());
+    if (fitModelType == 0 || fitModelType == 1) {
+      helper.push_back(cutL->getError());
+      if (fitModelType > 0) helper.push_back(cutR->getError());
+      helper.push_back(powerL->getError());
+      if (fitModelType > 0) helper.push_back(powerR->getError());
+    }
     helper.push_back(nsig->getError());
+    //helper.push_back(nbkg->getError());
+    //helper.push_back(lambdaExp->getError());
     fitErrData.push_back(helper);
     helper.clear();
     helper.push_back(biasMC->getVal());
     helper.push_back(sigmaMC->getVal());
-    helper.push_back(cutLMC->getVal());
-    if (fitModelType > 0) helper.push_back(cutRMC->getVal());
-    helper.push_back(powerLMC->getVal());
-    if (fitModelType > 0) helper.push_back(powerRMC->getVal());
+    if (fitModelType == 0 || fitModelType == 1) {
+      helper.push_back(cutLMC->getVal());
+      if (fitModelType > 0) helper.push_back(cutRMC->getVal());
+      helper.push_back(powerLMC->getVal());
+      if (fitModelType > 0) helper.push_back(powerRMC->getVal());
+    }
     helper.push_back(nsigMC->getVal());
+    //helper.push_back(nbkgMC->getVal());
+    //helper.push_back(lambdaExpMC->getVal());
     fitResDy20.push_back(helper);
     helper.clear();
     helper.push_back(biasMC->getError());
     helper.push_back(sigmaMC->getError());
-    helper.push_back(cutLMC->getError());
-    if (fitModelType > 0) helper.push_back(cutRMC->getError());
-    helper.push_back(powerLMC->getError());
-    if (fitModelType > 0) helper.push_back(powerRMC->getError());
+    if (fitModelType == 0 || fitModelType == 1) {
+      helper.push_back(cutLMC->getError());
+      if (fitModelType > 0) helper.push_back(cutRMC->getError());
+      helper.push_back(powerLMC->getError());
+      if (fitModelType > 0) helper.push_back(powerRMC->getError());
+    }
     helper.push_back(nsigMC->getError());
+    //helper.push_back(nbkgMC->getError());
+    //helper.push_back(lambdaExpMC->getError());
     fitErrDy20.push_back(helper);
     helper.clear();
 
+    // plot
+    data->plotOn(plot, Name("dataData"));
+    model->plotOn(plot, Name("modelData"));
+    //bkgPdf->plotOn(plot, Name("bkgData"), Normalization(nbkg->getVal()/(nbkg->getVal()+nsig->getVal()), RooAbsReal::Relative));
+    gStyle->SetTextColor(kBlue);
+    model->paramOn(plot, Format(plotOpt, AutoPrecision(1)), Parameters(*dataWkSpc->set("plotParam")), Layout(0.12, 0.5, 0.95));
+    if (plotMC) dataMc->plotOn(plot, Name("dataDy20"), Rescale(normFactor), MarkerColor(kRed));
+    modelMc->plotOn(plot, Name("modelDy20"), Normalization(normFactor, RooAbsReal::Relative), LineStyle(kDashed), LineColor(kRed));
+    gStyle->SetTextColor(kRed);  
+    modelMc->paramOn(plot, Format(plotOpt, AutoPrecision(1)), Parameters(*dy20WkSpc->set("plotParam")), Layout(0.12, 0.5, 0.832168));
+    gStyle->SetTextColor(kBlack);  
+
+    if (logY) plot->GetYaxis()->SetRangeUser(logYplotRanges[reg].first, logYplotRanges[reg].second);
+
+    //plot->drawAfter("bkgData", "modelData");
+    plot->drawAfter("modelData", "modelDy20");
+    plot->drawAfter("modelDy20", "dataDy20");
+    plot->drawAfter("dataDy20", "dataData");
+
+    int ndf = 5+2*fitModelType;
+    if (fitModelType == 2) ndf = 3;
+    cout << "Chi^2 data: " << plot->chiSquare("modelData", "dataData", ndf) << endl;
+    cout << "Chi^2 DY20: " << plot->chiSquare("modelDy20", "dataDy20", ndf) << endl;
+
     // draw a legend
-    TLegend *legend = new TLegend(0.70, 0.45, 0.86, 0.65);
+    TLegend *legend = new TLegend(0.75, 0.65, 0.91, 0.85);
     legend->SetTextSize(0.03);
     legend->SetTextFont(42);
     legend->SetBorderSize(0);
@@ -409,7 +467,7 @@ void RunCryBall()
     tex->SetTextSize(0.035);
     tex->DrawLatex(0.52, 0.88, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
     tex->SetTextSize(0.05);
-    tex->DrawLatex(0.7, 0.33, (const char *)regTxt[reg]);
+    tex->DrawLatex(0.12, 0.65, (const char *)regTxt[reg]);
     //tex->SetTextColor(kBlue);
     //tex->DrawLatex(0.2, 0.575, Form("#chi^{2} = %.2f",plot->chiSquare("modelData", "dataData")));
     //tex->SetTextColor(kRed);
@@ -421,7 +479,12 @@ void RunCryBall()
     // safe in various file formats
     stringstream sStream;
     sStream << plotDir << "zPeakFit60-120" << regFileNameSuffix[reg];
-    sStream << fileNameExtra << "_" << lumi << "pb-1";
+    if (fitModelType == 0) sStream << "_cb";
+    else if (fitModelType == 1) sStream << "_dcb";
+    else sStream << "_gauss";
+    sStream << fileNameExtra;
+    if (logY) sStream << "_log";
+    sStream << "_" << lumi << "pb-1";
     TString saveFileName = sStream.str();
     if (saveAsPdf) c->Print(saveFileName + ".pdf", "pdf");
     if (saveAsPng) c->Print(saveFileName + ".png", "png");
@@ -443,22 +506,33 @@ void RunCryBall()
       cout << "sigma_CB:  " << fitResData[i][1] << " +/- " << fitErrData[i][1] << "    |    " << fitResDy20[i][1] << " +/- " << fitErrDy20[i][1] << endl;
       cout << "a_CB:      " << fitResData[i][2] << " +/- " << fitErrData[i][2] << "    |    " << fitResDy20[i][2] << " +/- " << fitErrDy20[i][2] << endl;
       cout << "n_CB:      " << fitResData[i][3] << " +/- " << fitErrData[i][3] << "    |    " << fitResDy20[i][3] << " +/- " << fitErrDy20[i][3] << endl;
-      cout << "N_S:       " << fitResData[i][4] << " +/- " << fitErrData[i][4] << "    |    " << fitResDy20[i][4] << " +/- " << fitErrDy20[i][4] << endl << endl;
+      cout << "N_S:       " << fitResData[i][4] << " +/- " << fitErrData[i][4] << "    |    " << fitResDy20[i][4] << " +/- " << fitErrDy20[i][4] << endl;
+      //cout << "N_B:       " << fitResData[i][5] << " +/- " << fitErrData[i][5] << "    |    " << fitResDy20[i][5] << " +/- " << fitErrDy20[i][5] << endl;
+      //cout << "lambda_exp:" << fitResData[i][6] << " +/- " << fitErrData[i][6] << "    |    " << fitResDy20[i][6] << " +/- " << fitErrDy20[i][6] << endl << endl;
       cout << "(deltaM_CB(data) - deltaM_CB(MC)) / M(Z), %: " << (fitResData[i][0] - fitResDy20[i][0]) * 100. / mean_bw << " +/- " << sqrt(fitErrData[i][0] * fitErrData[i][0] + fitErrDy20[i][0] * fitErrDy20[i][0]) * 100. / mean_bw << endl << endl;
       if (fitResData[i][1] > fitResDy20[i][1]) sigmaCbExtra = sqrt(fitResData[i][1] * fitResData[i][1] - fitResDy20[i][1] * fitResDy20[i][1]);
       cout << "sigma_CB(extra), %: " << sigmaCbExtra * 100. / mean_bw << " +/- " << sqrt(fitErrData[i][1] * fitErrData[i][1] + fitErrDy20[i][1] * fitErrDy20[i][1]) * 100. / mean_bw << endl;
     }
-    else {
+    else if (fitModelType == 1) {
       cout << "deltaM_DCB: " << fitResData[i][0] << " +/- " << fitErrData[i][0] << "    |    " << fitResDy20[i][0] << " +/- " << fitErrDy20[i][0] << endl;
       cout << "sigma_DCB:  " << fitResData[i][1] << " +/- " << fitErrData[i][1] << "    |    " << fitResDy20[i][1] << " +/- " << fitErrDy20[i][1] << endl;
       cout << "al_DCB:      " << fitResData[i][2] << " +/- " << fitErrData[i][2] << "    |    " << fitResDy20[i][2] << " +/- " << fitErrDy20[i][2] << endl;
       cout << "ar_DCB:      " << fitResData[i][3] << " +/- " << fitErrData[i][3] << "    |    " << fitResDy20[i][3] << " +/- " << fitErrDy20[i][3] << endl;
       cout << "nl_DCB:      " << fitResData[i][4] << " +/- " << fitErrData[i][4] << "    |    " << fitResDy20[i][4] << " +/- " << fitErrDy20[i][4] << endl;
       cout << "nr_DCB:      " << fitResData[i][5] << " +/- " << fitErrData[i][5] << "    |    " << fitResDy20[i][5] << " +/- " << fitErrDy20[i][5] << endl;
-      cout << "N_S:       " << fitResData[i][6] << " +/- " << fitErrData[i][6] << "    |    " << fitResDy20[i][6] << " +/- " << fitErrDy20[i][6] << endl << endl;
+      cout << "N_S:       " << fitResData[i][6] << " +/- " << fitErrData[i][6] << "    |    " << fitResDy20[i][6] << " +/- " << fitErrDy20[i][6] << endl;
+      //cout << "N_B:       " << fitResData[i][7] << " +/- " << fitErrData[i][7] << "    |    " << fitResDy20[i][7] << " +/- " << fitErrDy20[i][7] << endl << endl;
+      //cout << "lambda_exp:" << fitResData[i][8] << " +/- " << fitErrData[i][8] << "    |    " << fitResDy20[i][8] << " +/- " << fitErrDy20[i][8] << endl << endl;
       cout << "(deltaM_DCB(data) - deltaM_DCB(MC)) / M(Z), %: " << (fitResData[i][0] - fitResDy20[i][0]) * 100. / mean_bw << " +/- " << sqrt(fitErrData[i][0] * fitErrData[i][0] + fitErrDy20[i][0] * fitErrDy20[i][0]) * 100. / mean_bw << endl << endl;
       if (fitResData[i][1] > fitResDy20[i][1]) sigmaCbExtra = sqrt(fitResData[i][1] * fitResData[i][1] - fitResDy20[i][1] * fitResDy20[i][1]);
       cout << "sigma_CB(extra), %: " << sigmaCbExtra * 100. / mean_bw << " +/- " << sqrt(fitErrData[i][1] * fitErrData[i][1] + fitErrDy20[i][1] * fitErrDy20[i][1]) * 100. / mean_bw << endl;
+    }
+    else {
+      cout << "deltaM_Gauss: " << fitResData[i][0] << " +/- " << fitErrData[i][0] << "    |    " << fitResDy20[i][0] << " +/- " << fitErrDy20[i][0] << endl;
+      cout << "sigma_Gauss:  " << fitResData[i][1] << " +/- " << fitErrData[i][1] << "    |    " << fitResDy20[i][1] << " +/- " << fitErrDy20[i][1] << endl;
+      cout << "(deltaM_Gauss(data) - deltaM_Gauss(MC)) / M(Z), %: " << (fitResData[i][0] - fitResDy20[i][0]) * 100. / mean_bw << " +/- " << sqrt(fitErrData[i][0] * fitErrData[i][0] + fitErrDy20[i][0] * fitErrDy20[i][0]) * 100. / mean_bw << endl << endl;
+      if (fitResData[i][1] > fitResDy20[i][1]) sigmaCbExtra = sqrt(fitResData[i][1] * fitResData[i][1] - fitResDy20[i][1] * fitResDy20[i][1]);
+      cout << "sigma_Gauss(extra), %: " << sigmaCbExtra * 100. / mean_bw << " +/- " << sqrt(fitErrData[i][1] * fitErrData[i][1] + fitErrDy20[i][1] * fitErrDy20[i][1]) * 100. / mean_bw << endl;
     }
     ++i;
   }
@@ -470,7 +544,8 @@ void RunCryBall()
     cout << "<br>Electron energy scale summary for different ECAL regions as measured at Z peak. Comparison between the data and MC." << endl;
     cout << "<table border=1>" << endl;
     if (fitModelType == 0) cout << "<tr align=center><td>region</td><td>&Delta;m<sub>CB</sub>(data), GeV/c<sup>2</sup></td><td>&Delta;m<sub>CB</sub>(MC), GeV/c<sup>2</sup></td><td>(&Delta;m<sub>CB</sub>(Data)-&Delta;m<sub>CB</sub>(MC))/m(Z<sup>0</sup>), %</td></tr>" << endl;
-    else cout << "<tr align=center><td>region</td><td>&Delta;m<sub>DCB</sub>(data), GeV/c<sup>2</sup></td><td>&Delta;m<sub>DCB</sub>(MC), GeV/c<sup>2</sup></td><td>(&Delta;m<sub>DCB</sub>(Data)-&Delta;m<sub>DCB</sub>(MC))/m(Z<sup>0</sup>), %</td></tr>" << endl;
+    else if (fitModelType == 1) cout << "<tr align=center><td>region</td><td>&Delta;m<sub>DCB</sub>(data), GeV/c<sup>2</sup></td><td>&Delta;m<sub>DCB</sub>(MC), GeV/c<sup>2</sup></td><td>(&Delta;m<sub>DCB</sub>(Data)-&Delta;m<sub>DCB</sub>(MC))/m(Z<sup>0</sup>), %</td></tr>" << endl;
+    else cout << "<tr align=center><td>region</td><td>&Delta;m<sub>Gauss</sub>(data), GeV/c<sup>2</sup></td><td>&Delta;m<sub>Gauss</sub>(MC), GeV/c<sup>2</sup></td><td>(&Delta;m<sub>Gauss</sub>(Data)-&Delta;m<sub>Gaus</sub>(MC))/m(Z<sup>0</sup>), %</td></tr>" << endl;
     i = 0;
     for (unsigned int reg = 0; reg < 4; ++reg) {
       if (!plotReg[reg]) continue;
@@ -486,7 +561,8 @@ void RunCryBall()
     cout << "<br>Di-electron mass resolution for different ECAL regions as measured at the Z peak for the data and MC." << endl;
     cout << "<table border=1>" << endl;
     if (fitModelType == 0) cout << "<tr align=center><td>region</td><td>&sigma;<sub>CB</sub>(data), %</td><td>&sigma;<sub>CB</sub>(MC), %</td><td>&sigma;<sub>CB</sub>(extra), %</td></tr>" << endl;
-    else cout << "<tr align=center><td>region</td><td>&sigma;<sub>DCB</sub>(data), %</td><td>&sigma;<sub>DCB</sub>(MC), %</td><td>&sigma;<sub>DCB</sub>(extra), %</td></tr>" << endl;
+    else if (fitModelType == 1) cout << "<tr align=center><td>region</td><td>&sigma;<sub>DCB</sub>(data), %</td><td>&sigma;<sub>DCB</sub>(MC), %</td><td>&sigma;<sub>DCB</sub>(extra), %</td></tr>" << endl;
+    else cout << "<tr align=center><td>region</td><td>&sigma;<sub>Gauss</sub>(data), %</td><td>&sigma;<sub>Gauss</sub>(MC), %</td><td>&sigma;<sub>Gauss</sub>(extra), %</td></tr>" << endl;
     i = 0;
     for (unsigned int reg = 0; reg < 4; ++reg) {
       if (!plotReg[reg]) continue;
@@ -510,7 +586,8 @@ void RunCryBall()
     cout << "\\begin{tabular}{|c|c|c|c|}" << endl;
     cout << "\\hline" << endl;
     if (fitModelType == 0) cout << "region & $\\Delta{m}_{CB}(data), GeV/c^2 $ & $\\Delta{m}_{CB}(MC), GeV/c^2 $ & $\\frac{\\Delta{m}_{CB}(Data)-\\Delta{m}_{CB}(MC)}{m(Z^{0})}, \\% $ \\\\" << endl;
-    else cout << "region & $\\Delta{m}_{DCB}(data), GeV/c^2 $ & $\\Delta{m}_{DCB}(MC), GeV/c^2 $ & $\\frac{\\Delta{m}_{DCB}(Data)-\\Delta{m}_{DCB}(MC)}{m(Z^{0})}, \\% $ \\\\" << endl;
+    else if (fitModelType == 1) cout << "region & $\\Delta{m}_{DCB}(data), GeV/c^2 $ & $\\Delta{m}_{DCB}(MC), GeV/c^2 $ & $\\frac{\\Delta{m}_{DCB}(Data)-\\Delta{m}_{DCB}(MC)}{m(Z^{0})}, \\% $ \\\\" << endl;
+    else cout << "region & $\\Delta{m}_{Gauss}(data), GeV/c^2 $ & $\\Delta{m}_{Gauss}(MC), GeV/c^2 $ & $\\frac{\\Delta{m}_{Gauss}(Data)-\\Delta{m}_{Gauss}(MC)}{m(Z^{0})}, \\% $ \\\\" << endl;
     cout << "\\hline" << endl;
     i = 0;
     for (unsigned int reg = 0; reg < 4; ++reg) {
@@ -534,7 +611,8 @@ void RunCryBall()
     cout << "\\begin{tabular}{|c|c|c|c|}" << endl;
     cout << "\\hline" << endl;
     if (fitModelType == 0) cout << "region & $\\frac{\\sigma_{CB}(data)}{m(Z^{0})}, \\%$ & $\\frac{\\sigma_{CB}(MC)}{m(Z^{0})}, \\%$ & $\\sigma_{CB}(extra), \\%$ \\\\" << endl;
-    else cout << "region & $\\frac{\\sigma_{DCB}(data)}{m(Z^{0})}, \\%$ & $\\frac{\\sigma_{DCB}(MC)}{m(Z^{0})}, \\%$ & $\\sigma_{DCB}(extra), \\%$ \\\\" << endl;
+    else if (fitModelType == 1) cout << "region & $\\frac{\\sigma_{DCB}(data)}{m(Z^{0})}, \\%$ & $\\frac{\\sigma_{DCB}(MC)}{m(Z^{0})}, \\%$ & $\\sigma_{DCB}(extra), \\%$ \\\\" << endl;
+    else cout << "region & $\\frac{\\sigma_{Gauss}(data)}{m(Z^{0})}, \\%$ & $\\frac{\\sigma_{Gauss}(MC)}{m(Z^{0})}, \\%$ & $\\sigma_{Gauss}(extra), \\%$ \\\\" << endl;
     cout << "\\hline" << endl;
     i = 0;
     for (unsigned int reg = 0; reg < 4; ++reg) {

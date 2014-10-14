@@ -54,7 +54,6 @@ using namespace RooFit;
 class HighMassRes {
 public:
   HighMassRes(const char *_inFile = "./eScaleEvents19712pb-1.root", const int _lumi = 19712);
-  //HighMassRes(const char *_inFile = "/user/treis/heep/CMSSW_5_3_7_patch4/src/eScaleEvents19616pb-1.root", const int _lumi = 19616);
   inline virtual ~HighMassRes() {};
 
   void RunCryBall();
@@ -70,6 +69,8 @@ protected:
   const char *plotOpt;
   const int nBins;
   bool plotReg[7];
+  bool mcOnly;
+  int eleEbReg;
 
   const int font;
   const bool plotPull;
@@ -116,16 +117,22 @@ protected:
   std::vector<TH1F *> dmHistos;
   std::vector<TH1F *> acbHistos;
   std::vector<TH1F *> ncbHistos;
+  std::vector<TH1F *> ardcbHistos;
+  std::vector<TH1F *> nrdcbHistos;
   // histos for the Z'PSI signal samples
   std::vector<TH1F *> sigmaHistosZpPsi;
   std::vector<TH1F *> dmHistosZpPsi;
   std::vector<TH1F *> acbHistosZpPsi;
   std::vector<TH1F *> ncbHistosZpPsi;
+  std::vector<TH1F *> ardcbHistosZpPsi;
+  std::vector<TH1F *> nrdcbHistosZpPsi;
   // histos for the Z'SSM signal samples
   std::vector<TH1F *> sigmaHistosZpSsm;
   std::vector<TH1F *> dmHistosZpSsm;
   std::vector<TH1F *> acbHistosZpSsm;
   std::vector<TH1F *> ncbHistosZpSsm;
+  std::vector<TH1F *> ardcbHistosZpSsm;
+  std::vector<TH1F *> nrdcbHistosZpSsm;
 
   std::vector<TH1F *> sigmaDCBHistos;
   std::vector<TH1F *> sigmaDCBHistosZpPsi;
@@ -154,14 +161,14 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
                    nBins(80),
                    font(42),
                    plotPull(true),
-                   saveFitsAsPdf(0),
-                   saveFitsAsPng(0),
-                   saveFitsAsRoot(0),
-                   saveResAsPdf(0),
-                   saveResAsPng(0),
-                   saveResAsRoot(0),
+                   saveFitsAsPdf(1),
+                   saveFitsAsPng(1),
+                   saveFitsAsRoot(1),
+                   saveResAsPdf(1),
+                   saveResAsPng(1),
+                   saveResAsRoot(1),
                    fileNameExtra(""),
-                   plotDir("./plots_20131001/"),
+                   plotDir("./plots_20141014_res_splitRangeFit/"),
                    useRootTermForFit(0),
                    fitColorDy(kRed),
                    fitColorZpPsi(kGreen+1),
@@ -173,16 +180,19 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
                    fitColorRes2(kOrange-3),
                    biasName("#Deltam_{CB}"),
                    sigmaName("#sigma_{CB}"),
-                   cutLName("a_{CB}"),
-                   cutRName("a_{CB}"),
+                   cutLName("#alpha_{CB}"),
+                   cutRName("#alpha_{CB}"),
                    powerLName("n_{CB}"),
                    powerRName("n_{CB}")
 {
   inFile = _inFile;
   lumi = _lumi;
 
-  plotReg[0] = 0; // EB-EB
-  plotReg[1] = 0; // EB-EE
+  mcOnly = 0; // no use of sigma_extra
+  eleEbReg = 0; // electron eta regions. 0: full, 1: 2e<0.7, 2: 2e>=0.7, 3: 1e<0.7, 4: 1e>=0.7, 5: 1e<0.7 && 1e>=0.7
+
+  plotReg[0] = 1; // EB-EB
+  plotReg[1] = 1; // EB-EE
   plotReg[2] = 0; // EB-EB + EB-EE
   plotReg[3] = 1; // EE-EE
   plotReg[4] = 0; // EB-EB + EE-EE
@@ -191,13 +201,28 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
 
   // powheg START53 19.7fb-1 HEEP v4.1 double Crystal Ball
   sigmaExtras.reserve(7);
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.73, 0.01));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.93, 0.01));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.2, 0.01));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
-  sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+  if (mcOnly) {
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+  } else {
+    if (eleEbReg == 1) sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.70, 0.01)); // for |eta_e1| < 0.7 && |eta_e2| < 0.7
+    else if (eleEbReg == 2) sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.96, 0.01)); // for |eta_e1| >= 0.7 && |eta_e2| >= 0.7
+    else if (eleEbReg == 3) sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.69, 0.01)); // for |eta_e1| < 0.7 || |eta_e2| < 0.7
+    else if (eleEbReg == 4) sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.84, 0.01)); // for |eta_e1| >= 0.7 || |eta_e2| >= 0.7
+    else if (eleEbReg == 5) sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.84, 0.01)); // for (|eta_e1| < 0.7 && |eta_e2| >= 0.7) || (|eta_e1| >= 0.7 && |eta_e2| < 0.7)
+    else sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.73, 0.01));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0.93, 0.01));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (1.2, 0.01));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+    sigmaExtras.push_back(std::pair<Float_t, Float_t> (0., 0.));
+  }
 
   dyFitRanges.reserve(16);
   dyFitRanges.push_back(100.);
@@ -263,10 +288,10 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
   if (fitModelType > 0) {
     biasName = "#Deltam_{DCB}";
     sigmaName = "#sigma_{DCB}";
-    cutLName = "al_{DCB}";
-    cutRName = "ar_{DCB}";
-    powerLName = "nl_{DCB}";
-    powerRName = "nr_{DCB}";
+    cutLName = "#alpha_{L}^{DCB}";
+    cutRName = "#alpha_{R}^{DCB}";
+    powerLName = "n_{L}^{DCB}";
+    powerRName = "n_{R}^{DCB}";
   }
 
   // set up histograms for the high mass resolution parametrisation
@@ -298,6 +323,18 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
   ncbHistos.push_back(new TH1F("ncbBE", "ncb of fitted function EB-EE", nBinsHisto, binArray));
   ncbHistos.push_back(new TH1F("ncbBBBE", "ncb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
   ncbHistos.push_back(new TH1F("ncbEE", "ncb of fitted function EE-EE", nBinsHisto, binArray));
+
+  ardcbHistos.reserve(4);
+  ardcbHistos.push_back(new TH1F("ardcbBB", "ardcb of fitted function EB-EB", nBinsHisto, binArray));
+  ardcbHistos.push_back(new TH1F("ardcbBE", "ardcb of fitted function EB-EE", nBinsHisto, binArray));
+  ardcbHistos.push_back(new TH1F("ardcbBBBE", "ardcb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  ardcbHistos.push_back(new TH1F("ardcbEE", "ardcb of fitted function EE-EE", nBinsHisto, binArray));
+  
+  nrdcbHistos.reserve(4);
+  nrdcbHistos.push_back(new TH1F("nrdcbBB", "nrdcb of fitted function EB-EB", nBinsHisto, binArray));
+  nrdcbHistos.push_back(new TH1F("nrdcbBE", "nrdcb of fitted function EB-EE", nBinsHisto, binArray));
+  nrdcbHistos.push_back(new TH1F("nrdcbBBBE", "nrdcb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  nrdcbHistos.push_back(new TH1F("nrdcbEE", "nrdcb of fitted function EE-EE", nBinsHisto, binArray));
   // histos for the Z'PSI signal samples
   sigmaHistosZpPsi.reserve(4);
   sigmaHistosZpPsi.push_back(new TH1F("sigmaZpPsiBB", "sigma of fitted function for Signal MC EB-EB", 338, 120., 3500.));
@@ -322,6 +359,18 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
   ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBE", "ncb of fitted function EB-EE", nBinsHisto, binArray));
   ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiBBBE", "ncb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
   ncbHistosZpPsi.push_back(new TH1F("ncbZpPsiEE", "ncb of fitted function EE-EE", nBinsHisto, binArray));
+
+  ardcbHistosZpPsi.reserve(4);
+  ardcbHistosZpPsi.push_back(new TH1F("ardcbZpPsiBB", "ardcb of fitted function EB-EB", nBinsHisto, binArray));
+  ardcbHistosZpPsi.push_back(new TH1F("ardcbZpPsiBE", "ardcb of fitted function EB-EE", nBinsHisto, binArray));
+  ardcbHistosZpPsi.push_back(new TH1F("ardcbZpPsiBBBE", "ardcb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  ardcbHistosZpPsi.push_back(new TH1F("ardcbZpPsiEE", "ardcb of fitted function EE-EE", nBinsHisto, binArray));
+
+  nrdcbHistosZpPsi.reserve(4);
+  nrdcbHistosZpPsi.push_back(new TH1F("nrdcbZpPsiBB", "nrdcb of fitted function EB-EB", nBinsHisto, binArray));
+  nrdcbHistosZpPsi.push_back(new TH1F("nrdcbZpPsiBE", "nrdcb of fitted function EB-EE", nBinsHisto, binArray));
+  nrdcbHistosZpPsi.push_back(new TH1F("nrdcbZpPsiBBBE", "nrdcb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  nrdcbHistosZpPsi.push_back(new TH1F("nrdcbZpPsiEE", "nrdcb of fitted function EE-EE", nBinsHisto, binArray));
   // histos for the Z'SSM signal samples
   sigmaHistosZpSsm.reserve(4);
   sigmaHistosZpSsm.push_back(new TH1F("sigmaZpSsmBB", "sigma of fitted function for Signal MC EB-EB", 338, 120., 3500.));
@@ -346,6 +395,18 @@ HighMassRes::HighMassRes(const char *_inFile, const int _lumi) :
   ncbHistosZpSsm.push_back(new TH1F("ncbZpSsmBE", "ncb of fitted function EB-EE", nBinsHisto, binArray));
   ncbHistosZpSsm.push_back(new TH1F("ncbZpSsmBBBE", "ncb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
   ncbHistosZpSsm.push_back(new TH1F("ncbZpSsmEE", "ncb of fitted function EE-EE", nBinsHisto, binArray));
+
+  ardcbHistosZpSsm.reserve(4);
+  ardcbHistosZpSsm.push_back(new TH1F("ardcbZpSsmBB", "ardcb of fitted function EB-EB", nBinsHisto, binArray));
+  ardcbHistosZpSsm.push_back(new TH1F("ardcbZpSsmBE", "ardcb of fitted function EB-EE", nBinsHisto, binArray));
+  ardcbHistosZpSsm.push_back(new TH1F("ardcbZpSsmBBBE", "ardcb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  ardcbHistosZpSsm.push_back(new TH1F("ardcbZpSsmEE", "ardcb of fitted function EE-EE", nBinsHisto, binArray));
+
+  nrdcbHistosZpSsm.reserve(4);
+  nrdcbHistosZpSsm.push_back(new TH1F("nrdcbZpSsmBB", "nrdcb of fitted function EB-EB", nBinsHisto, binArray));
+  nrdcbHistosZpSsm.push_back(new TH1F("nrdcbZpSsmBE", "nrdcb of fitted function EB-EE", nBinsHisto, binArray));
+  nrdcbHistosZpSsm.push_back(new TH1F("nrdcbZpSsmBBBE", "nrdcb of fitted function EB-EB + EB-EE", nBinsHisto, binArray));
+  nrdcbHistosZpSsm.push_back(new TH1F("nrdcbZpSsmEE", "nrdcb of fitted function EE-EE", nBinsHisto, binArray));
 
   ///////
   sigmaDCBHistos.reserve(4);
