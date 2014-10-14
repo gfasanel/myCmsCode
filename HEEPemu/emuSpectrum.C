@@ -81,19 +81,19 @@ void EmuSpectrum::Loop()
    storeGenMTtbar.push_back(0);
 
    // MC
-   TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_28150723ev.root");
+   TFile *inTTbar = TFile::Open("file:////user/treis/mcsamples/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_28150723ev.root");
    //input.push_back(make_pair(inTTbar, 225.197 / 28150723.)); // NLO
    //input.push_back(make_pair(inTTbar, 234. / 28150723.));  // approx NNLO
    input.push_back(make_pair(inTTbar, 245.8 / 28150723.));  // NNLO http://arxiv.org/pdf/1303.6254.pdf
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3082812ev.root");
+   TFile *inTTbar700to1000 = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_3082812ev.root");
    input.push_back(make_pair(inTTbar700to1000, 15.614 / 3082812. * 245.8/211.));  // ttbar  mtt 700to1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar700to1000", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_1249111ev.root");
+   TFile *inTTbar1000up = TFile::Open("file:////user/treis/mcsamples/TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_1249111ev.root");
    input.push_back(make_pair(inTTbar1000up, 2.954 / 1249111. * 245.8/211.));  // ttbar  mtt>1000
    systErrMCs.Add(new TParameter<float>("systErrMcTtbar1000up", 0.036));
    storeGenMTtbar.push_back(1);
@@ -103,12 +103,12 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcTtbarPriv600up", 0.15));
    storeGenMTtbar.push_back(1);
 
-   TFile *inZtt = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3295238ev.root");
-   input.push_back(make_pair(inZtt, 1915.1 / 3295238.)); //Ztautau
+   TFile *inZtt = TFile::Open("file:////user/treis/mcsamples/DYToTauTau_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_52085800ev.root");
+   input.push_back(make_pair(inZtt, 1915.1 / 52085800.)); //Ztautau
    systErrMCs.Add(new TParameter<float>("systErrMcDyTauTau", 0.054));
    storeGenMTtbar.push_back(0);
 
-   TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000431ev.root");
+   TFile *inWW = TFile::Open("file:////user/treis/mcsamples/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_10000431ev.root");
    input.push_back(make_pair(inWW, 54.838 / 10000431.)); //WW
    systErrMCs.Add(new TParameter<float>("systErrMcWW", 0.035));
    storeGenMTtbar.push_back(0);
@@ -123,57 +123,57 @@ void EmuSpectrum::Loop()
    systErrMCs.Add(new TParameter<float>("systErrMcWWePlusMuMinusPriv600up", 0.05));
    storeGenMTtbar.push_back(0);
 
-   TFile *inWZ = TFile::Open("file:////user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_10000283ev.root");
+   TFile *inWZ = TFile::Open("file:////user/treis/mcsamples/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_10000283ev.root");
    input.push_back(make_pair(inWZ, 33.21 / 10000283.)); //WZ
    systErrMCs.Add(new TParameter<float>("systErrMcWZ", 0.038));
    storeGenMTtbar.push_back(0);
 
-   TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_991118ev.root");
+   TFile *inTW = TFile::Open("file:////user/treis/mcsamples/T+Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_991118ev.root");
    input.push_back(make_pair(inTW, 22.2 / 991118.)); //tW
    systErrMCs.Add(new TParameter<float>("systErrMcTW", 0.069));
    storeGenMTtbar.push_back(0);
 
-   TFile *inWJet = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_76102995ev.root");
+   TFile *inWJet = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
    input.push_back(make_pair(inWJet, 36257.2 / 76102995.)); //W+jet
    systErrMCs.Add(new TParameter<float>("systErrMcWJets", 0.05));
    storeGenMTtbar.push_back(0);
 
-   TFile *inZmm = TFile::Open("file:////user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3293740ev.root");
-   input.push_back(make_pair(inZmm, 1915. / 3293740.)); //Zmumu
+   TFile *inZmm = TFile::Open("file:////user/treis/mcsamples/DYToMuMu_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_52113126ev.root");
+   input.push_back(make_pair(inZmm, 1915. / 52113126.)); //Zmumu
    systErrMCs.Add(new TParameter<float>("systErrMcDyMuMu", 0.054));
    storeGenMTtbar.push_back(0);
 
-   TFile *inZee = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_3297045ev.root");
-   input.push_back(make_pair(inZee, 1915. / 3297045.)); //Zee
+   TFile *inZee = TFile::Open("file:////user/treis/mcsamples/DYToEE_M-20_CT10_TuneZ2star_v1+v2_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_46002499ev.root");
+   input.push_back(make_pair(inZee, 1915. / 46002499.)); //Zee
    systErrMCs.Add(new TParameter<float>("systErrMcDyEE", 0.054));
    storeGenMTtbar.push_back(0);
 
-   TFile *inZZ = TFile::Open("file:////user/treis/mcsamples/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_9799908ev.root");
+   TFile *inZZ = TFile::Open("file:////user/treis/mcsamples/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_9799908ev.root");
    input.push_back(make_pair(inZZ, 17.654 / 9799908.)); //ZZ
    systErrMCs.Add(new TParameter<float>("systErrMcZZ", 0.025));
    storeGenMTtbar.push_back(0);
 
-   TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_8288533ev.root");
-   input.push_back(make_pair(inTTbarMg, 245.8/ 8288533.)); //TTjets from MadGraph
+   TFile *inTTbarMg = TFile::Open("file:////user/treis/mcsamples/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_6923750ev.root");
+   input.push_back(make_pair(inTTbarMg, 245.8/ 6923750.)); //TTjets from MadGraph
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_gct1_46_16365457ev.root");
-   input.push_back(make_pair(inTTbar22l, 13.43 / 16365457. * 245.8/(13.43+53.2+53.4))); //TT to 2l
+   TFile *inTTbar22l = TFile::Open("file:////user/treis/mcsamples/TTJets_FullLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v2_AODSIM_emuSkim_12119013ev.root");
+   input.push_back(make_pair(inTTbar22l, 13.43 / 12119013. * 245.8/(13.43+53.2+53.4))); //TT to 2l
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets2l", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A_ext-v1_AODSIM_gct1_46_25424818ev.root");
-   input.push_back(make_pair(inTTbar21l, 53.2 / 25424818. * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
+   TFile *inTTbar21l = TFile::Open("file:////user/treis/mcsamples/TTJets_SemiLeptMGDecays_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_11229902ev.root");
+   input.push_back(make_pair(inTTbar21l, 53.2 / 11229902. * 245.8/(13.43+53.2+53.4))); //TT to 1l1jet
    systErrMCs.Add(new TParameter<float>("systErrMcTtJets1l1jet", 0.036));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_196046ev.root");
+   TFile *inTTW = TFile::Open("file:////user/treis/mcsamples/TTWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_196046ev.root");
    input.push_back(make_pair(inTTW, 0.232 / 196046.)); //TTW
    systErrMCs.Add(new TParameter<float>("systErrMcTtW", 0.32));
    storeGenMTtbar.push_back(1);
 
-   TFile *inTTWW = TFile::Open("file:////user/treis/mcsamples/TTWWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_gct1_46_217820ev.root");
+   TFile *inTTWW = TFile::Open("file:////user/treis/mcsamples/TTWWJets_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_217820ev.root");
    input.push_back(make_pair(inTTWW, 0.002037 / 217820.)); //TTWW
    systErrMCs.Add(new TParameter<float>("systErrMcTtWW", 0.));
    storeGenMTtbar.push_back(1);
@@ -187,137 +187,137 @@ void EmuSpectrum::Loop()
    //systErrMCs.Add(new TParameter<float>("systErrMcWJets100up", 0.05));
    //storeGenMTtbar.push_back(0);
 
-   TFile *inSig0 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9999ev.root");
+   TFile *inSig0 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig0, 0.000947 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig0", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig1 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9400ev.root");
+   TFile *inSig1 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9400ev.root");
    input.push_back(make_pair(inSig1, 0.000239 / 9400.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig1", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig2 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig2 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig2, 8.956e-5 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig2", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig3 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9999ev.root");
+   TFile *inSig3 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig3, 3.867e-5 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig3", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig4 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig4 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig4, 1.778e-5 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig4", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig5 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig5 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig5, 8.501e-6 / 10000.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig5", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig6 = TFile::Open("file://///user/treis/mcsamples/ZprimeToEMu_M-1750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig6 = TFile::Open("file://///user/treis/mcsamples/ZprimeToEMu_M-1750_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig6, 4.124e-6 / 10000.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig6", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig7 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig7 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig7, 2.014e-6 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig7", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig8 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig8 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig8, 4.724e-7 / 10000.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig8", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig9 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig9 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig9, 1.059e-7 / 9999.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig9", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig10 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
+   TFile *inSig10 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
    input.push_back(make_pair(inSig10, 2.198e-8 / 9997.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig10", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig11 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9993ev.root");
+   TFile *inSig11 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9993ev.root");
    input.push_back(make_pair(inSig11, 4.157e-9 / 9993.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig11", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig12 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9959ev.root");
+   TFile *inSig12 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9959ev.root");
    input.push_back(make_pair(inSig12, 1.359e-10 / 9959.)); //Signal
    systErrMCs.Add(new TParameter<float>("systErrMcSig12", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig13 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_noAccCuts_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_10000ev.root");
+   TFile *inSig13 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-250_noAccCuts_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig13, 0.000953 / 10000.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig13", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig13a = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig13a = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig13a, 0.000239 / 9999.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig13a", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig14 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig14 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig14, 8.956e-5 / 10000.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig14", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig15 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
+   TFile *inSig15 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig15, 3.862e-5 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig15", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig16 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
+   TFile *inSig16 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1250_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig16, 1.781e-5 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig16", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig17 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
+   TFile *inSig17 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1500_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
    input.push_back(make_pair(inSig17, 8.503e-6 / 9997.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig17", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig18 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9997ev.root");
+   TFile *inSig18 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-1750_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9997ev.root");
    input.push_back(make_pair(inSig18, 4.127e-6 / 9997.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig18", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig19 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9999ev.root");
+   TFile *inSig19 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9999ev.root");
    input.push_back(make_pair(inSig19, 2.014e-6 / 9999.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig19", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig20 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
+   TFile *inSig20 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-2500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig20, 4.735e-7 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig20", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig21 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_10000ev.root");
+   TFile *inSig21 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_10000ev.root");
    input.push_back(make_pair(inSig21, 1.059e-7 / 10000.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig21", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig22 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_9998ev.root");
+   TFile *inSig22 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-3500_noAccCuts_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig22, 2.197e-8 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig22", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig23 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9998ev.root");
+   TFile *inSig23 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-4000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9998ev.root");
    input.push_back(make_pair(inSig23, 4.155e-9 / 9998.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig23", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig24 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_9966ev.root");
+   TFile *inSig24 = TFile::Open("file:////user/treis/mcsamples/ZprimeToEMu_M-5000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1_USER_emuSkim_9966ev.root");
    input.push_back(make_pair(inSig24, 1.293e-10 / 9966.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig24", 0.));
    storeGenMTtbar.push_back(0);
 
-   TFile *inSig25 = TFile::Open("file:////user/treis/mcsamples/ZprimeLFVToEMu_M-1000_TuneZ2star_8TeV_madgraph_Summer12_DR53X-PU_S10_START53_V19E-v1_AODSIM_9996ev.root");
+   TFile *inSig25 = TFile::Open("file:////user/treis/mcsamples/ZprimeLFVToEMu_M-1000_TuneZ2star_8TeV_madgraph_Summer12_DR53X-PU_S10_START53_V19E-v1_AODSIM_emuSkim_9996ev.root");
    input.push_back(make_pair(inSig25, 3.87e-5 / 9996.)); //Signal with no acceptance cuts
    systErrMCs.Add(new TParameter<float>("systErrMcSig25", 0.));
    storeGenMTtbar.push_back(0);
@@ -347,11 +347,17 @@ void EmuSpectrum::Loop()
    TTree *eleDataTree = new TTree("eleDataTree", "eleDataTree");
    int evRegion = -1;
    float emuMass = 0.;
+   int ele_charge = 0;
+   int mu_charge = 0;
+   float mu_eta = 0.;
    eleDataTree->Branch("runnr", &runnumber, "runnr/I");
    eleDataTree->Branch("eventnr", &eventnumber, "eventnr/i");
    eleDataTree->Branch("lumiSec", &luminosityBlock, "lumiSec/I");
    eleDataTree->Branch("evtRegion", &evRegion, "evtRegion/I");
    eleDataTree->Branch("mass", &emuMass, "mass/F");
+   eleDataTree->Branch("ele_charge", &ele_charge, "ele_charge/I");
+   eleDataTree->Branch("mu_charge", &mu_charge, "mu_charge/I");
+   eleDataTree->Branch("mu_eta", &mu_eta, "mu_eta/F");
 
    unsigned int dataTrig[3] = {0, 0, 0};
    unsigned int dataEntries = 0;
@@ -985,6 +991,9 @@ void EmuSpectrum::Loop()
             // fill the good emu events tree
             evRegion = evtRegion;
             emuMass = invMass;
+            ele_charge = gsf_charge[GSF_passHEEP[0]];
+            mu_charge = muon_charge[MU_passGOOD[0]];
+            mu_eta = muon_eta[MU_passGOOD[0]];
             if (passTrg) eleDataTree->Fill();
             
 
