@@ -423,6 +423,8 @@ cout << sqrt(pow(100 * cbSigmaMC->getVal() / denom, 2) + pow(sigmaExtras[reg].fi
 cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)) << endl;
       dmHistos[reg]->SetBinContent(iRange + 1, cbBiasMC->getVal());
       dmHistos[reg]->SetBinError(iRange + 1, cbBiasMC->getError());
+      dmHistosRel[reg]->SetBinContent(iRange + 1, 100 * cbBiasMC->getVal() / denom);
+      dmHistosRel[reg]->SetBinError(iRange + 1, 100 * cbBiasMC->getError() / denom);
       acbHistos[reg]->SetBinContent(iRange + 1, cbCutMC->getVal());
       acbHistos[reg]->SetBinError(iRange + 1, cbCutMC->getError());
       ncbHistos[reg]->SetBinContent(iRange + 1, cbPowerMC->getVal());
@@ -518,6 +520,8 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
         sigmaHistosZpPsi[reg]->SetBinError(sigmaHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
         dmHistosZpPsi[reg]->SetBinContent(dmHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getVal());
         dmHistosZpPsi[reg]->SetBinError(dmHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        dmHistosRelZpPsi[reg]->SetBinContent(dmHistosRelZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), 100 * cbBiasSigMC->getVal() / denom);
+        dmHistosRelZpPsi[reg]->SetBinError(dmHistosRelZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), 100 * cbBiasSigMC->getError() / denom);
         acbHistosZpPsi[reg]->SetBinContent(acbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getVal());
         acbHistosZpPsi[reg]->SetBinError(acbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
         ncbHistosZpPsi[reg]->SetBinContent(ncbHistosZpPsi[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getVal());
@@ -533,6 +537,8 @@ cout << sqrt(pow(100 * cbSigmaMC->getError() / denom, 2) + pow(sigmaExtras[reg].
         sigmaHistosZpSsm[reg]->SetBinError(sigmaHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), sqrt(pow(100 * cbSigmaSigMC->getError() / denom, 2) + pow(sigmaExtras[reg].second, 2)));
         dmHistosZpSsm[reg]->SetBinContent(dmHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getVal());
         dmHistosZpSsm[reg]->SetBinError(dmHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbBiasSigMC->getError());
+        dmHistosRelZpSsm[reg]->SetBinContent(dmHistosRelZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), 100 * cbBiasSigMC->getVal() / denom);
+        dmHistosRelZpSsm[reg]->SetBinError(dmHistosRelZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), 100 * cbBiasSigMC->getError() / denom);
         acbHistosZpSsm[reg]->SetBinContent(acbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getVal());
         acbHistosZpSsm[reg]->SetBinError(acbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbCutSigMC->getError());
         ncbHistosZpSsm[reg]->SetBinContent(ncbHistosZpSsm[reg]->FindBin(zPrimeGenMasses[iZp].first), cbPowerSigMC->getVal());
@@ -579,7 +585,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
       sigmaHistosZpSsm[reg]->Draw("e1sames");
     }
 
-    sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     sigmaHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     sigmaHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     if (mcOnly) sigmaHistos[reg]->GetYaxis()->SetTitle(sigmaName+" (%)");
@@ -654,7 +660,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
       dmHistosZpSsm[reg]->Draw("e1sames");
     }
 
-    dmHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    dmHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     dmHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     dmHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     dmHistos[reg]->GetYaxis()->SetTitle(biasName+" (GeV)");
@@ -695,6 +701,68 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
     //========================================================================
 
     //========================================================================
+    // plot the the relative high energy bias
+    TCanvas* c2a = new TCanvas("c2a" + regTxt[reg], "Relative mass bias " + regTxt[reg], 0, 0, 800, 600);
+    c2a->cd();
+    // plot the data and fit the model
+    gStyle->SetErrorX(0.5);
+    dmHistosRel[reg]->SetLineWidth(1);
+    dmHistosRel[reg]->SetLineColor(fitColorDy);
+    dmHistosRel[reg]->SetMarkerColor(fitColorDy);
+    dmHistosRel[reg]->SetMarkerStyle(20);
+    dmHistosRel[reg]->Draw("e1");
+    if (zPrimeGenMasses.size() > 0) {
+      dmHistosRelZpPsi[reg]->SetLineColor(fitColorZpPsi);
+      dmHistosRelZpSsm[reg]->SetLineColor(fitColorZpSsm);
+      dmHistosRelZpPsi[reg]->SetMarkerColor(fitColorZpPsi);
+      dmHistosRelZpSsm[reg]->SetMarkerColor(fitColorZpSsm);
+      dmHistosRelZpPsi[reg]->SetMarkerStyle(22);
+      dmHistosRelZpSsm[reg]->SetMarkerStyle(23);
+      dmHistosRelZpPsi[reg]->Draw("e1sames");
+      dmHistosRelZpSsm[reg]->Draw("e1sames");
+    }
+
+    dmHistosRel[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
+    dmHistosRel[reg]->GetXaxis()->SetTitleSize(0.04);
+    dmHistosRel[reg]->GetXaxis()->SetLabelSize(0.035);
+    dmHistosRel[reg]->GetYaxis()->SetTitle(biasName+" (%)");
+    dmHistosRel[reg]->GetYaxis()->SetTitleSize(0.04);
+    dmHistosRel[reg]->GetYaxis()->SetLabelSize(0.035);
+
+    TLegend *legend2a = new TLegend(0.741, 0.758, 0.931, 0.916);
+    legend2a->SetTextSize(0.04);
+    legend2a->SetFillStyle(0);
+    legend2a->AddEntry(dmHistosRel[reg], "DY #rightarrow ee", "lep");
+    if (zPrimeGenMasses.size() > 0) legend2a->AddEntry(dmHistosRelZpPsi[reg], "Z'_{#psi} #rightarrow ee", "lep");
+    if (zPrimeGenMasses.size() > 7) legend2a->AddEntry(dmHistosRelZpSsm[reg], "Z'_{SSM} #rightarrow ee", "lep");
+    legend2a->Draw("sames");
+
+    TLatex *tex2a;
+    if (mcOnly) tex2a = new TLatex(0.77, 0.965, "CMS Simulation");
+    else tex2a = new TLatex(0.49, 0.965, "CMS Preliminary, 8 TeV, (19.7 #pm 0.5) fb^{-1}");
+    tex2a->SetNDC();
+    tex2a->SetTextFont(font);
+    tex2a->SetLineWidth(2);
+    tex2a->SetTextSize(0.04);
+    tex2a->Draw();
+    tex2a->DrawLatex(0.1, 0.965, regTxt[reg].Data());
+    if (eleEbReg == 1) tex2a->DrawLatex(0.72, 0.71, "two e with |#eta| < 0.7");
+    else if (eleEbReg == 2) tex2a->DrawLatex(0.72, 0.71, "two e with |#eta| #geq 0.7");
+    else if (eleEbReg == 3 || eleEbReg == 5) tex2a->DrawLatex(0.72, 0.71, "one e with |#eta| < 0.7");
+    else if (eleEbReg == 4) tex2a->DrawLatex(0.72, 0.71, "one e with |#eta| #geq 0.7");
+    if (eleEbReg == 5) tex2a->DrawLatex(0.72, 0.66, "one e with |#eta| #geq 0.7");
+
+    // safe in various file formats
+    sStream.str("");
+    sStream << plotDir << "highMassBiasRel" << regFileNameSuffix[reg];
+    sStream << fileNameExtra << "_" << lumi << "pb-1";
+    saveFileName = sStream.str();
+    if (saveResAsPdf) c2a->Print(saveFileName + ".pdf", "pdf");
+    if (saveResAsPng) c2a->Print(saveFileName + ".png", "png");
+    if (saveResAsRoot) c2a->Print(saveFileName + ".root", "root");
+    //========================================================================
+
+    //========================================================================
     // plot the the high energy Crystall Ball cut off parameter
     TCanvas* c3 = new TCanvas("c3" + regTxt[reg], "High mass CB cut off " + regTxt[reg], 0, 0, 800, 600);
     c3->cd();
@@ -716,7 +784,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
       acbHistosZpSsm[reg]->Draw("e1sames");
     }
 
-    acbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    acbHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     acbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     acbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     acbHistos[reg]->GetYaxis()->SetTitle(cutLName.Data());
@@ -778,7 +846,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
       ncbHistosZpSsm[reg]->Draw("e1sames");
     }
 
-    ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     ncbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     ncbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     ncbHistos[reg]->GetYaxis()->SetTitle(powerLName.Data());
@@ -841,7 +909,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
         ardcbHistosZpSsm[reg]->Draw("e1sames");
       }
 
-      ardcbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+      ardcbHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
       ardcbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
       ardcbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
       ardcbHistos[reg]->GetYaxis()->SetTitle(cutRName.Data());
@@ -903,7 +971,7 @@ cout << "Chi^2 / NDF: " << fitFunc->GetChisquare() << " / " << fitFunc->GetNDF()
         nrdcbHistosZpSsm[reg]->Draw("e1sames");
       }
 
-      nrdcbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+      nrdcbHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
       nrdcbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
       nrdcbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
       nrdcbHistos[reg]->GetYaxis()->SetTitle(powerRName.Data());
@@ -1313,7 +1381,7 @@ void HighMassRes::CompareCryBall()
     sigmaDCBHistos[reg]->Draw("e1sames");
     sigmaHistos[reg]->Draw("samesaxis");
 
-    sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    sigmaHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     sigmaHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     sigmaHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     if (mcOnly) sigmaHistos[reg]->GetYaxis()->SetTitle("#sigma_{fit} (%)"); // for MC only
@@ -1387,7 +1455,7 @@ void HighMassRes::CompareCryBall()
       dmHistosZpSsm[reg]->Draw("e1sames");
     }
 
-    dmHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    dmHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     dmHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     dmHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     dmHistos[reg]->GetYaxis()->SetTitle("#Deltam_{CB} (GeV)");
@@ -1435,7 +1503,7 @@ void HighMassRes::CompareCryBall()
       acbHistosZpSsm[reg]->Draw("e1sames");
     }
 
-    acbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    acbHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     acbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     acbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     acbHistos[reg]->GetYaxis()->SetTitle("a_{CB}");
@@ -1483,7 +1551,7 @@ void HighMassRes::CompareCryBall()
       ncbHistosZpSsm[reg]->Draw("e1sames");
     }
 
-    ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) [GeV]");
+    ncbHistos[reg]->GetXaxis()->SetTitle("m(ee) (GeV)");
     ncbHistos[reg]->GetXaxis()->SetTitleSize(0.04);
     ncbHistos[reg]->GetXaxis()->SetLabelSize(0.035);
     ncbHistos[reg]->GetYaxis()->SetTitle("n_{CB}");
