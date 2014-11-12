@@ -473,13 +473,13 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
 
    shapeUncNames.reserve(5);
    shapeUncNames.push_back("");
-   //shapeUncNames.push_back("eleScaleUp");
-   //shapeUncNames.push_back("eleScaleDown");
-   //shapeUncNames.push_back("muScaleUp");
-   //shapeUncNames.push_back("muScaleDown");
-   //shapeUncNames.push_back("muonResUp");
-   //shapeUncNames.push_back("muonResDown");
-   //shapeUncNames.push_back("muonResSmearUp");
+   shapeUncNames.push_back("eleScaleUp");
+   shapeUncNames.push_back("eleScaleDown");
+   shapeUncNames.push_back("muScaleUp");
+   shapeUncNames.push_back("muScaleDown");
+   shapeUncNames.push_back("muonResUp");
+   shapeUncNames.push_back("muonResDown");
+   shapeUncNames.push_back("muonResSmearUp");
 }
 
 EmuSpectrum::~EmuSpectrum()

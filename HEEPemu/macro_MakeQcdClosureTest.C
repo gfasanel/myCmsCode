@@ -50,7 +50,7 @@ void macro_MakeQcdClosureTest()
 {
   // parameters //////////////////////////////////////////////////////////////
   //TFile input("./emuSpec_19703pb-1.root", "open");
-  TFile input("./emuSpec_singleMuTrg_19706pb-1.root", "open");
+  TFile input("./emuSpec_singleMuTrg_altdiboson_19706pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");

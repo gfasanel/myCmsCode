@@ -36,8 +36,9 @@ class ContVarPlot {
     bool fLogPlot;
     bool fUnderFlow;
     bool fOverFlow;
+    bool fDontPlotSignal;
 
-    ContVarPlot(const char* name, const char* title, const char* xAxisTitle, float xmin, float xmax, int nBins, bool plotQcd=1, bool logPlot=0, bool underFlow=0, bool overFlow=0) : fName(name), fTitle(title), fXaxisTitle(xAxisTitle), fXmin(xmin), fXmax(xmax), fNbins(nBins), fPlotQcd(plotQcd), fLogPlot(logPlot), fUnderFlow(underFlow), fOverFlow(overFlow) { } 
+    ContVarPlot(const char* name, const char* title, const char* xAxisTitle, float xmin, float xmax, int nBins, bool plotQcd=1, bool logPlot=0, bool underFlow=0, bool overFlow=0, bool dontPlotSignal=0) : fName(name), fTitle(title), fXaxisTitle(xAxisTitle), fXmin(xmin), fXmax(xmax), fNbins(nBins), fPlotQcd(plotQcd), fLogPlot(logPlot), fUnderFlow(underFlow), fOverFlow(overFlow), fDontPlotSignal(dontPlotSignal) { } 
     ~ContVarPlot() { }
 };
 
@@ -47,7 +48,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   //TFile input("./emuSpec_MuGammaTrg_topxsect245p8_19703pb-1.root", "open");
   //TFile input("./emuSpec_MuGammaTrg_topxsect252p89_19703pb-1.root", "open");
   //TFile input("./emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root", "open");
-  TFile input("./emuSpec_singleMuTrg_altdiboson_19706pb-1.root", "open");
+  //TFile input("./emuSpec_singleMuTrg_altdiboson_19706pb-1.root", "open");
+  TFile input("./emuSpec_thesis_19706pb-1.root", "open");
   //TFile input("./emuSpec_singleMuTrg_topxsect252p89_19706pb-1.root", "open");
   input.cd();
 
@@ -60,9 +62,10 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   TString wz_base = "wzmg";
   TString zz_base = "zzmg";
   TString tw_base = "twpow";
+  const bool altBgStacking = 1; // alternative ordering of the bkg contributions
   const int qcdEst = 2; // estimation method of QCD contribution. none(0), from SS spectrum(1), from fake rate(2)
-  const float plotSignal[4] = {1., 1., 1., 1.}; // signal scale factors. 0 for off
-  const bool plotPull = 0; // plot (data-bkg)/bkg
+  float plotSignal[4] = {10., 10., 10., 10.}; // signal scale factors. 0 for off
+  const bool plotPull = 1; // plot (data-bkg)/bkg
   const bool plotShapeUnc = 0; // plot up/down shape uncertainty histograms
   const bool pullGridY = 1; // grid lines on y axis of pull plot
   const bool prelim = 1; // print Preliminary
@@ -74,7 +77,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   // plot style
   int ttbarColour = TColor::GetColor("#ff6666");
   int zttColour = TColor::GetColor("#ff4d4d");
-  int zjetsllColour = TColor::GetColor("#99ccff");
+  int zjetsllColour = TColor::GetColor("#ff4d4d");
   int wwColour = TColor::GetColor("#ff3333");
   int wzColour = TColor::GetColor("#ff0f0f");
   int zzColour = TColor::GetColor("#eb0000");
@@ -83,15 +86,23 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   int zeeColour=  TColor::GetColor("#99ccff");
   int wjetColour=  TColor::GetColor("#ffd324");
   int jetBkgColour = TColor::GetColor("#ffff66");
+  if (altBgStacking) {
+    zttColour = TColor::GetColor("#db0000");
+    zjetsllColour = TColor::GetColor("#db0000");
+    wwColour = TColor::GetColor("#ff4d4d");
+    wzColour = TColor::GetColor("#ff0f0f");
+    zzColour = TColor::GetColor("#eb0000");
+    twColour = TColor::GetColor("#ff3333");
+  }
 
   // output file formats
-  const bool saveSpec = 0;
+  const bool saveSpec = 1;
   const bool saveAsPdf = 1;
   const bool saveAsPng = 1;
   const bool saveAsRoot = 0;
   const char *fileNameExtra = "";
   //const char *fileNameExtra = "madgraphTTbar_";
-  const char *plotDir = "./testplots/";
+  const char *plotDir = "./thesisplots/";
   TString outfileName = "test_plots";
 
   int font = 42; //62
@@ -103,52 +114,52 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 
   std::vector<ContVarPlot> testPlots;
   testPlots.reserve(40);
-  // flags: plotQCD | logPlot | underflow in first bin | overflow in last bin
-  testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 75, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("pfMet", "PF MET", "E^{T}_{miss} [GeV]", 0., 500., 50, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("nVtx", "Number of primary vertices", "# PV", 0., 50., 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("rho", "rho", "#rho", 0., 50., 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("numOfJetsPt20", "Number of jets > 20 GeV", "# jets_{p_{T}>20}", 0., 20., 20, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("numOfJetsPt30", "Number of jets > 30 GeV", "# jets_{p_{T}>30}", 0., 15., 15, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("numOfBJetsPt30", "Number of b-jets > 30 GeV", "# b-jets_{p_{T}>30}", 0., 6., 6, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("numOfBJetsMVAPt30", "Number of b-jets_{MVA} > 30 GeV", "# b-jets_{p_{T}>30}", 0., 6., 6, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("eDxyMinusMuDxy", "|Dxy_e - Dxy_mu|", "|#Deltaxy_{e}-#Deltaxy_{#mu}|", 0., 0.06, 40, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eDzMinusMuDz", "|Dz_e - Dz_mu|", "|#Deltaz_{e}-#Deltaz_{#mu}|", 0., 0.5, 40, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("dEta", "|eta_e - eta_mu|", "|#eta_{e}-#eta_{#mu}|", 0., 5., 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("dPhi", "|phi_e - phi_mu|", "|#varphi_{e}-#varphi_{#mu}|", 0., 3.2, 64, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("eleEt", "Electron Et", "E_{T}^{e} [GeV]", 0., 500., 50, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eleEta", "Electron eta", "#eta_{e}", -2.5, 2.5, 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("elePhi", "Electron phi", "#phi_{e}", -3.2, 3.2, 64, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("eleDEta", "Electron dEta", "#Delta#eta", -0.007, 0.007, 29, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("eleDPhi", "Electron dPhi", "#Delta#varphi", -0.06, 0.06, 50, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("eleHOE", "Electron H/E", "H/E", 0., 0.051, 51, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("eleE1x5overE5x5", "Electron E1x5/E5x5", "E1x5/E5x5", 0., 1.5, 30, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eleE2x5overE5x5", "Electron E2x5/E5x5", "E2x5/E5x5", 0., 1.5, 30, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eleSigmaIEIE", "Electron #sigma_i#etai#eta", "", 0., 0.04, 40, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("eleEcalIso", "Electron ECAL iso", "ECAL iso", 0., 15., 30, 1, 0, 0, 0));
-  testPlots.push_back(ContVarPlot("eleHcalIso1", "Electron HCAL iso1", "HCAL iso1", 0., 15., 30, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("eleHcalIso2", "Electron HCAL iso2", "HCAL iso2", 0., 15., 30, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("eleHeepIso", "Electron HEEP iso", "HEEP iso", 0., 20., 40, 1, 1, 0, 1));
-  testPlots.push_back(ContVarPlot("eleTrkIso", "Electron track iso", "trk_{iso}", 0., 5.1, 51, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("eleLostHits", "Electron number of lost hits", "", 0., 2., 2, 1, 0, 0, 0));
-  testPlots.push_back(ContVarPlot("eleDXYFstPVtx", "Electron Dxy at first PV", "#Deltaxy_{e}", -0.05, 0.05, 40, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eleDZFstPVtx", "Electron Dz at first PV", "#Deltaz_{e}", -1., 1., 80, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("etEleOPtMu", "Et_e / pt_mu", "E^{e}_{T} / p^{#mu}_{T}", 0., 13., 26, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("lepPtPlusOPtMinus", "lepton pt+ / pt-", "p^{+}_{T}/p^{-}_{T}", 0., 10., 20, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("eChTimesMuCh", "charge_e * charge_mu", "charge_{e}*charge_{#mu}", -1., 2., 3, 1, 1, 0, 0));
-  testPlots.push_back(ContVarPlot("muPt", "Muon pt", "p_{T}^{#mu} [GeV]", 0., 500., 50, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muPtErr", "Muon pt error", "p_{T}^{#mu} [GeV]", 0., 50., 50, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muEta", "Muon eta", "#eta_{#mu}", -2.5, 2.5, 50, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muPhi", "Muon phi", "#varphi_{#mu}", -3.2, 3.2, 64, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muHitLayers", "Muon layers with hits", "# layers hits", 4., 20., 16, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muTrkHits", "Muon tracker hits", "# tracker hits", 0., 40., 40, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muPxlHits", "Muon pixel hits", "# pixel hits", 0., 10., 10, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muMuHits", "Muon system hits", "# #mu system hits", 0., 55., 55, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muDXYFstPVtx", "Muon Dxy at first PV", "#Deltaxy_{#mu}", -0.2, 0.2, 80, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muDZFstPVtx", "Muon Dz at first PV", "#Deltaz_{#mu}", -0.1, 0.1, 40, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muNSeg", "Muon number of segments", "# segments", 0., 7., 7, 1, 0, 1, 1));
-  testPlots.push_back(ContVarPlot("muTrkIso03", "Muon track iso 03", "#mu trk iso", 0., 20., 40, 1, 1, 1, 1));
-  testPlots.push_back(ContVarPlot("muIsoCombRel", "Muon combined iso / pt", "#mu (iso_{em}+iso_{had}+iso_{trk})/p_{T}", 0., 3.5, 35, 1, 1, 1, 1));
+  // flags: plotQCD | logPlot | underflow in first bin | overflow in last bin | don't plot signal
+  testPlots.push_back(ContVarPlot("mass",              "e#mu invariant mass",             "m(e#mu) [GeV]",                            0., 1500.,    75, 1, 1, 0, 0));
+  testPlots.push_back(ContVarPlot("pfMet",             "PF MET",                          "E^{T}_{miss} [GeV]",                       0.,  500.,    50, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("nVtx",              "Number of primary vertices",      "# PV",                                     0.,   50.,    50, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("rho",               "#rho",                            "#rho",                                     0.,   50.,    50, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("numOfJetsPt20",     "Number of jets > 20 GeV",         "# jets p_{T}>20 GeV",                      0.,   15.,    15, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("numOfJetsPt30",     "Number of jets > 30 GeV",         "# jets p_{T}>30 GeV",                      0.,   10.,    10, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("numOfBJetsPt30",    "Number of b-jets > 30 GeV",       "# b-jets p_{T}>30 GeV",                    0.,    6.,     6, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("numOfBJetsMVAPt30", "Number of b-jets_{MVA} > 30 GeV", "# b-jets p_{T}>30 GeV",                    0.,    6.,     6, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eDxyMinusMuDxy",    "|Dxy_{e} - Dxy_{#mu}|",           "|#Deltaxy_{e}-#Deltaxy_{#mu}|",            0.,    0.06,  40, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eDzMinusMuDz",      "|Dz_{e} - Dz_{#mu}|",             "|#Deltaz_{e}-#Deltaz_{#mu}|",              0.,    0.5,   40, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("dEta",              "|#eta_{e} - #eta_{#mu}|",         "|#eta_{e}-#eta_{#mu}|",                    0.,    5.,    50, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("dPhi",              "|#phi_{e} - #phi_{#mu}|",         "|#varphi_{e}-#varphi_{#mu}|",              0.,    3.2,   64, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleEt",             "Electron E_{T}",                  "E_{T}^{e} [GeV]",                          0.,  500.,    50, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleEta",            "Electron #eta",                   "#eta_{e}",                                -2.5,   2.5,   50, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("elePhi",            "Electron #phi",                   "#phi_{e}",                                -3.2,   3.2,   64, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleDEta",           "Electron dEta",                   "#Delta#eta",                              -0.007, 0.007, 29, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleDPhi",           "Electron dPhi",                   "#Delta#varphi",                           -0.06,  0.06,  50, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleHOE",            "Electron H/E",                    "H/E",                                      0.,    0.051, 51, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleE1x5overE5x5",   "Electron E1x5/E5x5",              "E1x5/E5x5",                                0.,    1.5,   30, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleE2x5overE5x5",   "Electron E2x5/E5x5",              "E2x5/E5x5",                                0.,    1.5,   30, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleSigmaIEIE",      "Electron #sigma_i#etai#eta",      "",                                         0.,    0.04,  40, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleEcalIso",        "Electron ECAL iso",               "ECAL iso",                                 0.,   15.,    30, 1, 0, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleHcalIso1",       "Electron HCAL iso1",              "HCAL iso1",                                0.,   15.,    30, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleHcalIso2",       "Electron HCAL iso2",              "HCAL iso2",                                0.,   15.,    30, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleHeepIso",        "Electron HEEP iso",               "HEEP iso",                                 0.,   20.,    40, 1, 1, 0, 1));
+  testPlots.push_back(ContVarPlot("eleTrkIso",         "Electron track iso",              "trk_{iso}",                                0.,    5.1,   51, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleLostHits",       "Electron number of lost hits",    "",                                         0.,    2.,     2, 1, 0, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("eleDXYFstPVtx",     "Electron Dxy at first PV",        "#Deltaxy_{e}",                            -0.05,  0.05,  40, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eleDZFstPVtx",      "Electron Dz at first PV",         "#Deltaz_{e}",                             -1.,    1.,    80, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("etEleOPtMu",        "E_{T}^{e} / p_{T}^{#mu}",         "E^{e}_{T}/p^{#mu}_{T}",                    0.,   13.,    26, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("lepPtPlusOPtMinus", "lepton p_{T}^{+} / p_{T}^{-}",    "p^{+}_{T}/p^{-}_{T}",                      0.,   10.,    20, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("eChTimesMuCh",      "charge_e * charge_#mu",           "charge_{e}*charge_{#mu}",                 -1.,    2.,     3, 1, 1, 0, 0, 1));
+  testPlots.push_back(ContVarPlot("muPt",              "Muon p_{T}",                      "p_{T}^{#mu} [GeV]",                        0.,  500.,    50, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muPtErr",           "Muon p_{T} error",                "p_{T}^{#mu} [GeV]",                        0.,   50.,    50, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muEta",             "Muon #eta",                       "#eta_{#mu}",                              -2.5,   2.5,   50, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muPhi",             "Muon #phi",                       "#varphi_{#mu}",                           -3.2,   3.2,   64, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muHitLayers",       "Muon layers with hits",           "# layers hits",                            4.,   20.,    16, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muTrkHits",         "Muon tracker hits",               "# tracker hits",                           0.,   40.,    40, 1, 0, 1, 1));
+  testPlots.push_back(ContVarPlot("muPxlHits",         "Muon pixel hits",                 "# pixel hits",                             0.,   10.,    10, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muMuHits",          "Muon system hits",                "# #mu system hits",                        0.,   55.,    55, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muDXYFstPVtx",      "Muon Dxy at first PV",            "#Deltaxy_{#mu}",                          -0.2,   0.2,   80, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muDZFstPVtx",       "Muon Dz at first PV",             "#Deltaz_{#mu}",                           -0.1,   0.1,   40, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muNSeg",            "Muon number of segments",         "# segments",                               0.,    7.,     7, 1, 0, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muTrkIso03",        "Muon track iso 03",               "#mu trk iso",                              0.,   20.,    40, 1, 1, 1, 1, 1));
+  testPlots.push_back(ContVarPlot("muIsoCombRel",      "Muon combined iso / p_{T}",       "#mu (iso_{em}+iso_{had}+iso_{trk})/p_{T}", 0.,    3.5,   35, 1, 1, 1, 1, 1));
 
   TString sign[8] = {"_e-mu+_-_e+mu-", "_e-mu+", "_e+mu-", "_OS", "", "_SS", "_++", "_--"};
   TString nameSign[8] = {" e^{-}#mu^{+} - e^{+}#mu^{-}", " e-mu+", " e+mu-", " OS", "", " SS", " ++", " --"};
@@ -220,6 +231,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
   if (abs(sig) > 3) logPlot = false;
   const bool overflowBin = testPlots[var].fOverFlow;
   const bool underflowBin = testPlots[var].fUnderFlow; 
+  const bool dontPlotSignal = testPlots[var].fDontPlotSignal; 
+  if (dontPlotSignal) plotSignal[0] = plotSignal[1] = plotSignal[2] = plotSignal[3] = 0.;
 
   // make the correct binning
   std::vector<float> binning;
@@ -563,19 +576,27 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 
      // make a histogram stack with the bg 
      THStack *bgStack = new THStack("bgStack" + sign[sig] + region[reg], testVar + sign[sig] + nameReg[reg]);
-     if (plotQcd) bgStack->Add(emuTest_qcd.back());
+     if (qcdEst > 0) bgStack->Add(emuTest_qcd.back());
      if (qcdEst != 2) bgStack->Add(emuTest_wjets.back());
-     if (dy_sample_type == 0) {
+     if (dy_sample_type != 1) {
        bgStack->Add(emuTest_zee.back());
        bgStack->Add(emuTest_zmumu.back());
-     } else {
-       bgStack->Add(emuTest_zjetsll.back());
      }
-     bgStack->Add(emuTest_tw.back());
-     bgStack->Add(emuTest_zz.back());
-     bgStack->Add(emuTest_wz.back());
-     bgStack->Add(emuTest_ww.back());
-     if (dy_sample_type == 0) bgStack->Add(emuTest_ztautau.back());
+     if (!altBgStacking) {
+       bgStack->Add(emuTest_tw.back());
+       bgStack->Add(emuTest_zz.back());
+       bgStack->Add(emuTest_wz.back());
+       bgStack->Add(emuTest_ww.back());
+       if (dy_sample_type == 1) bgStack->Add(emuTest_zjetsll.back());
+       else bgStack->Add(emuTest_ztautau.back());
+     } else {
+       if (dy_sample_type == 1) bgStack->Add(emuTest_zjetsll.back());
+       else bgStack->Add(emuTest_ztautau.back());
+       bgStack->Add(emuTest_zz.back());
+       bgStack->Add(emuTest_wz.back());
+       bgStack->Add(emuTest_tw.back());
+       bgStack->Add(emuTest_ww.back());
+     }
      bgStack->Add(emuTest_ttbar.back());
 
      // bkg histogram for (data-bkg)/bkg plot
@@ -730,7 +751,7 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      bgStack->GetYaxis()->SetLabelFont(font);
      bgStack->GetYaxis()->SetLabelSize(0.05);
      if (!logPlot) bgStack->SetMinimum(0.);
-     else bgStack->SetMinimum(0.5);
+     else if (bgStack->GetMinimum() == 0) bgStack->SetMinimum(0.5);
      bgStack->Draw("hist");
      bgHist->SetFillColor(kBlue);
      bgHist->SetFillStyle(3002);
@@ -753,6 +774,12 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      
      // legent and labels
      TLegend legend(0.700, 0.346, 0.891, 0.885);
+     if (plotSignal[0]+plotSignal[1]+plotSignal[2]+plotSignal[3] == 0.) legend.SetY1(0.48);
+     // decide if the legend should be placed on the left or on the right
+     if (bgHist->Integral(1,nBins/4.) - bgHist->Integral(3*nBins/4., nBins) < bgHist->Integral(1,nBins/4.) * -0.2) {
+       legend.SetX1(0.135);
+       legend.SetX2(0.326);
+     }
      legend.SetTextFont(font);
      legend.SetTextSize(0.042);
      legend.SetBorderSize(0);
@@ -761,18 +788,26 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      legend.SetLineWidth(1);
      legend.SetFillColor(19);
      legend.SetFillStyle(0);
-     legend.AddEntry(emuTest_data.back(), "DATA");
+     legend.AddEntry(emuTest_data.back(), "Data");
      legend.AddEntry(emuTest_ttbar.back(), "t#bar{t}", "F");
-     if (dy_sample_type == 0) legend.AddEntry(emuTest_ztautau.back(), "#gamma/Z#rightarrow#tau#tau", "F");
-     legend.AddEntry(emuTest_ww.back(), "WW", "F");
-     legend.AddEntry(emuTest_wz.back(), "WZ", "F");
-     legend.AddEntry(emuTest_zz.back(), "ZZ", "F");
-     legend.AddEntry(emuTest_tw.back(), "tW", "F");
-     if (dy_sample_type == 0) {
-       legend.AddEntry(emuTest_zmumu.back(), "#gamma/Z#rightarrow#mu#mu", "F");
-       legend.AddEntry(emuTest_zee.back(), "#gamma/Z #rightarrow ee", "F");
+     if (!altBgStacking) {
+       if (dy_sample_type == 1) legend.AddEntry(emuTest_zjetsll.back(), "#gamma/Z#rightarrow ll" ,"F");
+       else legend.AddEntry(emuTest_ztautau.back(), "#gamma/Z#rightarrow#tau#tau" ,"F");
+       legend.AddEntry(emuTest_ww.back(), "WW" ,"F");
+       legend.AddEntry(emuTest_wz.back(), "WZ" ,"F");
+       legend.AddEntry(emuTest_zz.back(), "ZZ" ,"F");
+       legend.AddEntry(emuTest_tw.back(), "tW" ,"F");
      } else {
-       legend.AddEntry(emuTest_zjetsll.back(), "#gamma/Z + jets #rightarrow ll", "F");
+       legend.AddEntry(emuTest_ww.back(), "WW" ,"F");
+       legend.AddEntry(emuTest_tw.back(), "tW" ,"F");
+       legend.AddEntry(emuTest_wz.back(), "WZ" ,"F");
+       legend.AddEntry(emuTest_zz.back(), "ZZ" ,"F");
+       if (dy_sample_type == 1) legend.AddEntry(emuTest_zjetsll.back(), "#gamma/Z#rightarrow ll" ,"F");
+       else legend.AddEntry(emuTest_ztautau.back(), "#gamma/Z#rightarrow#tau#tau" ,"F");
+     }
+     if (dy_sample_type != 1) {
+       legend.AddEntry(emuTest_zmumu.back(), "#gamma/Z#rightarrow#mu#mu" ,"F");
+       legend.AddEntry(emuTest_zee.back(), "#gamma/Z#rightarrowee" ,"F");
      }
      if (qcdEst != 2) legend.AddEntry(emuTest_wjets.back(), "W+jets", "F");
      if (plotQcd) legend.AddEntry(emuTest_qcd.back(), "jets (data)", "F");
@@ -793,13 +828,15 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
      tex->SetTextFont(font);
      tex->SetLineWidth(2);
      tex->SetTextSize(0.042);
-     if (prelim) tex->DrawLatex(0.596, 0.937, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
-     else tex->DrawLatex(0.596, 0.937, "CMS, 8 TeV, 19.7 fb^{-1}");
+     float text_xPos = 0.552;
+     if (plotPull) text_xPos = 0.596;
+     if (prelim) tex->DrawLatex(text_xPos, 0.94, "CMS Preliminary, 8 TeV, 19.7 fb^{-1}");
+     else tex->DrawLatex(text_xPos, 0.94, "CMS, 8 TeV, 19.7 fb^{-1}");
      //if (m == 1) tex->DrawLatex(0.430, 0.849, "e in barrel");
      //if (m == 2) tex->DrawLatex(0.430, 0.849, "e in endcap");
      stringstream sStream;
      sStream << testPlots[var].fTitle << nameSign[sig].Data() << nameReg[reg].Data();
-     tex->DrawLatex(0.109, 0.937, sStream.str().c_str());
+     tex->DrawLatex(0.109, 0.94, sStream.str().c_str());
 
      // plot a (data - bg)/bg histogram below the spectrum
      if (plotPull) {
@@ -817,8 +854,8 @@ void macro_MakeTestPlot(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
        pullPad->SetFrameBorderMode(0);
        pullPad->SetFillColor(0);
        pullPad->SetFrameFillColor(0);
-       pullPad->SetTopMargin(0.);
-       pullPad->SetBottomMargin(0.22);
+       pullPad->SetTopMargin(0.005);
+       pullPad->SetBottomMargin(0.23);
        pullPad->SetLeftMargin(0.11);
        pullPad->SetRightMargin(0.09);
        pullPad->SetTickx(1);

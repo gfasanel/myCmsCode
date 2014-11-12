@@ -12,6 +12,7 @@ brNames = ['genmu_eta', 'genele_eta', 'genmu_pt', 'genele_pt']
 xAxisTitles = ['#eta_{#mu}^{gen}', '#eta_{e}^{gen}', 'p_{T #mu}^{gen}', 'p_{T e}^{gen}']
 cuts = ['', 'genele_charge[0]<0', 'genele_charge[0]>0']
 cutTitles = ['', '_e-#mu+', '_e+#mu-']
+evtSelLabels = ['', 'e^{-}#mu^{+} events', 'e^{+}#mu^{-} events']
 
 font = 42
 gStyle.SetTitleFont(font)
@@ -24,7 +25,7 @@ gStyle.SetOptStat(0)
 gStyle.SetOptTitle(0)
 
 #open files to comare
-inMzMa1000 = TDCacheFile("dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/treis/treeNursery/ZprimeToEMu_M-1000_noAccCuts_TuneZ2star_8TeV_madgraph_treis-Summer12_DR53X_PU_S10_START53_V7C1-v1-349303cf3d483971a222f04e025e966c_USER_9998ev.root");
+inMzMa1000 = TDCacheFile("dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/treis/treeNursery/ZprimeToEMu_M1000_TuneZ2star_8TeV_madgraph_v2_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1_USER_99831ev.root");
 inMz1000 = TDCacheFile("dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/treis/treeNursery/ZprimeToEMu_Mz-1000_Ma-20000_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1-9fd29d4694dc4f5962d161df214899f8_USER_9999ev.root");
 inMa1000 = TDCacheFile("dcap://maite.iihe.ac.be/pnfs/iihe/cms/store/user/treis/treeNursery/ZprimeToEMu_Ma-1000_Mz-20000_TuneZ2star_8TeV_madgraph_v1_treis-MCRECO_Private13_DR53X_PU_S10_START53_V19E-v1-9fd29d4694dc4f5962d161df214899f8_USER_9998ev.root");
 
@@ -40,8 +41,8 @@ treeMa1000 = inMa1000.Get('gsfcheckerjob/tree')
 cList = []
 
 for brName, xAxisTitle in zip(brNames, xAxisTitles):
-    for cut, cutTitle in zip(cuts, cutTitles):
-        cList.append(TCanvas(brName+cutTitle, brName+cutTitle, 600, 600))
+    for cut, cutTitle, evtSelLabel in zip(cuts, cutTitles, evtSelLabels):
+        cList.append(TCanvas(brName+cutTitle, brName+cutTitle, 100, 100, 600, 600))
         cList[len(cList)-1].cd()
         
         #get the histograms from the tree
@@ -82,10 +83,10 @@ for brName, xAxisTitle in zip(brNames, xAxisTitles):
         hMzMa1000.SetLineColor(ROOT.kBlack)
         hMzMa1000.Draw('e0')
         hMzMa1000.GetYaxis().SetRangeUser(0.95*minimum, 1.05*maximum)
-        hMzMa1000.GetXaxis().SetTitle(xAxisTitle+cutTitle)
+        hMzMa1000.GetXaxis().SetTitle(xAxisTitle)
         hMzMa1000.GetXaxis().SetTitleFont(font)
         hMzMa1000.GetXaxis().SetLabelFont(font)
-        hMzMa1000.GetYaxis().SetTitle('normalized distribution')
+        hMzMa1000.GetYaxis().SetTitle('Normalised distribution')
         hMzMa1000.GetYaxis().SetTitleOffset(1.5)
         hMzMa1000.GetYaxis().SetTitleFont(font)
         hMzMa1000.GetYaxis().SetLabelFont(font)
@@ -116,6 +117,9 @@ for brName, xAxisTitle in zip(brNames, xAxisTitles):
         tex.SetTextFont(font)
         tex.SetTextSize(0.04)
         tex.DrawLatex(0.14, 0.91, 'CMS Simulation, 8 TeV')
+        tex.DrawLatex(0.767, 0.91, evtSelLabel)
+
+        legend.Draw('same')
 
         cList[len(cList)-1].Modified()
         cList[len(cList)-1].Update()

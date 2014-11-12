@@ -41,6 +41,8 @@ class ContVarPlot {
     ~ContVarPlot() { }
 };
 
+// Plot e-mu+ minus e+mu- histogram
+///////////////////////////////////////////////////////////////////////
 void macro_MakeTestPlot2(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
