@@ -18,7 +18,7 @@ void EmuSpectrum::Loop()
    // pile up histogram
    TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_MuEG_Run2012ABCDReReco22Jan2013.root";
 
-   string outfileName = "emuSpec";
+   string outfileName = "emuSpecNew";
    //string outfileName = "test";
 
    // scale factors
@@ -49,15 +49,33 @@ void EmuSpectrum::Loop()
    TParameter<float> eps_heep_sf_err_ee_pt100("eps_heep_sf_err_eb_pt100", 0.007); // HEEP eff scale factor error
    // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
    TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.9900); // for |eta|<0.9
+   TParameter<float> muScaleFactorErrLowEta("muScaleFactorErrLowEta", 0.0003); // for |eta|<0.9
    TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.9923); // for 0.9<|eta|<1.2
+   TParameter<float> muScaleFactorErrMidEta("muScaleFactorErrMidEta", 0.0006); // for 0.9<|eta|<1.2
    TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.9949); // for 1.2<|eta|<2.1
+   TParameter<float> muScaleFactorErrHighEta("muScaleFactorErrHighEta", 0.0004); // for 1.2<|eta|<2.1
    TParameter<float> muScaleFactorHighestEta("muScaleFactorHighestEta", 0.9923); // for 2.1<|eta|<2.4
+   TParameter<float> muScaleFactorErrHighestEta("muScaleFactorErrHighestEta", 0.0012); // for 2.1<|eta|<2.4
+   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
+   TParameter<float> muIsoScaleFactorLowEta("muIsoScaleFactorLowEta", 0.9996); // for |eta|<0.9
+   TParameter<float> muIsoScaleFactorErrLowEta("muIsoScaleFactorErrLowEta", 0.00001); // for |eta|<0.9
+   TParameter<float> muIsoScaleFactorMidEta("muIsoScaleFactorMidEta", 0.9994); // for 0.9<|eta|<1.2
+   TParameter<float> muIsoScaleFactorErrMidEta("muIsoScaleFactorErrMidEta", 0.0001); // for 0.9<|eta|<1.2
+   TParameter<float> muIsoScaleFactorHighEta("muIsoScaleFactorHighEta", 0.9997); // for 1.2<|eta|<2.1
+   TParameter<float> muIsoScaleFactorErrHighEta("muIsoScaleFactorErrHighEta", 0.0001); // for 1.2<|eta|<2.1
+   TParameter<float> muIsoScaleFactorHighestEta("muIsoScaleFactorHighestEta", 0.9997); // for 2.1<|eta|<2.4
+   TParameter<float> muIsoScaleFactorErrHighestEta("muIsoScaleFactorErrHighestEta", 0.0001); // for 2.1<|eta|<2.4
+   // muon systematic errors on T&P measurements from https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffs
+   TParameter<float> muSystTaPErrId("muSystTaPErrId", 0.005);
+   TParameter<float> muSystTaPErrIso("muSystTaPErrIso", 0.002);
+   TParameter<float> muSystTaPErrTrg("muSystTaPErrTrg", 0.002);
+
    TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.997);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
    TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.934);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
    // global systematic errors
    TParameter<float> systErrLumi("systErrLumi", 0.026);
-   TParameter<float> systErrEff("systErrEff", 0.010); // muon err (0.0057) & ele err (0.0086)
+   TParameter<float> systErrEff("systErrEff", 0.010); // muon err (syst err from https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffs) (0.0057) & ele err (0.0086)
 
    bool usePUInfo = true;
    bool lowMassPuOnly = false;
@@ -341,7 +359,7 @@ void EmuSpectrum::Loop()
    TH1F *puDataNorm = (TH1F *)puData->DrawNormalized()->Clone("puDataNorm");
 
    stringstream ssGoodEmuFileName;
-   ssGoodEmuFileName << "goodEmuEvents" << LumiFactor << "pb-1.root";
+   ssGoodEmuFileName << "goodEmuEventsNew" << LumiFactor << "pb-1.root";
    TFile *goodEvFile = new TFile(ssGoodEmuFileName.str().c_str(), "recreate");
    goodEvFile->cd();
    TTree *eleDataTree = new TTree("eleDataTree", "eleDataTree");
@@ -397,6 +415,22 @@ void EmuSpectrum::Loop()
    muScaleFactorLowEta.Write();
    muScaleFactorMidEta.Write();
    muScaleFactorHighEta.Write();
+   muScaleFactorHighestEta.Write();
+   muScaleFactorErrLowEta.Write();
+   muScaleFactorErrMidEta.Write();
+   muScaleFactorErrHighEta.Write();
+   muScaleFactorErrHighestEta.Write();
+   muIsoScaleFactorLowEta.Write();
+   muIsoScaleFactorMidEta.Write();
+   muIsoScaleFactorHighEta.Write();
+   muIsoScaleFactorHighestEta.Write();
+   muIsoScaleFactorErrLowEta.Write();
+   muIsoScaleFactorErrMidEta.Write();
+   muIsoScaleFactorErrHighEta.Write();
+   muIsoScaleFactorErrHighestEta.Write();
+   muSystTaPErrId.Write();
+   muSystTaPErrIso.Write();
+   muSystTaPErrTrg.Write();
    systErrLumi.Write();
    systErrEff.Write();
    systErrMCs.Write("systErrMCs", TObject::kSingleKey);
@@ -445,6 +479,8 @@ void EmuSpectrum::Loop()
       float eleEffSf = 1.;
       float eleEffSfErr = 0.;
       float muEffSf = 1.;
+      float muEffSfErr = 0.;
+      float muEffSfErrSyst = 0.;
       TTree *emuTree = new TTree("emuTree_" + suffix[p], "emuTree_" + suffix[p]);
       emuTree->Branch("runnr", &runnumber, "runnr/i");
       emuTree->Branch("eventnr", &eventnumber, "eventnr/i");
@@ -462,6 +498,8 @@ void EmuSpectrum::Loop()
       emuTree->Branch("eleEffSf", &eleEffSf, "eleEffSf/F");
       emuTree->Branch("eleEffSfErr", &eleEffSfErr, "eleEffSfErr/F");
       emuTree->Branch("muEffSf", &muEffSf, "muEffSf/F");
+      emuTree->Branch("muEffSfErr", &muEffSfErr, "muEffSfErr/F");
+      emuTree->Branch("muEffSfErrSyst", &muEffSfErrSyst, "muEffSfErrSyst/F");
       if (storeGenMTtbar[p]) emuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
       // control variables
       float nVtx = 0.;
@@ -898,25 +936,30 @@ void EmuSpectrum::Loop()
             }
             // muon scale factor
             if (fabs(muon_eta[MU_passGOOD[0]]) < 0.9) {
-              muEffSf = muScaleFactorLowEta.GetVal();
+              muEffSf = muScaleFactorLowEta.GetVal() * muIsoScaleFactorLowEta.GetVal();
+              muEffSfErr = sqrt(muScaleFactorErrLowEta.GetVal()*muScaleFactorErrLowEta.GetVal() + muIsoScaleFactorErrLowEta.GetVal()*muIsoScaleFactorErrLowEta.GetVal());
               trgEffSf = trgDataMcScaleFactorLowEta.GetVal();
               trgEff = trgEffLowEta.GetVal();
             }
             else if (fabs(muon_eta[MU_passGOOD[0]]) < 1.2) {
-              muEffSf = muScaleFactorMidEta.GetVal();
+              muEffSf = muScaleFactorMidEta.GetVal() * muIsoScaleFactorMidEta.GetVal();
+              muEffSfErr = sqrt(muScaleFactorErrMidEta.GetVal()*muScaleFactorErrMidEta.GetVal() + muIsoScaleFactorErrMidEta.GetVal()*muIsoScaleFactorErrMidEta.GetVal());
               trgEffSf = trgDataMcScaleFactorMidEta.GetVal();
               trgEff = trgEffMidEta.GetVal();
             }
             else if (fabs(muon_eta[MU_passGOOD[0]]) < 2.1) {
-              muEffSf = muScaleFactorHighEta.GetVal();
+              muEffSf = muScaleFactorHighEta.GetVal() * muIsoScaleFactorHighEta.GetVal();
+              muEffSfErr = sqrt(muScaleFactorErrHighEta.GetVal()*muScaleFactorErrHighEta.GetVal() + muIsoScaleFactorErrHighEta.GetVal()*muIsoScaleFactorErrHighEta.GetVal());
               trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
               trgEff = trgEffHighEta.GetVal();
             }
             else if (fabs(muon_eta[MU_passGOOD[0]]) < 2.4) {
-              muEffSf = muScaleFactorHighestEta.GetVal();
+              muEffSf = muScaleFactorHighestEta.GetVal() * muIsoScaleFactorHighestEta.GetVal();
+              muEffSfErr = sqrt(muScaleFactorErrHighestEta.GetVal()*muScaleFactorErrHighestEta.GetVal() + muIsoScaleFactorErrHighestEta.GetVal()*muIsoScaleFactorErrHighestEta.GetVal());
               trgEffSf = trgDataMcScaleFactorHighEta.GetVal();
               trgEff = trgEffHighEta.GetVal();
             }
+            muEffSfErrSyst = sqrt(muSystTaPErrId.GetVal()*muSystTaPErrId.GetVal() + muSystTaPErrIso.GetVal()*muSystTaPErrIso.GetVal() + muSystTaPErrTrg.GetVal()*muSystTaPErrTrg.GetVal());
 
             if (lowMassPuOnly && invMass > puMassCut) weight = 1.;
             if (p > 0) weight *= eleEffSf * muEffSf * Lumi_ScaleFactor * trgEffSf;
