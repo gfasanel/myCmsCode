@@ -190,7 +190,7 @@ void EmuSpectrum::Loop()
 
    TFile *inWWpow = TFile::Open("file:////user/treis/mcsamples/WWJetTo2L2Nu_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_999864ev.root");
    nGenEvtsV.push_back(999864.);
-   input.push_back(make_pair(inWWpow, 5.67 / nGenEvtsV.back())); //WW
+   input.push_back(make_pair(inWWpow, 5.88 / nGenEvtsV.back())); //WW
    systErrMCs.Add(new TParameter<float>("systErrMcWWpow", 0.04));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
@@ -248,6 +248,38 @@ void EmuSpectrum::Loop()
    nGenEvtsV.push_back(76102995.);
    input.push_back(make_pair(inWJet, 36257.2 / nGenEvtsV.back())); //W+jet
    systErrMCs.Add(new TParameter<float>("systErrMcWJets", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGamma = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
+   nGenEvtsV.push_back(76102995.);
+   input.push_back(make_pair(inWGamma, 461.6 / nGenEvtsV.back())); //W+Gamma xsec from PREP
+   systErrMCs.Add(new TParameter<float>("systErrMcWGamma", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGammaPtg30to50 = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
+   nGenEvtsV.push_back(869591.);
+   input.push_back(make_pair(inWGammaPtg30to50, 6.9 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 30-50 Gev, xsec from PREP
+   systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg30to50", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGammaPtg50to130 = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
+   nGenEvtsV.push_back(76102995.);
+   input.push_back(make_pair(inWGammaPtg50to130, 1.17 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 50-130 Gev, xsec from PREP
+   systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg50to130", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGammaPtg130up = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
+   nGenEvtsV.push_back(76102995.);
+   input.push_back(make_pair(inWGammaPtg130up, 0.2571 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 130up Gev, xsec from PREP
+   systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg130up", 0.05));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);

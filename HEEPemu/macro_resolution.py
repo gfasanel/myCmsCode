@@ -23,9 +23,10 @@ gStyle.SetOptTitle(0)
 
 #open files to comare
 #input = TFile("emuSpec_MuGammaTrg_19703pb-1.root")
-input = TFile("emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root")
+input = TFile("emuSpec_thesis_19706pb-1.root")
 treePrefices = ['emuTree_sigNoAccCuts', 'emuTree_sigTagV7C2_']
 #treePrefices = ['emuTree_sigNoAccCuts']
+tagLabels = ['C1 alignment', 'C2 alignment']
 
 #get the trees from the root files
 input.cd()
@@ -105,6 +106,7 @@ for i, treePrefix in enumerate(treePrefices):
             # raw and fine fit
             hMassDiff.Fit(gauss, '', '', peak-factorFit1*hMassDiff.GetRMS(), peak+factorFit1*hMassDiff.GetRMS())
             hMassDiff.Fit(gauss, '', '', gauss.GetParameter(1)-factorFit2*gauss.GetParameter(2), gauss.GetParameter(1)+factorFit2*gauss.GetParameter(2))
+            #print 'peak {0}, mean {1}, Gauss mean {2}'.format(peak, hMassDiff.GetMean(), gauss.GetParameter(1))
     
             #hMassDiff.GetXaxis().SetRangeUser(math.floor(gauss.GetParameter(1)-4.*gauss.GetParameter(2)), math.floor(gauss.GetParameter(1)+4.*gauss.GetParameter(2)))
             if massPt < 1000:
@@ -136,7 +138,8 @@ for i, treePrefix in enumerate(treePrefices):
             tex.SetTextSize(0.04)
             tex.DrawLatex(0.14, 0.91, 'CMS Simulation, 8 TeV')
             tex.SetTextSize(0.03)
-            tex.DrawLatex(0.68, 0.72, "M_{Z'} = " + str(massPt) + ' GeV')
+            tex.DrawLatex(0.68, 0.72, "M_{Z'/a'} = " + str(massPt) + ' GeV')
+            tex.DrawLatex(0.68, 0.62, tagLabels[i])
 
             pt += 1
 
@@ -199,8 +202,8 @@ legend.SetTextSize(0.03)
 legend.SetBorderSize(0)
 legend.SetFillColor(19)
 legend.SetFillStyle(0)
-legend.AddEntry(resList[0], 'START53_V7C1', 'lp')
-legend.AddEntry(resList[1], 'START53_V7C2', 'lp')
+legend.AddEntry(resList[0], 'C1 alignment', 'lp')
+legend.AddEntry(resList[1], 'C2 alignment', 'lp')
 #legend.AddEntry(anFitFunc, 'AN-13-422', 'l')
 legend.Draw('same')
  
@@ -228,7 +231,7 @@ if len(treePrefices) > 1:
     resErr.GetXaxis().SetTitle('M_{e#mu} (GeV)')
     resErr.GetXaxis().SetTitleFont(font)
     resErr.GetXaxis().SetLabelFont(font)
-    resErr.GetYaxis().SetTitle('|#sigma(M_{e#mu})_{V7C1}-#sigma(M_{e#mu})_{V7C2}|/#sigma(M_{e#mu})_{V7C1}')
+    resErr.GetYaxis().SetTitle('|#sigma(M_{e#mu})_{C1}-#sigma(M_{e#mu})_{C2}|/#sigma(M_{e#mu})_{C1}')
     resErr.GetYaxis().SetTitleOffset(1.55)
     resErr.GetYaxis().SetTitleFont(font)
     resErr.GetYaxis().SetLabelFont(font)
@@ -279,8 +282,8 @@ if len(treePrefices) > 1:
 # save canvases to root file
 if savePlots:
     #output = TFile('./plots/resolutionPlots.root', 'recreate')
-    output = TFile('./plots/resolutionPlots_singleMu.root', 'recreate')
-    plotDir = './plots/plots/'
+    output = TFile('./thesisplots/resolutionPlots_singleMu.root', 'recreate')
+    plotDir = './thesisplots/'
     output.cd()
     for canvas in cList:
         canvas.Write(canvas.GetName())
