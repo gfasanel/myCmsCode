@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include "TFile.h"
 #include "TTree.h"
 #include "TBranch.h"
@@ -8,7 +9,7 @@
 #include "TParameter.h"
 #include "THashList.h"
 
-// flags: [apply top reweighting | apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
+// flags: [XOR multi samples | apply top reweighting | apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
 TH1F *
 MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName, const char *brName, int signs, int region, vector<const char *> &cutVariables, vector<float> &cutLows, vector<float> &cutHighs, vector<float> &mcWeigthsForCutsRanges, vector<float> &binning, unsigned int flags, bool normToBinWidth = false, float userScale = 1.)
 {
@@ -106,7 +107,8 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName
     if (cutVariables.at(i)[0] != '\0') {
       cutVarMap.insert(pair<const char *, float>(cutVariables[i], -1.));
       tree->SetBranchStatus(cutVariables[i],1);
-      tree->SetBranchAddress(cutVariables[i], &cutVarMap.at(cutVariables[i]));
+      if (strcmp(cutVariables[i], brName) != 0)
+        tree->SetBranchAddress(cutVariables[i], &cutVarMap.at(cutVariables[i]));
     }
   }
   if (flags & 1<<5) {
@@ -173,9 +175,19 @@ MakeHistoFromBranch(TFile *input, const char *treeName, const char *shapeUncName
         if (cutVariables.at(j)[0] == '\0') {
           totMcWeight += 1./mcWeigthsForCutsRanges[j];
         } else {
-          float cutVar = cutVarMap.at(cutVariables[j]);
+          float cutVar;
+          if (strcmp(cutVariables[j], brName) != 0) 
+            cutVar = cutVarMap.at(cutVariables[j]);
+          else
+            cutVar = var;
           if (cutVar < cutLows[j] || cutVar >= cutHighs[j]) {
-            continue;
+            // decide if samples should be ignored if one cut fails or not
+            if (flags & 1<<11) {
+              totMcWeight = 0.;
+              break;
+            } else { 
+              continue;
+            }
           } else {
             totMcWeight += 1./mcWeigthsForCutsRanges[j];
           }

@@ -252,32 +252,34 @@ void EmuSpectrum::Loop()
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
 
-   TFile *inWGamma = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
-   nGenEvtsV.push_back(76102995.);
+   TFile *inWGamma = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_4802358ev.root");
+   nGenEvtsV.push_back(4802358.);
    input.push_back(make_pair(inWGamma, 461.6 / nGenEvtsV.back())); //W+Gamma xsec from PREP
    systErrMCs.Add(new TParameter<float>("systErrMcWGamma", 0.05));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
 
-   TFile *inWGammaPtg30to50 = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
+   TFile *inWGammaPtg30to50 = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_PtG-30-50_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_869591ev.root");
    nGenEvtsV.push_back(869591.);
-   input.push_back(make_pair(inWGammaPtg30to50, 6.9 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 30-50 Gev, xsec from PREP
+   //input.push_back(make_pair(inWGammaPtg30to50, 6.9 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 30-50 Gev, xsec from PREP
+   input.push_back(make_pair(inWGammaPtg30to50, 20.360 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 30-50 Gev, xsec from Andreas
    systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg30to50", 0.05));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
 
-   TFile *inWGammaPtg50to130 = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
-   nGenEvtsV.push_back(76102995.);
-   input.push_back(make_pair(inWGammaPtg50to130, 1.17 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 50-130 Gev, xsec from PREP
+   TFile *inWGammaPtg50to130 = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_PtG-50-130_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_1135698ev.root");
+   nGenEvtsV.push_back(1135698.);
+   //input.push_back(make_pair(inWGammaPtg50to130, 1.17 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 50-130 Gev, xsec from PREP
+   input.push_back(make_pair(inWGammaPtg50to130, 3.309 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 50-130 Gev, xsec from Andreas
    systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg50to130", 0.05));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
 
-   TFile *inWGammaPtg130up = TFile::Open("file:////user/treis/mcsamples/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1+v2_AODSIM_emuSkim_76102995ev.root");
-   nGenEvtsV.push_back(76102995.);
+   TFile *inWGammaPtg130up = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_PtG-130_8TeV-madgraph-pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_471458ev.root");
+   nGenEvtsV.push_back(471458.);
    input.push_back(make_pair(inWGammaPtg130up, 0.2571 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 130up Gev, xsec from PREP
    systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg130up", 0.05));
    storeGenMTtbar.push_back(0);
@@ -977,6 +979,11 @@ void EmuSpectrum::Loop()
             frEmuTree->Branch("muCharge", &muCharge, "muCharge/I");
             frEmuTree->Branch("fakeRate", &fakeRate, "fakeRate/F");
             frEmuTree->Branch("puWeight", &puWeight, "puWeight/F");
+            frEmuTree->Branch("trgEff", &trgEff, "trgEff/F");
+            frEmuTree->Branch("trgEffSf", &trgEffSf, "trgEffSf/F");
+            frEmuTree->Branch("eleEffSf", &eleEffSf, "eleEffSf/F");
+            frEmuTree->Branch("eleEffSfErr", &eleEffSfErr, "eleEffSfErr/F");
+            frEmuTree->Branch("muEffSf", &muEffSf, "muEffSf/F");
             if (storeGenMTtbar[p]) {
               frEmuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
               frEmuTree->Branch("topRewSf", &topRewSf, "topRewSf/F");
@@ -1271,6 +1278,27 @@ void EmuSpectrum::Loop()
                         }
                      }
                   }
+
+                  // set scale factors
+                  if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 0.8) {
+                    eleEffSf = eps_cand_sf_0p8.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_0p8.GetVal();
+                  }
+                  else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 1.442) {
+                    eleEffSf = eps_cand_sf_0p8to1p4442.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_0p8to1p4442.GetVal();
+                  }
+                  else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 2.0) {
+                    eleEffSf = eps_cand_sf_1p566to2p0.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_1p566to2p0.GetVal();
+                  }
+                  else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) > 2.0 && fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 2.5) {
+                    eleEffSf = eps_cand_sf_2p0to2p5.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_2p0to2p5.GetVal();
+                  }
+                  WeightMuonRecoIsoTrigger(muon_pt[MU_passGOOD[muInd]], muon_eta[MU_passGOOD[muInd]], muEffSf, trgEffSf, trgEff, suffix[p], trgL1Eff.GetVal());
+
+                  if (p > 0) weight *= eleEffSf * muEffSf * trgEffSf;
    
                   // fill the data tree
                   passHeep = PassHEEP(GSF_passFrPre[eleInd]);
