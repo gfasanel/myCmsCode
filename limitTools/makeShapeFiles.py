@@ -118,8 +118,8 @@ class ShapeHMaker:
     def makeSigShapeHisto(self, mass, nEvts, resScale=0):
         nExp = self.getSigExpEvts(mass)
         minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
-        # no upper limit above a mass of 800 GeV
-        if mass <= 800.:
+        # no upper limit starting from a mass of 800 GeV
+        if mass < 800.:
             maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
         else:
             self.infile.cd()
@@ -161,8 +161,8 @@ class ShapeHMaker:
         bkgHist = self.infile.Get(name)
         if bkgHist:
             minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
-            # no upper limit above a mass of 800 GeV
-            if mass <= 800.: 
+            # no upper limit starting from a mass of 800 GeV
+            if mass < 800.: 
                 maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
             else:
                 maxMass = bkgHist.GetXaxis().GetXmax()
@@ -228,8 +228,8 @@ class ShapeHMaker:
 
             # define new range minimum
             minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
-            # no upper limit above a mass of 800 GeV, so define range maximum from base histogram an case
-            if mass <= 800.: 
+            # no upper limit starting from a mass of 800 GeV, so define range maximum from base histogram an case
+            if mass < 800.: 
                 maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
             else:
                 maxMass = baseHistos[0].GetXaxis().GetXmax()
@@ -268,7 +268,7 @@ class ShapeHMaker:
                         minMass = mass - self.massWinFactorInSigmas*self.factorMin*mass*self.relMassRes.Eval(mass)
                         minMassBin = baseHistos[0].FindBin(minMass)
                         # define new range maximum
-                        if mass <= 800.: 
+                        if mass < 800.: 
                             maxMass = mass + self.massWinFactorInSigmas*self.factorMax*mass*self.relMassRes.Eval(mass)
                         else:
                              maxMass = baseHistos[0].GetXaxis().GetXmax()
@@ -286,7 +286,7 @@ class ShapeHMaker:
                             if prevFactorMin < 1.:
                                 conflictDet = True
                             # enlarge the range
-                            if mass <= 800.:
+                            if mass < 800.:
                                 # decide if widening from the upper or lower edge by looking which half has more events (advantage for lower side if odd number of bins)
                                 if baseHisto.Integral(minMassBin, minMassBin+int(math.ceil(nbins/2))-1) > baseHisto.Integral(minMassBin+int(math.ceil(nbins/2)), maxMassBin):
                                     self.factorMin += 0.01
@@ -306,7 +306,7 @@ class ShapeHMaker:
                             if prevFactorMin > 1.:
                                 conflictDet = True
                             # narrow the range
-                            if mass <= 800.:
+                            if mass < 800.:
                                 # decide if narrowing from the upper or lower edge by looking which half has more events (advantage for lower side if odd number of bins)
                                 if shapeHisto.Integral(minMassBin, minMassBin+int(math.ceil(nbins/2))-1) > shapeHisto.Integral(minMassBin+int(math.ceil(nbins/2)), maxMassBin):
                                     self.factorMin -= 0.01
