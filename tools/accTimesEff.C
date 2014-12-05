@@ -38,7 +38,7 @@ void AccTimesEff::Loop()
    const bool saveAsPdf = 1;
    const bool saveAsPng = 1;
    const bool saveAsRoot = 0;
-   TString plotDir = "./plots/";
+   TString plotDir = "./plots_thesis/";
    TString fileNameExtra = "";
    //fileNameExtra = "_test";
 
@@ -108,6 +108,7 @@ void AccTimesEff::Loop()
    hGenEvts_mu_pt->GetXaxis()->SetTitle("#mu p_{T}^{truth}");
    TH1F *hGenEvts_mu_eta = (TH1F*)hGenEvts_ele_eta->Clone("hGenEvts_mu_eta");
    hGenEvts_mu_eta->GetXaxis()->SetTitle("#mu #eta^{truth}");
+   TH2F *h2GenEvts_ele_pt_eta =  new TH2F("h2GenEvts_ele_pt_eta", "h2GenEvts_ele_pt_eta", 30, 0., 3000., 30, -3., 3.);
 
    TH1F *hPassPtCuts = (TH1F*)hGenEvts->Clone("hPassPtCuts");
    TH1F *hPassEtaCuts = (TH1F*)hGenEvts->Clone("hPassEtaCuts");
@@ -129,6 +130,8 @@ void AccTimesEff::Loop()
    hTrgEvts_mu22ph22_ele_pt->SetTitle("hTrgEvts_mu22ph22_ele_pt");
    TH1F *hTrgEvts_mu22ph22_ele_eta = (TH1F*)hGenEvts_ele_eta->Clone("hTrgEvts_mu22ph22_ele_eta");
    hTrgEvts_mu22ph22_ele_eta->SetTitle("hTrgEvts_mu22ph22_ele_eta");
+   TH2F *h2TrgEvts_mu22ph22_ele_pt_eta = (TH2F*)h2GenEvts_ele_pt_eta->Clone("h2TrgEvts_mu22ph22_ele_pt_eta");
+   h2TrgEvts_mu22ph22_ele_pt_eta->SetTitle("h2TrgEvts_mu22ph22_ele_pt_eta");
    TH1F *hTrgEvts_mu22ph22_mu_pt = (TH1F*)hGenEvts_mu_pt->Clone("hTrgEvts_mu22ph22_mu_pt");
    hTrgEvts_mu22ph22_mu_pt->SetTitle("hTrgEvts_mu22ph22_mu_pt");
    TH1F *hTrgEvts_mu22ph22_mu_eta = (TH1F*)hGenEvts_mu_eta->Clone("hTrgEvts_mu22ph22_mu_eta");
@@ -139,16 +142,24 @@ void AccTimesEff::Loop()
    hTrgEvts_mu40_ele_pt->SetTitle("hTrgEvts_mu40_ele_pt");
    TH1F *hTrgEvts_mu40_ele_eta = (TH1F*)hGenEvts_ele_eta->Clone("hTrgEvts_mu40_ele_eta");
    hTrgEvts_mu40_ele_eta->SetTitle("hTrgEvts_mu40_ele_eta");
+   TH2F *h2TrgEvts_mu40_ele_pt_eta = (TH2F*)h2GenEvts_ele_pt_eta->Clone("h2TrgEvts_mu40_ele_pt_eta");
+   h2TrgEvts_mu40_ele_pt_eta->SetTitle("h2TrgEvts_mu40_ele_pt_eta");
    TH1F *hTrgEvts_mu40_mu_pt = (TH1F*)hGenEvts_mu_pt->Clone("hTrgEvts_mu40_mu_pt");
    hTrgEvts_mu40_mu_pt->SetTitle("hTrgEvts_mu40_mu_pt");
    TH1F *hTrgEvts_mu40_mu_eta = (TH1F*)hGenEvts_mu_eta->Clone("hTrgEvts_mu40_mu_eta");
    hTrgEvts_mu40_mu_eta->SetTitle("hTrgEvts_mu40_mu_eta");
    TH1F *hFltrMatchEvts_l1SingleEG12 = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_l1SingleEG12");
    hFltrMatchEvts_l1SingleEG12->SetTitle("hFltrMatchEvts_l1SingleEG12");
+   TH2F *h2FltrMatchEvts_l1SingleEG12_ele_pt_eta = (TH2F*)h2GenEvts_ele_pt_eta->Clone("h2FltrMatchEvts_l1SingleEG12_ele_pt_eta");
+   h2FltrMatchEvts_l1SingleEG12_ele_pt_eta->SetTitle("h2FltrMatchEvts_l1SingleEG12_ele_pt_eta");
    TH1F *hFltrMatchEvts_l1Mu3p5EG12 = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_l1Mu3p5EG12");
    hFltrMatchEvts_l1Mu3p5EG12->SetTitle("hFltrMatchEvts_l1Mu3p5EG12");
+   TH2F *h2FltrMatchEvts_l1Mu3p5EG12_ele_pt_eta = (TH2F*)h2GenEvts_ele_pt_eta->Clone("h2FltrMatchEvts_l1Mu3p5EG12_ele_pt_eta");
+   h2FltrMatchEvts_l1Mu3p5EG12_ele_pt_eta->SetTitle("h2FltrMatchEvts_l1Mu3p5EG12_ele_pt_eta");
    TH1F *hFltrMatchEvts_l1Mu16Eta2p1 = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_l1Mu16Eta2p1");
    hFltrMatchEvts_l1Mu16Eta2p1->SetTitle("hFltrMatchEvts_l1Mu16Eta2p1");
+   TH2F *h2FltrMatchEvts_l1Mu16Eta2p1_ele_pt_eta = (TH2F*)h2GenEvts_ele_pt_eta->Clone("h2FltrMatchEvts_l1Mu16Eta2p1_ele_pt_eta");
+   h2FltrMatchEvts_l1Mu16Eta2p1_ele_pt_eta->SetTitle("h2FltrMatchEvts_l1Mu16Eta2p1_ele_pt_eta");
    TH1F *hFltrMatchEvts_mu22ph22_phLeg = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_mu22ph22_phLeg");
    hFltrMatchEvts_mu22ph22_phLeg->SetTitle("hFltrMatchEvts_mu22ph22_phLeg");
    TH1F *hFltrMatchEvts_mu22ph22_muLeg = (TH1F*)hGenEvts->Clone("hFltrMatchEvts_mu22ph22_muLeg");
@@ -171,6 +182,8 @@ void AccTimesEff::Loop()
    TH1F *hRecoNoTrgEleEvtsEB = (TH1F*)hRecoNoTrgEvts->Clone("hRecoNoTrgEleEvtsEB");
    TH1F *hRecoNoTrgEleEvtsEE = (TH1F*)hRecoNoTrgEvts->Clone("hRecoNoTrgEleEvtsEE");
    TH1F *hRecoNoTrgMuEvts = (TH1F*)hRecoNoTrgEvts->Clone("hRecoNoTrgMuEvts");
+   TH2F *h2RecoNoTrgEvts_ele_pt_eta = (TH2F*)h2GenEvts_ele_pt_eta->Clone("h2RecoNoTrgEvts_ele_pt_eta");
+   h2RecoNoTrgEvts_ele_pt_eta->SetTitle("h2RecoNoTrgEvts_ele_pt_eta");
    TH1F* hAcc;
    TH1F* hRecoLepAcc;
    TH1F* hAccEle;
@@ -181,11 +194,13 @@ void AccTimesEff::Loop()
    TH1F* hTrgEff_mu22ph22;
    TH1F* hTrgEff_mu22ph22_ele_pt;
    TH1F* hTrgEff_mu22ph22_ele_eta;
+   TH2F* h2TrgEff_mu22ph22_ele_pt_eta;
    TH1F* hTrgEff_mu22ph22_mu_pt;
    TH1F* hTrgEff_mu22ph22_mu_eta;
    TH1F* hTrgEff_mu40;
    TH1F* hTrgEff_mu40_ele_pt;
    TH1F* hTrgEff_mu40_ele_eta;
+   TH2F* h2TrgEff_mu40_ele_pt_eta;
    TH1F* hTrgEff_mu40_mu_pt;
    TH1F* hTrgEff_mu40_mu_eta;
    TH1F* hAccTimesEff;
@@ -215,8 +230,11 @@ void AccTimesEff::Loop()
    TH1F* hTrgRecoVsRecoEleEE;
    TH1F* hTrgRecoVsRecoMu;
    TH1F* hFltrMatchVsReco_l1SingleEG12;
+   TH2F* h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta;
    TH1F* hFltrMatchVsReco_l1Mu3p5EG12;
+   TH2F* h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta;
    TH1F* hFltrMatchVsReco_l1Mu16Eta2p1;
+   TH2F* h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta;
    TH1F* hFltrMatchVsReco_mu22ph22_phLeg;
    TH1F* hFltrMatchVsReco_mu22ph22_muLeg;
    TH1F* hFltrMatchVsPrev_mu22ph22_phLeg;
@@ -271,6 +289,7 @@ void AccTimesEff::Loop()
          hGenEvts->Fill(hardInvMass);
          hGenEvts_ele_pt->Fill(genele_pt[0]);
          hGenEvts_ele_eta->Fill(genele_eta[0]);
+         h2GenEvts_ele_pt_eta->Fill(genele_pt[0], genele_eta[0]);
          hGenEvts_mu_pt->Fill(genmu_pt[0]);
          hGenEvts_mu_eta->Fill(genmu_eta[0]);
 
@@ -322,6 +341,7 @@ void AccTimesEff::Loop()
             hTrgEvts_mu22ph22->Fill(hardInvMass, trgSf);
             hTrgEvts_mu22ph22_ele_pt->Fill(genele_pt[0], trgSf);
             hTrgEvts_mu22ph22_ele_eta->Fill(genele_eta[0], trgSf);
+            h2TrgEvts_mu22ph22_ele_pt_eta->Fill(genele_pt[0], genele_eta[0], trgSf);
             hTrgEvts_mu22ph22_mu_pt->Fill(genmu_pt[0], trgSf);
             hTrgEvts_mu22ph22_mu_eta->Fill(genmu_eta[0], trgSf);
          }
@@ -329,6 +349,7 @@ void AccTimesEff::Loop()
             hTrgEvts_mu40->Fill(hardInvMass, trgSf);
             hTrgEvts_mu40_ele_pt->Fill(genele_pt[0], trgSf);
             hTrgEvts_mu40_ele_eta->Fill(genele_eta[0], trgSf);
+            h2TrgEvts_mu40_ele_pt_eta->Fill(genele_pt[0], genele_eta[0], trgSf);
             hTrgEvts_mu40_mu_pt->Fill(genmu_pt[0], trgSf);
             hTrgEvts_mu40_mu_eta->Fill(genmu_eta[0], trgSf);
          }
@@ -446,10 +467,19 @@ void AccTimesEff::Loop()
          //MASS CUT
          if (invMass < minInvMass) continue;
 
-         if (hltL1sMu16Eta2p1) hFltrMatchEvts_l1Mu16Eta2p1->Fill(hardInvMass, sf);
+         if (hltL1sMu16Eta2p1) {
+            hFltrMatchEvts_l1Mu16Eta2p1->Fill(hardInvMass, sf);
+            h2FltrMatchEvts_l1Mu16Eta2p1_ele_pt_eta->Fill(genele_pt[0], genele_eta[0], sf);
+         }
          if (hltL1Mu3p5EG12L3Filtered22) hFltrMatchEvts_mu22ph22_muLeg->Fill(hardInvMass, sf);
-         if (hltL1sL1SingleEG12) hFltrMatchEvts_l1SingleEG12->Fill(hardInvMass, sf);
-         if (hltL1sL1Mu3p5EG12) hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass, sf);
+         if (hltL1sL1SingleEG12) {
+            hFltrMatchEvts_l1SingleEG12->Fill(hardInvMass, sf);
+            h2FltrMatchEvts_l1SingleEG12_ele_pt_eta->Fill(genele_pt[0], genele_eta[0], sf);
+         }
+         if (hltL1sL1Mu3p5EG12) {
+            hFltrMatchEvts_l1Mu3p5EG12->Fill(hardInvMass, sf);
+            h2FltrMatchEvts_l1Mu3p5EG12_ele_pt_eta->Fill(genele_pt[0], genele_eta[0], sf);
+         }
          if (hltMu22Photon22CaloIdLHEFilter) hFltrMatchEvts_mu22ph22_phLeg->Fill(hardInvMass, sf);
          if (hltL3fL1sMu16Eta2p1L1f0L2f16QL3Filtered40Q) hFltrMatchEvts_mu40->Fill(hardInvMass, sf);
 
@@ -459,6 +489,7 @@ void AccTimesEff::Loop()
             if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoEvtsEE->Fill(hardInvMass, sf);
          }
          hRecoNoTrgEvts->Fill(hardInvMass, leptSf);
+         h2RecoNoTrgEvts_ele_pt_eta->Fill(genele_pt[0], genele_eta[0], leptSf);
          if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) < 1.5) hRecoNoTrgEvtsEB->Fill(hardInvMass, leptSf);
          if (fabs(gsfsc_eta[GSF_passHEEP[eleInd]]) > 1.5) hRecoNoTrgEvtsEE->Fill(hardInvMass, leptSf);
          ++evCounter;
@@ -535,10 +566,16 @@ void AccTimesEff::Loop()
    hTrgRecoVsRecoMu->Divide(hTrgRecoVsRecoMu, hRecoNoTrgMuEvts, 1, 1, "B");
    hFltrMatchVsReco_l1SingleEG12 = (TH1F*)hFltrMatchEvts_l1SingleEG12->Clone("hFltrMatchVsReco_l1SingleEG12");
    hFltrMatchVsReco_l1SingleEG12->Divide(hFltrMatchVsReco_l1SingleEG12, hRecoNoTrgEvts, 1, 1, "B");
+   h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta = (TH2F*)h2FltrMatchEvts_l1SingleEG12_ele_pt_eta->Clone("h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta");
+   h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta->Divide(h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta, h2RecoNoTrgEvts_ele_pt_eta, 1, 1, "B");
    hFltrMatchVsReco_l1Mu3p5EG12 = (TH1F*)hFltrMatchEvts_l1Mu3p5EG12->Clone("hFltrMatchVsReco_l1Mu3p5EG12");
    hFltrMatchVsReco_l1Mu3p5EG12->Divide(hFltrMatchVsReco_l1Mu3p5EG12, hRecoNoTrgEvts, 1, 1, "B");
+   h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta = (TH2F*)h2FltrMatchEvts_l1Mu3p5EG12_ele_pt_eta->Clone("h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta");
+   h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta->Divide(h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta, h2RecoNoTrgEvts_ele_pt_eta, 1, 1, "B");
    hFltrMatchVsReco_l1Mu16Eta2p1 = (TH1F*)hFltrMatchEvts_l1Mu16Eta2p1->Clone("hFltrMatchVsReco_l1Mu16Eta2p1");
    hFltrMatchVsReco_l1Mu16Eta2p1->Divide(hFltrMatchVsReco_l1Mu16Eta2p1, hRecoNoTrgEvts, 1, 1, "B");
+   h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta = (TH2F*)h2FltrMatchEvts_l1Mu16Eta2p1_ele_pt_eta->Clone("h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta");
+   h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta->Divide(h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta, h2RecoNoTrgEvts_ele_pt_eta, 1, 1, "B");
    hFltrMatchVsReco_mu22ph22_phLeg = (TH1F*)hFltrMatchEvts_mu22ph22_phLeg->Clone("hFltrMatchVsReco_mu22ph22_phLeg");
    hFltrMatchVsReco_mu22ph22_phLeg->Divide(hFltrMatchVsReco_mu22ph22_phLeg, hRecoNoTrgEvts, 1, 1, "B");
    hFltrMatchVsReco_mu22ph22_muLeg = (TH1F*)hFltrMatchEvts_mu22ph22_muLeg->Clone("hFltrMatchVsReco_mu22ph22_muLeg");
@@ -559,6 +596,8 @@ void AccTimesEff::Loop()
    hTrgEff_mu22ph22_ele_pt->Divide(hTrgEff_mu22ph22_ele_pt, hGenEvts_ele_pt, 1, 1, "B");
    hTrgEff_mu22ph22_ele_eta = (TH1F*)hTrgEvts_mu22ph22_ele_eta->Clone("hTrgEff_mu22ph22_ele_eta");
    hTrgEff_mu22ph22_ele_eta->Divide(hTrgEff_mu22ph22_ele_eta, hGenEvts_ele_eta, 1, 1, "B");
+   h2TrgEff_mu22ph22_ele_pt_eta = (TH2F*)h2TrgEvts_mu22ph22_ele_pt_eta->Clone("h2TrgEff_mu22ph22_ele_pt_eta");
+   h2TrgEff_mu22ph22_ele_pt_eta->Divide(h2TrgEvts_mu22ph22_ele_pt_eta, h2GenEvts_ele_pt_eta, 1, 1, "B");
    hTrgEff_mu22ph22_mu_pt = (TH1F*)hTrgEvts_mu22ph22_mu_pt->Clone("hTrgEff_mu22ph22_mu_pt");
    hTrgEff_mu22ph22_mu_pt->Divide(hTrgEff_mu22ph22_mu_pt, hGenEvts_mu_pt, 1, 1, "B");
    hTrgEff_mu22ph22_mu_eta = (TH1F*)hTrgEvts_mu22ph22_mu_eta->Clone("hTrgEff_mu22ph22_mu_eta");
@@ -569,6 +608,8 @@ void AccTimesEff::Loop()
    hTrgEff_mu40_ele_pt->Divide(hTrgEff_mu40_ele_pt, hGenEvts_ele_pt, 1, 1, "B");
    hTrgEff_mu40_ele_eta = (TH1F*)hTrgEvts_mu40_ele_eta->Clone("hTrgEff_mu40_ele_eta");
    hTrgEff_mu40_ele_eta->Divide(hTrgEff_mu40_ele_eta, hGenEvts_ele_eta, 1, 1, "B");
+   h2TrgEff_mu40_ele_pt_eta = (TH2F*)h2TrgEvts_mu40_ele_pt_eta->Clone("h2TrgEff_mu40_ele_pt_eta");
+   h2TrgEff_mu40_ele_pt_eta->Divide(h2TrgEvts_mu40_ele_pt_eta, h2GenEvts_ele_pt_eta, 1, 1, "B");
    hTrgEff_mu40_mu_pt = (TH1F*)hTrgEvts_mu40_mu_pt->Clone("hTrgEff_mu40_mu_pt");
    hTrgEff_mu40_mu_pt->Divide(hTrgEff_mu40_mu_pt, hGenEvts_mu_pt, 1, 1, "B");
    hTrgEff_mu40_mu_eta = (TH1F*)hTrgEvts_mu40_mu_eta->Clone("hTrgEff_mu40_mu_eta");
@@ -1016,6 +1057,25 @@ void AccTimesEff::Loop()
    trgLegend_ele_eta->Draw("same");
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
 
+   TCanvas *trgEffPlot_mu22ph22_ele_pt_eta = new TCanvas("trgEffPlot_mu22ph22_ele_pt_eta", "Mu22Pho22 trigger eff wrt ele pt and eta", 100, 100, 600, 600);
+   TPad *trgEffPad_mu22ph22_ele_pt_eta = (TPad*)accTimesEffPad->Clone("trgEffPad_ele_pt_eta");
+   trgEffPad_mu22ph22_ele_pt_eta->Draw(); 
+   trgEffPad_mu22ph22_ele_pt_eta->cd();
+   h2TrgEff_mu22ph22_ele_pt_eta->GetZaxis()->SetTitle("trg eff");
+   h2TrgEff_mu22ph22_ele_pt_eta->GetZaxis()->SetRangeUser(0.7, 1.);
+   gStyle->SetPalette(1);
+   h2TrgEff_mu22ph22_ele_pt_eta->Draw("colz");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgEffPlot_mu40_ele_pt_eta = new TCanvas("trgEffPlot_mu40_ele_pt_eta", "Mu40 trigger eff wrt ele pt and eta", 100, 100, 600, 600);
+   TPad *trgEffPad_mu40_ele_pt_eta = (TPad*)accTimesEffPad->Clone("trgEffPad_ele_pt_eta");
+   trgEffPad_mu40_ele_pt_eta->Draw(); 
+   trgEffPad_mu40_ele_pt_eta->cd();
+   h2TrgEff_mu40_ele_pt_eta->GetZaxis()->SetTitle("trg eff");
+   h2TrgEff_mu40_ele_pt_eta->GetZaxis()->SetRangeUser(0.7, 1.);
+   h2TrgEff_mu40_ele_pt_eta->Draw("colz");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
    TCanvas *trgEffPlot_mu_pt = new TCanvas("trgEffPlot_mu_pt", "trigger eff wrt muon pt", 100, 100, 600, 600);
    TPad *trgEffPad_mu_pt = (TPad*)accTimesEffPad->Clone("trgEffPad_mu_pt");
    trgEffPad_mu_pt->Draw(); 
@@ -1111,6 +1171,33 @@ void AccTimesEff::Loop()
    tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
    if (eleDetRegion == 1) tex->DrawLatex(0.60, 0.935, "barrel electron");
    else if (eleDetRegion == 2) tex->DrawLatex(0.60, 0.935, "endcap electron");
+
+   TCanvas *trgFltrEffPlot_l1SingleEG12_ele_pt_eta = new TCanvas("trgFltrEffPlot_l1SingleEG12_ele_pt_eta", "SingleEG12 L1 filter eff vs ele pt and eta wrt selected event", 100, 100, 600, 600);
+   TPad *trgFltrEffPad_l1SingleEG12_ele_pt_eta = (TPad*)accTimesEffPad->Clone("trgFltrEffPad_l1SingleEG12_ele_pt_eta");
+   trgFltrEffPad_l1SingleEG12_ele_pt_eta->Draw(); 
+   trgFltrEffPad_l1SingleEG12_ele_pt_eta->cd();
+   h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta->GetZaxis()->SetTitle("Filter eff");
+   h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta->GetZaxis()->SetRangeUser(0.8, 1.);
+   h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta->Draw("colz");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgFltrEffPlot_l1Mu3p5EG12_ele_pt_eta = new TCanvas("trgFltrEffPlot_l1Mu3p5EG12_ele_pt_eta", "Mu22Pho22 L1 filter eff vs ele pt and eta wrt selected event", 100, 100, 600, 600);
+   TPad *trgFltrEffPad_l1Mu3p5EG12_ele_pt_eta = (TPad*)accTimesEffPad->Clone("trgFltrEffPad_l1Mu3p5EG12_ele_pt_eta");
+   trgFltrEffPad_l1Mu3p5EG12_ele_pt_eta->Draw(); 
+   trgFltrEffPad_l1Mu3p5EG12_ele_pt_eta->cd();
+   h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta->GetZaxis()->SetTitle("Filter eff");
+   h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta->GetZaxis()->SetRangeUser(0.8, 1.);
+   h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta->Draw("colz");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
+
+   TCanvas *trgFltrEffPlot_l1Mu16Eta2p1_ele_pt_eta = new TCanvas("trgFltrEffPlot_l1Mu16Eta2p1_ele_pt_eta", "Mu40 L1 filter eff vs ele pt and eta wrt selected event", 100, 100, 600, 600);
+   TPad *trgFltrEffPad_l1Mu16Eta2p1_ele_pt_eta = (TPad*)accTimesEffPad->Clone("trgFltrEffPad_l1Mu16Eta2p1_ele_pt_eta");
+   trgFltrEffPad_l1Mu16Eta2p1_ele_pt_eta->Draw(); 
+   trgFltrEffPad_l1Mu16Eta2p1_ele_pt_eta->cd();
+   h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta->GetZaxis()->SetTitle("Filter eff");
+   h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta->GetZaxis()->SetRangeUser(0.8, 1.);
+   h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta->Draw("colz");
+   tex->DrawLatex(0.109, 0.935, "CMS Simulation, 8 TeV");
 
    TCanvas *trgFltrEffPlotByFilter = new TCanvas("trgFltrEffPlotByFilter", "trigger filter eff wrt previous filter", 100, 100, 600, 600);
    TPad *trgFltrEffPadByFilter = (TPad*)accTimesEffPad->Clone("trgFltrEffPadByFilter");
@@ -1280,14 +1367,20 @@ void AccTimesEff::Loop()
    hRecoNoTrgEleEvtsEE->Write();
    hRecoNoTrgMuEvts->Write();
    hFltrMatchEvts_l1SingleEG12->Write();
+   h2FltrMatchEvts_l1SingleEG12_ele_pt_eta->Write();
    hFltrMatchEvts_l1Mu3p5EG12->Write();
+   h2FltrMatchEvts_l1Mu3p5EG12_ele_pt_eta->Write();
    hFltrMatchEvts_l1Mu16Eta2p1->Write();
+   h2FltrMatchEvts_l1Mu16Eta2p1_ele_pt_eta->Write();
    hFltrMatchEvts_mu22ph22_phLeg->Write();
    hFltrMatchEvts_mu22ph22_muLeg->Write();
    hFltrMatchEvts_mu40->Write();
    hFltrMatchVsReco_l1SingleEG12->Write();
+   h2FltrMatchVsReco_l1SingleEG12_ele_pt_eta->Write();
    hFltrMatchVsReco_l1Mu3p5EG12->Write();
+   h2FltrMatchVsReco_l1Mu3p5EG12_ele_pt_eta->Write();
    hFltrMatchVsReco_l1Mu16Eta2p1->Write();
+   h2FltrMatchVsReco_l1Mu16Eta2p1_ele_pt_eta->Write();
    hFltrMatchVsReco_mu22ph22_phLeg->Write();
    hFltrMatchVsReco_mu22ph22_muLeg->Write();
    hFltrMatchVsPrev_mu22ph22_phLeg->Write();

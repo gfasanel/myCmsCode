@@ -30,19 +30,27 @@ void EmuSpectrum::Loop()
    // pile up histogram
    TString puFile = "file:////user/treis/data2013/pileup/pileupTrue_SingleMu_Run2012ABCD-22Jan2013.root";
    //string outfileName = "emuSpec_singleMuTrg_altdiboson";
-   string outfileName = "emuSpec_test";
+   string outfileName = "emuSpec_highestmass";
    muon_pt_min = 45.;
    muon_etaMax = 2.1;
    float eleL1Eff = 1.; // there is no electron L1 for the trigger used and so just set it to 1.
-   int trgSelector = 4;
+   int trgSelector = 4; // 4: single muon trigger
    mResV7C1->SetParameters(1.358e-2, 5.474e-1, 6.146e+3);
    mResV7C2->SetParameters(1.224e-2, 6.18e-2, 5.229e+2);
    //-----------------------------------------------------------------------
+
+   int pairSelector = 0; // How are emu pairs selected. 0: by highest invariant mass. 1: highest lepton pT
 
    TParameter<float> lumi("lumi", LumiFactor);
    // scale factors
    // muon factors: mu high_pt id trk iso https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000  
    TParameter<float> trgL1Eff("trgL1Eff", eleL1Eff); // ele L1 eff
+   TParameter<float> trgEffLowEta("trgEffLowEta", eleL1Eff * 0.929); // ele L1 eff times Mu40 eff measured by Z' to mumu for |eta|<0.9
+   TParameter<float> trgEffMidEta("trgEffMidEta", eleL1Eff * 0.8314); // ele L1 eff times Mu40 eff measured by Z' to mumu for 0.9<|eta|<1.2
+   TParameter<float> trgEffHighEta("trgEffHighEta", eleL1Eff * 0.8027); // ele L1 eff times Mu40 eff measured by Z' to mumu for 1.2<|eta|
+   TParameter<float> trgDataMcScaleFactorLowEta("trgDataMcScaleFactorLowEta", 0.976); // scale factor between data and mc measured by Z' to mumu for Mu40 for |eta|<0.9
+   TParameter<float> trgDataMcScaleFactorMidEta("trgDataMcScaleFactorMidEta", 0.954); // scale factor between data and mc measured by Z' to mumu for Mu40 for 0.9<|eta|<1.2
+   TParameter<float> trgDataMcScaleFactorHighEta("trgDataMcScaleFactorHighEta", 0.983); // scale factor between data and mc measured by Z' to mumu for Mu40 for 1.2<|eta|
    // epsilon_cand from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgCommissioningAndPhysicsDeliverables#Electron_reconstruction_effi_AN1
    TParameter<float> eps_cand_sf_0p8("eps_cand_sf_0p8", 0.990); // data/MC scale for epsilon_cand (>50GeV) |eta|<0.8
    TParameter<float> eps_cand_sf_err_0p8("eps_cand_sf_err_0p8", 0.004); // data/MC scale error (stat. + syst.) for epsilon_cand (>50GeV) |eta|<0.8
@@ -62,6 +70,28 @@ void EmuSpectrum::Loop()
    TParameter<float> eps_heep_sf_ee_pt100("eps_heep_sf_eb_pt100", 0.981); // HEEP eff scale factor
    TParameter<float> eps_heep_sf_err_ee_pt100("eps_heep_sf_err_eb_pt100", 0.007); // HEEP eff scale factor error
    // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
+   TParameter<float> muScaleFactorLowEta("muScaleFactorLowEta", 0.9900); // for |eta|<0.9
+   TParameter<float> muScaleFactorErrLowEta("muScaleFactorErrLowEta", 0.0003); // for |eta|<0.9
+   TParameter<float> muScaleFactorMidEta("muScaleFactorMidEta", 0.9923); // for 0.9<|eta|<1.2
+   TParameter<float> muScaleFactorErrMidEta("muScaleFactorErrMidEta", 0.0006); // for 0.9<|eta|<1.2
+   TParameter<float> muScaleFactorHighEta("muScaleFactorHighEta", 0.9949); // for 1.2<|eta|<2.1
+   TParameter<float> muScaleFactorErrHighEta("muScaleFactorErrHighEta", 0.0004); // for 1.2<|eta|<2.1
+   TParameter<float> muScaleFactorHighestEta("muScaleFactorHighestEta", 0.9923); // for 2.1<|eta|<2.4
+   TParameter<float> muScaleFactorErrHighestEta("muScaleFactorErrHighestEta", 0.0012); // for 2.1<|eta|<2.4
+   // muon scale factors from https://indico.cern.ch/getFile.py/access?contribId=1&resId=2&materialId=slides&confId=257630
+   TParameter<float> muIsoScaleFactorLowEta("muIsoScaleFactorLowEta", 0.9996); // for |eta|<0.9
+   TParameter<float> muIsoScaleFactorErrLowEta("muIsoScaleFactorErrLowEta", 0.00001); // for |eta|<0.9
+   TParameter<float> muIsoScaleFactorMidEta("muIsoScaleFactorMidEta", 0.9994); // for 0.9<|eta|<1.2
+   TParameter<float> muIsoScaleFactorErrMidEta("muIsoScaleFactorErrMidEta", 0.0001); // for 0.9<|eta|<1.2
+   TParameter<float> muIsoScaleFactorHighEta("muIsoScaleFactorHighEta", 0.9997); // for 1.2<|eta|<2.1
+   TParameter<float> muIsoScaleFactorErrHighEta("muIsoScaleFactorErrHighEta", 0.0001); // for 1.2<|eta|<2.1
+   TParameter<float> muIsoScaleFactorHighestEta("muIsoScaleFactorHighestEta", 0.9997); // for 2.1<|eta|<2.4
+   TParameter<float> muIsoScaleFactorErrHighestEta("muIsoScaleFactorErrHighestEta", 0.0001); // for 2.1<|eta|<2.4
+   // muon systematic errors on T&P measurements from https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffs
+   TParameter<float> muSystTaPErrId("muSystTaPErrId", 0.005);
+   TParameter<float> muSystTaPErrIso("muSystTaPErrIso", 0.002);
+   TParameter<float> muSystTaPErrTrg("muSystTaPErrTrg", 0.002);
+
    TParameter<float> lumiScaleFactorEB("lumiScaleFactorEB", 0.997);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
    TParameter<float> lumiScaleFactorEE("lumiScaleFactorEE", 0.934);  // powheg - from normalization to the Z peak of the Z->ee spectrum HEEP v4.1
 
@@ -160,7 +190,7 @@ void EmuSpectrum::Loop()
 
    TFile *inWWpow = TFile::Open("file:////user/treis/mcsamples/WWJetTo2L2Nu_8TeV-powheg-pythia6_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_999864ev.root");
    nGenEvtsV.push_back(999864.);
-   input.push_back(make_pair(inWWpow, 5.67 / nGenEvtsV.back())); //WW
+   input.push_back(make_pair(inWWpow, 5.88 / nGenEvtsV.back())); //WW
    systErrMCs.Add(new TParameter<float>("systErrMcWWpow", 0.04));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(1);
@@ -218,6 +248,40 @@ void EmuSpectrum::Loop()
    nGenEvtsV.push_back(76102995.);
    input.push_back(make_pair(inWJet, 36257.2 / nGenEvtsV.back())); //W+jet
    systErrMCs.Add(new TParameter<float>("systErrMcWJets", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGamma = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_TuneZ2star_8TeV-madgraph-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_4802358ev.root");
+   nGenEvtsV.push_back(4802358.);
+   input.push_back(make_pair(inWGamma, 461.6 / nGenEvtsV.back())); //W+Gamma xsec from PREP
+   systErrMCs.Add(new TParameter<float>("systErrMcWGamma", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGammaPtg30to50 = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_PtG-30-50_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_869591ev.root");
+   nGenEvtsV.push_back(869591.);
+   //input.push_back(make_pair(inWGammaPtg30to50, 6.9 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 30-50 Gev, xsec from PREP
+   input.push_back(make_pair(inWGammaPtg30to50, 20.360 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 30-50 Gev, xsec from Andreas
+   systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg30to50", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGammaPtg50to130 = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_PtG-50-130_8TeV-madgraph_Summer12_DR53X-PU_S10_START53_V7C-v1_AODSIM_emuSkim_1135698ev.root");
+   nGenEvtsV.push_back(1135698.);
+   //input.push_back(make_pair(inWGammaPtg50to130, 1.17 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 50-130 Gev, xsec from PREP
+   input.push_back(make_pair(inWGammaPtg50to130, 3.309 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 50-130 Gev, xsec from Andreas
+   systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg50to130", 0.05));
+   storeGenMTtbar.push_back(0);
+   storeEmuMass.push_back(0);
+   storeShapes.push_back(1);
+
+   TFile *inWGammaPtg130up = TFile::Open("file:////user/treis/mcsamples/WGToLNuG_PtG-130_8TeV-madgraph-pythia6_tauola_Summer12_DR53X-PU_S10_START53_V7A-v1_AODSIM_emuSkim_471458ev.root");
+   nGenEvtsV.push_back(471458.);
+   input.push_back(make_pair(inWGammaPtg130up, 0.2571 / nGenEvtsV.back())); //W+Gamma, Gamma pT: 130up Gev, xsec from PREP
+   systErrMCs.Add(new TParameter<float>("systErrMcWGammaPtg130up", 0.05));
    storeGenMTtbar.push_back(0);
    storeEmuMass.push_back(0);
    storeShapes.push_back(1);
@@ -915,6 +979,11 @@ void EmuSpectrum::Loop()
             frEmuTree->Branch("muCharge", &muCharge, "muCharge/I");
             frEmuTree->Branch("fakeRate", &fakeRate, "fakeRate/F");
             frEmuTree->Branch("puWeight", &puWeight, "puWeight/F");
+            frEmuTree->Branch("trgEff", &trgEff, "trgEff/F");
+            frEmuTree->Branch("trgEffSf", &trgEffSf, "trgEffSf/F");
+            frEmuTree->Branch("eleEffSf", &eleEffSf, "eleEffSf/F");
+            frEmuTree->Branch("eleEffSfErr", &eleEffSfErr, "eleEffSfErr/F");
+            frEmuTree->Branch("muEffSf", &muEffSf, "muEffSf/F");
             if (storeGenMTtbar[p]) {
               frEmuTree->Branch("genMTtbar", &genPair_mass, "genMTtbar/F");
               frEmuTree->Branch("topRewSf", &topRewSf, "topRewSf/F");
@@ -995,9 +1064,12 @@ void EmuSpectrum::Loop()
             }
          }
          unsigned int trig[3] = {0, 0, 0};
+         unsigned int emuEvtCounter = 0;
          unsigned int evCounter = 0;
          unsigned int goodHeepCounter = 0;
          unsigned int goodMuCounter = 0;
+         unsigned int heepMoreMuEvtCounter = 0;
+         unsigned int muMoreHeepEvtCounter = 0;
          unsigned int moreHeepCounter = 0;
          unsigned int moreMuCounter = 0;
          unsigned int moreHeepMuCounter = 0;
@@ -1105,7 +1177,14 @@ void EmuSpectrum::Loop()
                if (PassHighPtMu(j)) MU_passGOOD.push_back(j);
             }
 
-            if (GSF_passHEEP.size() > 1) ++moreHeepCounter;
+            if (GSF_passHEEP.size() > 0) ++goodHeepCounter;
+            if (MU_passGOOD.size() > 0) ++goodMuCounter;
+            if (GSF_passHEEP.size() > 0 && MU_passGOOD.size() > 0) ++emuEvtCounter;
+
+            if (GSF_passHEEP.size() > 1) {
+               ++moreHeepCounter;
+               if (MU_passGOOD.size() > 0) ++heepMoreMuEvtCounter;
+            }
 
             // veto when there are more than one good muon
             if (MU_passGOOD.size() > 1) {
@@ -1125,6 +1204,7 @@ void EmuSpectrum::Loop()
                //}
                ////cout << MU_passGOOD.size() << " high pt muons found" << endl;
                ++moreMuCounter;
+               if (GSF_passHEEP.size() > 0) ++muMoreHeepEvtCounter;
                if (GSF_passHEEP.size() > 1) ++moreHeepMuCounter;
                //continue;
             }
@@ -1198,6 +1278,27 @@ void EmuSpectrum::Loop()
                         }
                      }
                   }
+
+                  // set scale factors
+                  if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 0.8) {
+                    eleEffSf = eps_cand_sf_0p8.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_0p8.GetVal();
+                  }
+                  else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 1.442) {
+                    eleEffSf = eps_cand_sf_0p8to1p4442.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_0p8to1p4442.GetVal();
+                  }
+                  else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) > 1.56 && fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 2.0) {
+                    eleEffSf = eps_cand_sf_1p566to2p0.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_1p566to2p0.GetVal();
+                  }
+                  else if (fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) > 2.0 && fabs(gsfsc_eta[GSF_passFrPre[eleInd]]) < 2.5) {
+                    eleEffSf = eps_cand_sf_2p0to2p5.GetVal();
+                    eleEffSfErr = eps_cand_sf_err_2p0to2p5.GetVal();
+                  }
+                  WeightMuonRecoIsoTrigger(muon_pt[MU_passGOOD[muInd]], muon_eta[MU_passGOOD[muInd]], muEffSf, trgEffSf, trgEff, suffix[p], trgL1Eff.GetVal());
+
+                  if (p > 0) weight *= eleEffSf * muEffSf * trgEffSf;
    
                   // fill the data tree
                   passHeep = PassHEEP(GSF_passFrPre[eleInd]);
@@ -1269,33 +1370,42 @@ void EmuSpectrum::Loop()
                TLorentzVector ele1;
                TLorentzVector mu1;
                double invMass = 0.;
-
-               // find the e-mu pair with the maximum invariant mass
-               double maxInvMass = 0.;
                unsigned int eleInd = 0;
                unsigned int muInd = 0;
-               for (unsigned int eleIt = 0; eleIt < GSF_passHEEP.size(); ++eleIt) {
-                  for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
-                     ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[eleIt]], gsf_eta[GSF_passHEEP[eleIt]], gsf_phi[GSF_passHEEP[eleIt]], 0.000511);
-                     mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
 
-                     invMass = (ele1 + mu1).M();
-                     if (invMass > maxInvMass) {
-                        maxInvMass = invMass;
-                        eleInd = eleIt;
-                        muInd = muIt;
+               switch (pairSelector) {
+                  case 0:
+                     {
+                        // find the e-mu pair with the maximum invariant mass
+                        double maxInvMass = 0.;
+                        for (unsigned int eleIt = 0; eleIt < GSF_passHEEP.size(); ++eleIt) {
+                           for (unsigned int muIt = 0; muIt < MU_passGOOD.size(); ++muIt) {
+                              ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[eleIt]], gsf_eta[GSF_passHEEP[eleIt]], gsf_phi[GSF_passHEEP[eleIt]], 0.000511);
+                              mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muIt]], muon_eta[MU_passGOOD[muIt]], muon_phi[MU_passGOOD[muIt]], 0.10566);
+
+                              invMass = (ele1 + mu1).M();
+                              if (invMass > maxInvMass) {
+                                 maxInvMass = invMass;
+                                 eleInd = eleIt;
+                                 muInd = muIt;
+                              }
+                           }
+                        }
+                        invMass = maxInvMass;
                      }
-                  }
+                     break;
+                  case 1:
+                     ele1.SetPtEtaPhiM(gsf_gsfet[GSF_passHEEP[eleInd]], gsf_eta[GSF_passHEEP[eleInd]], gsf_phi[GSF_passHEEP[eleInd]], 0.000511);
+                     mu1.SetPtEtaPhiM(muon_pt[MU_passGOOD[muInd]], muon_eta[MU_passGOOD[muInd]], muon_phi[MU_passGOOD[muInd]], 0.10566);
+                     invMass = (ele1 + mu1).M();
+                     break;
                }
-               invMass = maxInvMass;
 
                // vertex matching of tracks by dz
                //if (fabs(gsf_dz_beamSpot[GSF_passHEEP[eleInd]] - muon_dz_beamSpot[MU_passGOOD[muInd]]) > 0.05) continue;
 
                //MASS CUT
                if (invMass < minInvMass) continue;
-               ++goodHeepCounter;
-               ++goodMuCounter;
 
                if (GSF_passHEEP.size() > 1) {
                   //cout << "Electron masses: ";
@@ -1513,10 +1623,15 @@ void EmuSpectrum::Loop()
          } //END LOOP OVER EVENTS
            //////////////////////////////////////////////////////////////////////
 
+         cout << "Number of events with at least one good electron and one good muon: " << emuEvtCounter << endl;
          cout << "Number of selected events: " << evCounter << endl;
          cout << "moreHeep/goodHeep: " << moreHeepCounter << " / " << goodHeepCounter << " = " << (float)moreHeepCounter/(float)goodHeepCounter << endl;
          cout << "moreMu/goodMu: " << moreMuCounter << " / " << goodMuCounter << " = " << (float)moreMuCounter/(float)goodMuCounter << endl;
-         cout << "moreHeepMu: " << moreHeepMuCounter << endl;
+         cout << "Events with at least one electron and more than one muon: " << heepMoreMuEvtCounter << endl;
+         cout << "Events with at least one muon and more than one electron: " << muMoreHeepEvtCounter << endl;
+         cout << "Events with more than one muon and more than one electron: " << moreHeepMuCounter << endl;
+         cout << "heepMoreMuEvtCounter/emuEvtCounter: " << heepMoreMuEvtCounter << " / " << emuEvtCounter << " = " << (float)heepMoreMuEvtCounter/(float)emuEvtCounter << endl;
+         cout << "muMoreHeepEvtCounter/emuEvtCounter: " << muMoreHeepEvtCounter << " / " << emuEvtCounter << " = " << (float)muMoreHeepEvtCounter/(float)emuEvtCounter << endl;
 
          if (p == 0) {
             //write root file with good emu events

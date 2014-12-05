@@ -24,10 +24,10 @@ gStyle.SetOptTitle(0)
 #open files to comare
 #input = TFile("emuSpec_19703pb-1.root")
 #input = TFile("emuSpec_singleMuTrg_19706pb-1.root")
-input = TFile("emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root")
+input = TFile("emuSpec_thesis_19706pb-1.root")
 treePrefices = ['emuTree_sigNoAccCuts', 'emuTree_sigTagV7C2_']
 #treePrefices = ['emuTree_sigTagV7C2_']
-recoTags = ['START53_V7C1', 'START53_V7C2']
+recoTags = ['C1 alignment', 'C2 alignment']
 
 muPt_ranges = [75., 150., 200., 300., 400., 500., 600., 700., 800., 900., 1000., 1125., 1250., 1375., 1500., 1625., 1750., 2000., 2400.]
 
@@ -247,7 +247,7 @@ if len(treePrefices) > 1:
     resErr.GetXaxis().SetTitle('p^{#mu gen}_{T} (GeV)')
     resErr.GetXaxis().SetTitleFont(font)
     resErr.GetXaxis().SetLabelFont(font)
-    resErr.GetYaxis().SetTitle('|#sigma(p^{#mu V7C1}_{T})-#sigma(p^{#mu V7C2}_{T})|/#sigma(p^{#mu V7C1}_{T})')
+    resErr.GetYaxis().SetTitle('|#sigma(p^{#mu C1}_{T})-#sigma(p^{#mu C2}_{T})|/#sigma(p^{#mu C1}_{T})')
     resErr.GetYaxis().SetTitleOffset(1.55)
     resErr.GetYaxis().SetTitleFont(font)
     resErr.GetYaxis().SetLabelFont(font)
@@ -282,8 +282,8 @@ if len(treePrefices) > 1:
 # save canvases to root file
 if savePlots:
     #output = TFile('./plots/muPtResolutionPlots.root', 'recreate')
-    output = TFile('./plots/muPtResolutionPlots_singleMu.root', 'recreate')
-    plotDir = './plots/plots/'
+    output = TFile('./thesisplots/muPtResolutionPlots_singleMu.root', 'recreate')
+    plotDir = './thesisplots/'
     output.cd()
     for canvas in cList:
         canvas.Write(canvas.GetName())

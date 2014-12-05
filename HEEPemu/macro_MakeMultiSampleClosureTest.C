@@ -36,18 +36,19 @@ class ContVarPlot {
     ~ContVarPlot() { }
 };
 
-void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigned int reg = 0)
+void macro_MakeMultiSampleClosureTest(int processType = 0, unsigned int var = 0, int sig = 0, unsigned int reg = 0)
 { 
   // parameters //////////////////////////////////////////////////////////////
   //TFile input("./emuSpec_19703pb-1.root", "open");
   //TFile input("./emuSpec_singleMuTrg_topxsect245p8_19706pb-1.root", "open");
-  TFile input("./emuSpec_singleMuTrg_altdiboson_19706pb-1.root", "open");
+  TFile input("./emuSpec_thesis_wgammaxsecAndreas_19706pb-1.root", "open");
   input.cd();
 
   TParameter<float> *lumi = (TParameter<float> *)input.Get("lumi");
 
   const bool topReweighting = 0;
-  const bool plot_ttbar = 0; // plot ttbar or WW
+  const bool useAllEvts = 0; // use all events from the samples and weight them according to how many samples contribute in the range where the event is.
+  //const int processType = 0; // plot ttbar (0) or WW (1) or WG (2)
   TString ww_base = "wwpow";
 
   const bool plotPull = 1; // plot (ref - test) / test
@@ -65,6 +66,9 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   int wwColour = kGreen;
   int wwPriv600upEminusMuPlusColour = kMagenta;
   int wwPriv600upEplusMuMinusColour = kCyan;
+  int wgammaPtg30to50Colour = kGreen;
+  int wgammaPtg50to130Colour = kBlue;
+  int wgammaPtg130upColour = kRed;
 
   // output file formats
   const bool saveSpec = 0;
@@ -86,6 +90,8 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   testPlots.reserve(40);
   // flags: logPlot | underflow in first bin | overflow in last bin
   testPlots.push_back(ContVarPlot("mass", "e#mu invariant mass", "m(e#mu) [GeV]", 0., 1500., 0, 1, 0, 0));
+  testPlots.push_back(ContVarPlot("genMTtbar", "generated t#bar{t} invariant mass", "m(t#bar{t}) [GeV]", 200., 2700., 50, 1, 0, 0));
+  testPlots.push_back(ContVarPlot("emu_mass", "generated e#mu invariant mass", "m^{gen}(e#mu) [GeV]", 0., 1500., 0, 1, 0, 0));
   testPlots.push_back(ContVarPlot("pfMet", "PF MET", "E^{T}_{miss} [GeV]", 0., 500., 50, 1, 1, 1));
   testPlots.push_back(ContVarPlot("nVtx", "Number of primary vertices", "# PV", 0., 50., 50, 0, 1, 1));
   testPlots.push_back(ContVarPlot("rho", "rho", "#rho", 0., 50., 50, 0, 1, 1));
@@ -137,7 +143,8 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   // plot a list with possible test histograms
   if (var > testPlots.size()) var = 0;
   if (var == 0) {
-    cout << "Use macro_MakeMultiSampleClosureTest.C(x, y, z) with x {1-" << testPlots.size() << "} being the \n";
+    cout << "Use macro_MakeMultiSampleClosureTest.C(p, x, y, z) with process p {0, ttbar; 1, WW; 2 Wgamma} and \n";
+    cout << "with x {1-" << testPlots.size() << "} being the \n";
     cout << "number of the test histogram to plot, y {-3 - +3} selects the charge with \n";
     cout << "the scheme e-mu: -+, +-, OS, ALL, SS, ++, -- and z {0-2} selects the \n";
     cout << "detector EB+EE, EB or EE events for the electron." << endl;
@@ -151,7 +158,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
       cout << i + 1 << endl;
     }
     cout << "-----------------------------------" << endl;
-    cout << "Use PlotRange(y, z, x-start, x-stop) to plot a range of test histograms." << endl;
+    cout << "Use PlotRange(p, y, z, x-start, x-stop) to plot a range of test histograms." << endl;
     input.Close();
     return;
   }
@@ -172,6 +179,9 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   std::vector<TH1F *> emuTest_ww;
   std::vector<TH1F *> emuTest_wwPriv600upEminusMuPlus;
   std::vector<TH1F *> emuTest_wwPriv600upEplusMuMinus;
+  std::vector<TH1F *> emuTest_wgammaPtg30to50;
+  std::vector<TH1F *> emuTest_wgammaPtg50to130;
+  std::vector<TH1F *> emuTest_wgammaPtg130up;
 
   input.cd();
 
@@ -243,7 +253,8 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   TParameter<float> *wwNGen600upEminusMuPlus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEminusMuPlus");
   TParameter<float> *wwNGen600upEplusMuMinus = (TParameter<float> *)nGenEvents->FindObject("wwPriv600upEplusMuMinus");
 
-  unsigned int flags = 0x1DF; // flags: [apply top reweighting | apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
+  unsigned int flags = 0x1DF; // flags: [XOR multi samples | apply top reweighting | apply fake rate | pass Trigger | lumi | MC weight | trigger Eff | trigger MC to data SF | lumi SF | ele SF | mu SF | PU reweight]
+  if (!useAllEvts) flags += (1<<11);
   unsigned int topFlags = flags;
   if (topReweighting) topFlags += (1<<10);
   // get the histograms
@@ -252,54 +263,115 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   vector<float> highCuts;
   vector<float> mcWeightsForCutRanges;
   TH1F *refOverTestHist;
-  if (plot_ttbar) {
+  if (processType == 0) {
     refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_ttbar", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin);
     emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-  } else {
+  } else if (processType == 1) {
     refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, (const char*)("emuTree_"+ww_base), "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin);
     emuTest_ref.push_back(MakeHistoFromBranch(&input, (const char*)("emuTree_"+ww_base), "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+  } else {
+    refOverTestHist = (TH1F *)MakeHistoFromBranch(&input, "emuTree_wgamma", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin);
+    emuTest_ref.push_back(MakeHistoFromBranch(&input, "emuTree_wgamma", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
   }
  
   // get combined ttbar histograms with MC weights for different samples mixed on an event-by-event basis
-  if (plot_ttbar) {
-    cutVars.push_back("");
-    lowCuts.push_back(0.);
-    highCuts.push_back(1.e9);
-    mcWeightsForCutRanges.push_back(ttbarMcWeight->GetVal());
-    cutVars.push_back("genMTtbar");
-    lowCuts.push_back(700.);
-    highCuts.push_back(1000.);
-    mcWeightsForCutRanges.push_back(ttbarMcWeight700to1000->GetVal());
-    cutVars.push_back("genMTtbar");
-    lowCuts.push_back(1000.);
-    highCuts.push_back(1.e9);
-    mcWeightsForCutRanges.push_back(ttbarMcWeight1000up->GetVal());
-    cutVars.push_back("emu_mass");
-    lowCuts.push_back(600.);
-    highCuts.push_back(1.e9);
-    mcWeightsForCutRanges.push_back(ttbarMcWeight600up->GetVal());
-    emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-    emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-    emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
-    emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+  if (processType == 0) {
+    if (useAllEvts) {
+      cutVars.push_back("");
+      lowCuts.push_back(0.);
+      highCuts.push_back(1.e9);
+      mcWeightsForCutRanges.push_back(ttbarMcWeight->GetVal());
+      cutVars.push_back("genMTtbar");
+      lowCuts.push_back(700.);
+      highCuts.push_back(1000.);
+      mcWeightsForCutRanges.push_back(ttbarMcWeight700to1000->GetVal());
+      cutVars.push_back("genMTtbar");
+      lowCuts.push_back(1000.);
+      highCuts.push_back(1.e9);
+      mcWeightsForCutRanges.push_back(ttbarMcWeight1000up->GetVal());
+      cutVars.push_back("emu_mass");
+      lowCuts.push_back(600.);
+      highCuts.push_back(1.e9);
+      mcWeightsForCutRanges.push_back(ttbarMcWeight600up->GetVal());
+      emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+      emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+      emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+      emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+    } else {
+      cutVars.push_back("emu_mass");
+      cutVars.push_back("genMTtbar");
+      lowCuts.push_back(0.);
+      lowCuts.push_back(0.);
+      highCuts.push_back(600.);
+      highCuts.push_back(700.);
+      mcWeightsForCutRanges.push_back(2 * ttbarMcWeight->GetVal());
+      mcWeightsForCutRanges.push_back(2 * ttbarMcWeight->GetVal());
+      emuTest_ttbar.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+      lowCuts.back() = 700.;
+      highCuts.back() = 1000.;
+      mcWeightsForCutRanges[0] = 2 * ttbarMcWeight700to1000->GetVal();
+      mcWeightsForCutRanges[1] = 2 * ttbarMcWeight700to1000->GetVal();
+      emuTest_ttbar700to1000.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar700to1000", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+      lowCuts.back() = 1000.;
+      highCuts.back() = 1.e9;
+      mcWeightsForCutRanges[0] = 2 * ttbarMcWeight1000up->GetVal();
+      mcWeightsForCutRanges[1] = 2 * ttbarMcWeight1000up->GetVal();
+      emuTest_ttbar1000up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbar1000up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+      cutVars.clear();
+      lowCuts.clear();
+      highCuts.clear();
+      mcWeightsForCutRanges.clear();
+      cutVars.push_back("emu_mass");
+      lowCuts.push_back(600.);
+      highCuts.push_back(1.e9);
+      mcWeightsForCutRanges[0] = ttbarMcWeight600up->GetVal();
+      emuTest_ttbarPriv600up.push_back(MakeHistoFromBranch(&input, "emuTree_ttbarPriv600up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, topFlags, normToBin));
+    }
+  } else if (processType == 1) {
+    if (useAllEvts) {
+      // get combined WW histograms with different final states
+      // total weight above 600 GeV (emu_mass): w_t = 1/(1/w_central + (N_p1+N_p2)/(w_p1*N_p1 + w_p2*N_p2))
+      cutVars.clear();
+      lowCuts.clear();
+      highCuts.clear();
+      mcWeightsForCutRanges.clear();
+      cutVars.push_back("");
+      lowCuts.push_back(0.);
+      highCuts.push_back(1.e9);
+      mcWeightsForCutRanges.push_back(wwMcWeight->GetVal());
+      cutVars.push_back("emu_mass");
+      lowCuts.push_back(600.);
+      highCuts.push_back(1.e9);
+      mcWeightsForCutRanges.push_back((wwMcWeight600upEminusMuPlus->GetVal()*wwNGen600upEminusMuPlus->GetVal() + wwMcWeight600upEplusMuMinus->GetVal()*wwNGen600upEplusMuMinus->GetVal())/(wwNGen600upEminusMuPlus->GetVal()+wwNGen600upEplusMuMinus->GetVal()));
+      emuTest_ww.push_back(MakeHistoFromBranch(&input, (const char*)("emuTree_"+ww_base), "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+      emuTest_wwPriv600upEminusMuPlus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+      emuTest_wwPriv600upEplusMuMinus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+    } else {
+      cutVars.clear();
+      lowCuts.clear();
+      highCuts.clear();
+      mcWeightsForCutRanges.clear();
+      cutVars.push_back("emu_mass");
+      lowCuts.push_back(0.);
+      highCuts.push_back(600.);
+      mcWeightsForCutRanges.push_back(wwMcWeight->GetVal());
+      emuTest_ww.push_back(MakeHistoFromBranch(&input, (const char*)("emuTree_"+ww_base), "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+      cutVars.back() = "emu_mass";
+      lowCuts.back() = 600.;
+      highCuts.back() = 1.e9;
+      mcWeightsForCutRanges.back() = wwMcWeight600upEminusMuPlus->GetVal();
+      emuTest_wwPriv600upEminusMuPlus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+      mcWeightsForCutRanges.back() = wwMcWeight600upEplusMuMinus->GetVal();
+      emuTest_wwPriv600upEplusMuMinus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+    }
   } else {
-    // get combined WW histograms with different final states
-    // total weight above 600 GeV (emu_mass): w_t = 1/(1/w_central + (N_p1+N_p2)/(w_p1*N_p1 + w_p2*N_p2))
     cutVars.clear();
     lowCuts.clear();
     highCuts.clear();
     mcWeightsForCutRanges.clear();
-    cutVars.push_back("");
-    lowCuts.push_back(0.);
-    highCuts.push_back(1.e9);
-    mcWeightsForCutRanges.push_back(wwMcWeight->GetVal());
-    cutVars.push_back("emu_mass");
-    lowCuts.push_back(600.);
-    highCuts.push_back(1.e9);
-    mcWeightsForCutRanges.push_back((wwMcWeight600upEminusMuPlus->GetVal()*wwNGen600upEminusMuPlus->GetVal() + wwMcWeight600upEplusMuMinus->GetVal()*wwNGen600upEplusMuMinus->GetVal())/(wwNGen600upEminusMuPlus->GetVal()+wwNGen600upEplusMuMinus->GetVal()));
-    emuTest_ww.push_back(MakeHistoFromBranch(&input, (const char*)("emuTree_"+ww_base), "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
-    emuTest_wwPriv600upEminusMuPlus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEminusMuPlus", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
-    emuTest_wwPriv600upEplusMuMinus.push_back(MakeHistoFromBranch(&input, "emuTree_wwPriv600upEplusMuMinus", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+    emuTest_wgammaPtg30to50.push_back(MakeHistoFromBranch(&input, "emuTree_wgammaPtg30to50", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+    emuTest_wgammaPtg50to130.push_back(MakeHistoFromBranch(&input, "emuTree_wgammaPtg50to130", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
+    emuTest_wgammaPtg130up.push_back(MakeHistoFromBranch(&input, "emuTree_wgammaPtg130up", "", testVar, sig, histoReg, cutVars, lowCuts, highCuts, mcWeightsForCutRanges, binning, flags, normToBin));
   }
 
   sig+=3;
@@ -311,7 +383,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     refOverTestHist->SetBinError(refOverTestHist->GetNbinsX(), sqrt(refOverTestHist->GetBinContent(refOverTestHist->GetNbinsX())));
     emuTest_ref.back()->SetBinError(emuTest_ref.back()->GetNbinsX(), sqrt(emuTest_ref.back()->GetBinContent(emuTest_ref.back()->GetNbinsX())));
 
-    if (plot_ttbar) {
+    if (processType == 0) {
       emuTest_ttbar.back()->SetBinContent(emuTest_ttbar.back()->GetNbinsX(), emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX()) + emuTest_ttbar.back()->GetBinContent(emuTest_ttbar.back()->GetNbinsX() + 1));
       emuTest_ttbar700to1000.back()->SetBinContent(emuTest_ttbar700to1000.back()->GetNbinsX(), emuTest_ttbar700to1000.back()->GetBinContent(emuTest_ttbar700to1000.back()->GetNbinsX()) + emuTest_ttbar700to1000.back()->GetBinContent(emuTest_ttbar700to1000.back()->GetNbinsX() + 1));
       emuTest_ttbar1000up.back()->SetBinContent(emuTest_ttbar1000up.back()->GetNbinsX(), emuTest_ttbar1000up.back()->GetBinContent(emuTest_ttbar1000up.back()->GetNbinsX()) + emuTest_ttbar1000up.back()->GetBinContent(emuTest_ttbar1000up.back()->GetNbinsX() + 1));
@@ -320,13 +392,20 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
       emuTest_ttbar700to1000.back()->SetBinError(emuTest_ttbar700to1000.back()->GetNbinsX(), sqrt(emuTest_ttbar700to1000.back()->GetBinContent(emuTest_ttbar700to1000.back()->GetNbinsX())));
       emuTest_ttbar1000up.back()->SetBinError(emuTest_ttbar1000up.back()->GetNbinsX(), sqrt(emuTest_ttbar1000up.back()->GetBinContent(emuTest_ttbar1000up.back()->GetNbinsX())));
       emuTest_ttbarPriv600up.back()->SetBinError(emuTest_ttbarPriv600up.back()->GetNbinsX(), sqrt(emuTest_ttbarPriv600up.back()->GetBinContent(emuTest_ttbarPriv600up.back()->GetNbinsX())));
-    } else {
+    } else if (processType == 1) {
       emuTest_ww.back()->SetBinContent(emuTest_ww.back()->GetNbinsX(), emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX()) + emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX() + 1));
       emuTest_wwPriv600upEminusMuPlus.back()->SetBinContent(emuTest_wwPriv600upEminusMuPlus.back()->GetNbinsX(), emuTest_wwPriv600upEminusMuPlus.back()->GetBinContent(emuTest_wwPriv600upEminusMuPlus.back()->GetNbinsX()) + emuTest_wwPriv600upEminusMuPlus.back()->GetBinContent(emuTest_wwPriv600upEminusMuPlus.back()->GetNbinsX() + 1));
       emuTest_wwPriv600upEplusMuMinus.back()->SetBinContent(emuTest_wwPriv600upEplusMuMinus.back()->GetNbinsX(), emuTest_wwPriv600upEplusMuMinus.back()->GetBinContent(emuTest_wwPriv600upEplusMuMinus.back()->GetNbinsX()) + emuTest_wwPriv600upEplusMuMinus.back()->GetBinContent(emuTest_wwPriv600upEplusMuMinus.back()->GetNbinsX() + 1));
       emuTest_ww.back()->SetBinError(emuTest_ww.back()->GetNbinsX(), sqrt(emuTest_ww.back()->GetBinContent(emuTest_ww.back()->GetNbinsX())));
       emuTest_wwPriv600upEminusMuPlus.back()->SetBinError(emuTest_wwPriv600upEminusMuPlus.back()->GetNbinsX(), sqrt(emuTest_wwPriv600upEminusMuPlus.back()->GetBinContent(emuTest_wwPriv600upEminusMuPlus.back()->GetNbinsX())));
       emuTest_wwPriv600upEplusMuMinus.back()->SetBinError(emuTest_wwPriv600upEplusMuMinus.back()->GetNbinsX(), sqrt(emuTest_wwPriv600upEplusMuMinus.back()->GetBinContent(emuTest_wwPriv600upEplusMuMinus.back()->GetNbinsX())));
+    } else {
+      emuTest_wgammaPtg30to50.back()->SetBinContent(emuTest_wgammaPtg30to50.back()->GetNbinsX(), emuTest_wgammaPtg30to50.back()->GetBinContent(emuTest_wgammaPtg30to50.back()->GetNbinsX()) + emuTest_wgammaPtg30to50.back()->GetBinContent(emuTest_wgammaPtg30to50.back()->GetNbinsX() + 1));
+      emuTest_wgammaPtg50to130.back()->SetBinContent(emuTest_wgammaPtg50to130.back()->GetNbinsX(), emuTest_wgammaPtg50to130.back()->GetBinContent(emuTest_wgammaPtg50to130.back()->GetNbinsX()) + emuTest_wgammaPtg50to130.back()->GetBinContent(emuTest_wgammaPtg50to130.back()->GetNbinsX() + 1));
+      emuTest_wgammaPtg130up.back()->SetBinContent(emuTest_wgammaPtg130up.back()->GetNbinsX(), emuTest_wgammaPtg130up.back()->GetBinContent(emuTest_wgammaPtg130up.back()->GetNbinsX()) + emuTest_wgammaPtg130up.back()->GetBinContent(emuTest_wgammaPtg130up.back()->GetNbinsX() + 1));
+      emuTest_wgammaPtg30to50.back()->SetBinError(emuTest_wgammaPtg30to50.back()->GetNbinsX(), sqrt(emuTest_wgammaPtg30to50.back()->GetBinContent(emuTest_wgammaPtg30to50.back()->GetNbinsX())));
+      emuTest_wgammaPtg50to130.back()->SetBinError(emuTest_wgammaPtg50to130.back()->GetNbinsX(), sqrt(emuTest_wgammaPtg50to130.back()->GetBinContent(emuTest_wgammaPtg50to130.back()->GetNbinsX())));
+      emuTest_wgammaPtg130up.back()->SetBinError(emuTest_wgammaPtg130up.back()->GetNbinsX(), sqrt(emuTest_wgammaPtg130up.back()->GetBinContent(emuTest_wgammaPtg130up.back()->GetNbinsX())));
     }
   }
   // add underflow to first bin
@@ -335,7 +414,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     emuTest_ref.back()->SetBinContent(1, emuTest_ref.back()->GetBinContent(1) + emuTest_ref.back()->GetBinContent(0));
     refOverTestHist->SetBinError(1, sqrt(refOverTestHist->GetBinContent(1)));
     emuTest_ref.back()->SetBinError(1, sqrt(emuTest_ref.back()->GetBinContent(1)));
-    if (plot_ttbar) {
+    if (processType == 0) {
       emuTest_ttbar.back()->SetBinContent(1, emuTest_ttbar.back()->GetBinContent(1) + emuTest_ttbar.back()->GetBinContent(0));
       emuTest_ttbar700to1000.back()->SetBinContent(1, emuTest_ttbar700to1000.back()->GetBinContent(1) + emuTest_ttbar700to1000.back()->GetBinContent(0));
       emuTest_ttbar1000up.back()->SetBinContent(1, emuTest_ttbar1000up.back()->GetBinContent(1) + emuTest_ttbar1000up.back()->GetBinContent(0));
@@ -344,40 +423,55 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
       emuTest_ttbar700to1000.back()->SetBinError(1, sqrt(emuTest_ttbar700to1000.back()->GetBinContent(1)));
       emuTest_ttbar1000up.back()->SetBinError(1, sqrt(emuTest_ttbar1000up.back()->GetBinContent(1)));
       emuTest_ttbarPriv600up.back()->SetBinError(1, sqrt(emuTest_ttbarPriv600up.back()->GetBinContent(1)));
-    } else {
+    } else if (processType == 1) {
       emuTest_ww.back()->SetBinContent(1, emuTest_ww.back()->GetBinContent(1) + emuTest_ww.back()->GetBinContent(0));
       emuTest_wwPriv600upEminusMuPlus.back()->SetBinContent(1, emuTest_wwPriv600upEminusMuPlus.back()->GetBinContent(1) + emuTest_wwPriv600upEminusMuPlus.back()->GetBinContent(0));
       emuTest_wwPriv600upEplusMuMinus.back()->SetBinContent(1, emuTest_wwPriv600upEplusMuMinus.back()->GetBinContent(1) + emuTest_wwPriv600upEplusMuMinus.back()->GetBinContent(0));
       emuTest_ww.back()->SetBinError(1, sqrt(emuTest_ww.back()->GetBinContent(1)));
       emuTest_wwPriv600upEminusMuPlus.back()->SetBinError(1, sqrt(emuTest_wwPriv600upEminusMuPlus.back()->GetBinContent(1)));
       emuTest_wwPriv600upEplusMuMinus.back()->SetBinError(1, sqrt(emuTest_wwPriv600upEplusMuMinus.back()->GetBinContent(1)));
+    } else {
+      emuTest_wgammaPtg30to50.back()->SetBinContent(1, emuTest_wgammaPtg30to50.back()->GetBinContent(1) + emuTest_wgammaPtg30to50.back()->GetBinContent(0));
+      emuTest_wgammaPtg50to130.back()->SetBinContent(1, emuTest_wgammaPtg50to130.back()->GetBinContent(1) + emuTest_wgammaPtg50to130.back()->GetBinContent(0));
+      emuTest_wgammaPtg130up.back()->SetBinContent(1, emuTest_wgammaPtg130up.back()->GetBinContent(1) + emuTest_wgammaPtg130up.back()->GetBinContent(0));
+      emuTest_wgammaPtg30to50.back()->SetBinError(1, sqrt(emuTest_wgammaPtg30to50.back()->GetBinContent(1)));
+      emuTest_wgammaPtg50to130.back()->SetBinError(1, sqrt(emuTest_wgammaPtg50to130.back()->GetBinContent(1)));
+      emuTest_wgammaPtg130up.back()->SetBinError(1, sqrt(emuTest_wgammaPtg130up.back()->GetBinContent(1)));
     }
   }
 
   // make a histogram stack with the test 
   THStack *testStack = new THStack("testStack" + sign[sig] + region[reg], testVar + sign[sig] + nameReg[reg]);
-  if (plot_ttbar) {
+  if (processType == 0) {
     testStack->Add(emuTest_ttbar.back());
     testStack->Add(emuTest_ttbar700to1000.back());
     testStack->Add(emuTest_ttbar1000up.back());
     testStack->Add(emuTest_ttbarPriv600up.back());
-  } else {
+  } else if (processType == 1) {
     testStack->Add(emuTest_ww.back());
     testStack->Add(emuTest_wwPriv600upEminusMuPlus.back());
     testStack->Add(emuTest_wwPriv600upEplusMuMinus.back());
+  } else {
+    testStack->Add(emuTest_wgammaPtg30to50.back());
+    testStack->Add(emuTest_wgammaPtg50to130.back());
+    testStack->Add(emuTest_wgammaPtg130up.back());
   }
 
   // test histogram for (ref - test) / test
   TH1F *testHist;
-  if (plot_ttbar) {
+  if (processType == 0) {
     testHist = (TH1F *)emuTest_ttbar.back()->Clone("testHist_ttbar");
     testHist->Add(emuTest_ttbar700to1000.back());
     testHist->Add(emuTest_ttbar1000up.back());
     testHist->Add(emuTest_ttbarPriv600up.back());
-  } else {
+  } else if (processType == 1) {
     testHist = (TH1F *)emuTest_ww.back()->Clone("testHist_ww");
     testHist->Add(emuTest_wwPriv600upEminusMuPlus.back());
     testHist->Add(emuTest_wwPriv600upEplusMuMinus.back());
+  } else {
+    testHist = (TH1F *)emuTest_wgammaPtg30to50.back()->Clone("testHist_wgammaPtg30to50");
+    testHist->Add(emuTest_wgammaPtg50to130.back());
+    testHist->Add(emuTest_wgammaPtg130up.back());
   }
 
   TCanvas *emuPlot;
@@ -421,7 +515,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   }
 
   //// plot spectrum
-  if (plot_ttbar) {
+  if (processType == 0) {
     emuTest_ttbar.back()->SetFillColor(ttbarColour);
     emuTest_ttbar.back()->SetLineColor(ttbarColour);
     //emuTest_ttbar.back()->SetLineWidth(2);
@@ -434,7 +528,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     emuTest_ttbarPriv600up.back()->SetFillColor(ttbarPriv600upColour);
     emuTest_ttbarPriv600up.back()->SetLineColor(ttbarPriv600upColour);
     //emuTest_ttbarPriv600up.back()->SetLineWidth(2);
-  } else {
+  } else if (processType == 1) {
     emuTest_ww.back()->SetFillColor(wwColour);
     emuTest_ww.back()->SetLineColor(wwColour);
     //emuTest_ww.back()->SetLineWidth(2);
@@ -444,6 +538,16 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     emuTest_wwPriv600upEplusMuMinus.back()->SetFillColor(wwPriv600upEplusMuMinusColour);
     emuTest_wwPriv600upEplusMuMinus.back()->SetLineColor(wwPriv600upEplusMuMinusColour);
     //emuTest_wwPriv600upEplusMuMinus.back()->SetLineWidth(2);
+  } else {
+    emuTest_wgammaPtg30to50.back()->SetFillColor(wgammaPtg30to50Colour);
+    emuTest_wgammaPtg30to50.back()->SetLineColor(wgammaPtg30to50Colour);
+    //emuTest_wgammaPtg30to50.back()->SetLineWidth(2);
+    emuTest_wgammaPtg50to130.back()->SetFillColor(wgammaPtg50to130Colour);
+    emuTest_wgammaPtg50to130.back()->SetLineColor(wgammaPtg50to130Colour);
+    //emuTest_wgammaPtg50to130.back()->SetLineWidth(2);
+    emuTest_wgammaPtg130up.back()->SetFillColor(wgammaPtg130upColour);
+    emuTest_wgammaPtg130up.back()->SetLineColor(wgammaPtg130upColour);
+    //emuTest_wgammaPtg130up.back()->SetLineWidth(2);
   }
 
   testStack->Draw("hist");
@@ -480,17 +584,22 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
   legend.SetLineWidth(1);
   legend.SetFillColor(19);
   legend.SetFillStyle(0);
-  if (plot_ttbar) {
+  if (processType == 0) {
     legend.AddEntry(emuTest_ref.back(), "t#bar{t} (reference)");
     legend.AddEntry(emuTest_ttbar.back(), "t#bar{t}_{rew}", "F");
     legend.AddEntry(emuTest_ttbar700to1000.back(), "t#bar{t}_{rew} 700 GeV < M_{t#bar{t}} < 1000 GeV", "F");
     legend.AddEntry(emuTest_ttbar1000up.back(), "t#bar{t}_{rew} M_{t#bar{t}} > 1000 GeV", "F");
     legend.AddEntry(emuTest_ttbarPriv600up.back(), "t#bar{t}_{rew} (Priv.)", "F");
-  } else {
+  } else if (processType == 1) {
     legend.AddEntry(emuTest_ref.back(), "WW (reference)");
     legend.AddEntry(emuTest_ww.back(), "WW_{rew}", "F");
     legend.AddEntry(emuTest_wwPriv600upEminusMuPlus.back(), "WW #rightarrow e^{-}#mu^{+}_{rew} (priv.)", "F");
     legend.AddEntry(emuTest_wwPriv600upEplusMuMinus.back(), "WW #rightarrow e^{+}#mu^{-}_{rew} (priv.)", "F");
+  } else {
+    legend.AddEntry(emuTest_ref.back(), "W#gamma (inclusive)");
+    legend.AddEntry(emuTest_wgammaPtg30to50.back(), "W#gamma 30<p^{#gamma}_{T}<50 GeV", "F");
+    legend.AddEntry(emuTest_wgammaPtg50to130.back(), "W#gamma 50<p^{#gamma}_{T}<130 GeV", "F");
+    legend.AddEntry(emuTest_wgammaPtg130up.back(), "W#gamma p^{#gamma}_{T}>130 GeV", "F");
   }
   legend.SetBorderSize(0);
   legend.DrawClone("same");
@@ -513,7 +622,7 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
     refOverTestHist->Divide(testHist);
 
     float fontScaleBot = 1.;
-    TPad *pullPad = new TPad("pullPad" + testVar + + sign[sig] + region[reg], "(ref - test) / test" + testVar + nameSign[sig] + nameReg[reg], 0., 0., 1., 0.33);
+    TPad *pullPad = new TPad("pullPad" + testVar + sign[sig] + region[reg], "(ref - test) / test" + testVar + nameSign[sig] + nameReg[reg], 0., 0., 1., 0.33);
     emuPlot->cd();
     fontScaleBot = specPad->GetHNDC() / pullPad->GetHNDC();
     pullPad->Draw();
@@ -570,11 +679,12 @@ void macro_MakeMultiSampleClosureTest(unsigned int var = 0, int sig = 0, unsigne
 }
 
 // plot a range of control variables
-void PlotRange(int sign = 0, unsigned int region = 0, unsigned int from = 1, unsigned int to = 43)
+void PlotRange(int processType = 0, int sign = 0, unsigned int region = 0, unsigned int from = 1, unsigned int to = 43)
 {
+  if (processType < 0 || processType > 2) processType = 0;
   if (to == 0 || to > 43) to = 43;
   if (from == 0 || from > to) from = 1;
   for (unsigned int i = from; i <= to; ++i)
-    macro_MakeMultiSampleClosureTest(i, sign, region);
+    macro_MakeMultiSampleClosureTest(processType, i, sign, region);
 }
 

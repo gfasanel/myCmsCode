@@ -419,6 +419,10 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
    suffix.push_back("tw");
    suffix.push_back("twpow");
    suffix.push_back("wjets");
+   suffix.push_back("wgamma");
+   suffix.push_back("wgammaPtg30to50");
+   suffix.push_back("wgammaPtg50to130");
+   suffix.push_back("wgammaPtg130up");
    suffix.push_back("zmumu");
    suffix.push_back("zee");
    suffix.push_back("zz");
@@ -473,13 +477,13 @@ EmuSpectrum::EmuSpectrum(TTree *tree) : fChain(0)
 
    shapeUncNames.reserve(5);
    shapeUncNames.push_back("");
-   //shapeUncNames.push_back("eleScaleUp");
-   //shapeUncNames.push_back("eleScaleDown");
-   //shapeUncNames.push_back("muScaleUp");
-   //shapeUncNames.push_back("muScaleDown");
-   //shapeUncNames.push_back("muonResUp");
-   //shapeUncNames.push_back("muonResDown");
-   //shapeUncNames.push_back("muonResSmearUp");
+   shapeUncNames.push_back("eleScaleUp");
+   shapeUncNames.push_back("eleScaleDown");
+   shapeUncNames.push_back("muScaleUp");
+   shapeUncNames.push_back("muScaleDown");
+   shapeUncNames.push_back("muonResUp");
+   shapeUncNames.push_back("muonResDown");
+   shapeUncNames.push_back("muonResSmearUp");
 }
 
 EmuSpectrum::~EmuSpectrum()
