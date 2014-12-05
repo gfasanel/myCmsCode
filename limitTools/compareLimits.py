@@ -118,6 +118,7 @@ rd1 = gROOT.GetColor(ROOT.kRed-3)
 rd1.SetAlpha(0.5)
 median_3sigma1.SetFillColor(ROOT.kRed-3)
 median_3sigma1.SetLineColor(ROOT.kRed-3)
+axisHisto = median_3sigma1.GetHistogram()
 if options.draw3sigma1:
     median_3sigma1.Draw(optionAxis+'3')
     optionAxis = ''
@@ -145,7 +146,7 @@ if options.draw2sigma2:
     optionAxis = ''
 
 gr1 = gROOT.GetColor(ROOT.kGreen+1)
-gr1.SetAlpha(0.5)
+#gr1.SetAlpha(0.5)
 median_1sigma1.SetFillColor(ROOT.kGreen+1)
 median_1sigma1.SetLineColor(ROOT.kGreen+1)
 if options.draw1sigma1:
@@ -292,8 +293,10 @@ tex = TLatex()
 tex.SetNDC()
 tex.SetTextFont(font)
 tex.SetTextSize(0.04)
-tex.DrawLatex(0.1, 0.91, 'CMS Preliminary, 8 TeV, 19.7 fb^{-1}')
+tex.DrawLatex(0.1, 0.91, 'CMS Preliminary')
+tex.DrawLatex(0.717, 0.91, '19.7 fb^{-1} (8 TeV)')
 
+axisHisto.Draw("sameaxis")
 ##############################################################################
 # save canvases to root file
 if options.savePlots:

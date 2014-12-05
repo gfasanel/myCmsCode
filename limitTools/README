@@ -18,9 +18,9 @@ Generate card files:
     Generates the card files used by the combine tool.
 
 Submit the jobs on the batch system:
-    ./launchJobs.py -q 1nd -m 100 -M 2000 -S 50 -j 10 -t 10 -T 100 -w myWorkDir
+    ./launchJobs.py -q 1nd -m 100 -M 2000 -S 50 -j 10 -t 10 -T 30 -w myWorkDir
     
-    This submits 10 jobs with 10 toy experiments each with 100 tries of the MCMC to the one day queue of the LSF batch system.
+    This submits 10 jobs with 10 toy experiments each with 30 tries of the MCMC to the one day queue of the LSF batch system.
     
     ./launchJobs.py -q 1nd -m 100 -M 2000 -S 50 -T 100 -w myWorkDir
     

@@ -13,12 +13,13 @@ from ROOT import gROOT,gStyle,gPad
 from optparse import OptionParser
 
 # set the propper axis style ans labels
-def setAxisLabels(graph, min, max, inFb, fontStyle):
+def setAxisLabels(graph, xmin, xmax, ymin, ymax, inFb, fontStyle):
     graph.GetXaxis().SetTitle("M_{e#mu} (GeV)")
     #graph.GetXaxis().SetTitleOffset(1.)
     graph.GetXaxis().SetTitleFont(fontStyle)
     graph.GetXaxis().SetLabelFont(fontStyle)
-    graph.GetXaxis().SetRangeUser(min, max)
+    graph.GetXaxis().SetRangeUser(xmin, xmax)
+    graph.GetYaxis().SetRangeUser(ymin, ymax)
     if inFb:
         graph.GetYaxis().SetTitle('#sigma x BR (fb)')
     else:
@@ -53,6 +54,8 @@ parser.add_option("-1"  ,"--1sigma", dest="draw1sigma", default=False, action="s
 parser.add_option("-2"  ,"--2sigma", dest="draw2sigma", default=False, action="store_true", help="Draw two sigma band.")
 parser.add_option("-3"  ,"--3sigma", dest="draw3sigma", default=False, action="store_true", help="Draw three sigma band.")
 parser.add_option("-t"  ,"--theory", dest="drawTheory", default=False, action="store_true", help="Draw theory curve.")
+parser.add_option("-y"  ,"--yMin", dest="yMin", default="0.1", type="float", help="y-axis minimum.")
+parser.add_option("-Y"  ,"--yMax", dest="yMax", default="40", type="float", help="y-axis maximum.")
 parser.add_option("-f"  ,"--fb", dest="inFemtoBarn", default=False, action="store_true", help="Output cross section times BR in fb instead of pb.")
 parser.add_option("-s"  ,"--save", dest="savePlots", default=False, action="store_true", help="Save plots to root file in results directory.")
 parser.add_option("-d"  ,"--dots", dest="showMarker", default=False, action="store_true", help="Plot a marker at the calculated mass point.")
@@ -181,26 +184,27 @@ optionAxis = 'A'
 #draw expected limits
 median_3sigma.SetFillColor(ROOT.kRed-6)
 median_3sigma.SetLineColor(ROOT.kRed-6)
-setAxisLabels(median_3sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
+setAxisLabels(median_3sigma, options.minMass, options.maxMass, options.yMin, options.yMax, options.inFemtoBarn, font)
+axisHisto = median_3sigma.GetHistogram()
 if options.draw3sigma:
     median_3sigma.Draw(optionAxis+'3')
     optionAxis = ''
 
 median_2sigma.SetFillColor(ROOT.kYellow)
 median_2sigma.SetLineColor(ROOT.kYellow)
-setAxisLabels(median_2sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
+setAxisLabels(median_2sigma, options.minMass, options.maxMass, options.yMin, options.yMax, options.inFemtoBarn, font)
 if options.draw2sigma:
     median_2sigma.Draw(optionAxis+'3')
     optionAxis = ''
 
 median_1sigma.SetFillColor(ROOT.kGreen)
 median_1sigma.SetLineColor(ROOT.kGreen)
-setAxisLabels(median_1sigma, options.minMass, options.maxMass, options.inFemtoBarn, font)
+setAxisLabels(median_1sigma, options.minMass, options.maxMass, options.yMin, options.yMax, options.inFemtoBarn, font)
 if options.draw1sigma:
     median_1sigma.Draw(optionAxis+'3')
     optionAxis = ''
 
-setAxisLabels(median, options.minMass, options.maxMass, options.inFemtoBarn, font)
+setAxisLabels(median, options.minMass, options.maxMass, options.yMin, options.yMax, options.inFemtoBarn, font)
 if options.drawExp:
     median.Draw(optionAxis+'LX')
     optionAxis = ''
@@ -208,7 +212,7 @@ if options.drawExp:
 #draw observed limits
 obs_lim.SetLineWidth(2)
 obs_lim.SetMarkerStyle(20)
-setAxisLabels(obs_lim, options.minMass, options.maxMass, options.inFemtoBarn, font)
+setAxisLabels(obs_lim, options.minMass, options.maxMass, options.yMin, options.yMax, options.inFemtoBarn, font)
 drawStyle = 'l'
 if options.drawObs:
     if options.showMarker:
@@ -219,7 +223,7 @@ if options.drawObs:
 #draw theory curve
 theory_curve.SetLineWidth(2)
 theory_curve.SetLineColor(ROOT.kCyan+1)
-setAxisLabels(theory_curve, options.minMass, options.maxMass, options.inFemtoBarn, font)
+setAxisLabels(theory_curve, options.minMass, options.maxMass, options.yMin, options.yMax, options.inFemtoBarn, font)
 if options.drawTheory:
     if optionAxis == '':
         theory_curve.Draw('Lsame')
@@ -256,8 +260,10 @@ tex = TLatex()
 tex.SetNDC()
 tex.SetTextFont(font)
 tex.SetTextSize(0.04)
-tex.DrawLatex(0.1, 0.91, 'CMS Preliminary, 8 TeV, 19.7 fb^{-1}')
+tex.DrawLatex(0.1, 0.91, 'CMS Preliminary')
+tex.DrawLatex(0.717, 0.91, '19.7 fb^{-1} (8 TeV)')
 
+axisHisto.Draw("sameaxis")
 ##############################################################################
 # save canvases to root file
 if options.savePlots:
