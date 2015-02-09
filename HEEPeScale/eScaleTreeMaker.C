@@ -206,15 +206,19 @@ void EScaleTreeMaker::Loop()
     float ele1Et = -10.;
     float ele1ScE = -10.;
     float ele1Eta = -10.;
+    float ele1HoE = -10.;
     float ele2Et = -10.;
     float ele2ScE = -10.;
     float ele2Eta = -10.;
+    float ele2HoE = -10.;
     float ele1EtDrMatched = -10.;
     float ele1ScEDrMatched = -10.;
     float ele1EtaDrMatched = -10.;
+    float ele1HoEDrMatched = -10.;
     float ele2EtDrMatched = -10.;
     float ele2ScEDrMatched = -10.;
     float ele2EtaDrMatched = -10.;
+    float ele2HoEDrMatched = -10.;
     float genEle1E = -10.;
     float genEle2E = -10.;
     float unstGenEle1E = -10.;
@@ -234,17 +238,21 @@ void EScaleTreeMaker::Loop()
     eleTrees.back()->Branch("ele1Et", &ele1Et, "ele1Et/F");
     eleTrees.back()->Branch("ele1ScE", &ele1ScE, "ele1ScE/F");
     eleTrees.back()->Branch("ele1Eta", &ele1Eta, "ele1Eta/F");
+    eleTrees.back()->Branch("ele1HoE", &ele1HoE, "ele1HoE/F");
     eleTrees.back()->Branch("ele2Et", &ele2Et, "ele2Et/F");
     eleTrees.back()->Branch("ele2ScE", &ele2ScE, "ele2ScE/F");
     eleTrees.back()->Branch("ele2Eta", &ele2Eta, "ele2Eta/F");
+    eleTrees.back()->Branch("ele2HoE", &ele2HoE, "ele2HoE/F");
     eleTrees.back()->Branch("massDrMatched", &hHMassDrMatched, "massDrMatched/F");
     eleTrees.back()->Branch("evtRegionDrMatched", &evtRegionDrMatched, "evtRegionDrMatched/I");
     eleTrees.back()->Branch("ele1EtDrMatched", &ele1EtDrMatched, "ele1EtDrMatched/F");
     eleTrees.back()->Branch("ele1ScEDrMatched", &ele1ScEDrMatched, "ele1ScEDrMatched/F");
     eleTrees.back()->Branch("ele1EtaDrMatched", &ele1EtaDrMatched, "ele1EtaDrMatched/F");
+    eleTrees.back()->Branch("ele1HoEDrMatched", &ele1HoEDrMatched, "ele1HoEDrMatched/F");
     eleTrees.back()->Branch("ele2EtDrMatched", &ele2EtDrMatched, "ele2EtDrMatched/F");
     eleTrees.back()->Branch("ele2ScEDrMatched", &ele2ScEDrMatched, "ele2ScEDrMatched/F");
     eleTrees.back()->Branch("ele2EtaDrMatched", &ele2EtaDrMatched, "ele2EtaDrMatched/F");
+    eleTrees.back()->Branch("ele2HoEDrMatched", &ele2HoEDrMatched, "ele2HoEDrMatched/F");
     eleTrees.back()->Branch("genEle1E", &genEle1E, "genEle1E/F");
     eleTrees.back()->Branch("genEle2E", &genEle2E, "genEle2E/F");
     eleTrees.back()->Branch("unstGenEle1E", &unstGenEle1E, "unstGenEle1E/F");
@@ -283,6 +291,8 @@ void EScaleTreeMaker::Loop()
       ele2ScE = -10.;
       ele1Eta = -10.;
       ele2Eta = -10.;
+      ele1HoE = -10.;
+      ele2HoE = -10.;
       evtRegionDrMatched = -1;
       hHMassDrMatched = 0.;
       ele1EtDrMatched = -10.;
@@ -291,6 +301,8 @@ void EScaleTreeMaker::Loop()
       ele2ScEDrMatched = -10.;
       ele1EtaDrMatched = -10.;
       ele2EtaDrMatched = -10.;
+      ele1HoEDrMatched = -10.;
+      ele2HoEDrMatched = -10.;
       genEle1E = -10.;
       genEle2E = -10.;
       unstGenEle1E = -10.;
@@ -380,6 +392,8 @@ void EScaleTreeMaker::Loop()
             ele2ScE = gsfsc_e[iHeep2];
             ele1Eta = gsfsc_eta[iHeep1];
             ele2Eta = gsfsc_eta[iHeep2];
+            ele1HoE = gsf_hovere[iHeep1];
+            ele2HoE = gsf_hovere[iHeep2];
             genEle1E = genele_e[0];
             genEle2E = genele_e[1];
             unstGenEle1E = unstableGenEle_e[0];
@@ -394,6 +408,8 @@ void EScaleTreeMaker::Loop()
               ele2ScE = gsfsc_e[iHeep2];
               ele1Eta = gsfsc_eta[iHeep1];
               ele2Eta = gsfsc_eta[iHeep2];
+              ele1HoE = gsf_hovere[iHeep1];
+              ele2HoE = gsf_hovere[iHeep2];
               genEle1E = genele_e[0];
               genEle2E = genele_e[1];
               unstGenEle1E = unstableGenEle_e[0];
@@ -407,6 +423,8 @@ void EScaleTreeMaker::Loop()
               ele2ScE = gsfsc_e[iHeep2];
               ele1Eta = gsfsc_eta[iHeep1];
               ele2Eta = gsfsc_eta[iHeep2];
+              ele1HoE = gsf_hovere[iHeep1];
+              ele2HoE = gsf_hovere[iHeep2];
               genEle1E = genele_e[0];
               genEle2E = genele_e[1];
               unstGenEle1E = unstableGenEle_e[0];
@@ -431,6 +449,8 @@ void EScaleTreeMaker::Loop()
               ele2ScEDrMatched = gsfsc_e[bestMatchE2];
               ele1EtaDrMatched = gsfsc_eta[bestMatchE1];
               ele2EtaDrMatched = gsfsc_eta[bestMatchE2];
+              ele1HoEDrMatched = gsf_hovere[bestMatchE1];
+              ele2HoEDrMatched = gsf_hovere[bestMatchE2];
             } else {
               if ((fabs(gsfsc_eta[bestMatchE1]) < 1.442 && fabs(gsfsc_eta[bestMatchE2]) > 1.56) || (fabs(gsfsc_eta[bestMatchE1]) > 1.56 && fabs(gsfsc_eta[bestMatchE2]) < 1.442)) {
                 evtRegionDrMatched = 1;
@@ -441,6 +461,8 @@ void EScaleTreeMaker::Loop()
                 ele2ScEDrMatched = gsfsc_e[bestMatchE2];
                 ele1EtaDrMatched = gsfsc_eta[bestMatchE1];
                 ele2EtaDrMatched = gsfsc_eta[bestMatchE2];
+                ele1HoEDrMatched = gsf_hovere[bestMatchE1];
+                ele2HoEDrMatched = gsf_hovere[bestMatchE2];
               } else if (fabs(gsfsc_eta[bestMatchE1]) < 1.442 && fabs(gsfsc_eta[bestMatchE2]) < 1.442) {
                 evtRegionDrMatched = 0;
                 hHMassDrMatched = heepHeepMassDrMatched;
@@ -450,6 +472,8 @@ void EScaleTreeMaker::Loop()
                 ele2ScEDrMatched = gsfsc_e[bestMatchE2];
                 ele1EtaDrMatched = gsfsc_eta[bestMatchE1];
                 ele2EtaDrMatched = gsfsc_eta[bestMatchE2];
+                ele1HoEDrMatched = gsf_hovere[bestMatchE1];
+                ele2HoEDrMatched = gsf_hovere[bestMatchE2];
               }
             }
             fillTree = true;
